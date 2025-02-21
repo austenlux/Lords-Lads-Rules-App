@@ -6,7 +6,7 @@ TestProject is a modern development environment that helps streamline your testi
 ## Installation
 1. Clone the repository
    ```bash
-   git clone https://github.com/yourusername/TestProject.git
+   git clone https://github.com/austenlux/TestProject.git
    ```
 2. Navigate to project directory
    ```bash
@@ -50,8 +50,8 @@ TestProject is a modern development environment that helps streamline your testi
 Distributed under the MIT License. See `LICENSE` for more information.
 
 ## Contact
-- Your Name - [@yourusername](https://github.com/yourusername)
-- Project Link: [https://github.com/yourusername/TestProject](https://github.com/yourusername/TestProject)
+- Your Name - [@austenlux](https://github.com/austenlux)
+- Project Link: [https://github.com/austenlux/TestProject](https://github.com/austenlux/TestProject)
 
 ## Acknowledgments
 - [Jest](https://jestjs.io/)
