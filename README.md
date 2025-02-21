@@ -1,40 +1,59 @@
-TestProject
-Description
+# TestProject
+
+## Description
 TestProject is a modern development environment that helps streamline your testing workflow. It provides a robust framework for writing, managing, and executing tests efficiently.
-Installation
-Clone the repository
-git clone https://github.com/yourusername/TestProject.git
-Navigate to project directory
-cd TestProject
-Install dependencies
-npm install
-Usage
-Run all tests
-npm test
-Run specific test suite
-npm test -- --suite=unit
-Generate test coverage report
-npm run coverage
-Features
-🚀 Fast test execution
-📊 Detailed test reports
-🔄 Automatic test discovery
-💻 Cross-platform support
-🛠️ Easy configuration
-📝 Comprehensive documentation
-Contributing
-Fork the Project
-Create your Feature Branch (git checkout -b feature/AmazingFeature)
-Commit your Changes (git commit -m 'Add some AmazingFeature')
-Push to the Branch (git push origin feature/AmazingFeature)
-Open a Pull Request
-License
-Distributed under the MIT License. See LICENSE for more information.
-Contact
-Your Name - @yourusername
-Project Link: https://github.com/yourusername/TestProject
-Acknowledgments
-Jest
-Node.js
-GitHub Actions
-This version uses actual line breaks instead of "\n" characters, so it will render correctly on GitHub's website. Copy this exact text (with the real line breaks) into your README.md file.
+
+## Installation
+1. Clone the repository
+   ```bash
+   git clone https://github.com/yourusername/TestProject.git
+   ```
+2. Navigate to project directory
+   ```bash
+   cd TestProject
+   ```
+3. Install dependencies
+   ```bash
+   npm install
+   ```
+
+## Usage
+- Run all tests
+  ```bash
+  npm test
+  ```
+- Run specific test suite
+  ```bash
+  npm test -- --suite=unit
+  ```
+- Generate test coverage report
+  ```bash
+  npm run coverage
+  ```
+
+## Features
+- 🚀 Fast test execution
+- 📊 Detailed test reports
+- 🔄 Automatic test discovery
+- 💻 Cross-platform support
+- 🛠️ Easy configuration
+- 📝 Comprehensive documentation
+
+## Contributing
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## License
+Distributed under the MIT License. See `LICENSE` for more information.
+
+## Contact
+- Your Name - [@yourusername](https://github.com/yourusername)
+- Project Link: [https://github.com/yourusername/TestProject](https://github.com/yourusername/TestProject)
+
+## Acknowledgments
+- [Jest](https://jestjs.io/)
+- [Node.js](https://nodejs.org/)
+- [GitHub Actions](https://github.com/features/actions)
