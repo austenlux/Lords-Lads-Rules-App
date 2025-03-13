@@ -1,59 +1,58 @@
-# TestProject
+# Mobile App Name
 
 ## Description
-TestProject is a modern development environment that helps streamline your testing workflow. It provides a robust framework for writing, managing, and executing tests efficiently.
+A cross-platform mobile application built with React Native.
 
-## Installation
+## Getting Started
+
+### Prerequisites
+- Node.js (LTS version)
+- npm or yarn
+- iOS development environment:
+  - Xcode (Mac only)
+  - CocoaPods
+- Android development environment:
+  - Android Studio
+  - Android SDK
+  - JDK
+
+### Installation
 1. Clone the repository
-   ```bash
-   git clone https://github.com/austenlux/TestProject.git
-   ```
-2. Navigate to project directory
-   ```bash
-   cd TestProject
-   ```
-3. Install dependencies
+2. Install dependencies:
    ```bash
    npm install
+   # or
+   yarn install
+   ```
+3. iOS specific setup:
+   ```bash
+   cd ios && pod install
    ```
 
 ## Usage
-- Run all tests
+- Run on iOS:
   ```bash
-  npm test
+  npm run ios
+  # or
+  yarn ios
   ```
-- Run specific test suite
+- Run on Android:
   ```bash
-  npm test -- --suite=unit
+  npm run android
+  # or
+  yarn android
   ```
-- Generate test coverage report
-  ```bash
-  npm run coverage
-  ```
-
-## Features
-- 🚀 Fast test execution
-- 📊 Detailed test reports
-- 🔄 Automatic test discovery
-- 💻 Cross-platform support
-- 🛠️ Easy configuration
-- 📝 Comprehensive documentation
 
 ## Contributing
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+Guidelines for contributing to the project.
 
 ## License
-Distributed under the MIT License. See `LICENSE` for more information.
+This project is licensed under the [LICENSE NAME] - see the LICENSE file for details.
 
-## Contact
-- Your Name - [@austenlux](https://github.com/austenlux)
-- Project Link: [https://github.com/austenlux/TestProject](https://github.com/austenlux/TestProject)
-
-## Acknowledgments
-- [Jest](https://jestjs.io/)
-- [Node.js](https://nodejs.org/)
-- [GitHub Actions](https://github.com/features/actions)
+## Features
+- 📱 Cross-platform (iOS & Android)
+- 🎨 Modern UI/UX design
+- ⚡️ Fast and responsive
+- 🔒 Secure data handling
+- 🌐 Network state management
+- 📝 Clean and maintainable codebase
