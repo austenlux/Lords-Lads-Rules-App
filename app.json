@@ -1,0 +1,24 @@
+{
+  "expo": {
+    "name": "Lords & Lads Rules",
+    "slug": "lnl-rules",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#FF5722"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "bundleIdentifier": "com.lux.lnlrules"
+    },
+    "android": {
+      "package": "com.lux.lnlrules"
+    },
+    "plugins": [
+      "expo-dev-client"
+    ]
+  }
+}
