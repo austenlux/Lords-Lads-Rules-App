@@ -129,6 +129,7 @@ export default function App() {
     
     // Try to find the section with exact title first
     let path = findSectionPath(sections, sectionTitle);
+    let actualTitle = null;
     
     if (!path) {
       // If no exact match, try with common variations
@@ -153,6 +154,21 @@ export default function App() {
       return;
     }
 
+    // Find the actual title of the target section
+    let current = sections;
+    for (let i = 0; i < path.length; i++) {
+      const pathPart = path[i];
+      if (pathPart === 'subsections') {
+        continue;
+      }
+      if (current[pathPart]) {
+        actualTitle = current[pathPart].title;
+        if (i < path.length - 1 && current[pathPart].subsections) {
+          current = current[pathPart].subsections;
+        }
+      }
+    }
+
     setSections(prevSections => {
       const newSections = JSON.parse(JSON.stringify(prevSections));
       
@@ -170,30 +186,21 @@ export default function App() {
 
       collapseAll(newSections);
 
-      // Find the path to the target section
-      const path = findSectionPath(newSections, sectionTitle);
-      console.log('Found path:', path);
-
-      if (path) {
-        // Expand the target section and its parents
-        let current = newSections;
-        let parentExpanded = false;
-
-        // First, find and expand the main section if this is a subsection
-        const mainSectionIndex = path[0];
-        if (mainSectionIndex !== undefined) {
-          current[mainSectionIndex].isExpanded = true;
-          parentExpanded = true;
-          console.log('Expanded main section:', current[mainSectionIndex].title);
+      // Expand all sections along the path
+      let current = newSections;
+      for (let i = 0; i < path.length; i++) {
+        const pathPart = path[i];
+        if (pathPart === 'subsections') {
+          continue; // Skip the 'subsections' markers in the path
+        }
+        
+        if (current[pathPart]) {
+          current[pathPart].isExpanded = true;
+          console.log('Expanded section:', current[pathPart].title);
           
-          // If there's a subsection path, follow it
-          if (path.includes('subsections')) {
-            current = current[mainSectionIndex].subsections;
-            const subIndex = path[path.indexOf('subsections') + 1];
-            if (subIndex !== undefined) {
-              current[subIndex].isExpanded = true;
-              console.log('Expanded subsection:', current[subIndex].title);
-            }
+          // Move to next level if there are more path segments
+          if (i < path.length - 1 && current[pathPart].subsections) {
+            current = current[pathPart].subsections;
           }
         }
       }
@@ -203,10 +210,15 @@ export default function App() {
 
     // Schedule the scroll after the state update and animation
     setTimeout(() => {
-      console.log('Attempting to scroll to:', sectionTitle);
+      if (!actualTitle) {
+        console.log('No actual title found for scrolling');
+        return;
+      }
+      
+      console.log('Attempting to scroll to section with title:', actualTitle);
       console.log('Available refs:', Object.keys(sectionRefs.current));
       
-      const targetRef = sectionRefs.current[sectionTitle];
+      const targetRef = sectionRefs.current[actualTitle];
       if (targetRef && scrollViewRef.current) {
         console.log('Found ref, scrolling...');
         targetRef.measureLayout(
@@ -218,9 +230,9 @@ export default function App() {
           (error) => console.log('Failed to measure layout:', error)
         );
       } else {
-        console.log('Missing ref or scrollView');
+        console.log('Missing ref or scrollView for title:', actualTitle);
       }
-    }, 500); // Increased timeout to ensure state updates complete
+    }, 500);
   };
 
   const handleLinkPress = (url) => {
