@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Lords & Lads Rules",
-    "slug": "lnl-rules",
+    "slug": "lords-and-lads-rules",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
@@ -12,13 +12,16 @@
       "**/*"
     ],
     "ios": {
-      "bundleIdentifier": "com.lux.lnlrules"
+      "supportsTablet": true
     },
     "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#FF5722"
+      },
       "package": "com.lux.lnlrules"
     },
     "plugins": [
-      "expo-dev-client"
+      "expo-system-ui"
     ]
   }
 }
