@@ -53,8 +53,7 @@ The APK will be automatically copied to the `/releases` directory at the project
 
 The app is built with:
 - React Native 0.73.6
-- TypeScript
-- React Native Markdown Display for rule content
+- React Native Markdown Display
 
 ## Project Structure
 
@@ -84,11 +83,6 @@ Then try running `npm start` again.
 - Dark mode UI optimized for readability
 - Maintains original markdown formatting
 - Offline access to rules
-
-## Technology
-
-- React Native
-- React Native Markdown Display
 
 ## License
 
