@@ -1,58 +1,38 @@
-# Mobile App Name
+# Lords and Lads Rules App
 
-## Description
-A cross-platform mobile application built with React Native.
+A React Native mobile app that provides an interactive, navigable version of the Lords and Lads game rules.
+
+## Features
+
+- Interactive table of contents with quick navigation
+- Collapsible sections and subsections
+- Smooth scrolling to selected sections
+- Dark mode UI optimized for readability
+- Maintains original markdown formatting
+- Offline access to rules
 
 ## Getting Started
 
-### Prerequisites
-- Node.js (LTS version)
-- npm or yarn
-- iOS development environment:
-  - Xcode (Mac only)
-  - CocoaPods
-- Android development environment:
-  - Android Studio
-  - Android SDK
-  - JDK
+1. Install dependencies:
+```bash
+npm install
+```
 
-### Installation
-1. Clone the repository
-2. Install dependencies:
-   ```bash
-   npm install
-   # or
-   yarn install
-   ```
-3. iOS specific setup:
-   ```bash
-   cd ios && pod install
-   ```
+2. Start the development server:
+```bash
+npm start
+```
 
-## Usage
-- Run on iOS:
-  ```bash
-  npm run ios
-  # or
-  yarn ios
-  ```
-- Run on Android:
-  ```bash
-  npm run android
-  # or
-  yarn android
-  ```
+3. Run on your device:
+- iOS: Press 'i' in the terminal
+- Android: Press 'a' in the terminal
 
-## Contributing
-Guidelines for contributing to the project.
+## Technology
+
+- React Native
+- Expo
+- React Native Markdown Display
 
 ## License
-This project is licensed under the [LICENSE NAME] - see the LICENSE file for details.
 
-## Features
-- 📱 Cross-platform (iOS & Android)
-- 🎨 Modern UI/UX design
-- ⚡️ Fast and responsive
-- 🔒 Secure data handling
-- 🌐 Network state management
-- 📝 Clean and maintainable codebase
+This app is a companion to the Lords and Lads game. Game rules content is owned by its respective creators.
