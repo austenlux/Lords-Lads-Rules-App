@@ -44,10 +44,16 @@ Then in the Metro bundler interface:
 To generate a new debug APK in the `/releases` directory:
 
 ```bash
-cd android && ./gradlew assembleDebug
+npm run build:android
 ```
 
-The APK will be automatically copied to the `/releases` directory at the project root.
+This command will:
+1. Create necessary asset directories
+2. Bundle the JavaScript code
+3. Build the debug APK
+4. Copy it to the `/releases` directory
+
+The resulting APK will work on any Android device without needing the Metro development server.
 
 ## Development
 
