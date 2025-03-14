@@ -73,7 +73,7 @@ import com.facebook.react.defaults.DefaultReactActivityDelegate;
 public class MainActivity extends ReactActivity {
   @Override
   protected String getMainComponentName() {
-    return "main";
+    return "lords-and-lads-rules";
   }
 
   @Override

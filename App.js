@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, Text, View, ActivityIndicator } from 'react-native';
+import { SafeAreaView, ScrollView, StyleSheet, Text, View, ActivityIndicator, AppRegistry } from 'react-native';
 import Markdown from 'react-native-markdown-display';
 
-export default function App() {
+function App() {
   const [readme, setReadme] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -122,4 +122,8 @@ const markdownStyles = {
   bullet_list: {
     marginLeft: 20,
   },
-}; 
+};
+
+AppRegistry.registerComponent('lords-and-lads-rules', () => App);
+
+export default App; 
