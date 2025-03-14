@@ -25,17 +25,42 @@ Pre-built app packages are available in the `artifacts` directory:
 
 ## Development
 
+### Prerequisites
+
+1. Install development tools:
+```bash
+# Install Node.js dependencies
+npm install
+
+# Install EAS CLI
+npm install -g eas-cli
+
+# Configure EAS
+eas login
+eas build:configure
+```
+
+2. Platform-specific setup:
+- iOS:
+  - Install Xcode
+  - `xcode-select --install`
+  - Set up your Apple Developer account
+- Android:
+  - Install Android Studio
+  - Set up the Android SDK
+  - Set ANDROID_HOME environment variable
+
 ### Building the Apps
 
 ```bash
-# Install dependencies
-npm install
-
-# Build Android APK
+# Build Android APK (outputs to artifacts/android/)
 npm run build:android
 
-# Build iOS IPA
+# Build iOS IPA (outputs to artifacts/ios/)
 npm run build:ios
+
+# Build both platforms
+npm run build
 ```
 
 The built apps will be automatically copied to the `artifacts` directory.
@@ -56,6 +81,7 @@ npm start
 - React Native
 - Expo
 - React Native Markdown Display
+- EAS Build
 
 ## License
 
