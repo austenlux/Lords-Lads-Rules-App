@@ -50,11 +50,11 @@ android {
     applicationVariants.all { variant ->
         if (variant.buildType.name == "debug") {
             variant.outputs.all { output ->
-                outputFileName = "lnl-rules-debug.apk"
+                outputFileName = "lords-and-lads-rules-debug.apk"
             }
             variant.assembleProvider.get().doLast {
                 copy {
-                    from "${buildDir}/outputs/apk/debug/lnl-rules-debug.apk"
+                    from "${buildDir}/outputs/apk/debug/lords-and-lads-rules-debug.apk"
                     into "../../releases"
                 }
             }

@@ -583,6 +583,6 @@ __d((function(g,r,i,a,m,e,d){'use strict';m.exports=function(o,s,p){var n,t,f,c,
 __d((function(g,r,i,a,m,e,d){'use strict';m.exports=function(s,t,o){var n,c,f=t,l={ok:!1,pos:0,lines:0,str:''};if(60===s.charCodeAt(t)){for(t++;t<o;){if(10===(n=s.charCodeAt(t)))return l;if(62===n)return l.pos=t+1,l.str=r(d[0]).unescapeAll(s.slice(f+1,t)),l.ok=!0,l;92===n&&t+1<o?t+=2:t++}return l}for(c=0;t<o&&32!==(n=s.charCodeAt(t))&&!(n<32||127===n);)if(92===n&&t+1<o)t+=2;else{if(40===n&&c++,41===n){if(0===c)break;c--}t++}return f===t||0!==c||(l.str=r(d[0]).unescapeAll(s.slice(f,t)),l.lines=0,l.pos=t,l.ok=!0),l}}),535,[481]);
 __d((function(g,r,i,a,m,e,d){'use strict';m.exports=function(t,n,o){var s,c,u=0,f=n,l={ok:!1,pos:0,lines:0,str:''};if(n>=o)return l;if(34!==(c=t.charCodeAt(n))&&39!==c&&40!==c)return l;for(n++,40===c&&(c=41);n<o;){if((s=t.charCodeAt(n))===c)return l.pos=n+1,l.lines=u,l.str=r(d[0]).unescapeAll(t.slice(f+1,n)),l.ok=!0,l;10===s?u++:92===s&&n+1<o&&(n++,10===t.charCodeAt(n)&&u++),n++}return l}}),536,[481]);
 __d((function(g,r,i,a,m,e,d){var t=r(d[0]);Object.defineProperty(e,"__esModule",{value:!0}),e.default=function(t){var u=n.default.filter((function(n){return Object.keys(t).includes(n)})),c=Object.assign({},t);return u.forEach((function(t){delete c[t]})),c};var n=t(r(d[1]))}),537,[1,458]);
-__d((function(p,a,e,i,m,o,l){m.exports={name:"mobile-app",displayName:"mobile-app"}}),538,[]);
+__d((function(s,d,a,e,l,n,o){l.exports={name:"lords-and-lads-rules",displayName:"Lords & Lads Rules"}}),538,[]);
 __r(57);
 __r(0);
