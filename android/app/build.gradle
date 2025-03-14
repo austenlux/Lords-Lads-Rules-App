@@ -14,14 +14,6 @@ react {
     entryFile = file("../../index.js")
 }
 
-/**
- * Set this to true to Run Proguard on Release builds to minify the Java bytecode.
- */
-def enableProguardInReleaseBuilds = false
-
-/**
- * The preferred build flavor of JavaScriptCore (JSC)
- */
 def jscFlavor = 'org.webkit:android-jsc:+'
 
 android {
@@ -52,10 +44,26 @@ android {
         debug {
             signingConfig signingConfigs.debug
         }
-        release {
-            signingConfig signingConfigs.debug
-            minifyEnabled enableProguardInReleaseBuilds
-            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+    }
+
+    // Add this section to copy debug APK to top-level releases directory
+    applicationVariants.all { variant ->
+        if (variant.buildType.name == "debug") {
+            variant.outputs.all { output ->
+                def project_root = project.rootDir.absolutePath
+                def releases_dir = new File("${project_root}/../../releases")
+                if (!releases_dir.exists()) {
+                    releases_dir.mkdirs()
+                }
+                outputFileName = "lnl-rules-debug.apk"
+                def output_path = new File(releases_dir, outputFileName)
+                variant.assembleProvider.get().doLast {
+                    copy {
+                        from output.outputFile
+                        into releases_dir
+                    }
+                }
+            }
         }
     }
 }

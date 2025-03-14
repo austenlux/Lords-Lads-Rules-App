@@ -2,16 +2,26 @@
 
 A React Native mobile application for displaying and managing game rules.
 
-## Prerequisites
+## Installation
 
+### Direct APK Installation
+The debug APK is available in the `/releases` directory as `lnl-rules-debug.apk`
+
+To install:
+1. Download the APK from the `/releases` directory
+2. Transfer it to your Android device
+3. Open the APK on your device to install
+
+### Development Setup
+
+Prerequisites:
 - Node.js (v18 or newer)
 - npm (v9 or newer)
 - Android Studio and Android SDK for Android development
 - Xcode (for iOS development, Mac only)
 - A running Android emulator or physical device
 
-## Installation
-
+Steps:
 1. Clone the repository
 2. Install dependencies:
 ```bash
@@ -29,6 +39,16 @@ Then in the Metro bundler interface:
 - Press `a` to run on Android
 - Press `i` to run on iOS (Mac only)
 
+## Building APK
+
+To generate a new debug APK in the `/releases` directory:
+
+```bash
+cd android && ./gradlew assembleDebug
+```
+
+The APK will be automatically copied to the `/releases` directory at the project root.
+
 ## Development
 
 The app is built with:
@@ -43,6 +63,7 @@ The app is built with:
 - `/App.js` - Main app component
 - `/components` - React components
 - `/assets` - Images and other static assets
+- `/releases` - Generated APK file
 
 ## Troubleshooting
 
@@ -67,9 +88,7 @@ Then try running `npm start` again.
 ## Technology
 
 - React Native
-- Expo
 - React Native Markdown Display
-- EAS Build
 
 ## License
 
