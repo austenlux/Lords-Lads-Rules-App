@@ -1,6 +1,6 @@
 # Lords & Lads Rules Mobile App
 
-A React Native mobile application for displaying and managing game rules.
+A React Native mobile application for displaying game rules.
 
 ## Installation
 
