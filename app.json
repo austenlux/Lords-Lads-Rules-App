@@ -1,44 +1,4 @@
 {
-  "name": "lords-and-lads-rules",
-  "displayName": "Lords & Lads Rules",
-  "expo": {
-    "name": "Lords and Lads Rules",
-    "slug": "lords-and-lads-rules",
-    "version": "1.0.0",
-    "orientation": "portrait",
-    "icon": "./assets/icon.png",
-    "userInterfaceStyle": "dark",
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#121212"
-    },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
-    "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.lordsandlads.rules"
-    },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#121212"
-      },
-      "package": "com.lordsandlads.rules"
-    },
-    "androidStatusBar": {
-      "backgroundColor": "#E64A19",
-      "barStyle": "light-content"
-    },
-    "androidNavigationBar": {
-      "backgroundColor": "#FF5722"
-    },
-    "extra": {
-      "eas": {
-        "projectId": "a54e006f-3a2b-4e50-8374-6eed311fffae"
-      }
-    },
-    "owner": "austenlux"
-  }
+  "name": "mobile-app",
+  "displayName": "mobile-app"
 }
