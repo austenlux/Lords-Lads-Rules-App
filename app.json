@@ -1,10 +1,17 @@
 {
+  "name": "lords-and-lads-rules",
+  "displayName": "Lords & Lads Rules",
   "expo": {
     "name": "Lords & Lads Rules",
     "slug": "lords-and-lads-rules",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
+    "backgroundColor": "#FFFFFF",
+    "primaryColor": "#FF5722",
+    "splash": {
+      "backgroundColor": "#FF5722"
+    },
     "assetBundlePatterns": [
       "**/*"
     ],
@@ -13,7 +20,25 @@
       "bundleIdentifier": "com.lux.lnlrules"
     },
     "android": {
-      "package": "com.lux.lnlrules"
+      "package": "com.lux.lnlrules",
+      "adaptiveIcon": {
+        "backgroundColor": "#FF5722"
+      },
+      "softwareKeyboardLayoutMode": "pan",
+      "navigationBar": {
+        "backgroundColor": "#FF5722"
+      },
+      "statusBar": {
+        "backgroundColor": "#FF5722",
+        "barStyle": "light-content"
+      }
+    },
+    "androidStatusBar": {
+      "backgroundColor": "#E64A19",
+      "barStyle": "light-content"
+    },
+    "androidNavigationBar": {
+      "backgroundColor": "#FF5722"
     }
   }
 }
