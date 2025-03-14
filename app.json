@@ -5,23 +5,15 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
-    "splash": {
-      "backgroundColor": "#FF5722"
-    },
     "assetBundlePatterns": [
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.lux.lnlrules"
     },
     "android": {
-      "adaptiveIcon": {
-        "backgroundColor": "#FF5722"
-      },
       "package": "com.lux.lnlrules"
-    },
-    "plugins": [
-      "expo-system-ui"
-    ]
+    }
   }
 }
