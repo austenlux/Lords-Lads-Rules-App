@@ -4,7 +4,11 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 import HomeScreen from './src/screens/HomeScreen';
 
-const Stack = createNativeStackNavigator();
+type RootStackParamList = {
+  Home: undefined;
+};
+
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function App() {
   return (
@@ -15,7 +19,7 @@ export default function App() {
           name="Home" 
           component={HomeScreen}
           options={{
-            title: 'Welcome',
+            title: 'Lords & Lads Rules',
             headerStyle: {
               backgroundColor: '#f4511e',
             },

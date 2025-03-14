@@ -2,12 +2,90 @@ import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, View, Text, ActivityIndicator, TouchableOpacity, ScrollView, SafeAreaView, StatusBar, Animated } from 'react-native';
 import Markdown from 'react-native-markdown-display';
 
-const TitleSection = ({ title, content }) => (
-  <View style={styles.titleContainer}>
-    <Text style={styles.mainTitle}>{title}</Text>
-    <Text style={styles.titleSummary}>{content}</Text>
-  </View>
-);
+const TitleSection = ({ title, content }) => {
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(20)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 800,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 800,
+        useNativeDriver: true,
+      })
+    ]).start();
+  }, []);
+
+  return (
+    <View style={styles.titleContainer}>
+      <View style={styles.titleGlow} />
+      <Animated.View style={{
+        opacity: fadeAnim,
+        transform: [{ translateY: slideAnim }],
+        width: '100%',
+        alignItems: 'center',
+      }}>
+        <View style={styles.titleWrapper}>
+          <Markdown style={{
+            ...markdownStyles,
+            heading1: {
+              ...markdownStyles.heading1,
+              fontSize: 48,
+              textAlign: 'center',
+              marginBottom: 24,
+              color: '#BB86FC',
+              fontWeight: 'bold',
+              lineHeight: 56,
+              textShadowColor: 'rgba(187, 134, 252, 0.3)',
+              textShadowOffset: { width: 0, height: 0 },
+              textShadowRadius: 20,
+            },
+            body: {
+              ...markdownStyles.body,
+              textAlign: 'center',
+            }
+          }}>
+            {`# ${title}`}
+          </Markdown>
+        </View>
+      </Animated.View>
+      <Animated.View style={{
+        opacity: fadeAnim,
+        transform: [{ translateY: slideAnim }],
+        width: '100%',
+        alignItems: 'center',
+      }}>
+        <View style={styles.subtitleWrapper}>
+          <Markdown style={{
+            ...markdownStyles,
+            body: {
+              ...markdownStyles.body,
+              fontSize: 20,
+              textAlign: 'center',
+              color: 'rgba(225, 225, 225, 0.9)',
+              lineHeight: 32,
+              paddingHorizontal: 32,
+              letterSpacing: 0.5,
+            },
+            paragraph: {
+              marginBottom: 20,
+              color: '#E1E1E1',
+              textAlign: 'center',
+            }
+          }}>
+            {content}
+          </Markdown>
+        </View>
+      </Animated.View>
+      <View style={styles.titleDivider} />
+    </View>
+  );
+};
 
 const Section = ({ title, level, content, subsections, onPress, isExpanded, path = [], onNavigate, sectionRefs }) => {
   const animatedRotation = useRef(new Animated.Value(isExpanded ? 1 : 0)).current;
@@ -437,7 +515,11 @@ export default function App() {
         <View style={styles.container}>
           <View style={styles.errorContainer}>
             <Text style={styles.errorTitle}>Unable to Load Rules</Text>
-            <Text style={styles.errorMessage}>{error}</Text>
+            <View style={styles.centered}>
+              <Markdown style={markdownStyles}>
+                {"# Error\n\n" + error}
+              </Markdown>
+            </View>
             <TouchableOpacity style={styles.retryButton} onPress={fetchReadme}>
               <Text style={styles.retryButtonText}>Try Again</Text>
             </TouchableOpacity>
@@ -538,10 +620,37 @@ const styles = StyleSheet.create({
     paddingLeft: 32,
   },
   titleContainer: {
-    marginBottom: 32,
-    paddingBottom: 24,
-    borderBottomWidth: 1,
-    borderBottomColor: '#333',
+    marginBottom: 48,
+    paddingBottom: 40,
+    paddingTop: 24,
+    alignItems: 'center',
+    position: 'relative',
+    borderBottomWidth: 0,
+    width: '100%',
+  },
+  titleGlow: {
+    position: 'absolute',
+    top: '30%',
+    width: 200,
+    height: 200,
+    backgroundColor: 'rgba(187, 134, 252, 0.05)',
+    borderRadius: 100,
+    transform: [{ scale: 1.5 }],
+    opacity: 0.6,
+    zIndex: -1,
+  },
+  titleDivider: {
+    position: 'absolute',
+    bottom: 0,
+    left: '10%',
+    right: '10%',
+    height: 1,
+    backgroundColor: '#333',
+    shadowColor: '#BB86FC',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 2,
   },
   mainTitle: {
     fontSize: 40,
@@ -555,6 +664,21 @@ const styles = StyleSheet.create({
     color: '#E1E1E1',
     textAlign: 'center',
     lineHeight: 24,
+  },
+  centered: {
+    alignItems: 'center',
+  },
+  titleWrapper: {
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+  },
+  subtitleWrapper: {
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 20,
   },
 });
 
