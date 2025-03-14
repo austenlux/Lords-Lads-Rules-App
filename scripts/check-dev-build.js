@@ -1,9 +1,6 @@
-const { execSync } = require('child_process');
+const { execSync, spawn } = require('child_process');
 const fs = require('fs');
 const path = require('path');
-
-// Simple transparent PNG for adaptive icon
-const ADAPTIVE_ICON = 'iVBORw0KGgoAAAANSUhEUgAAAQAAAAEAAQMAAABmvDolAAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAADpJREFUaN7twTEBAAAAwiD7p14MH2AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwFOMYwAB/Q2tfwAAAABJRU5ErkJggg==';
 
 function cleanAll() {
   console.log('🧹 Cleaning all build artifacts...');
@@ -15,21 +12,6 @@ function cleanAll() {
       fs.rmSync(dirPath, { recursive: true, force: true });
     }
   });
-}
-
-function ensureAssets() {
-  const assetsDir = path.join(process.cwd(), 'assets');
-  const adaptiveIconPath = path.join(assetsDir, 'adaptive-icon.png');
-
-  if (!fs.existsSync(assetsDir)) {
-    fs.mkdirSync(assetsDir);
-  }
-
-  // Create adaptive icon if it doesn't exist
-  if (!fs.existsSync(adaptiveIconPath)) {
-    console.log('📱 Creating adaptive icon...');
-    fs.writeFileSync(adaptiveIconPath, Buffer.from(ADAPTIVE_ICON, 'base64'));
-  }
 }
 
 function ensureAndroidResources() {
@@ -61,7 +43,7 @@ function ensureAndroidResources() {
 </layer-list>`;
   fs.writeFileSync(path.join(drawableDir, 'splashscreen.xml'), splashscreenContent);
 
-  // Create MainActivity.java
+  // Create MainActivity.java with the correct component name
   const mainActivityContent = `package com.lux.lnlrules;
 
 import android.os.Bundle;
@@ -146,15 +128,6 @@ public class MainApplication extends Application implements ReactApplication {
     if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
       DefaultNewArchitectureEntryPoint.load();
     }
-    if (BuildConfig.DEBUG) {
-      try {
-        Class<?> flipperClass = Class.forName("com.lux.lnlrules.ReactNativeFlipper");
-        flipperClass.getMethod("initializeFlipper", Application.class, ReactNativeHost.class)
-          .invoke(null, this, getReactNativeHost());
-      } catch (Exception e) {
-        // Flipper initialization failed
-      }
-    }
   }
 }`;
   fs.writeFileSync(path.join(javaDir, 'MainApplication.java'), mainApplicationContent);
@@ -162,47 +135,59 @@ public class MainApplication extends Application implements ReactApplication {
   // Create ReactNativeFlipper.java
   const reactNativeFlipperContent = `package com.lux.lnlrules;
 
-import android.content.Context;
-import com.facebook.react.ReactInstanceManager;
-
-/**
- * Class responsible for loading Flipper inside your React Native application. This is the debug
- * flavor of it. Here you can add your own plugins and customize the Flipper setup.
- */
 public class ReactNativeFlipper {
-  public static void initializeFlipper(Context context, ReactInstanceManager reactInstanceManager) {
-    // Do nothing as we don't need Flipper in this app
+  public static void initializeFlipper() {
+    // No-op, we don't need Flipper functionality
   }
 }`;
   fs.writeFileSync(path.join(debugDir, 'ReactNativeFlipper.java'), reactNativeFlipperContent);
 }
 
-function checkDevBuild() {
+async function checkDevBuild() {
   try {
     // Clean everything at startup
     cleanAll();
 
-    // Ensure assets exist
-    console.log('🎨 Setting up assets...');
-    ensureAssets();
-
-    // Create development build
+    // Create development build with auto-confirmation
     console.log('📦 Creating development build...');
-    execSync('npx expo prebuild --clean', { stdio: 'inherit' });
+    await runCommandWithInput('npx', ['expo', 'prebuild', '--clean', '--no-install'], 'y\n');
 
-    // Ensure Android resources exist
+    // Ensure Android resources exist AFTER prebuild
     console.log('🎨 Setting up Android resources...');
     ensureAndroidResources();
 
-    // Build and install
-    console.log('🔍 Building Android app...');
-    execSync('cd android && ./gradlew installDebug', { stdio: 'inherit' });
-
-    console.log('✅ Development build ready!');
+    // Start Expo development server
+    console.log('🚀 Starting Expo development server...');
+    execSync('npx expo start --dev-client --clear', { stdio: 'inherit' });
   } catch (error) {
-    console.error('❌ Error setting up development build:', error.message);
+    console.error('❌ Error:', error.message);
     process.exit(1);
   }
 }
 
-checkDevBuild(); 
+function runCommandWithInput(command, args, input) {
+  return new Promise((resolve, reject) => {
+    const proc = spawn(command, args, { stdio: ['pipe', 'inherit', 'inherit'] });
+    
+    proc.stdin.write(input);
+    proc.stdin.end();
+
+    proc.on('close', (code) => {
+      if (code === 0) {
+        resolve();
+      } else {
+        reject(new Error(`Command failed with code ${code}`));
+      }
+    });
+
+    proc.on('error', (err) => {
+      reject(err);
+    });
+  });
+}
+
+// Run the build process
+checkDevBuild().catch(error => {
+  console.error('❌ Error:', error.message);
+  process.exit(1);
+}); 
