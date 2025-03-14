@@ -14,7 +14,7 @@
 		96905EF65AED1B983A6B3ABC /* libPods-LordsLadsRules.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 58EEBF8E8E6FB1BC6CAF49B5 /* libPods-LordsLadsRules.a */; };
 		B18059E884C0ABDD17F3DC3D /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAC715A2D49A985799AEE119 /* ExpoModulesProvider.swift */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
-		D43F9A6C9D4245A4B427CD98 /* noop-file.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AAA9F15B5324FF6AD393FD3 /* noop-file.swift */; };
+		802E12E8E5CB4540A88FC184 /* noop-file.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76CD29A7338E4C5EBA86F291 /* noop-file.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -31,8 +31,8 @@
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		FAC715A2D49A985799AEE119 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-LordsLadsRules/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
-		5AAA9F15B5324FF6AD393FD3 /* noop-file.swift */ = {isa = PBXFileReference; name = "noop-file.swift"; path = "LordsLadsRules/noop-file.swift"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.swift; explicitFileType = undefined; includeInIndex = 0; };
-		5ADA39DF5E2E49FBA72AE03A /* LordsLadsRules-Bridging-Header.h */ = {isa = PBXFileReference; name = "LordsLadsRules-Bridging-Header.h"; path = "LordsLadsRules/LordsLadsRules-Bridging-Header.h"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; explicitFileType = undefined; includeInIndex = 0; };
+		76CD29A7338E4C5EBA86F291 /* noop-file.swift */ = {isa = PBXFileReference; name = "noop-file.swift"; path = "LordsLadsRules/noop-file.swift"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.swift; explicitFileType = undefined; includeInIndex = 0; };
+		EBCF808846914C02892DB755 /* LordsLadsRules-Bridging-Header.h */ = {isa = PBXFileReference; name = "LordsLadsRules-Bridging-Header.h"; path = "LordsLadsRules/LordsLadsRules-Bridging-Header.h"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,8 +57,8 @@
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				13B07FB71A68108700A75B9A /* main.m */,
 				AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */,
-				5AAA9F15B5324FF6AD393FD3 /* noop-file.swift */,
-				5ADA39DF5E2E49FBA72AE03A /* LordsLadsRules-Bridging-Header.h */,
+				76CD29A7338E4C5EBA86F291 /* noop-file.swift */,
+				EBCF808846914C02892DB755 /* LordsLadsRules-Bridging-Header.h */,
 			);
 			name = LordsLadsRules;
 			sourceTree = "<group>";
@@ -198,7 +198,7 @@
 				BB2F792D24A3F905000567C9 /* Expo.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
-				4647110006404F88A77AF8DD /* LordsLadsRules-Bridging-Header.h in Resources */,
+				9E5E80F207974992841A9C5A /* LordsLadsRules-Bridging-Header.h in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -274,7 +274,7 @@
 				13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */,
 				13B07FC11A68108700A75B9A /* main.m in Sources */,
 				B18059E884C0ABDD17F3DC3D /* ExpoModulesProvider.swift in Sources */,
-				D43F9A6C9D4245A4B427CD98 /* noop-file.swift in Sources */,
+				802E12E8E5CB4540A88FC184 /* noop-file.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
