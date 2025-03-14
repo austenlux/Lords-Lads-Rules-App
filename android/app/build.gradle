@@ -46,22 +46,16 @@ android {
         }
     }
 
-    // Add this section to copy debug APK to top-level releases directory
+    // Simplified APK copy configuration
     applicationVariants.all { variant ->
         if (variant.buildType.name == "debug") {
             variant.outputs.all { output ->
-                def project_root = project.rootDir.absolutePath
-                def releases_dir = new File("${project_root}/../../releases")
-                if (!releases_dir.exists()) {
-                    releases_dir.mkdirs()
-                }
                 outputFileName = "lnl-rules-debug.apk"
-                def output_path = new File(releases_dir, outputFileName)
-                variant.assembleProvider.get().doLast {
-                    copy {
-                        from output.outputFile
-                        into releases_dir
-                    }
+            }
+            variant.assembleProvider.get().doLast {
+                copy {
+                    from "${buildDir}/outputs/apk/debug/lnl-rules-debug.apk"
+                    into "../../releases"
                 }
             }
         }
