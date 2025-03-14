@@ -2,7 +2,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, View, Text, ActivityIndicator, TouchableOpacity, ScrollView, SafeAreaView, StatusBar, Animated } from 'react-native';
 import Markdown from 'react-native-markdown-display';
 
-const Section = ({ title, level, content, subsections, onPress, isExpanded, path = [] }) => {
+const TitleSection = ({ title, content }) => (
+  <View style={styles.titleContainer}>
+    <Text style={styles.mainTitle}>{title}</Text>
+    <Text style={styles.titleSummary}>{content}</Text>
+  </View>
+);
+
+const Section = ({ title, level, content, subsections, onPress, isExpanded, path = [], onNavigate, sectionRefs }) => {
   const animatedRotation = useRef(new Animated.Value(isExpanded ? 1 : 0)).current;
 
   useEffect(() => {
@@ -21,8 +28,23 @@ const Section = ({ title, level, content, subsections, onPress, isExpanded, path
   const marginLeft = (level - 1) * 12;
   const fontSize = 32 - (level - 1) * 4;
 
+  const handleLinkPress = (url) => {
+    if (url.startsWith('#')) {
+      const sectionTitle = decodeURIComponent(url.slice(1));
+      onNavigate(sectionTitle);
+      return false;
+    }
+    return true;
+  };
+
   return (
-    <View style={{ marginLeft }}>
+    <View
+      ref={ref => {
+        if (ref) {
+          sectionRefs[title] = ref;
+        }
+      }}
+    >
       <TouchableOpacity 
         onPress={() => onPress(path)}
         style={styles.sectionHeader}
@@ -35,7 +57,10 @@ const Section = ({ title, level, content, subsections, onPress, isExpanded, path
       {isExpanded && (
         <View style={[styles.sectionContent, { paddingLeft: 16 }]}>
           {content && (
-            <Markdown style={markdownStyles}>
+            <Markdown 
+              style={markdownStyles}
+              onLinkPress={handleLinkPress}
+            >
               {content}
             </Markdown>
           )}
@@ -46,6 +71,8 @@ const Section = ({ title, level, content, subsections, onPress, isExpanded, path
               level={level + 1}
               path={[...path, 'subsections', index]}
               onPress={onPress}
+              onNavigate={onNavigate}
+              sectionRefs={sectionRefs}
             />
           ))}
         </View>
@@ -60,6 +87,150 @@ export default function App() {
   const [content, setContent] = useState('');
   const [sections, setSections] = useState([]);
   const scrollViewRef = useRef(null);
+  const sectionRefs = useRef({});
+
+  const findSectionPath = (sections, targetTitle, currentPath = []) => {
+    console.log('Searching for:', targetTitle, 'in path:', currentPath);
+    
+    // Normalize the target title for comparison
+    const normalizeTitle = (title) => {
+      return title.toLowerCase()
+        .replace(/\s+/g, '')
+        .replace(/[^a-z0-9]/g, '');
+    };
+
+    const normalizedTarget = normalizeTitle(targetTitle);
+    
+    for (let i = 0; i < sections.length; i++) {
+      const section = sections[i];
+      const normalizedSection = normalizeTitle(section.title);
+      
+      // Try exact match first, then normalized match
+      if (section.title === targetTitle || normalizedSection === normalizedTarget) {
+        const foundPath = [...currentPath, i];
+        console.log('Found section at path:', foundPath, 'with title:', section.title);
+        return foundPath;
+      }
+      
+      if (section.subsections) {
+        const subPath = findSectionPath(
+          section.subsections,
+          targetTitle,
+          [...currentPath, i, 'subsections']
+        );
+        if (subPath) return subPath;
+      }
+    }
+    return null;
+  };
+
+  const collapseAllAndExpandSection = (sectionTitle) => {
+    console.log('Navigation requested to:', sectionTitle);
+    
+    // Try to find the section with exact title first
+    let path = findSectionPath(sections, sectionTitle);
+    
+    if (!path) {
+      // If no exact match, try with common variations
+      const variations = [
+        sectionTitle,
+        sectionTitle.replace('---', ' - '),  // Handle markdown link format
+        `${sectionTitle.toUpperCase()} - ${sectionTitle}`,  // Try with roman numerals
+        sectionTitle.replace(/^([iv]+)---/i, '$1 - ')  // Handle roman numerals with dashes
+      ];
+      
+      for (const variation of variations) {
+        path = findSectionPath(sections, variation);
+        if (path) {
+          console.log('Found matching section using variation:', variation);
+          break;
+        }
+      }
+    }
+    
+    if (!path) {
+      console.log('Could not find matching section for:', sectionTitle);
+      return;
+    }
+
+    setSections(prevSections => {
+      const newSections = JSON.parse(JSON.stringify(prevSections));
+      
+      // First, collapse all sections
+      const collapseAll = (sections) => {
+        sections.forEach(section => {
+          if (!section.isTitle) {
+            section.isExpanded = false;
+            if (section.subsections) {
+              collapseAll(section.subsections);
+            }
+          }
+        });
+      };
+
+      collapseAll(newSections);
+
+      // Find the path to the target section
+      const path = findSectionPath(newSections, sectionTitle);
+      console.log('Found path:', path);
+
+      if (path) {
+        // Expand the target section and its parents
+        let current = newSections;
+        let parentExpanded = false;
+
+        // First, find and expand the main section if this is a subsection
+        const mainSectionIndex = path[0];
+        if (mainSectionIndex !== undefined) {
+          current[mainSectionIndex].isExpanded = true;
+          parentExpanded = true;
+          console.log('Expanded main section:', current[mainSectionIndex].title);
+          
+          // If there's a subsection path, follow it
+          if (path.includes('subsections')) {
+            current = current[mainSectionIndex].subsections;
+            const subIndex = path[path.indexOf('subsections') + 1];
+            if (subIndex !== undefined) {
+              current[subIndex].isExpanded = true;
+              console.log('Expanded subsection:', current[subIndex].title);
+            }
+          }
+        }
+      }
+
+      return newSections;
+    });
+
+    // Schedule the scroll after the state update and animation
+    setTimeout(() => {
+      console.log('Attempting to scroll to:', sectionTitle);
+      console.log('Available refs:', Object.keys(sectionRefs.current));
+      
+      const targetRef = sectionRefs.current[sectionTitle];
+      if (targetRef && scrollViewRef.current) {
+        console.log('Found ref, scrolling...');
+        targetRef.measureLayout(
+          scrollViewRef.current,
+          (x, y) => {
+            scrollViewRef.current.scrollTo({ y: y - 20, animated: true });
+            console.log('Scrolled to position:', y - 20);
+          },
+          (error) => console.log('Failed to measure layout:', error)
+        );
+      } else {
+        console.log('Missing ref or scrollView');
+      }
+    }, 500); // Increased timeout to ensure state updates complete
+  };
+
+  const handleLinkPress = (url) => {
+    if (url.startsWith('#')) {
+      const sectionTitle = decodeURIComponent(url.slice(1));
+      collapseAllAndExpandSection(sectionTitle);
+      return false;
+    }
+    return true;
+  };
 
   const parseMarkdownSections = (text) => {
     const lines = text.split('\n');
@@ -68,9 +239,13 @@ export default function App() {
     let currentSubsection = null;
     let currentSubsubsection = null;
     let currentContent = [];
+    let isFirstSection = true;
 
     const finalizeContent = () => {
-      const content = currentContent.join('\n').trim();
+      const content = currentContent
+        .filter(line => !line.match(/!\[.*?\]\(.*?\)/)) // Skip image markdown
+        .join('\n')
+        .trim();
       currentContent = [];
       return content;
     };
@@ -94,13 +269,23 @@ export default function App() {
           currentSubsection = null;
           sections.push(currentSection);
         }
-        currentSection = {
-          title: line.replace('# ', ''),
-          level: 1,
-          isExpanded: false,
-          subsections: [],
-          content: '',
-        };
+        if (isFirstSection) {
+          currentSection = {
+            title: line.replace('# ', ''),
+            level: 1,
+            isTitle: true,
+            content: '',
+          };
+          isFirstSection = false;
+        } else {
+          currentSection = {
+            title: line.replace('# ', ''),
+            level: 1,
+            isExpanded: false,
+            subsections: [],
+            content: '',
+          };
+        }
       } else if (line.startsWith('## ')) {
         assignContent();
         currentSubsubsection = null;
@@ -188,6 +373,39 @@ export default function App() {
     fetchReadme();
   }, []);
 
+  const renderSection = (section, index, parentPath = []) => {
+    const path = [...parentPath, index];
+    
+    if (section.isTitle) {
+      return (
+        <TitleSection
+          key={index}
+          title={section.title}
+          content={section.content}
+        />
+      );
+    }
+
+    return (
+      <View
+        key={index}
+        ref={ref => {
+          if (ref) {
+            sectionRefs.current[section.title] = ref;
+          }
+        }}
+      >
+        <Section
+          {...section}
+          path={path}
+          onPress={toggleSection}
+          onNavigate={collapseAllAndExpandSection}
+          sectionRefs={sectionRefs.current}
+        />
+      </View>
+    );
+  };
+
   if (loading) {
     return (
       <SafeAreaView style={styles.safeArea}>
@@ -226,14 +444,7 @@ export default function App() {
         contentInsetAdjustmentBehavior="automatic"
       >
         <View style={styles.contentContainer}>
-          {sections.map((section, index) => (
-            <Section
-              key={index}
-              {...section}
-              path={[index]}
-              onPress={toggleSection}
-            />
-          ))}
+          {sections.map((section, index) => renderSection(section, index))}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -313,6 +524,25 @@ const styles = StyleSheet.create({
   },
   sectionContent: {
     paddingLeft: 32,
+  },
+  titleContainer: {
+    marginBottom: 32,
+    paddingBottom: 24,
+    borderBottomWidth: 1,
+    borderBottomColor: '#333',
+  },
+  mainTitle: {
+    fontSize: 40,
+    fontWeight: 'bold',
+    color: '#BB86FC',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  titleSummary: {
+    fontSize: 18,
+    color: '#E1E1E1',
+    textAlign: 'center',
+    lineHeight: 24,
   },
 });
 
