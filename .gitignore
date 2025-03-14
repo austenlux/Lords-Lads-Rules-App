@@ -70,4 +70,13 @@ yarn-error.*
 .env*
 
 # typescript
-*.tsbuildinfo 
+*.tsbuildinfo
+
+# Build artifacts
+artifacts/*
+!artifacts/android/
+!artifacts/ios/
+artifacts/android/*
+!artifacts/android/lords-and-lads-rules.apk
+artifacts/ios/*
+!artifacts/ios/lords-and-lads-rules.ipa 

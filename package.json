@@ -10,7 +10,10 @@
     "web": "expo start --web",
     "test": "jest",
     "lint": "eslint .",
-    "clean": "rimraf node_modules"
+    "clean": "rimraf node_modules",
+    "build:android": "expo build:android -t apk && mkdir -p artifacts/android && cp build/android/app-release.apk artifacts/android/lords-and-lads-rules.apk",
+    "build:ios": "expo build:ios -t archive && mkdir -p artifacts/ios && cp build/ios/lords-and-lads-rules.ipa artifacts/ios/",
+    "build": "npm run build:android && npm run build:ios"
   },
   "dependencies": {
     "@react-navigation/native": "^6.1.9",

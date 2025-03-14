@@ -2,6 +2,18 @@
 
 A React Native mobile app that provides an interactive, navigable version of the Lords and Lads game rules.
 
+## Quick Install
+
+Pre-built app packages are available in the `artifacts` directory:
+
+- Android: Download `artifacts/android/lords-and-lads-rules.apk`
+  - Enable "Install from Unknown Sources" in your device settings
+  - Open the downloaded APK to install
+
+- iOS: Download `artifacts/ios/lords-and-lads-rules.ipa`
+  - Use TestFlight or your provisioning profile to install
+  - Note: iOS installation requires signing with your Apple Developer account
+
 ## Features
 
 - Interactive table of contents with quick navigation
@@ -11,19 +23,31 @@ A React Native mobile app that provides an interactive, navigable version of the
 - Maintains original markdown formatting
 - Offline access to rules
 
-## Getting Started
+## Development
 
-1. Install dependencies:
+### Building the Apps
+
 ```bash
+# Install dependencies
 npm install
+
+# Build Android APK
+npm run build:android
+
+# Build iOS IPA
+npm run build:ios
 ```
 
-2. Start the development server:
+The built apps will be automatically copied to the `artifacts` directory.
+
+### Development Mode
+
+1. Start the development server:
 ```bash
 npm start
 ```
 
-3. Run on your device:
+2. Run on your device:
 - iOS: Press 'i' in the terminal
 - Android: Press 'a' in the terminal
 
