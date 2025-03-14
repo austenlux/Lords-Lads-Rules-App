@@ -1,18 +1,59 @@
-# Lords and Lads Rules App
+# Lords & Lads Rules Mobile App
 
-A React Native mobile app that provides an interactive, navigable version of the Lords and Lads game rules.
+A React Native mobile application for displaying and managing game rules.
 
-## Quick Install
+## Prerequisites
 
-Pre-built app packages are available in the `artifacts` directory:
+- Node.js (v18 or newer)
+- npm (v9 or newer)
+- Android Studio and Android SDK for Android development
+- Xcode (for iOS development, Mac only)
+- A running Android emulator or physical device
 
-- Android: Download `artifacts/android/lords-and-lads-rules.apk`
-  - Enable "Install from Unknown Sources" in your device settings
-  - Open the downloaded APK to install
+## Installation
 
-- iOS: Download `artifacts/ios/lords-and-lads-rules.ipa`
-  - Use TestFlight or your provisioning profile to install
-  - Note: iOS installation requires signing with your Apple Developer account
+1. Clone the repository
+2. Install dependencies:
+```bash
+npm install
+```
+
+## Running the App
+
+Start the Metro bundler:
+```bash
+npm start
+```
+
+Then in the Metro bundler interface:
+- Press `a` to run on Android
+- Press `i` to run on iOS (Mac only)
+
+## Development
+
+The app is built with:
+- React Native 0.73.6
+- TypeScript
+- React Native Markdown Display for rule content
+
+## Project Structure
+
+- `/android` - Android native code
+- `/ios` - iOS native code
+- `/App.js` - Main app component
+- `/components` - React components
+- `/assets` - Images and other static assets
+
+## Troubleshooting
+
+If you encounter the "address already in use" error:
+1. The start script will automatically attempt to kill any existing Metro instances
+2. If issues persist, manually kill the process:
+```bash
+killall -9 node
+```
+
+Then try running `npm start` again.
 
 ## Features
 
@@ -22,59 +63,6 @@ Pre-built app packages are available in the `artifacts` directory:
 - Dark mode UI optimized for readability
 - Maintains original markdown formatting
 - Offline access to rules
-
-## Development
-
-### Prerequisites
-
-1. Install development tools:
-```bash
-# Install Node.js dependencies
-npm install
-
-# Install EAS CLI
-npm install -g eas-cli
-
-# Configure EAS
-eas login
-eas build:configure
-```
-
-2. Platform-specific setup:
-- iOS:
-  - Install Xcode
-  - `xcode-select --install`
-  - Set up your Apple Developer account
-- Android:
-  - Install Android Studio
-  - Set up the Android SDK
-  - Set ANDROID_HOME environment variable
-
-### Building the Apps
-
-```bash
-# Build Android APK (outputs to artifacts/android/)
-npm run build:android
-
-# Build iOS IPA (outputs to artifacts/ios/)
-npm run build:ios
-
-# Build both platforms
-npm run build
-```
-
-The built apps will be automatically copied to the `artifacts` directory.
-
-### Development Mode
-
-1. Start the development server:
-```bash
-npm start
-```
-
-2. Run on your device:
-- iOS: Press 'i' in the terminal
-- Android: Press 'a' in the terminal
 
 ## Technology
 
