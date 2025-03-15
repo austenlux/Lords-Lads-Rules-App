@@ -28,7 +28,7 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
-        versionName "1.0"
+        versionName "1.0.0"
     }
 
     signingConfigs {
@@ -38,25 +38,32 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        release {
+            storeFile file('release.keystore')
+            storePassword 'lordsandlads'
+            keyAlias 'release'
+            keyPassword 'lordsandlads'
+        }
     }
 
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
         }
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+        }
     }
 
-    // Simplified APK copy configuration
+    // APK naming configuration
     applicationVariants.all { variant ->
-        if (variant.buildType.name == "debug") {
-            variant.outputs.all { output ->
+        variant.outputs.all { output ->
+            if (variant.buildType.name == "debug") {
                 outputFileName = "lords-and-lads-rules.apk"
-            }
-            variant.assembleProvider.get().doLast {
-                copy {
-                    from "${buildDir}/outputs/apk/debug/lords-and-lads-rules.apk"
-                    into "../../releases"
-                }
+            } else if (variant.buildType.name == "release") {
+                outputFileName = "lords-and-lads-rules-${defaultConfig.versionName}.apk"
             }
         }
     }
