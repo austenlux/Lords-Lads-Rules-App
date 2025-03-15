@@ -61,7 +61,7 @@ android {
     applicationVariants.all { variant ->
         variant.outputs.all { output ->
             if (variant.buildType.name == "debug") {
-                outputFileName = "lords-and-lads-rules.apk"
+                outputFileName = "lords-and-lads-rules-debug.apk"
             } else if (variant.buildType.name == "release") {
                 outputFileName = "lords-and-lads-rules-${defaultConfig.versionName}.apk"
             }
