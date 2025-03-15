@@ -5,7 +5,7 @@ A React Native mobile application for displaying game rules.
 ## Installation
 
 ### Direct APK Installation
-The debug APK is available in the `/releases` directory as `lnl-rules-debug.apk`
+The debug APK is available in the `/releases` directory as `lords-and-lads-rules.apk`
 
 To install:
 1. Download the APK from the `/releases` directory
