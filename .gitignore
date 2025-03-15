@@ -30,6 +30,7 @@ local.properties
 .cxx/
 *.keystore
 !debug.keystore
+!release.keystore
 
 # node.js
 node_modules/
@@ -73,10 +74,4 @@ yarn-error.*
 *.tsbuildinfo
 
 # Build artifacts
-artifacts/*
-!artifacts/android/
-!artifacts/ios/
-artifacts/android/*
-!artifacts/android/lords-and-lads-rules.apk
-artifacts/ios/*
-!artifacts/ios/lords-and-lads-rules.ipa 
+releases/ 
