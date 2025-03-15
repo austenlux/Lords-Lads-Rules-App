@@ -5,12 +5,15 @@ A React Native mobile application for displaying game rules.
 ## Installation
 
 ### Direct APK Installation
-The debug APK is available in the `/releases` directory as `lords-and-lads-rules.apk`
+The latest release APK is available on the [Releases](https://github.com/austenlux/Lords-Lads-Rules-App/releases) page.
 
 To install:
-1. Download the APK from the `/releases` directory
-2. Transfer it to your Android device
-3. Open the APK on your device to install
+1. Visit the [Releases](https://github.com/austenlux/Lords-Lads-Rules-App/releases) page
+2. Download the latest APK (e.g., `lords-and-lads-rules-1.0.0.apk`)
+3. Transfer it to your Android device
+4. Open the APK on your device to install
+
+Note: If you're installing a debug build for testing, you'll need to enable "Install from Unknown Sources" in your Android settings.
 
 ### Development Setup
 
@@ -39,21 +42,27 @@ Then in the Metro bundler interface:
 - Press `a` to run on Android
 - Press `i` to run on iOS (Mac only)
 
-## Building APK
+## Building APKs
 
-To generate a new debug APK in the `/releases` directory:
+### Debug Build
+To build a debug APK:
 
 ```bash
-npm run build:android
+cd android && ./gradlew assembleDebug
 ```
 
-This command will:
-1. Create necessary asset directories
-2. Bundle the JavaScript code
-3. Build the debug APK
-4. Copy it to the `/releases` directory
+The debug APK will be generated at `android/app/build/outputs/apk/debug/lords-and-lads-rules-debug.apk`
 
-The resulting APK will work on any Android device without needing the Metro development server.
+### Release Build
+To build a release APK:
+
+```bash
+cd android && ./gradlew assembleRelease
+```
+
+The release APK will be generated at `android/app/build/outputs/apk/release/lords-and-lads-rules-[version].apk`
+
+Note: Release builds are signed with our release keystore. For contributing developers, contact the maintainers for keystore access.
 
 ## Development
 
@@ -66,6 +75,4 @@ The app is built with:
 - `/android` - Android native code
 - `/ios` - iOS native code
 - `/App.js` - Main app component
-- `/components` - React components
 - `/assets` - Images and other static assets
-- `/releases` - Generated app artifacts
