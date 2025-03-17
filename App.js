@@ -551,7 +551,7 @@ export default function App() {
       <View style={styles.headerContainer}>
         {!showSearch ? (
           <>
-            <Text style={styles.headerTitle}>Lords & Lads Rules</Text>
+            <View style={styles.spacer}></View>
             <TouchableOpacity 
               style={styles.searchIconContainer} 
               onPress={toggleSearchBar}
@@ -607,10 +607,11 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
     backgroundColor: '#121212',
+    paddingTop: 0,
   },
   contentContainer: {
     padding: 20,
-    paddingTop: 32,
+    paddingTop: 0,
     paddingBottom: 40,
   },
   errorContainer: {
@@ -669,7 +670,7 @@ const styles = StyleSheet.create({
   titleContainer: {
     marginBottom: 48,
     paddingBottom: 40,
-    paddingTop: 24,
+    paddingTop: 60,
     alignItems: 'center',
     position: 'relative',
     borderBottomWidth: 0,
@@ -732,17 +733,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: 16,
-    backgroundColor: '#1E1E1E',
-    borderBottomWidth: 1,
-    borderBottomColor: '#333',
+    backgroundColor: 'transparent',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 10,
   },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#BB86FC',
+  spacer: {
+    flex: 1,
   },
   searchIconContainer: {
     padding: 8,
+    backgroundColor: 'rgba(30, 30, 30, 0.7)',
+    borderRadius: 20,
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   searchIcon: {
     fontSize: 20,
@@ -751,6 +759,9 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: 'rgba(30, 30, 30, 0.9)',
+    borderRadius: 8,
+    padding: 4,
   },
   searchInput: {
     flex: 1,
