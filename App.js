@@ -751,6 +751,22 @@ const Section = ({ title, level, content, subsections, onPress, isExpanded, path
   );
 };
 
+// Add this component for the empty search results state
+const EmptySearchResults = ({ query }) => {
+  return (
+    <View style={styles.emptyStateContainer}>
+      <Text style={styles.emptyStateIcon}>🔍</Text>
+      <Text style={styles.emptyStateTitle}>No matching rules found</Text>
+      <Text style={styles.emptyStateText}>
+        We couldn't find any rules matching "{query}".
+      </Text>
+      <Text style={styles.emptyStateText}>
+        Try using different keywords or check your spelling.
+      </Text>
+    </View>
+  );
+};
+
 export default function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -1147,12 +1163,31 @@ export default function App() {
     // Save expansion states before filtering
     saveOriginalStates(sectionsCopy);
 
-    const filterSection = (section) => {
-      // Always keep the title section
+    // Filter non-title sections
+    const filteredSections = sectionsCopy.filter(section => {
+      // Always keep title sections, but they don't count as matches for empty state check
       if (section.isTitle) {
         return true;
       }
 
+      return filterSection(section);
+    });
+    
+    // Check if we have any actual content sections (non-title) after filtering
+    const hasContentSections = filteredSections.some(section => !section.isTitle);
+    console.log(`[DEBUG] Has content sections after filtering: ${hasContentSections}`);
+    
+    // If we only have title sections but no content sections, return an empty array
+    // This will trigger the empty state
+    if (!hasContentSections) {
+      console.log("[DEBUG] No matching content sections found, returning empty array");
+      return [];
+    }
+    
+    console.log(`[DEBUG] Filter complete. Filtered from ${sections.length} to ${filteredSections.length} sections`);
+    return filteredSections;
+
+    function filterSection(section) {
       // Check if this section's title matches
       const titleMatches = hasMatch(section.title);
 
@@ -1182,12 +1217,7 @@ export default function App() {
       // Section doesn't match, it will be filtered out
       console.log(`[DEBUG] Section "${section.title}" does NOT match search - filtering out`);
       return false;
-    };
-
-    const filteredResult = sectionsCopy.filter(filterSection);
-    console.log(`[DEBUG] Filter complete. Filtered from ${sections.length} to ${filteredResult.length} top-level sections`);
-    
-    return filteredResult;
+    }
   };
 
   // Modify the handleSearchQueryChange function to preserve expansion states
@@ -1407,8 +1437,15 @@ export default function App() {
         style={styles.scrollView} 
         contentInsetAdjustmentBehavior="automatic"
       >
+        {console.log("[DEBUG] Rendering scroll view - sections.length:", sections.length, "searchQuery:", searchQuery)}
         <View style={styles.contentContainer}>
-          {sections.map((section, index) => renderSection(section, index))}
+          {sections.length === 0 && searchQuery && searchQuery.length >= 2 ? (
+            console.log("[DEBUG] Rendering empty state for query:", searchQuery) || 
+            <EmptySearchResults query={searchQuery} />
+          ) : (
+            console.log("[DEBUG] Rendering sections, count:", sections.length) || 
+            sections.map((section, index) => renderSection(section, index))
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -1618,6 +1655,29 @@ const styles = StyleSheet.create({
   highlightedText: {
     backgroundColor: 'rgba(187, 134, 252, 0.3)',
     color: '#ffffff',
+  },
+  emptyStateContainer: {
+    padding: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 50,
+  },
+  emptyStateIcon: {
+    fontSize: 50,
+    marginBottom: 20,
+  },
+  emptyStateTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  emptyStateText: {
+    fontSize: 16,
+    color: '#aaa',
+    marginBottom: 10,
+    textAlign: 'center',
   },
 });
 
