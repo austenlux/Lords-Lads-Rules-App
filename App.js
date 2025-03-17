@@ -1493,7 +1493,7 @@ const styles = StyleSheet.create({
   titleContainer: {
     marginBottom: 48,
     paddingBottom: 40,
-    paddingTop: 60,
+    paddingTop: 80,
     alignItems: 'center',
     position: 'relative',
     borderBottomWidth: 0,
