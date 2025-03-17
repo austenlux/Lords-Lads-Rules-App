@@ -31,12 +31,26 @@ const HighlightedText = ({ text, searchQuery, style }) => {
   // Split the text by the search query
   const parts = text.split(new RegExp(`(${escapedQuery})`, 'gi'));
   
+  // Use a single Text component with nested Text components to maintain line spacing
   return (
-    <Text style={style}>
+    <Text style={[
+      style,
+      // Ensure line height is explicitly set to prevent spacing issues
+      style.lineHeight ? null : { lineHeight: style.fontSize ? style.fontSize * 1.5 : 24 }
+    ]}>
       {parts.map((part, index) => 
         part.toLowerCase() === searchQuery.toLowerCase() ? 
-          <Text key={index} style={styles.highlightedText}>{part}</Text> : 
-          <Text key={index}>{part}</Text>
+          <Text key={index} style={[
+            // Preserve all original text styling
+            {
+              fontSize: style.fontSize,
+              fontWeight: style.fontWeight,
+              letterSpacing: style.letterSpacing,
+              // Don't include lineHeight here as it's handled by the parent
+            },
+            styles.highlightedText
+          ]}>{part}</Text> : 
+          part
       )}
     </Text>
   );
@@ -44,8 +58,15 @@ const HighlightedText = ({ text, searchQuery, style }) => {
 
 // Replace the HighlightedMarkdown component with a version that preserves links
 const HighlightedMarkdown = ({ content, searchQuery, style, onLinkPress }) => {
-  // If no search query or it's too short, just render the content normally
-  if (!searchQuery || searchQuery.length < 2 || !content) {
+  // If no content, return nothing
+  if (!content) {
+    return null;
+  }
+
+  // For headings, blockquotes, and code blocks, use regular markdown
+  if (content.trim().startsWith('#') || 
+      content.trim().startsWith('>') || 
+      content.trim().startsWith('```')) {
     return (
       <Markdown style={style} onLinkPress={onLinkPress}>
         {content}
@@ -79,27 +100,149 @@ const HighlightedMarkdown = ({ content, searchQuery, style, onLinkPress }) => {
           // For lists, we need to process each line individually
           const lines = paragraph.split('\n');
           
+          // Calculate the appropriate line height and spacing
+          const listItemLineHeight = style.listItem?.lineHeight || style.body?.lineHeight || 24;
+          const listItemMarginBottom = style.listItem?.marginBottom || 8;
+          
           return (
-            <View key={index}>
+            <View key={index} style={[
+              style.bullet_list || { marginBottom: 20 },
+              // Ensure consistent spacing between list items
+              { marginTop: style.bullet_list?.marginTop || 0 }
+            ]}>
               {lines.map((line, lineIndex) => {
                 if (line.trim().startsWith('*') || line.trim().startsWith('-')) {
                   // Extract the bullet and the text
-                  const bulletMatch = line.match(/^(\s*[\*\-]\s*)(.*)$/);
+                  const bulletMatch = line.match(/^(\s*)([\*\-]\s*)(.*)$/);
                   if (bulletMatch) {
-                    const [_, bullet, text] = bulletMatch;
+                    const [_, indentation, bullet, text] = bulletMatch;
                     
-                    // Create a custom list item with highlighting
+                    // Calculate indentation level based on leading spaces
+                    const indentLevel = indentation.length / 2; // Assuming 2 spaces per level
+                    const indentWidth = indentLevel * 16; // 16px per indent level
+                    
+                    // Check if this list item contains a link
+                    const linkMatch = text.match(/\[([^\]]+)\]\(([^)]+)\)/);
+                    if (linkMatch) {
+                      // This is a list item with a link (like in TOC)
+                      const [fullMatch, linkText, linkUrl] = linkMatch;
+                      const beforeLink = text.substring(0, text.indexOf(fullMatch));
+                      const afterLink = text.substring(text.indexOf(fullMatch) + fullMatch.length);
+                      
+                      return (
+                        <View key={lineIndex} style={{ 
+                          flexDirection: 'row', 
+                          marginBottom: listItemMarginBottom,
+                          alignItems: 'flex-start',
+                          marginLeft: indentWidth, // Apply indentation
+                        }}>
+                          <Text style={{ 
+                            color: style.bullet_list_icon?.color || '#BB86FC', 
+                            marginRight: 8,
+                            fontSize: style.listItem?.fontSize || style.body?.fontSize || 16,
+                            lineHeight: listItemLineHeight,
+                          }}>
+                            {bullet.includes('*') ? '•' : '-'}
+                          </Text>
+                          <View style={{ flex: 1 }}>
+                            <Text style={{
+                              ...style.body,
+                              ...style.listItem,
+                              color: style.listItem?.color || style.body?.color || '#E1E1E1',
+                              fontSize: style.listItem?.fontSize || style.body?.fontSize || 16,
+                              lineHeight: listItemLineHeight,
+                              marginBottom: 0,
+                              marginTop: 0,
+                            }}>
+                              {beforeLink}
+                              {searchQuery && searchQuery.length >= 2 ? (
+                                // Render link with potential highlighting
+                                <Text 
+                                  style={{
+                                    ...style.link,
+                                    color: style.link?.color || '#03DAC6',
+                                    fontSize: style.link?.fontSize || style.body?.fontSize || 16,
+                                    textDecorationLine: style.link?.textDecorationLine || 'underline',
+                                  }}
+                                  onPress={() => onLinkPress && onLinkPress(linkUrl)}
+                                >
+                                  {linkText.split(new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi')).map((part, i) => 
+                                    part.toLowerCase() === searchQuery.toLowerCase() ? 
+                                      <Text key={i} style={[
+                                        {
+                                          color: style.link?.color || '#03DAC6',
+                                          fontSize: style.link?.fontSize || style.body?.fontSize || 16,
+                                          // Don't include lineHeight here as it's handled by the parent
+                                          textDecorationLine: style.link?.textDecorationLine || 'underline',
+                                        },
+                                        styles.highlightedText
+                                      ]}>{part}</Text> : 
+                                      part
+                                  )}
+                                </Text>
+                              ) : (
+                                // Render link without highlighting
+                                <Text 
+                                  style={{
+                                    ...style.link,
+                                    color: style.link?.color || '#03DAC6',
+                                    fontSize: style.link?.fontSize || style.body?.fontSize || 16,
+                                    textDecorationLine: style.link?.textDecorationLine || 'underline',
+                                  }}
+                                  onPress={() => onLinkPress && onLinkPress(linkUrl)}
+                                >
+                                  {linkText}
+                                </Text>
+                              )}
+                              {afterLink}
+                            </Text>
+                          </View>
+                        </View>
+                      );
+                    }
+                    
+                    // Regular list item without a link
                     return (
-                      <View key={lineIndex} style={{ flexDirection: 'row', marginBottom: 8 }}>
-                        <Text style={{ color: style.bullet_list_icon?.color || '#BB86FC', marginRight: 8 }}>
+                      <View key={lineIndex} style={{ 
+                        flexDirection: 'row', 
+                        marginBottom: listItemMarginBottom,
+                        alignItems: 'flex-start',
+                        marginLeft: indentWidth, // Apply indentation
+                      }}>
+                        <Text style={{ 
+                          color: style.bullet_list_icon?.color || '#BB86FC', 
+                          marginRight: 8,
+                          fontSize: style.listItem?.fontSize || style.body?.fontSize || 16,
+                          lineHeight: listItemLineHeight,
+                        }}>
                           {bullet.includes('*') ? '•' : '-'}
                         </Text>
                         <View style={{ flex: 1 }}>
-                          <HighlightedText 
-                            text={text} 
-                            searchQuery={searchQuery} 
-                            style={style.listItem || { color: '#E1E1E1' }}
-                          />
+                          <Text style={{
+                            ...style.body,
+                            ...style.listItem,
+                            color: style.listItem?.color || style.body?.color || '#E1E1E1',
+                            fontSize: style.listItem?.fontSize || style.body?.fontSize || 16,
+                            lineHeight: listItemLineHeight,
+                            marginBottom: 0,
+                            marginTop: 0,
+                          }}>
+                            {searchQuery && searchQuery.length >= 2 ? 
+                              text.split(new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi')).map((part, i) => 
+                                part.toLowerCase() === searchQuery.toLowerCase() ? 
+                                  <Text key={i} style={[
+                                    {
+                                      color: style.listItem?.color || style.body?.color || '#E1E1E1',
+                                      fontSize: style.listItem?.fontSize || style.body?.fontSize || 16,
+                                      // Don't include lineHeight here as it's handled by the parent
+                                    },
+                                    styles.highlightedText
+                                  ]}>{part}</Text> : 
+                                  part
+                              ) : 
+                              text
+                            }
+                          </Text>
                         </View>
                       </View>
                     );
@@ -108,7 +251,14 @@ const HighlightedMarkdown = ({ content, searchQuery, style, onLinkPress }) => {
                 
                 // For non-list lines, just render them normally
                 return (
-                  <Text key={lineIndex} style={style.paragraph || { color: '#E1E1E1', marginBottom: 8 }}>
+                  <Text key={lineIndex} style={{
+                    ...style.body,
+                    ...style.paragraph,
+                    color: style.paragraph?.color || style.body?.color || '#E1E1E1',
+                    fontSize: style.paragraph?.fontSize || style.body?.fontSize || 16,
+                    lineHeight: style.paragraph?.lineHeight || style.body?.lineHeight || 24,
+                    marginBottom: 8,
+                  }}>
                     {line}
                   </Text>
                 );
@@ -159,37 +309,95 @@ const HighlightedMarkdown = ({ content, searchQuery, style, onLinkPress }) => {
           
           // Render segments with highlighting and preserved links
           return (
-            <View key={index} style={{ marginBottom: 20 }}>
-              <Text style={style.paragraph || { color: '#E1E1E1' }}>
+            <View key={index} style={{ 
+              marginBottom: style.paragraph?.marginBottom || 20,
+              // Ensure consistent spacing between paragraphs
+              marginTop: style.paragraph?.marginTop || 0
+            }}>
+              <Text style={{
+                ...style.body,
+                ...style.paragraph,
+                color: style.paragraph?.color || style.body?.color || '#E1E1E1',
+                fontSize: style.paragraph?.fontSize || style.body?.fontSize || 16,
+                lineHeight: style.paragraph?.lineHeight || style.body?.lineHeight || 24,
+                // Remove any margin from the text itself as it's handled by the container
+                marginBottom: 0,
+                marginTop: 0,
+              }}>
                 {segments.map((segment, i) => {
                   if (segment.type === 'text') {
                     // Highlight regular text
-                    const escapedQuery = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                    const parts = segment.content.split(new RegExp(`(${escapedQuery})`, 'gi'));
-                    
-                    return parts.map((part, j) => 
-                      part.toLowerCase() === searchQuery.toLowerCase() ? 
-                        <Text key={`${i}-${j}`} style={styles.highlightedText}>{part}</Text> : 
-                        <Text key={`${i}-${j}`}>{part}</Text>
-                    );
+                    if (searchQuery && searchQuery.length >= 2) {
+                      const escapedQuery = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                      const parts = segment.content.split(new RegExp(`(${escapedQuery})`, 'gi'));
+                      
+                      // Return parts directly without wrapping each in a Text component
+                      return parts.map((part, j) => 
+                        part.toLowerCase() === searchQuery.toLowerCase() ? 
+                          <Text key={`${i}-${j}`} style={[
+                            // Preserve text styling
+                            {
+                              color: style.paragraph?.color || style.body?.color || '#E1E1E1',
+                              fontSize: style.paragraph?.fontSize || style.body?.fontSize || 16,
+                              // Don't include lineHeight here as it's handled by the parent
+                            },
+                            styles.highlightedText
+                          ]}>{part}</Text> : 
+                          part
+                      );
+                    } else {
+                      return segment.content;
+                    }
                   } else if (segment.type === 'link') {
                     // Handle links with potential highlighting
-                    const escapedQuery = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                    const parts = segment.text.split(new RegExp(`(${escapedQuery})`, 'gi'));
-                    
-                    return (
-                      <Text 
-                        key={`link-${i}`} 
-                        style={style.link || { color: '#03DAC6' }}
-                        onPress={() => onLinkPress && onLinkPress(segment.url)}
-                      >
-                        {parts.map((part, j) => 
-                          part.toLowerCase() === searchQuery.toLowerCase() ? 
-                            <Text key={`${i}-${j}`} style={[styles.highlightedText, { textDecorationLine: 'underline' }]}>{part}</Text> : 
-                            <Text key={`${i}-${j}`}>{part}</Text>
-                        )}
-                      </Text>
-                    );
+                    if (searchQuery && searchQuery.length >= 2) {
+                      const escapedQuery = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                      const parts = segment.text.split(new RegExp(`(${escapedQuery})`, 'gi'));
+                      
+                      return (
+                        <Text 
+                          key={`link-${i}`} 
+                          style={{
+                            ...style.link,
+                            color: style.link?.color || '#03DAC6',
+                            fontSize: style.link?.fontSize || style.body?.fontSize || 16,
+                            // Don't include lineHeight here as it's handled by the parent
+                            textDecorationLine: 'underline',
+                          }}
+                          onPress={() => onLinkPress && onLinkPress(segment.url)}
+                        >
+                          {parts.map((part, j) => 
+                            part.toLowerCase() === searchQuery.toLowerCase() ? 
+                              <Text key={`${i}-${j}`} style={[
+                                // Preserve link styling
+                                {
+                                  color: style.link?.color || '#03DAC6',
+                                  fontSize: style.link?.fontSize || style.body?.fontSize || 16,
+                                  // Don't include lineHeight here as it's handled by the parent
+                                  textDecorationLine: 'underline'
+                                },
+                                styles.highlightedText
+                              ]}>{part}</Text> : 
+                              part
+                          )}
+                        </Text>
+                      );
+                    } else {
+                      return (
+                        <Text 
+                          key={`link-${i}`} 
+                          style={{
+                            ...style.link,
+                            color: style.link?.color || '#03DAC6',
+                            fontSize: style.link?.fontSize || style.body?.fontSize || 16,
+                            textDecorationLine: 'underline',
+                          }}
+                          onPress={() => onLinkPress && onLinkPress(segment.url)}
+                        >
+                          {segment.text}
+                        </Text>
+                      );
+                    }
                   }
                   return null;
                 })}
@@ -198,14 +406,39 @@ const HighlightedMarkdown = ({ content, searchQuery, style, onLinkPress }) => {
           );
         }
         
-        // For regular paragraphs without links, use our highlighted text component
+        // For regular paragraphs without links, use our custom text rendering
         return (
-          <View key={index} style={{ marginBottom: 20 }}>
-            <HighlightedText 
-              text={paragraph} 
-              searchQuery={searchQuery} 
-              style={style.paragraph || { color: '#E1E1E1' }}
-            />
+          <View key={index} style={{ 
+            marginBottom: style.paragraph?.marginBottom || 20,
+            // Ensure consistent spacing between paragraphs
+            marginTop: style.paragraph?.marginTop || 0
+          }}>
+            <Text style={{
+              ...style.body,
+              ...style.paragraph,
+              color: style.paragraph?.color || style.body?.color || '#E1E1E1',
+              fontSize: style.paragraph?.fontSize || style.body?.fontSize || 16,
+              lineHeight: style.paragraph?.lineHeight || style.body?.lineHeight || 24,
+              // Remove any margin from the text itself as it's handled by the container
+              marginBottom: 0,
+              marginTop: 0,
+            }}>
+              {searchQuery && searchQuery.length >= 2 ? 
+                paragraph.split(new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi')).map((part, i) => 
+                  part.toLowerCase() === searchQuery.toLowerCase() ? 
+                    <Text key={i} style={[
+                      {
+                        color: style.paragraph?.color || style.body?.color || '#E1E1E1',
+                        fontSize: style.paragraph?.fontSize || style.body?.fontSize || 16,
+                        // Don't include lineHeight here as it's handled by the parent
+                      },
+                      styles.highlightedText
+                    ]}>{part}</Text> : 
+                    part
+                ) : 
+                paragraph
+              }
+            </Text>
           </View>
         );
       })}
@@ -213,7 +446,7 @@ const HighlightedMarkdown = ({ content, searchQuery, style, onLinkPress }) => {
   );
 };
 
-const TitleSection = ({ title, content, searchQuery }) => {
+const TitleSection = ({ title, content, searchQuery, onNavigate }) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(20)).current;
 
@@ -232,6 +465,51 @@ const TitleSection = ({ title, content, searchQuery }) => {
     ]).start();
   }, []);
 
+  // Extract the Table of Contents from the content if it exists
+  const extractTableOfContents = () => {
+    if (!content) return { mainContent: '', tocContent: '' };
+    
+    // Look for a pattern that indicates a table of contents
+    // Typically a series of bullet points with links
+    const lines = content.split('\n');
+    const tocLines = [];
+    const contentLines = [];
+    let isToc = false;
+    
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      // Check if this line is part of a TOC (bullet point with a link)
+      if (line.trim().startsWith('*') && line.includes('[') && line.includes(']') && line.includes('#')) {
+        isToc = true;
+        tocLines.push(line);
+      } else if (isToc && line.trim() === '') {
+        // Empty line after TOC
+        isToc = false;
+      } else {
+        contentLines.push(line);
+      }
+    }
+    
+    return {
+      tocContent: tocLines.join('\n'),
+      mainContent: contentLines.join('\n')
+    };
+  };
+  
+  const { tocContent, mainContent } = extractTableOfContents();
+  
+  // Handle link presses in the TOC
+  const handleTocLinkPress = (url) => {
+    if (url.startsWith('#')) {
+      const sectionTitle = decodeURIComponent(url.slice(1));
+      if (onNavigate) {
+        onNavigate(sectionTitle);
+      }
+      return false;
+    }
+    return true;
+  };
+
   return (
     <View style={styles.titleContainer}>
       <View style={styles.titleGlow} />
@@ -242,47 +520,38 @@ const TitleSection = ({ title, content, searchQuery }) => {
         alignItems: 'center',
       }}>
         <View style={styles.titleWrapper}>
-          {searchQuery && searchQuery.length >= 2 ? (
-            <Text style={{
-              fontSize: 48,
-              textAlign: 'center',
-              marginBottom: 24,
-              color: '#BB86FC',
-              fontWeight: 'bold',
-              lineHeight: 56,
-              textShadowColor: 'rgba(187, 134, 252, 0.3)',
-              textShadowOffset: { width: 0, height: 0 },
-              textShadowRadius: 20,
-            }}>
-              {title.split(new RegExp(`(${searchQuery})`, 'gi')).map((part, i) => 
+          <Text style={{
+            fontSize: 48,
+            textAlign: 'center',
+            marginBottom: 24,
+            color: '#BB86FC',
+            fontWeight: 'bold',
+            lineHeight: 56,
+            textShadowColor: 'rgba(187, 134, 252, 0.3)',
+            textShadowOffset: { width: 0, height: 0 },
+            textShadowRadius: 20,
+          }}>
+            {searchQuery && searchQuery.length >= 2 ? 
+              title.split(new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi')).map((part, i) => 
                 part.toLowerCase() === searchQuery.toLowerCase() ? 
-                  <Text key={i} style={styles.highlightedText}>{part}</Text> : 
-                  <Text key={i}>{part}</Text>
-              )}
-            </Text>
-          ) : (
-            <Markdown style={{
-              ...markdownStyles,
-              heading1: {
-                ...markdownStyles.heading1,
-                fontSize: 48,
-                textAlign: 'center',
-                marginBottom: 24,
-                color: '#BB86FC',
-                fontWeight: 'bold',
-                lineHeight: 56,
-                textShadowColor: 'rgba(187, 134, 252, 0.3)',
-                textShadowOffset: { width: 0, height: 0 },
-                textShadowRadius: 20,
-              },
-              body: {
-                ...markdownStyles.body,
-                textAlign: 'center',
-              }
-            }}>
-              {`# ${title}`}
-            </Markdown>
-          )}
+                  <Text key={i} style={[
+                    // Preserve original title styling
+                    {
+                      fontSize: 48,
+                      fontWeight: 'bold',
+                      color: '#BB86FC',
+                      // Don't include lineHeight here as it's handled by the parent
+                      textShadowColor: 'rgba(187, 134, 252, 0.3)',
+                      textShadowOffset: { width: 0, height: 0 },
+                      textShadowRadius: 20,
+                    },
+                    styles.highlightedText
+                  ]}>{part}</Text> : 
+                  part
+              ) : 
+              title
+            }
+          </Text>
         </View>
       </Animated.View>
       <Animated.View style={{
@@ -291,29 +560,64 @@ const TitleSection = ({ title, content, searchQuery }) => {
         width: '100%',
         alignItems: 'center',
       }}>
-        <View style={styles.subtitleWrapper}>
-          <HighlightedMarkdown
-            content={content}
-            searchQuery={searchQuery}
-            style={{
-              ...markdownStyles,
-              body: {
-                ...markdownStyles.body,
-                fontSize: 20,
-                textAlign: 'center',
-                color: 'rgba(225, 225, 225, 0.9)',
-                lineHeight: 32,
-                paddingHorizontal: 32,
-                letterSpacing: 0.5,
-              },
-              paragraph: {
-                marginBottom: 20,
-                color: '#E1E1E1',
-                textAlign: 'center',
-              }
-            }}
-          />
-        </View>
+        {/* Main content section */}
+        {mainContent && (
+          <View style={styles.subtitleWrapper}>
+            <HighlightedMarkdown
+              content={mainContent}
+              searchQuery={searchQuery}
+              style={{
+                ...markdownStyles,
+                body: {
+                  ...markdownStyles.body,
+                  fontSize: 20,
+                  textAlign: 'center',
+                  color: 'rgba(225, 225, 225, 0.9)',
+                  lineHeight: 32,
+                  paddingHorizontal: 32,
+                  letterSpacing: 0.5,
+                },
+                paragraph: {
+                  marginBottom: 20,
+                  color: '#E1E1E1',
+                  textAlign: 'center',
+                }
+              }}
+            />
+          </View>
+        )}
+        
+        {/* Table of Contents section */}
+        {tocContent && (
+          <View style={styles.tocWrapper}>
+            <HighlightedMarkdown
+              content={tocContent}
+              searchQuery={searchQuery}
+              style={{
+                ...markdownStyles,
+                body: {
+                  ...markdownStyles.body,
+                  fontSize: 16,
+                  color: '#E1E1E1',
+                  lineHeight: 24,
+                },
+                listItem: {
+                  ...markdownStyles.listItem,
+                  marginBottom: 8,
+                },
+                bullet_list: {
+                  ...markdownStyles.bullet_list,
+                  marginTop: 16,
+                },
+                link: {
+                  ...markdownStyles.link,
+                  textDecorationLine: 'none',
+                }
+              }}
+              onLinkPress={handleTocLinkPress}
+            />
+          </View>
+        )}
       </Animated.View>
       <View style={styles.titleDivider} />
     </View>
@@ -367,8 +671,17 @@ const Section = ({ title, level, content, subsections, onPress, isExpanded, path
           <Text style={[styles.sectionTitle, { fontSize, color: '#BB86FC' }]}>
             {title.split(new RegExp(`(${searchQuery})`, 'gi')).map((part, i) => 
               part.toLowerCase() === searchQuery.toLowerCase() ? 
-                <Text key={i} style={styles.highlightedText}>{part}</Text> : 
-                <Text key={i}>{part}</Text>
+                <Text key={i} style={[
+                  // Preserve original text styling
+                  {
+                    fontSize,
+                    fontWeight: 'bold',
+                    color: '#BB86FC',
+                    // Don't include lineHeight here as it's handled by the parent
+                  },
+                  styles.highlightedText
+                ]}>{part}</Text> : 
+                part
             )}
           </Text>
         ) : (
@@ -720,6 +1033,7 @@ export default function App() {
           title={section.title}
           content={section.content}
           searchQuery={searchQuery}
+          onNavigate={collapseAllAndExpandSection}
         />
       );
     }
@@ -747,6 +1061,12 @@ export default function App() {
 
   const toggleSearchBar = () => {
     const toValue = showSearch ? 0 : 1;
+    
+    // If we're closing the search bar, clear the search query
+    if (showSearch) {
+      setSearchQuery('');
+    }
+    
     setShowSearch(!showSearch);
     
     Animated.timing(searchBarAnim, {
@@ -973,6 +1293,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 20,
+  },
+  tocWrapper: {
+    width: '90%',
+    marginTop: 24,
+    marginBottom: 16,
+    padding: 16,
+    backgroundColor: 'rgba(30, 30, 30, 0.7)',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(187, 134, 252, 0.2)',
   },
   headerContainer: {
     flexDirection: 'row',
