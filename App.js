@@ -761,6 +761,17 @@ export default function App() {
   const searchBarAnim = useRef(new Animated.Value(0)).current;
   const scrollViewRef = useRef(null);
   const sectionRefs = useRef({});
+  const searchInputRef = useRef(null);
+
+  // Add effect to handle search input focus
+  useEffect(() => {
+    if (showSearch && searchInputRef.current) {
+      // Small delay to ensure the input is mounted
+      setTimeout(() => {
+        searchInputRef.current?.focus();
+      }, 100);
+    }
+  }, [showSearch]);
 
   const findSectionPath = (sections, targetTitle, currentPath = []) => {
     console.log('Searching for:', targetTitle, 'in path:', currentPath);
@@ -1167,6 +1178,7 @@ export default function App() {
         ) : (
           <View style={styles.searchBarWrapper}>
             <TextInput
+              ref={searchInputRef}
               style={styles.searchInput}
               placeholder="Search rules..."
               placeholderTextColor="#888"
