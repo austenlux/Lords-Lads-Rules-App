@@ -1076,13 +1076,45 @@ export default function App() {
     fetchReadme();
   }, []);
 
-  // Modify the handleSearchQueryChange function to filter from original sections
+  // Modify the handleSearchQueryChange function to preserve expansion states
   const handleSearchQueryChange = (newQuery) => {
     setSearchQuery(newQuery);
     
-    // If the query is cleared or too short, restore all sections
+    // If the query is cleared or too short, restore all sections while preserving expansion states
     if (!newQuery || newQuery.length < 2) {
-      setSections(originalSections);
+      setSections(prevSections => {
+        // Create a map of current expansion states
+        const expansionStates = new Map();
+        const collectExpansionStates = (sections) => {
+          sections.forEach(section => {
+            if (!section.isTitle) {
+              expansionStates.set(section.title, section.isExpanded);
+              if (section.subsections) {
+                collectExpansionStates(section.subsections);
+              }
+            }
+          });
+        };
+        collectExpansionStates(prevSections);
+
+        // Restore sections while applying saved expansion states
+        const newSections = JSON.parse(JSON.stringify(originalSections));
+        const applyExpansionStates = (sections) => {
+          sections.forEach(section => {
+            if (!section.isTitle) {
+              // Apply saved expansion state if it exists, otherwise keep default
+              if (expansionStates.has(section.title)) {
+                section.isExpanded = expansionStates.get(section.title);
+              }
+              if (section.subsections) {
+                applyExpansionStates(section.subsections);
+              }
+            }
+          });
+        };
+        applyExpansionStates(newSections);
+        return newSections;
+      });
     } else {
       // Apply filtering to the original sections
       const filteredSections = filterSectionsBySearch(JSON.parse(JSON.stringify(originalSections)), newQuery);
