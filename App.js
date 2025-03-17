@@ -1221,7 +1221,9 @@ export default function App() {
     
     // If we're closing the search bar, clear the search query
     if (showSearch) {
-      setSearchQuery('');
+      // Instead of just setting searchQuery to empty string, use handleSearchQueryChange
+      // which will also restore the original sections with proper expansion states
+      handleSearchQueryChange('');
     }
     
     setShowSearch(!showSearch);
