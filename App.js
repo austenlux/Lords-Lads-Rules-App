@@ -755,6 +755,7 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [content, setContent] = useState('');
+  const [originalSections, setOriginalSections] = useState([]);
   const [sections, setSections] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearch, setShowSearch] = useState(false);
@@ -1061,7 +1062,9 @@ export default function App() {
       setContent(text);
       
       // Parse the sections from the content
-      setSections(parseMarkdownSections(text));
+      const parsedSections = parseMarkdownSections(text);
+      setOriginalSections(parsedSections);
+      setSections(parsedSections);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -1073,6 +1076,78 @@ export default function App() {
     fetchReadme();
   }, []);
 
+  // Modify the handleSearchQueryChange function to filter from original sections
+  const handleSearchQueryChange = (newQuery) => {
+    setSearchQuery(newQuery);
+    
+    // If the query is cleared or too short, restore all sections
+    if (!newQuery || newQuery.length < 2) {
+      setSections(originalSections);
+    } else {
+      // Apply filtering to the original sections
+      const filteredSections = filterSectionsBySearch(JSON.parse(JSON.stringify(originalSections)), newQuery);
+      setSections(filteredSections);
+    }
+  };
+
+  // Modify the filterSectionsBySearch function to handle section expansion
+  const filterSectionsBySearch = (sections, searchQuery) => {
+    if (!searchQuery || searchQuery.length < 2) {
+      return sections;
+    }
+
+    const escapedQuery = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const searchRegex = new RegExp(escapedQuery, 'gi');
+
+    const hasMatch = (text) => {
+      if (!text) return false;
+      return searchRegex.test(decodeHtmlEntities(text));
+    };
+
+    const filterSection = (section) => {
+      // Always keep the title section
+      if (section.isTitle) {
+        return true;
+      }
+
+      // Check if this section's title matches
+      const titleMatches = hasMatch(section.title);
+
+      // Check if this section's content matches
+      const contentMatches = hasMatch(section.content);
+
+      // Check if any subsections match
+      let hasMatchingSubsections = false;
+      if (section.subsections) {
+        section.subsections = section.subsections.filter(subsection => {
+          const subsectionMatches = filterSection(subsection);
+          if (subsectionMatches) {
+            hasMatchingSubsections = true;
+          }
+          return subsectionMatches;
+        });
+      }
+
+      // Track if this section was collapsed by filtering
+      if (!titleMatches && !contentMatches && !hasMatchingSubsections) {
+        section.wasCollapsedByFilter = true;
+        section.isExpanded = false;
+      } else {
+        // If section matches, ensure it's expanded
+        section.isExpanded = true;
+      }
+
+      // Keep the section if any of these conditions are met:
+      // 1. The title matches
+      // 2. The content matches
+      // 3. It has matching subsections
+      return titleMatches || contentMatches || hasMatchingSubsections;
+    };
+
+    return sections.filter(filterSection);
+  };
+
+  // Modify the renderSection function to use sections directly instead of getFilteredSections
   const renderSection = (section, index, parentPath = []) => {
     const path = [...parentPath, index];
     
@@ -1183,7 +1258,7 @@ export default function App() {
               placeholder="Search rules..."
               placeholderTextColor="#888"
               value={searchQuery}
-              onChangeText={setSearchQuery}
+              onChangeText={handleSearchQueryChange}
               autoFocus={true}
             />
             <TouchableOpacity 
