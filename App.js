@@ -165,6 +165,8 @@ export default function App() {
   const [content, setContent] = useState('');
   const [sections, setSections] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showSearch, setShowSearch] = useState(false);
+  const searchBarAnim = useRef(new Animated.Value(0)).current;
   const scrollViewRef = useRef(null);
   const sectionRefs = useRef({});
 
@@ -497,6 +499,17 @@ export default function App() {
     );
   };
 
+  const toggleSearchBar = () => {
+    const toValue = showSearch ? 0 : 1;
+    setShowSearch(!showSearch);
+    
+    Animated.timing(searchBarAnim, {
+      toValue,
+      duration: 300,
+      useNativeDriver: false,
+    }).start();
+  };
+
   if (loading) {
     return (
       <SafeAreaView style={styles.safeArea}>
@@ -534,15 +547,36 @@ export default function App() {
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" backgroundColor="#121212" />
       
-      {/* Simple Search Bar */}
-      <View style={styles.searchContainer}>
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search rules..."
-          placeholderTextColor="#888"
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-        />
+      {/* Header with Search Icon/Bar */}
+      <View style={styles.headerContainer}>
+        {!showSearch ? (
+          <>
+            <Text style={styles.headerTitle}>Lords & Lads Rules</Text>
+            <TouchableOpacity 
+              style={styles.searchIconContainer} 
+              onPress={toggleSearchBar}
+            >
+              <Text style={styles.searchIcon}>🔍</Text>
+            </TouchableOpacity>
+          </>
+        ) : (
+          <View style={styles.searchBarWrapper}>
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search rules..."
+              placeholderTextColor="#888"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              autoFocus={true}
+            />
+            <TouchableOpacity 
+              style={styles.closeIconContainer} 
+              onPress={toggleSearchBar}
+            >
+              <Text style={styles.closeIcon}>✕</Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
       
       <ScrollView 
@@ -693,13 +727,33 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 20,
   },
-  searchContainer: {
+  headerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     padding: 16,
     backgroundColor: '#1E1E1E',
     borderBottomWidth: 1,
     borderBottomColor: '#333',
   },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#BB86FC',
+  },
+  searchIconContainer: {
+    padding: 8,
+  },
+  searchIcon: {
+    fontSize: 20,
+  },
+  searchBarWrapper: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   searchInput: {
+    flex: 1,
     backgroundColor: '#2C2C2C',
     color: '#FFFFFF',
     padding: 12,
@@ -708,6 +762,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
     borderWidth: 1,
     borderColor: 'rgba(187, 134, 252, 0.3)',
+  },
+  closeIconContainer: {
+    padding: 8,
+    marginLeft: 8,
+  },
+  closeIcon: {
+    fontSize: 18,
+    color: '#E1E1E1',
   },
 });
 
