@@ -118,11 +118,11 @@ const HighlightedMarkdown = ({ content, searchQuery, style, onLinkPress }) => {
           
           // Calculate the appropriate line height and spacing
           const listItemLineHeight = style.listItem?.lineHeight || style.body?.lineHeight || 24;
-          const listItemMarginBottom = style.listItem?.marginBottom || 8;
+          const listItemMarginBottom = style.listItem?.marginBottom || 4;
           
           return (
             <View key={index} style={[
-              style.bullet_list || { marginBottom: 20 },
+              style.bullet_list || { marginBottom: 16 },
               // Ensure consistent spacing between list items
               { marginTop: style.bullet_list?.marginTop || 0 }
             ]}>
@@ -279,7 +279,7 @@ const HighlightedMarkdown = ({ content, searchQuery, style, onLinkPress }) => {
                     color: style.paragraph?.color || style.body?.color || '#E1E1E1',
                     fontSize: style.paragraph?.fontSize || style.body?.fontSize || 16,
                     lineHeight: style.paragraph?.lineHeight || style.body?.lineHeight || 24,
-                    marginBottom: 8,
+                    marginBottom: 4,
                   }}>
                     {line}
                   </Text>
@@ -1437,7 +1437,7 @@ const markdownStyles = {
     color: '#03DAC6',
   },
   listItem: {
-    marginBottom: 12,
+    marginBottom: 4,
     color: '#E1E1E1',
   },
   paragraph: {
@@ -1445,10 +1445,10 @@ const markdownStyles = {
     color: '#E1E1E1',
   },
   bullet_list: {
-    marginBottom: 20,
+    marginBottom: 16,
   },
   ordered_list: {
-    marginBottom: 20,
+    marginBottom: 16,
   },
   bullet_list_icon: {
     color: '#BB86FC',
