@@ -1,4 +1,8 @@
 {
   "name": "lords-and-lads-rules",
-  "displayName": "Lords & Lads Rules"
+  "displayName": "Lords & Lads Rules",
+  "version": "1.1.0",
+  "android": {
+    "versionCode": 2
+  }
 }
