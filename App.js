@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, View, Text, ActivityIndicator, TouchableOpacity, ScrollView, SafeAreaView, StatusBar, Animated } from 'react-native';
+import { StyleSheet, View, Text, ActivityIndicator, TouchableOpacity, ScrollView, SafeAreaView, StatusBar, Animated, TextInput } from 'react-native';
 import Markdown from 'react-native-markdown-display';
 
 const TitleSection = ({ title, content }) => {
@@ -164,6 +164,7 @@ export default function App() {
   const [error, setError] = useState(null);
   const [content, setContent] = useState('');
   const [sections, setSections] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const scrollViewRef = useRef(null);
   const sectionRefs = useRef({});
 
@@ -532,6 +533,18 @@ export default function App() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" backgroundColor="#121212" />
+      
+      {/* Simple Search Bar */}
+      <View style={styles.searchContainer}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search rules..."
+          placeholderTextColor="#888"
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
+      </View>
+      
       <ScrollView 
         ref={scrollViewRef}
         style={styles.scrollView} 
@@ -679,6 +692,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 20,
+  },
+  searchContainer: {
+    padding: 16,
+    backgroundColor: '#1E1E1E',
+    borderBottomWidth: 1,
+    borderBottomColor: '#333',
+  },
+  searchInput: {
+    backgroundColor: '#2C2C2C',
+    color: '#FFFFFF',
+    padding: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(187, 134, 252, 0.3)',
   },
 });
 
