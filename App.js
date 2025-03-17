@@ -543,7 +543,7 @@ const TitleSection = ({ title, content, searchQuery, onNavigate }) => {
   };
 
   return (
-    <View style={styles.titleContainer}>
+  <View style={styles.titleContainer}>
       <View style={styles.titleGlow} />
       <Animated.View style={{
         opacity: fadeAnim,
@@ -652,8 +652,8 @@ const TitleSection = ({ title, content, searchQuery, onNavigate }) => {
         )}
       </Animated.View>
       <View style={styles.titleDivider} />
-    </View>
-  );
+  </View>
+);
 };
 
 const Section = ({ title, level, content, subsections, onPress, isExpanded, path = [], onNavigate, sectionRefs, searchQuery }) => {
