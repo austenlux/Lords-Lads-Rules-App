@@ -19,17 +19,33 @@ const highlightMatches = (text, query) => {
   ).join('');
 };
 
+// Utility function to decode HTML entities
+const decodeHtmlEntities = (text) => {
+  if (!text) return text;
+  return text
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#039;/g, "'");
+};
+
 // Create a simpler highlighted text component
 const HighlightedText = ({ text, searchQuery, style }) => {
-  if (!searchQuery || searchQuery.length < 2 || !text) {
-    return <Text style={style}>{text}</Text>;
+  if (!text) return null;
+  
+  // Decode HTML entities in the text
+  const decodedText = decodeHtmlEntities(text);
+  
+  if (!searchQuery || searchQuery.length < 2) {
+    return <Text style={style}>{decodedText}</Text>;
   }
 
   // Escape special regex characters in the query
   const escapedQuery = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   
   // Split the text by the search query
-  const parts = text.split(new RegExp(`(${escapedQuery})`, 'gi'));
+  const parts = decodedText.split(new RegExp(`(${escapedQuery})`, 'gi'));
   
   // Use a single Text component with nested Text components to maintain line spacing
   return (
@@ -66,7 +82,7 @@ const HighlightedMarkdown = ({ content, searchQuery, style, onLinkPress }) => {
   // For headings, blockquotes, and code blocks, use regular markdown
   if (content.trim().startsWith('#') || 
       content.trim().startsWith('>') || 
-      content.trim().startsWith('```')) {
+      content.startsWith('```')) {
     return (
       <Markdown style={style} onLinkPress={onLinkPress}>
         {content}
@@ -117,17 +133,23 @@ const HighlightedMarkdown = ({ content, searchQuery, style, onLinkPress }) => {
                   if (bulletMatch) {
                     const [_, indentation, bullet, text] = bulletMatch;
                     
+                    // Decode HTML entities in the text
+                    const decodedText = decodeHtmlEntities(text);
+                    
                     // Calculate indentation level based on leading spaces
                     const indentLevel = indentation.length / 2; // Assuming 2 spaces per level
                     const indentWidth = indentLevel * 16; // 16px per indent level
                     
                     // Check if this list item contains a link
-                    const linkMatch = text.match(/\[([^\]]+)\]\(([^)]+)\)/);
+                    const linkMatch = decodedText.match(/\[([^\]]+)\]\(([^)]+)\)/);
                     if (linkMatch) {
                       // This is a list item with a link (like in TOC)
                       const [fullMatch, linkText, linkUrl] = linkMatch;
-                      const beforeLink = text.substring(0, text.indexOf(fullMatch));
-                      const afterLink = text.substring(text.indexOf(fullMatch) + fullMatch.length);
+                      const beforeLink = decodedText.substring(0, decodedText.indexOf(fullMatch));
+                      const afterLink = decodedText.substring(decodedText.indexOf(fullMatch) + fullMatch.length);
+                      
+                      // Decode HTML entities in link text
+                      const decodedLinkText = decodeHtmlEntities(linkText);
                       
                       return (
                         <View key={lineIndex} style={{ 
@@ -166,7 +188,7 @@ const HighlightedMarkdown = ({ content, searchQuery, style, onLinkPress }) => {
                                   }}
                                   onPress={() => onLinkPress && onLinkPress(linkUrl)}
                                 >
-                                  {linkText.split(new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi')).map((part, i) => 
+                                  {decodedLinkText.split(new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi')).map((part, i) => 
                                     part.toLowerCase() === searchQuery.toLowerCase() ? 
                                       <Text key={i} style={[
                                         {
@@ -191,7 +213,7 @@ const HighlightedMarkdown = ({ content, searchQuery, style, onLinkPress }) => {
                                   }}
                                   onPress={() => onLinkPress && onLinkPress(linkUrl)}
                                 >
-                                  {linkText}
+                                  {decodedLinkText}
                                 </Text>
                               )}
                               {afterLink}
@@ -228,7 +250,7 @@ const HighlightedMarkdown = ({ content, searchQuery, style, onLinkPress }) => {
                             marginTop: 0,
                           }}>
                             {searchQuery && searchQuery.length >= 2 ? 
-                              text.split(new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi')).map((part, i) => 
+                              decodedText.split(new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi')).map((part, i) => 
                                 part.toLowerCase() === searchQuery.toLowerCase() ? 
                                   <Text key={i} style={[
                                     {
@@ -240,7 +262,7 @@ const HighlightedMarkdown = ({ content, searchQuery, style, onLinkPress }) => {
                                   ]}>{part}</Text> : 
                                   part
                               ) : 
-                              text
+                              decodedText
                             }
                           </Text>
                         </View>
@@ -272,6 +294,9 @@ const HighlightedMarkdown = ({ content, searchQuery, style, onLinkPress }) => {
         const hasLinks = linkRegex.test(paragraph);
         
         if (hasLinks) {
+          // Decode the paragraph text first
+          const decodedParagraph = decodeHtmlEntities(paragraph);
+          
           // Split the paragraph into segments (links and non-links)
           const segments = [];
           let lastIndex = 0;
@@ -280,12 +305,12 @@ const HighlightedMarkdown = ({ content, searchQuery, style, onLinkPress }) => {
           // Reset regex state
           linkRegex.lastIndex = 0;
           
-          while ((match = linkRegex.exec(paragraph)) !== null) {
+          while ((match = linkRegex.exec(decodedParagraph)) !== null) {
             // Add text before the link
             if (match.index > lastIndex) {
               segments.push({
                 type: 'text',
-                content: paragraph.substring(lastIndex, match.index)
+                content: decodedParagraph.substring(lastIndex, match.index)
               });
             }
             
@@ -300,10 +325,10 @@ const HighlightedMarkdown = ({ content, searchQuery, style, onLinkPress }) => {
           }
           
           // Add any remaining text after the last link
-          if (lastIndex < paragraph.length) {
+          if (lastIndex < decodedParagraph.length) {
             segments.push({
               type: 'text',
-              content: paragraph.substring(lastIndex)
+              content: decodedParagraph.substring(lastIndex)
             });
           }
           
@@ -349,10 +374,13 @@ const HighlightedMarkdown = ({ content, searchQuery, style, onLinkPress }) => {
                       return segment.content;
                     }
                   } else if (segment.type === 'link') {
+                    // Decode link text
+                    const decodedLinkText = decodeHtmlEntities(segment.text);
+                    
                     // Handle links with potential highlighting
                     if (searchQuery && searchQuery.length >= 2) {
                       const escapedQuery = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                      const parts = segment.text.split(new RegExp(`(${escapedQuery})`, 'gi'));
+                      const parts = decodedLinkText.split(new RegExp(`(${escapedQuery})`, 'gi'));
                       
                       return (
                         <Text 
@@ -394,7 +422,7 @@ const HighlightedMarkdown = ({ content, searchQuery, style, onLinkPress }) => {
                           }}
                           onPress={() => onLinkPress && onLinkPress(segment.url)}
                         >
-                          {segment.text}
+                          {decodedLinkText}
                         </Text>
                       );
                     }
@@ -407,6 +435,7 @@ const HighlightedMarkdown = ({ content, searchQuery, style, onLinkPress }) => {
         }
         
         // For regular paragraphs without links, use our custom text rendering
+        const decodedParagraph = decodeHtmlEntities(paragraph);
         return (
           <View key={index} style={{ 
             marginBottom: style.paragraph?.marginBottom || 20,
@@ -424,7 +453,7 @@ const HighlightedMarkdown = ({ content, searchQuery, style, onLinkPress }) => {
               marginTop: 0,
             }}>
               {searchQuery && searchQuery.length >= 2 ? 
-                paragraph.split(new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi')).map((part, i) => 
+                decodedParagraph.split(new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi')).map((part, i) => 
                   part.toLowerCase() === searchQuery.toLowerCase() ? 
                     <Text key={i} style={[
                       {
@@ -436,7 +465,7 @@ const HighlightedMarkdown = ({ content, searchQuery, style, onLinkPress }) => {
                     ]}>{part}</Text> : 
                     part
                 ) : 
-                paragraph
+                decodedParagraph
               }
             </Text>
           </View>
@@ -449,6 +478,9 @@ const HighlightedMarkdown = ({ content, searchQuery, style, onLinkPress }) => {
 const TitleSection = ({ title, content, searchQuery, onNavigate }) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(20)).current;
+
+  // Decode HTML entities in the title
+  const decodedTitle = decodeHtmlEntities(title);
 
   useEffect(() => {
     Animated.parallel([
@@ -532,7 +564,7 @@ const TitleSection = ({ title, content, searchQuery, onNavigate }) => {
             textShadowRadius: 20,
           }}>
             {searchQuery && searchQuery.length >= 2 ? 
-              title.split(new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi')).map((part, i) => 
+              decodedTitle.split(new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi')).map((part, i) => 
                 part.toLowerCase() === searchQuery.toLowerCase() ? 
                   <Text key={i} style={[
                     // Preserve original title styling
@@ -549,7 +581,7 @@ const TitleSection = ({ title, content, searchQuery, onNavigate }) => {
                   ]}>{part}</Text> : 
                   part
               ) : 
-              title
+              decodedTitle
             }
           </Text>
         </View>
@@ -627,6 +659,9 @@ const TitleSection = ({ title, content, searchQuery, onNavigate }) => {
 const Section = ({ title, level, content, subsections, onPress, isExpanded, path = [], onNavigate, sectionRefs, searchQuery }) => {
   const animatedRotation = useRef(new Animated.Value(isExpanded ? 1 : 0)).current;
 
+  // Decode HTML entities in the title
+  const decodedTitle = decodeHtmlEntities(title);
+
   useEffect(() => {
     Animated.timing(animatedRotation, {
       toValue: isExpanded ? 1 : 0,
@@ -669,7 +704,7 @@ const Section = ({ title, level, content, subsections, onPress, isExpanded, path
         </Animated.View>
         {searchQuery && searchQuery.length >= 2 ? (
           <Text style={[styles.sectionTitle, { fontSize, color: '#BB86FC' }]}>
-            {title.split(new RegExp(`(${searchQuery})`, 'gi')).map((part, i) => 
+            {decodedTitle.split(new RegExp(`(${searchQuery})`, 'gi')).map((part, i) => 
               part.toLowerCase() === searchQuery.toLowerCase() ? 
                 <Text key={i} style={[
                   // Preserve original text styling
@@ -685,7 +720,7 @@ const Section = ({ title, level, content, subsections, onPress, isExpanded, path
             )}
           </Text>
         ) : (
-          <Text style={[styles.sectionTitle, { fontSize, color: '#BB86FC' }]}>{title}</Text>
+          <Text style={[styles.sectionTitle, { fontSize, color: '#BB86FC' }]}>{decodedTitle}</Text>
         )}
       </TouchableOpacity>
       {isExpanded && (
@@ -1010,7 +1045,11 @@ export default function App() {
         throw new Error(`Failed to fetch README (Status: ${response.status})`);
       }
       const text = await response.text();
+      
+      // Store the original content
       setContent(text);
+      
+      // Parse the sections from the content
       setSections(parseMarkdownSections(text));
     } catch (err) {
       setError(err.message);
