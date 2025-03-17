@@ -1022,6 +1022,8 @@ export default function App() {
   };
 
   const toggleSection = (path) => {
+    console.log("[DEBUG] toggleSection called for path:", path);
+    
     setSections(prevSections => {
       const newSections = JSON.parse(JSON.stringify(prevSections));
       
@@ -1029,6 +1031,7 @@ export default function App() {
       const toggleNestedSection = (obj, pathParts) => {
         if (pathParts.length === 1) {
           obj[pathParts[0]].isExpanded = !obj[pathParts[0]].isExpanded;
+          console.log(`[DEBUG] Toggled section "${obj[pathParts[0]].title}" to ${obj[pathParts[0]].isExpanded}`);
           return;
         }
         
@@ -1042,6 +1045,37 @@ export default function App() {
 
       const pathParts = path.map(String);
       toggleNestedSection(newSections, pathParts);
+      
+      // Also update the originalSections so when we restore from them,
+      // they have the correct expansion state
+      const updateOriginalSections = () => {
+        const originalSectionsCopy = JSON.parse(JSON.stringify(originalSections));
+        
+        // Helper function to find and update the same section in originalSections
+        const findAndUpdateSection = (origSections, currentSections) => {
+          // Match sections by title
+          for (let i = 0; i < origSections.length; i++) {
+            for (let j = 0; j < currentSections.length; j++) {
+              if (origSections[i].title === currentSections[j].title) {
+                // Update the expansion state in the original
+                origSections[i].isExpanded = currentSections[j].isExpanded;
+                
+                // Recursively update subsections
+                if (origSections[i].subsections && currentSections[j].subsections) {
+                  findAndUpdateSection(origSections[i].subsections, currentSections[j].subsections);
+                }
+              }
+            }
+          }
+        };
+        
+        findAndUpdateSection(originalSectionsCopy, newSections);
+        setOriginalSections(originalSectionsCopy);
+      };
+      
+      // Update originalSections to keep them in sync
+      updateOriginalSections();
+      
       return newSections;
     });
   };
@@ -1076,52 +1110,6 @@ export default function App() {
     fetchReadme();
   }, []);
 
-  // Modify the handleSearchQueryChange function to preserve expansion states
-  const handleSearchQueryChange = (newQuery) => {
-    setSearchQuery(newQuery);
-    
-    // If the query is cleared or too short, restore all sections while preserving expansion states
-    if (!newQuery || newQuery.length < 2) {
-      setSections(prevSections => {
-        // Create a map of current expansion states
-        const expansionStates = new Map();
-        const collectExpansionStates = (sections) => {
-          sections.forEach(section => {
-            if (!section.isTitle) {
-              expansionStates.set(section.title, section.isExpanded);
-              if (section.subsections) {
-                collectExpansionStates(section.subsections);
-              }
-            }
-          });
-        };
-        collectExpansionStates(prevSections);
-
-        // Restore sections while applying saved expansion states
-        const newSections = JSON.parse(JSON.stringify(originalSections));
-        const applyExpansionStates = (sections) => {
-          sections.forEach(section => {
-            if (!section.isTitle) {
-              // Apply saved expansion state if it exists, otherwise keep default
-              if (expansionStates.has(section.title)) {
-                section.isExpanded = expansionStates.get(section.title);
-              }
-              if (section.subsections) {
-                applyExpansionStates(section.subsections);
-              }
-            }
-          });
-        };
-        applyExpansionStates(newSections);
-        return newSections;
-      });
-    } else {
-      // Apply filtering to the original sections
-      const filteredSections = filterSectionsBySearch(JSON.parse(JSON.stringify(originalSections)), newQuery);
-      setSections(filteredSections);
-    }
-  };
-
   // Modify the filterSectionsBySearch function to handle section expansion
   const filterSectionsBySearch = (sections, searchQuery) => {
     if (!searchQuery || searchQuery.length < 2) {
@@ -1135,6 +1123,29 @@ export default function App() {
       if (!text) return false;
       return searchRegex.test(decodeHtmlEntities(text));
     };
+    
+    console.log("[DEBUG] Starting filterSectionsBySearch with query:", searchQuery);
+
+    // First, save original expansion states for ALL sections (both matching and non-matching)
+    // This is critical for restoring the correct state later
+    const saveOriginalStates = (sectionsArray) => {
+      sectionsArray.forEach(section => {
+        if (!section.isTitle) {
+          section._originalExpanded = section.isExpanded;
+          console.log(`[DEBUG] Saving original state for "${section.title}": ${section._originalExpanded}`);
+          
+          if (section.subsections) {
+            saveOriginalStates(section.subsections);
+          }
+        }
+      });
+    };
+    
+    // Make a deep copy of sections to avoid mutating the original
+    const sectionsCopy = JSON.parse(JSON.stringify(sections));
+    
+    // Save expansion states before filtering
+    saveOriginalStates(sectionsCopy);
 
     const filterSection = (section) => {
       // Always keep the title section
@@ -1160,23 +1171,107 @@ export default function App() {
         });
       }
 
-      // Track if this section was collapsed by filtering
-      if (!titleMatches && !contentMatches && !hasMatchingSubsections) {
-        section.wasCollapsedByFilter = true;
-        section.isExpanded = false;
-      } else {
-        // If section matches, ensure it's expanded
+      // If section matches the search criteria
+      if (titleMatches || contentMatches || hasMatchingSubsections) {
+        // Force this section to be expanded for better UX
         section.isExpanded = true;
+        console.log(`[DEBUG] Section "${section.title}" matches search - expanding. Original state: ${section._originalExpanded}`);
+        return true;
       }
-
-      // Keep the section if any of these conditions are met:
-      // 1. The title matches
-      // 2. The content matches
-      // 3. It has matching subsections
-      return titleMatches || contentMatches || hasMatchingSubsections;
+      
+      // Section doesn't match, it will be filtered out
+      console.log(`[DEBUG] Section "${section.title}" does NOT match search - filtering out`);
+      return false;
     };
 
-    return sections.filter(filterSection);
+    const filteredResult = sectionsCopy.filter(filterSection);
+    console.log(`[DEBUG] Filter complete. Filtered from ${sections.length} to ${filteredResult.length} top-level sections`);
+    
+    return filteredResult;
+  };
+
+  // Modify the handleSearchQueryChange function to preserve expansion states
+  const handleSearchQueryChange = (newQuery) => {
+    console.log("[DEBUG] handleSearchQueryChange from", searchQuery, "to", newQuery);
+    setSearchQuery(newQuery);
+    
+    // If the query is cleared or too short, restore all sections while preserving expansion states
+    if (!newQuery || newQuery.length < 2) {
+      console.log("[DEBUG] Query cleared or too short, restoring sections");
+      setSections(prevSections => {
+        // Create a map to store expansion states from both current sections 
+        // and their stored original states
+        const expansionStatesMap = new Map();
+        
+        // Log the current sections and their expansion states
+        const logSectionExpansion = (section, indent = '') => {
+          if (!section.isTitle) {
+            console.log(
+              `${indent}Section "${section.title}": current=${section.isExpanded}, original=${section._originalExpanded}`
+            );
+          }
+          if (section.subsections) {
+            section.subsections.forEach(subsection => {
+              logSectionExpansion(subsection, indent + '  ');
+            });
+          }
+        };
+        
+        console.log("[DEBUG] Current sections expansion state:");
+        prevSections.forEach(section => logSectionExpansion(section));
+        
+        // Collect expansion states from current sections
+        const collectExpansionStates = (sections) => {
+          sections.forEach(section => {
+            if (!section.isTitle) {
+              // Use _originalExpanded if available, otherwise use current state
+              const expansionState = section._originalExpanded !== undefined ? 
+                section._originalExpanded : section.isExpanded;
+              
+              expansionStatesMap.set(section.title, expansionState);
+              console.log(`[DEBUG] Storing expansion for "${section.title}": ${expansionState}`);
+              
+              if (section.subsections) {
+                collectExpansionStates(section.subsections);
+              }
+            }
+          });
+        };
+        
+        collectExpansionStates(prevSections);
+
+        // Restore original sections structure
+        const newSections = JSON.parse(JSON.stringify(originalSections));
+        
+        // Apply saved expansion states to restored sections
+        const applyExpansionStates = (sections) => {
+          sections.forEach(section => {
+            if (!section.isTitle && expansionStatesMap.has(section.title)) {
+              const originalState = expansionStatesMap.get(section.title);
+              section.isExpanded = originalState;
+              console.log(`[DEBUG] Applying expansion for "${section.title}": ${originalState}`);
+            }
+            
+            if (section.subsections) {
+              applyExpansionStates(section.subsections);
+            }
+          });
+        };
+        
+        applyExpansionStates(newSections);
+        
+        // Log the final restoration result
+        console.log("[DEBUG] Restored sections expansion state:");
+        newSections.forEach(section => logSectionExpansion(section));
+        
+        return newSections;
+      });
+    } else {
+      // Apply filtering to the original sections
+      console.log("[DEBUG] Filtering sections for query:", newQuery);
+      const filteredSections = filterSectionsBySearch(JSON.parse(JSON.stringify(originalSections)), newQuery);
+      setSections(filteredSections);
+    }
   };
 
   // Modify the renderSection function to use sections directly instead of getFilteredSections
@@ -1221,8 +1316,10 @@ export default function App() {
     
     // If we're closing the search bar, clear the search query
     if (showSearch) {
-      // Instead of just setting searchQuery to empty string, use handleSearchQueryChange
-      // which will also restore the original sections with proper expansion states
+      console.log("[DEBUG] Closing search bar with X button");
+      // Use handleSearchQueryChange to properly restore sections
+      // This ensures the same logic is used whether we backspace to clear
+      // or click the X button
       handleSearchQueryChange('');
     }
     
