@@ -2,7 +2,218 @@ import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, View, Text, ActivityIndicator, TouchableOpacity, ScrollView, SafeAreaView, StatusBar, Animated, TextInput } from 'react-native';
 import Markdown from 'react-native-markdown-display';
 
-const TitleSection = ({ title, content }) => {
+// Add a utility function to highlight text matches
+const highlightMatches = (text, query) => {
+  if (!query || query.length < 2 || !text) {
+    return text;
+  }
+  
+  // Escape special regex characters in the query
+  const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const parts = text.split(new RegExp(`(${escapedQuery})`, 'gi'));
+  
+  return parts.map((part, i) => 
+    part.toLowerCase() === query.toLowerCase() ? 
+      `<mark>${part}</mark>` : 
+      part
+  ).join('');
+};
+
+// Create a simpler highlighted text component
+const HighlightedText = ({ text, searchQuery, style }) => {
+  if (!searchQuery || searchQuery.length < 2 || !text) {
+    return <Text style={style}>{text}</Text>;
+  }
+
+  // Escape special regex characters in the query
+  const escapedQuery = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  
+  // Split the text by the search query
+  const parts = text.split(new RegExp(`(${escapedQuery})`, 'gi'));
+  
+  return (
+    <Text style={style}>
+      {parts.map((part, index) => 
+        part.toLowerCase() === searchQuery.toLowerCase() ? 
+          <Text key={index} style={styles.highlightedText}>{part}</Text> : 
+          <Text key={index}>{part}</Text>
+      )}
+    </Text>
+  );
+};
+
+// Replace the HighlightedMarkdown component with a version that preserves links
+const HighlightedMarkdown = ({ content, searchQuery, style, onLinkPress }) => {
+  // If no search query or it's too short, just render the content normally
+  if (!searchQuery || searchQuery.length < 2 || !content) {
+    return (
+      <Markdown style={style} onLinkPress={onLinkPress}>
+        {content}
+      </Markdown>
+    );
+  }
+
+  // Process the content to find paragraphs
+  const paragraphs = content.split('\n\n');
+  
+  return (
+    <View>
+      {paragraphs.map((paragraph, index) => {
+        // Skip empty paragraphs
+        if (!paragraph.trim()) return null;
+        
+        // Check if this is a markdown heading, list, etc.
+        if (paragraph.startsWith('#') || 
+            paragraph.startsWith('>') || 
+            paragraph.startsWith('```')) {
+          // Render as regular markdown for headings, blockquotes, and code blocks
+          return (
+            <Markdown key={index} style={style} onLinkPress={onLinkPress}>
+              {paragraph}
+            </Markdown>
+          );
+        }
+        
+        // Special handling for lists
+        if (paragraph.trim().split('\n').some(line => line.trim().startsWith('*') || line.trim().startsWith('-'))) {
+          // For lists, we need to process each line individually
+          const lines = paragraph.split('\n');
+          
+          return (
+            <View key={index}>
+              {lines.map((line, lineIndex) => {
+                if (line.trim().startsWith('*') || line.trim().startsWith('-')) {
+                  // Extract the bullet and the text
+                  const bulletMatch = line.match(/^(\s*[\*\-]\s*)(.*)$/);
+                  if (bulletMatch) {
+                    const [_, bullet, text] = bulletMatch;
+                    
+                    // Create a custom list item with highlighting
+                    return (
+                      <View key={lineIndex} style={{ flexDirection: 'row', marginBottom: 8 }}>
+                        <Text style={{ color: style.bullet_list_icon?.color || '#BB86FC', marginRight: 8 }}>
+                          {bullet.includes('*') ? '•' : '-'}
+                        </Text>
+                        <View style={{ flex: 1 }}>
+                          <HighlightedText 
+                            text={text} 
+                            searchQuery={searchQuery} 
+                            style={style.listItem || { color: '#E1E1E1' }}
+                          />
+                        </View>
+                      </View>
+                    );
+                  }
+                }
+                
+                // For non-list lines, just render them normally
+                return (
+                  <Text key={lineIndex} style={style.paragraph || { color: '#E1E1E1', marginBottom: 8 }}>
+                    {line}
+                  </Text>
+                );
+              })}
+            </View>
+          );
+        }
+        
+        // Check if paragraph contains links
+        const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+        const hasLinks = linkRegex.test(paragraph);
+        
+        if (hasLinks) {
+          // Split the paragraph into segments (links and non-links)
+          const segments = [];
+          let lastIndex = 0;
+          let match;
+          
+          // Reset regex state
+          linkRegex.lastIndex = 0;
+          
+          while ((match = linkRegex.exec(paragraph)) !== null) {
+            // Add text before the link
+            if (match.index > lastIndex) {
+              segments.push({
+                type: 'text',
+                content: paragraph.substring(lastIndex, match.index)
+              });
+            }
+            
+            // Add the link
+            segments.push({
+              type: 'link',
+              text: match[1],
+              url: match[2]
+            });
+            
+            lastIndex = match.index + match[0].length;
+          }
+          
+          // Add any remaining text after the last link
+          if (lastIndex < paragraph.length) {
+            segments.push({
+              type: 'text',
+              content: paragraph.substring(lastIndex)
+            });
+          }
+          
+          // Render segments with highlighting and preserved links
+          return (
+            <View key={index} style={{ marginBottom: 20 }}>
+              <Text style={style.paragraph || { color: '#E1E1E1' }}>
+                {segments.map((segment, i) => {
+                  if (segment.type === 'text') {
+                    // Highlight regular text
+                    const escapedQuery = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    const parts = segment.content.split(new RegExp(`(${escapedQuery})`, 'gi'));
+                    
+                    return parts.map((part, j) => 
+                      part.toLowerCase() === searchQuery.toLowerCase() ? 
+                        <Text key={`${i}-${j}`} style={styles.highlightedText}>{part}</Text> : 
+                        <Text key={`${i}-${j}`}>{part}</Text>
+                    );
+                  } else if (segment.type === 'link') {
+                    // Handle links with potential highlighting
+                    const escapedQuery = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    const parts = segment.text.split(new RegExp(`(${escapedQuery})`, 'gi'));
+                    
+                    return (
+                      <Text 
+                        key={`link-${i}`} 
+                        style={style.link || { color: '#03DAC6' }}
+                        onPress={() => onLinkPress && onLinkPress(segment.url)}
+                      >
+                        {parts.map((part, j) => 
+                          part.toLowerCase() === searchQuery.toLowerCase() ? 
+                            <Text key={`${i}-${j}`} style={[styles.highlightedText, { textDecorationLine: 'underline' }]}>{part}</Text> : 
+                            <Text key={`${i}-${j}`}>{part}</Text>
+                        )}
+                      </Text>
+                    );
+                  }
+                  return null;
+                })}
+              </Text>
+            </View>
+          );
+        }
+        
+        // For regular paragraphs without links, use our highlighted text component
+        return (
+          <View key={index} style={{ marginBottom: 20 }}>
+            <HighlightedText 
+              text={paragraph} 
+              searchQuery={searchQuery} 
+              style={style.paragraph || { color: '#E1E1E1' }}
+            />
+          </View>
+        );
+      })}
+    </View>
+  );
+};
+
+const TitleSection = ({ title, content, searchQuery }) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(20)).current;
 
@@ -31,10 +242,8 @@ const TitleSection = ({ title, content }) => {
         alignItems: 'center',
       }}>
         <View style={styles.titleWrapper}>
-          <Markdown style={{
-            ...markdownStyles,
-            heading1: {
-              ...markdownStyles.heading1,
+          {searchQuery && searchQuery.length >= 2 ? (
+            <Text style={{
               fontSize: 48,
               textAlign: 'center',
               marginBottom: 24,
@@ -44,14 +253,36 @@ const TitleSection = ({ title, content }) => {
               textShadowColor: 'rgba(187, 134, 252, 0.3)',
               textShadowOffset: { width: 0, height: 0 },
               textShadowRadius: 20,
-            },
-            body: {
-              ...markdownStyles.body,
-              textAlign: 'center',
-            }
-          }}>
-            {`# ${title}`}
-          </Markdown>
+            }}>
+              {title.split(new RegExp(`(${searchQuery})`, 'gi')).map((part, i) => 
+                part.toLowerCase() === searchQuery.toLowerCase() ? 
+                  <Text key={i} style={styles.highlightedText}>{part}</Text> : 
+                  <Text key={i}>{part}</Text>
+              )}
+            </Text>
+          ) : (
+            <Markdown style={{
+              ...markdownStyles,
+              heading1: {
+                ...markdownStyles.heading1,
+                fontSize: 48,
+                textAlign: 'center',
+                marginBottom: 24,
+                color: '#BB86FC',
+                fontWeight: 'bold',
+                lineHeight: 56,
+                textShadowColor: 'rgba(187, 134, 252, 0.3)',
+                textShadowOffset: { width: 0, height: 0 },
+                textShadowRadius: 20,
+              },
+              body: {
+                ...markdownStyles.body,
+                textAlign: 'center',
+              }
+            }}>
+              {`# ${title}`}
+            </Markdown>
+          )}
         </View>
       </Animated.View>
       <Animated.View style={{
@@ -61,25 +292,27 @@ const TitleSection = ({ title, content }) => {
         alignItems: 'center',
       }}>
         <View style={styles.subtitleWrapper}>
-          <Markdown style={{
-            ...markdownStyles,
-            body: {
-              ...markdownStyles.body,
-              fontSize: 20,
-              textAlign: 'center',
-              color: 'rgba(225, 225, 225, 0.9)',
-              lineHeight: 32,
-              paddingHorizontal: 32,
-              letterSpacing: 0.5,
-            },
-            paragraph: {
-              marginBottom: 20,
-              color: '#E1E1E1',
-              textAlign: 'center',
-            }
-          }}>
-            {content}
-          </Markdown>
+          <HighlightedMarkdown
+            content={content}
+            searchQuery={searchQuery}
+            style={{
+              ...markdownStyles,
+              body: {
+                ...markdownStyles.body,
+                fontSize: 20,
+                textAlign: 'center',
+                color: 'rgba(225, 225, 225, 0.9)',
+                lineHeight: 32,
+                paddingHorizontal: 32,
+                letterSpacing: 0.5,
+              },
+              paragraph: {
+                marginBottom: 20,
+                color: '#E1E1E1',
+                textAlign: 'center',
+              }
+            }}
+          />
         </View>
       </Animated.View>
       <View style={styles.titleDivider} />
@@ -87,7 +320,7 @@ const TitleSection = ({ title, content }) => {
   );
 };
 
-const Section = ({ title, level, content, subsections, onPress, isExpanded, path = [], onNavigate, sectionRefs }) => {
+const Section = ({ title, level, content, subsections, onPress, isExpanded, path = [], onNavigate, sectionRefs, searchQuery }) => {
   const animatedRotation = useRef(new Animated.Value(isExpanded ? 1 : 0)).current;
 
   useEffect(() => {
@@ -130,17 +363,27 @@ const Section = ({ title, level, content, subsections, onPress, isExpanded, path
         <Animated.View style={{ transform: [{ rotate }], marginRight: 8, width: 20 }}>
           <Text style={styles.chevron}>▶</Text>
         </Animated.View>
-        <Text style={[styles.sectionTitle, { fontSize, color: '#BB86FC' }]}>{title}</Text>
+        {searchQuery && searchQuery.length >= 2 ? (
+          <Text style={[styles.sectionTitle, { fontSize, color: '#BB86FC' }]}>
+            {title.split(new RegExp(`(${searchQuery})`, 'gi')).map((part, i) => 
+              part.toLowerCase() === searchQuery.toLowerCase() ? 
+                <Text key={i} style={styles.highlightedText}>{part}</Text> : 
+                <Text key={i}>{part}</Text>
+            )}
+          </Text>
+        ) : (
+          <Text style={[styles.sectionTitle, { fontSize, color: '#BB86FC' }]}>{title}</Text>
+        )}
       </TouchableOpacity>
       {isExpanded && (
         <View style={[styles.sectionContent, { paddingLeft: 16 }]}>
           {content && (
-            <Markdown 
+            <HighlightedMarkdown
+              content={content}
+              searchQuery={searchQuery}
               style={markdownStyles}
               onLinkPress={handleLinkPress}
-            >
-              {content}
-            </Markdown>
+            />
           )}
           {subsections?.map((subsection, index) => (
             <Section
@@ -151,6 +394,7 @@ const Section = ({ title, level, content, subsections, onPress, isExpanded, path
               onPress={onPress}
               onNavigate={onNavigate}
               sectionRefs={sectionRefs}
+              searchQuery={searchQuery}
             />
           ))}
         </View>
@@ -475,6 +719,7 @@ export default function App() {
           key={index}
           title={section.title}
           content={section.content}
+          searchQuery={searchQuery}
         />
       );
     }
@@ -494,6 +739,7 @@ export default function App() {
           onPress={toggleSection}
           onNavigate={collapseAllAndExpandSection}
           sectionRefs={sectionRefs.current}
+          searchQuery={searchQuery}
         />
       </View>
     );
@@ -782,6 +1028,10 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: '#E1E1E1',
   },
+  highlightedText: {
+    backgroundColor: 'rgba(187, 134, 252, 0.3)',
+    color: '#ffffff',
+  },
 });
 
 const markdownStyles = {
@@ -878,5 +1128,10 @@ const markdownStyles = {
   td: {
     padding: 12,
     borderColor: '#333',
+  },
+  mark: {
+    backgroundColor: 'rgba(187, 134, 252, 0.3)',
+    color: '#ffffff',
+    borderRadius: 2,
   },
 };
