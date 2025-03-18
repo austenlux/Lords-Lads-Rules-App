@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, ScrollView, SafeAreaView, StatusBar, TextInput, Animated } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, ScrollView, SafeAreaView, StatusBar, TextInput, Animated, Platform, NativeModules } from 'react-native';
 import Markdown from 'react-native-markdown-display';
 
 // Constants
@@ -831,23 +831,24 @@ const RulesScreen = ({ content, sections, searchQuery, showSearch, toggleSearchB
 };
 
 // Create an Info/Settings screen component
-const InfoSettingsScreen = () => {
+const InfoSettingsScreen = ({ lastFetchDate }) => {
+  // Get app version directly from the package.json via require
+  const appVersion = require('./package.json').version;
+  
   return (
     <ScrollView style={styles.scrollView}>
       <View style={styles.contentContainer}>
         <View style={styles.infoContainer}>
-          <Text style={styles.infoTitle}>Settings & Information</Text>
-          <Text style={styles.infoText}>
-            This app provides the official rules for Lords & Lads.
-          </Text>
-          <Text style={styles.infoText}>
-            Version: 1.0.0
-          </Text>
-          <View style={styles.infoSection}>
-            <Text style={styles.infoSectionTitle}>About</Text>
-            <Text style={styles.infoText}>
-              Lords & Lads is a strategic card game where players compete to become the ultimate lord.
-            </Text>
+          <Text style={styles.infoTitle}>Lords & Lads</Text>
+          
+          <View style={styles.infoCard}>
+            <Text style={styles.infoLabel}>App Version</Text>
+            <Text style={styles.infoValue}>{appVersion}</Text>
+          </View>
+          
+          <View style={styles.infoCard}>
+            <Text style={styles.infoLabel}>Rules Last Updated</Text>
+            <Text style={styles.infoValue}>{lastFetchDate || 'Never'}</Text>
           </View>
         </View>
       </View>
@@ -865,6 +866,7 @@ export default function App() {
   const [showSearch, setShowSearch] = useState(false);
   const [activeTab, setActiveTab] = useState('rules'); // 'rules' or 'info'
   const [showTabs, setShowTabs] = useState(false); // Whether to show the tab bar
+  const [lastFetchDate, setLastFetchDate] = useState(null); // Track when content was last fetched
   const searchBarAnim = useRef(new Animated.Value(0)).current;
   const scrollViewRef = useRef(null);
   const sectionRefs = useRef({});
@@ -1188,6 +1190,9 @@ export default function App() {
       
       const text = await response.text();
       
+      // Update last fetch date
+      setLastFetchDate(new Date().toLocaleString());
+      
       // Parse and display content
       setContent(text);
       const parsedSections = parseMarkdownSections(text);
@@ -1445,7 +1450,7 @@ export default function App() {
             scrollViewRef={scrollViewRef}
           />
         ) : (
-          <InfoSettingsScreen />
+          <InfoSettingsScreen lastFetchDate={lastFetchDate} />
         )}
       </View>
       
@@ -1726,30 +1731,47 @@ const styles = StyleSheet.create({
     padding: 20,
     alignItems: 'center',
     justifyContent: 'center',
+    width: '100%',
+    maxWidth: 500,
+    alignSelf: 'center',
   },
   infoTitle: {
-    fontSize: 24,
+    fontSize: 36,
     fontWeight: 'bold',
     color: '#BB86FC',
-    marginBottom: 16,
+    marginBottom: 30,
+    textAlign: 'center',
+    textShadowColor: 'rgba(187, 134, 252, 0.3)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 20,
   },
-  infoText: {
-    fontSize: 16,
-    color: '#E1E1E1',
-    marginBottom: 10,
-  },
-  infoSection: {
-    padding: 16,
+  infoCard: {
+    padding: 20,
     borderWidth: 1,
-    borderColor: '#333',
-    borderRadius: 8,
-    marginBottom: 16,
+    borderColor: 'rgba(187, 134, 252, 0.3)',
+    borderRadius: 12,
+    marginBottom: 20,
+    backgroundColor: 'rgba(30, 30, 30, 0.7)',
+    width: '100%',
+    shadowColor: '#BB86FC',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 2,
   },
-  infoSectionTitle: {
-    fontSize: 18,
+  infoLabel: {
+    fontSize: 14,
     fontWeight: 'bold',
     color: '#BB86FC',
     marginBottom: 8,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    opacity: 0.9,
+  },
+  infoValue: {
+    fontSize: 18,
+    color: '#FFFFFF',
+    fontWeight: '500',
   },
 });
 
