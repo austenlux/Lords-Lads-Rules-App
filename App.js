@@ -2,6 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, ScrollView, SafeAreaView, StatusBar, TextInput, Animated } from 'react-native';
 import Markdown from 'react-native-markdown-display';
 
+// Constants
+const CONTENT_URL = 'https://raw.githubusercontent.com/seanKenkeremath/lords-and-lads/master/README.md';
+
 // Add a utility function to highlight text matches
 const highlightMatches = (text, query) => {
   if (!query || query.length < 2 || !text) {
@@ -1079,26 +1082,31 @@ export default function App() {
 
   const fetchReadme = async () => {
     try {
-      const response = await fetch(
-        'https://raw.githubusercontent.com/seanKenkeremath/lords-and-lads/master/README.md'
-      );
+      // Set a timeout to prevent hanging on slow connections
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10-second timeout
+      
+      const response = await fetch(CONTENT_URL, { 
+        signal: controller.signal 
+      });
+      
+      clearTimeout(timeoutId);
       
       if (!response.ok) {
-        throw new Error(`Failed to fetch README (Status: ${response.status})`);
+        throw new Error(`Failed to fetch content (Status: ${response.status})`);
       }
       
       const text = await response.text();
       
-      // Store the original content
+      // Parse and display content
       setContent(text);
-      
-      // Parse the sections from the content
       const parsedSections = parseMarkdownSections(text);
       setOriginalSections(parsedSections);
       setSections(parsedSections);
       setLoading(false);
     } catch (err) {
-      setError(err.message);
+      console.error('Error fetching content:', err);
+      setError(err.message || 'Unable to load content. Please check your internet connection.');
       setLoading(false);
     }
   };
@@ -1313,7 +1321,7 @@ export default function App() {
                 {"# Error\n\n" + error}
               </Markdown>
             </View>
-            <TouchableOpacity style={styles.retryButton} onPress={fetchReadme}>
+            <TouchableOpacity style={styles.retryButton} onPress={() => fetchReadme()}>
               <Text style={styles.retryButtonText}>Try Again</Text>
             </TouchableOpacity>
           </View>
