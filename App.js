@@ -1897,6 +1897,7 @@ const styles = StyleSheet.create({
   highlightedText: {
     backgroundColor: 'rgba(187, 134, 252, 0.3)',
     color: '#ffffff',
+    fontWeight: 'bold',
   },
   emptyStateContainer: {
     padding: 20,
