@@ -864,23 +864,29 @@ const InfoSettingsScreen = ({ lastFetchDate }) => {
     }
   }).current;
   
+  // Add useEffect to handle arrow rotation animations separately from content height
+  useEffect(() => {
+    // Update all arrow rotations when expandedVersions changes
+    Object.keys(expandedVersions).forEach(version => {
+      Animated.timing(animations[version].rotation, {
+        toValue: expandedVersions[version] ? 1 : 0,
+        duration: 100,
+        useNativeDriver: true
+      }).start();
+    });
+  }, [expandedVersions]);
+  
   const toggleVersionExpansion = (version) => {
+    // Just update the state - the animation will be triggered by the useEffect above
     setExpandedVersions(prev => {
       const newValue = !prev[version];
       
-      // Animate both the arrow rotation and content height
-      Animated.parallel([
-        Animated.timing(animations[version].rotation, {
-          toValue: newValue ? 1 : 0,
-          duration: 100,
-          useNativeDriver: true
-        }),
-        Animated.timing(animations[version].height, {
-          toValue: newValue ? contentHeights[version] : 0,
-          duration: 200, // Keep content height animation at 200ms for smoother expansion
-          useNativeDriver: false
-        })
-      ]).start();
+      // Only animate the content height here, not the arrow
+      Animated.timing(animations[version].height, {
+        toValue: newValue ? contentHeights[version] : 0,
+        duration: 200,
+        useNativeDriver: false
+      }).start();
       
       return {
         ...prev,
