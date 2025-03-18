@@ -938,7 +938,7 @@ const InfoSettingsScreen = ({ lastFetchDate }) => {
                       transform: [{
                         rotate: animations['v1.2.0'].rotation.interpolate({
                           inputRange: [0, 1],
-                          outputRange: ['0deg', '90deg']
+                          outputRange: ['0deg', '180deg']
                         })
                       }]
                     }
@@ -984,7 +984,7 @@ const InfoSettingsScreen = ({ lastFetchDate }) => {
                       transform: [{
                         rotate: animations['v1.1.0'].rotation.interpolate({
                           inputRange: [0, 1],
-                          outputRange: ['0deg', '90deg']
+                          outputRange: ['0deg', '180deg']
                         })
                       }]
                     }
@@ -1036,7 +1036,7 @@ const InfoSettingsScreen = ({ lastFetchDate }) => {
                       transform: [{
                         rotate: animations['v1.0.0'].rotation.interpolate({
                           inputRange: [0, 1],
-                          outputRange: ['0deg', '90deg']
+                          outputRange: ['0deg', '180deg']
                         })
                       }]
                     }
