@@ -478,7 +478,7 @@ const HighlightedMarkdown = ({ content, searchQuery, style, onLinkPress }) => {
   );
 };
 
-const TitleSection = ({ title, content, searchQuery, onNavigate }) => {
+const TitleSection = ({ title, content, searchQuery, onNavigate, onLongPress }) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(20)).current;
 
@@ -555,38 +555,44 @@ const TitleSection = ({ title, content, searchQuery, onNavigate }) => {
         alignItems: 'center',
       }}>
         <View style={styles.titleWrapper}>
-          <Text style={{
-            fontSize: 48,
-            textAlign: 'center',
-            marginBottom: 24,
-            color: '#BB86FC',
-            fontWeight: 'bold',
-            lineHeight: 56,
-            textShadowColor: 'rgba(187, 134, 252, 0.3)',
-            textShadowOffset: { width: 0, height: 0 },
-            textShadowRadius: 20,
-          }}>
-            {searchQuery && searchQuery.length >= 2 ? 
-              decodedTitle.split(new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi')).map((part, i) => 
-                part.toLowerCase() === searchQuery.toLowerCase() ? 
-                  <Text key={i} style={[
-                    // Preserve original title styling
-                    {
-                      fontSize: 48,
-                      fontWeight: 'bold',
-                      color: '#BB86FC',
-                      // Don't include lineHeight here as it's handled by the parent
-                      textShadowColor: 'rgba(187, 134, 252, 0.3)',
-                      textShadowOffset: { width: 0, height: 0 },
-                      textShadowRadius: 20,
-                    },
-                    styles.highlightedText
-                  ]}>{part}</Text> : 
-                  part
-              ) : 
-              decodedTitle
-            }
-          </Text>
+          <TouchableOpacity 
+            onLongPress={onLongPress}
+            delayLongPress={500}
+            activeOpacity={1} 
+          >
+            <Text style={{
+              fontSize: 48,
+              textAlign: 'center',
+              marginBottom: 24,
+              color: '#BB86FC',
+              fontWeight: 'bold',
+              lineHeight: 56,
+              textShadowColor: 'rgba(187, 134, 252, 0.3)',
+              textShadowOffset: { width: 0, height: 0 },
+              textShadowRadius: 20,
+            }}>
+              {searchQuery && searchQuery.length >= 2 ? 
+                decodedTitle.split(new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi')).map((part, i) => 
+                  part.toLowerCase() === searchQuery.toLowerCase() ? 
+                    <Text key={i} style={[
+                      // Preserve original title styling
+                      {
+                        fontSize: 48,
+                        fontWeight: 'bold',
+                        color: '#BB86FC',
+                        // Don't include lineHeight here as it's handled by the parent
+                        textShadowColor: 'rgba(187, 134, 252, 0.3)',
+                        textShadowOffset: { width: 0, height: 0 },
+                        textShadowRadius: 20,
+                      },
+                      styles.highlightedText
+                    ]}>{part}</Text> : 
+                    part
+                ) : 
+                decodedTitle
+              }
+            </Text>
+          </TouchableOpacity>
         </View>
       </Animated.View>
       <Animated.View style={{
@@ -770,6 +776,85 @@ const EmptySearchResults = ({ query }) => {
   );
 };
 
+// Create a Rules screen component
+const RulesScreen = ({ content, sections, searchQuery, showSearch, toggleSearchBar, handleSearchQueryChange, searchInputRef, renderSection, scrollViewRef }) => {
+  return (
+    <View style={{ flex: 1 }}>
+      {/* Header with Search Icon/Bar */}
+      <View style={styles.headerContainer}>
+        {!showSearch ? (
+          <>
+            <View style={styles.spacer}></View>
+            <TouchableOpacity 
+              style={styles.searchIconContainer} 
+              onPress={toggleSearchBar}
+            >
+              <Text style={styles.searchIcon}>🔍</Text>
+            </TouchableOpacity>
+          </>
+        ) : (
+          <View style={styles.searchBarWrapper}>
+            <TextInput
+              ref={searchInputRef}
+              style={styles.searchInput}
+              placeholder="Search rules..."
+              placeholderTextColor="#888"
+              value={searchQuery}
+              onChangeText={handleSearchQueryChange}
+              autoFocus={true}
+            />
+            <TouchableOpacity 
+              style={styles.closeIconContainer} 
+              onPress={toggleSearchBar}
+            >
+              <Text style={styles.closeIcon}>✕</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
+      
+      <ScrollView 
+        ref={scrollViewRef}
+        style={styles.scrollView} 
+        contentInsetAdjustmentBehavior="automatic"
+      >
+        <View style={styles.contentContainer}>
+          {sections.length === 0 && searchQuery && searchQuery.length >= 2 ? (
+            <EmptySearchResults query={searchQuery} />
+          ) : (
+            sections.map((section, index) => renderSection(section, index))
+          )}
+        </View>
+      </ScrollView>
+    </View>
+  );
+};
+
+// Create an Info/Settings screen component
+const InfoSettingsScreen = () => {
+  return (
+    <ScrollView style={styles.scrollView}>
+      <View style={styles.contentContainer}>
+        <View style={styles.infoContainer}>
+          <Text style={styles.infoTitle}>Settings & Information</Text>
+          <Text style={styles.infoText}>
+            This app provides the official rules for Lords & Lads.
+          </Text>
+          <Text style={styles.infoText}>
+            Version: 1.0.0
+          </Text>
+          <View style={styles.infoSection}>
+            <Text style={styles.infoSectionTitle}>About</Text>
+            <Text style={styles.infoText}>
+              Lords & Lads is a strategic card game where players compete to become the ultimate lord.
+            </Text>
+          </View>
+        </View>
+      </View>
+    </ScrollView>
+  );
+};
+
 export default function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -778,6 +863,8 @@ export default function App() {
   const [sections, setSections] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearch, setShowSearch] = useState(false);
+  const [activeTab, setActiveTab] = useState('rules'); // 'rules' or 'info'
+  const [showTabs, setShowTabs] = useState(false); // Whether to show the tab bar
   const searchBarAnim = useRef(new Animated.Value(0)).current;
   const scrollViewRef = useRef(null);
   const sectionRefs = useRef({});
@@ -1066,7 +1153,10 @@ export default function App() {
                 }
               }
             }
-          }
+          };
+          
+          findAndUpdateSection(originalSectionsCopy, newSections);
+          setOriginalSections(originalSectionsCopy);
         };
         
         findAndUpdateSection(originalSectionsCopy, newSections);
@@ -1259,7 +1349,12 @@ export default function App() {
     }
   };
 
-  // Modify the renderSection function to use sections directly instead of getFilteredSections
+  // Add a function to toggle tab visibility
+  const toggleTabVisibility = () => {
+    setShowTabs(prevShowTabs => !prevShowTabs);
+  };
+
+  // Update TitleSection component to include a long press handler
   const renderSection = (section, index, parentPath = []) => {
     const path = [...parentPath, index];
     
@@ -1271,6 +1366,7 @@ export default function App() {
           content={section.content}
           searchQuery={searchQuery}
           onNavigate={collapseAllAndExpandSection}
+          onLongPress={toggleTabVisibility}
         />
       );
     }
@@ -1334,52 +1430,42 @@ export default function App() {
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" backgroundColor="#121212" />
       
-      {/* Header with Search Icon/Bar */}
-      <View style={styles.headerContainer}>
-        {!showSearch ? (
-          <>
-            <View style={styles.spacer}></View>
-            <TouchableOpacity 
-              style={styles.searchIconContainer} 
-              onPress={toggleSearchBar}
-            >
-              <Text style={styles.searchIcon}>🔍</Text>
-            </TouchableOpacity>
-          </>
+      {/* Main Content Area */}
+      <View style={styles.mainContainer}>
+        {activeTab === 'rules' ? (
+          <RulesScreen 
+            content={content}
+            sections={sections}
+            searchQuery={searchQuery}
+            showSearch={showSearch}
+            toggleSearchBar={toggleSearchBar}
+            handleSearchQueryChange={handleSearchQueryChange}
+            searchInputRef={searchInputRef}
+            renderSection={renderSection}
+            scrollViewRef={scrollViewRef}
+          />
         ) : (
-          <View style={styles.searchBarWrapper}>
-            <TextInput
-              ref={searchInputRef}
-              style={styles.searchInput}
-              placeholder="Search rules..."
-              placeholderTextColor="#888"
-              value={searchQuery}
-              onChangeText={handleSearchQueryChange}
-              autoFocus={true}
-            />
-            <TouchableOpacity 
-              style={styles.closeIconContainer} 
-              onPress={toggleSearchBar}
-            >
-              <Text style={styles.closeIcon}>✕</Text>
-            </TouchableOpacity>
-          </View>
+          <InfoSettingsScreen />
         )}
       </View>
       
-      <ScrollView 
-        ref={scrollViewRef}
-        style={styles.scrollView} 
-        contentInsetAdjustmentBehavior="automatic"
-      >
-        <View style={styles.contentContainer}>
-          {sections.length === 0 && searchQuery && searchQuery.length >= 2 ? (
-            <EmptySearchResults query={searchQuery} />
-          ) : (
-            sections.map((section, index) => renderSection(section, index))
-          )}
+      {/* Bottom Tab Navigation - Only show if showTabs is true */}
+      {showTabs && (
+        <View style={styles.tabBar}>
+          <TouchableOpacity 
+            style={[styles.tabButton, activeTab === 'rules' && styles.activeTabButton]} 
+            onPress={() => setActiveTab('rules')}
+          >
+            <Text style={[styles.tabButtonText, activeTab === 'rules' && styles.activeTabButtonText]}>Rules</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={[styles.tabButton, activeTab === 'info' && styles.activeTabButton]} 
+            onPress={() => setActiveTab('info')}
+          >
+            <Text style={[styles.tabButtonText, activeTab === 'info' && styles.activeTabButtonText]}>Info</Text>
+          </TouchableOpacity>
         </View>
-      </ScrollView>
+      )}
     </SafeAreaView>
   );
 }
@@ -1610,6 +1696,60 @@ const styles = StyleSheet.create({
     color: '#aaa',
     marginBottom: 10,
     textAlign: 'center',
+  },
+  mainContainer: {
+    flex: 1,
+  },
+  tabBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    padding: 8,
+    backgroundColor: '#2C2C2C',
+  },
+  tabButton: {
+    padding: 12,
+    borderRadius: 8,
+  },
+  activeTabButton: {
+    backgroundColor: '#BB86FC',
+  },
+  tabButtonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#E1E1E1',
+  },
+  activeTabButtonText: {
+    color: '#121212',
+  },
+  infoContainer: {
+    padding: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  infoTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#BB86FC',
+    marginBottom: 16,
+  },
+  infoText: {
+    fontSize: 16,
+    color: '#E1E1E1',
+    marginBottom: 10,
+  },
+  infoSection: {
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#333',
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  infoSectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#BB86FC',
+    marginBottom: 8,
   },
 });
 
