@@ -847,7 +847,7 @@ const InfoSettingsScreen = ({ lastFetchDate }) => {
           </View>
           
           <View style={styles.infoCard}>
-            <Text style={styles.infoLabel}>Rules Last Updated</Text>
+            <Text style={styles.infoLabel}>Rules Last Synced</Text>
             <Text style={styles.infoValue}>{lastFetchDate || 'Never'}</Text>
           </View>
         </View>
