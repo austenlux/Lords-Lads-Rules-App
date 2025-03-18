@@ -835,6 +835,70 @@ const InfoSettingsScreen = ({ lastFetchDate }) => {
   // Get app version directly from the package.json via require
   const appVersion = require('./package.json').version;
   
+  const [expandedVersions, setExpandedVersions] = useState({
+    'v1.1.0': false,
+    'v1.0.0': false
+  });
+  
+  // Measured heights for content
+  const [contentHeights, setContentHeights] = useState({
+    'v1.1.0': 0,
+    'v1.0.0': 0
+  });
+  
+  // Create animated values for arrow rotations and content heights
+  const animations = useRef({
+    'v1.1.0': {
+      rotation: new Animated.Value(0),
+      height: new Animated.Value(0)
+    },
+    'v1.0.0': {
+      rotation: new Animated.Value(0),
+      height: new Animated.Value(0)
+    }
+  }).current;
+  
+  const toggleVersionExpansion = (version) => {
+    setExpandedVersions(prev => {
+      const newValue = !prev[version];
+      
+      // Animate both the arrow rotation and content height
+      Animated.parallel([
+        Animated.timing(animations[version].rotation, {
+          toValue: newValue ? 1 : 0,
+          duration: 200,
+          useNativeDriver: true
+        }),
+        Animated.timing(animations[version].height, {
+          toValue: newValue ? contentHeights[version] : 0,
+          duration: 200,
+          useNativeDriver: false
+        })
+      ]).start();
+      
+      return {
+        ...prev,
+        [version]: newValue
+      };
+    });
+  };
+  
+  // Measure content height
+  const measureContentHeight = (version, event) => {
+    const { height } = event.nativeEvent.layout;
+    if (height > 0 && contentHeights[version] !== height) {
+      setContentHeights(prev => ({
+        ...prev,
+        [version]: height
+      }));
+      
+      // If section is already expanded, update the animation value immediately
+      if (expandedVersions[version]) {
+        animations[version].height.setValue(height);
+      }
+    }
+  };
+  
   return (
     <ScrollView style={styles.scrollView}>
       <View style={styles.contentContainer}>
@@ -842,13 +906,111 @@ const InfoSettingsScreen = ({ lastFetchDate }) => {
           <Text style={styles.infoTitle}>Lords & Lads</Text>
           
           <View style={styles.infoCard}>
-            <Text style={styles.infoLabel}>App Version</Text>
-            <Text style={styles.infoValue}>{appVersion}</Text>
-          </View>
-          
-          <View style={styles.infoCard}>
             <Text style={styles.infoLabel}>Rules Last Synced</Text>
             <Text style={styles.infoValue}>{lastFetchDate || 'Never'}</Text>
+          </View>
+          
+          <View style={styles.changelogContainer}>
+            <Text style={styles.changelogTitle}>Changelog</Text>
+            
+            {/* v1.1.0 */}
+            <View style={styles.versionContainer}>
+              <TouchableOpacity 
+                style={styles.versionHeader} 
+                onPress={() => toggleVersionExpansion('v1.1.0')}
+                activeOpacity={0.7}
+              >
+                <View style={styles.versionRow}>
+                  <Text style={styles.versionText}>v1.1.0</Text>
+                  <Text style={styles.versionDate}>2023-03-17</Text>
+                  {appVersion === '1.1.0' && <View style={styles.currentVersionBadge}><Text style={styles.currentVersionText}>Current</Text></View>}
+                </View>
+                <Animated.Text 
+                  style={[
+                    styles.versionArrow,
+                    {
+                      transform: [{
+                        rotate: animations['v1.1.0'].rotation.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: ['0deg', '90deg']
+                        })
+                      }]
+                    }
+                  ]}
+                >
+                  ▶
+                </Animated.Text>
+              </TouchableOpacity>
+              
+              <Animated.View style={[
+                styles.versionContentContainer,
+                { height: animations['v1.1.0'].height }
+              ]}>
+                <View 
+                  style={styles.versionContent}
+                  onLayout={(event) => measureContentHeight('v1.1.0', event)}
+                >
+                  <Text style={styles.changelogSubtitle}>Added search functionality:</Text>
+                  <Text style={styles.changelogItem}>• Real-time filtering of rules and Table of Contents</Text>
+                  <Text style={styles.changelogItem}>• Preserves section hierarchy when filtering</Text>
+                  <Text style={styles.changelogItem}>• Highlights matching text in search results</Text>
+                  <Text style={styles.changelogItem}>• Maintains section expansion states when clearing search</Text>
+                  <Text style={styles.changelogItem}>• Shows empty state message when no matches found</Text>
+                  
+                  <Text style={[styles.changelogSubtitle, {marginTop: 12}]}>Improved text rendering:</Text>
+                  <Text style={styles.changelogItem}>• Fixed HTML entities (& symbol now displays correctly)</Text>
+                  <Text style={styles.changelogItem}>• Corrected Table of Contents indentation</Text>
+                  <Text style={styles.changelogItem}>• Enhanced overall text formatting consistency</Text>
+                </View>
+              </Animated.View>
+            </View>
+            
+            {/* v1.0.0 */}
+            <View style={styles.versionContainer}>
+              <TouchableOpacity 
+                style={styles.versionHeader} 
+                onPress={() => toggleVersionExpansion('v1.0.0')}
+                activeOpacity={0.7}
+              >
+                <View style={styles.versionRow}>
+                  <Text style={styles.versionText}>v1.0.0</Text>
+                  <Text style={styles.versionDate}>2023-03-14</Text>
+                  {appVersion === '1.0.0' && <View style={styles.currentVersionBadge}><Text style={styles.currentVersionText}>Current</Text></View>}
+                </View>
+                <Animated.Text 
+                  style={[
+                    styles.versionArrow,
+                    {
+                      transform: [{
+                        rotate: animations['v1.0.0'].rotation.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: ['0deg', '90deg']
+                        })
+                      }]
+                    }
+                  ]}
+                >
+                  ▶
+                </Animated.Text>
+              </TouchableOpacity>
+              
+              <Animated.View style={[
+                styles.versionContentContainer,
+                { height: animations['v1.0.0'].height }
+              ]}>
+                <View 
+                  style={styles.versionContent}
+                  onLayout={(event) => measureContentHeight('v1.0.0', event)}
+                >
+                  <Text style={styles.changelogSubtitle}>Initial release featuring:</Text>
+                  <Text style={styles.changelogItem}>• Beautiful dark theme UI</Text>
+                  <Text style={styles.changelogItem}>• Full rules documentation from GitHub</Text>
+                  <Text style={styles.changelogItem}>• Expandable/collapsible sections</Text>
+                  <Text style={styles.changelogItem}>• Smooth animations and transitions</Text>
+                  <Text style={styles.changelogItem}>• Easy navigation between sections</Text>
+                </View>
+              </Animated.View>
+            </View>
           </View>
         </View>
       </View>
@@ -1772,6 +1934,78 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: '#FFFFFF',
     fontWeight: '500',
+  },
+  changelogContainer: {
+    marginTop: 20,
+  },
+  changelogTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#BB86FC',
+    marginBottom: 16,
+  },
+  versionContainer: {
+    padding: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(187, 134, 252, 0.3)',
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+  versionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  versionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  versionText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#BB86FC',
+    marginRight: 12,
+  },
+  versionDate: {
+    fontSize: 16,
+    color: '#E1E1E1',
+    marginRight: 12,
+  },
+  versionArrow: {
+    fontSize: 16,
+    color: '#BB86FC',
+  },
+  versionContentContainer: {
+    overflow: 'hidden',
+  },
+  versionContent: {
+    paddingTop: 12,
+    paddingLeft: 12,
+    paddingRight: 12,
+    paddingBottom: 12,
+  },
+  changelogSubtitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#BB86FC',
+    marginBottom: 8,
+  },
+  changelogItem: {
+    fontSize: 16,
+    color: '#E1E1E1',
+  },
+  currentVersionBadge: {
+    backgroundColor: '#03DAC6',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 4,
+    marginLeft: 4,
+  },
+  currentVersionText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#121212',
   },
 });
 
