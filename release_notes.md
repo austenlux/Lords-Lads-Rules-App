@@ -2,6 +2,14 @@
 
 A comprehensive history of all releases and their changes.
 
+## v1.2.1 (2023-03-26)
+
+### Bug Fixes
+* Fixed "Maximum call stack size exceeded" crash that affected some users
+* Improved arrow animations in expandable sections throughout the app
+* Fixed arrow rotation inconsistencies between Rules and Changelog sections
+* Made highlighted search results bold for better visibility
+
 ## v1.2.0 (2023-03-25)
 
 ### UI and Usability Improvements

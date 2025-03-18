@@ -836,6 +836,7 @@ const InfoSettingsScreen = ({ lastFetchDate }) => {
   const appVersion = require('./package.json').version;
   
   const [expandedVersions, setExpandedVersions] = useState({
+    'v1.2.1': false,
     'v1.2.0': false,
     'v1.1.0': false,
     'v1.0.0': false
@@ -843,6 +844,7 @@ const InfoSettingsScreen = ({ lastFetchDate }) => {
   
   // Measured heights for content
   const [contentHeights, setContentHeights] = useState({
+    'v1.2.1': 0,
     'v1.2.0': 0,
     'v1.1.0': 0,
     'v1.0.0': 0
@@ -850,6 +852,10 @@ const InfoSettingsScreen = ({ lastFetchDate }) => {
   
   // Create animated values for arrow rotations and content heights
   const animations = useRef({
+    'v1.2.1': {
+      rotation: new Animated.Value(0),
+      height: new Animated.Value(0)
+    },
     'v1.2.0': {
       rotation: new Animated.Value(0),
       height: new Animated.Value(0)
@@ -924,6 +930,51 @@ const InfoSettingsScreen = ({ lastFetchDate }) => {
           
           <View style={styles.changelogContainer}>
             <Text style={styles.changelogTitle}>Changelog</Text>
+            
+            {/* v1.2.1 */}
+            <View style={styles.versionContainer}>
+              <TouchableOpacity 
+                style={styles.versionHeader} 
+                onPress={() => toggleVersionExpansion('v1.2.1')}
+                activeOpacity={0.7}
+              >
+                <View style={styles.versionRow}>
+                  <Text style={styles.versionText}>v1.2.1</Text>
+                  <Text style={styles.versionDate}>2023-03-26</Text>
+                  {appVersion === '1.2.1' && <View style={styles.currentVersionBadge}><Text style={styles.currentVersionText}>Current</Text></View>}
+                </View>
+                <Animated.View 
+                  style={{ 
+                    transform: [{
+                      rotate: animations['v1.2.1'].rotation.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: ['0deg', '90deg']
+                      })
+                    }],
+                    marginRight: 8,
+                    width: 20
+                  }}
+                >
+                  <Text style={styles.versionArrow}>▶</Text>
+                </Animated.View>
+              </TouchableOpacity>
+              
+              <Animated.View style={[
+                styles.versionContentContainer,
+                { height: animations['v1.2.1'].height }
+              ]}>
+                <View 
+                  style={styles.versionContent}
+                  onLayout={(event) => measureContentHeight('v1.2.1', event)}
+                >
+                  <Text style={styles.changelogSubtitle}>Bug Fixes:</Text>
+                  <Text style={styles.changelogItem}>• Fixed "Maximum call stack size exceeded" crash that affected some users</Text>
+                  <Text style={styles.changelogItem}>• Improved arrow animations in expandable sections throughout the app</Text>
+                  <Text style={styles.changelogItem}>• Fixed arrow rotation inconsistencies between Rules and Changelog sections</Text>
+                  <Text style={styles.changelogItem}>• Made highlighted search results bold for better visibility</Text>
+                </View>
+              </Animated.View>
+            </View>
             
             {/* v1.2.0 */}
             <View style={styles.versionContainer}>
