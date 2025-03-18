@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, View, Text, ActivityIndicator, TouchableOpacity, ScrollView, SafeAreaView, StatusBar, Animated, TextInput } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, ScrollView, SafeAreaView, StatusBar, TextInput, Animated } from 'react-native';
 import Markdown from 'react-native-markdown-display';
 
 // Add a utility function to highlight text matches
@@ -486,12 +486,12 @@ const TitleSection = ({ title, content, searchQuery, onNavigate }) => {
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
-        duration: 800,
+        duration: 300,
         useNativeDriver: true,
       }),
       Animated.timing(slideAnim, {
         toValue: 0,
-        duration: 800,
+        duration: 300,
         useNativeDriver: true,
       })
     ]).start();
@@ -665,7 +665,7 @@ const Section = ({ title, level, content, subsections, onPress, isExpanded, path
   useEffect(() => {
     Animated.timing(animatedRotation, {
       toValue: isExpanded ? 1 : 0,
-      duration: 200,
+      duration: 100,
       useNativeDriver: true,
     }).start();
   }, [isExpanded]);
@@ -786,7 +786,7 @@ export default function App() {
       // Small delay to ensure the input is mounted
       setTimeout(() => {
         searchInputRef.current?.focus();
-      }, 100);
+      }, 10);
     }
   }, [showSearch]);
 
@@ -917,7 +917,7 @@ export default function App() {
           (error) => {}
         );
       }
-    }, 500);
+    }, 100);
   };
 
   const handleLinkPress = (url) => {
@@ -1078,15 +1078,15 @@ export default function App() {
   };
 
   const fetchReadme = async () => {
-    setLoading(true);
-    setError(null);
     try {
       const response = await fetch(
         'https://raw.githubusercontent.com/seanKenkeremath/lords-and-lads/master/README.md'
       );
+      
       if (!response.ok) {
         throw new Error(`Failed to fetch README (Status: ${response.status})`);
       }
+      
       const text = await response.text();
       
       // Store the original content
@@ -1096,9 +1096,9 @@ export default function App() {
       const parsedSections = parseMarkdownSections(text);
       setOriginalSections(parsedSections);
       setSections(parsedSections);
+      setLoading(false);
     } catch (err) {
       setError(err.message);
-    } finally {
       setLoading(false);
     }
   };
@@ -1289,37 +1289,18 @@ export default function App() {
   };
 
   const toggleSearchBar = () => {
-    const toValue = showSearch ? 0 : 1;
-    
-    // If we're closing the search bar, clear the search query
     if (showSearch) {
-      // Use handleSearchQueryChange to properly restore sections
-      // This ensures the same logic is used whether we backspace to clear
-      // or click the X button
       handleSearchQueryChange('');
     }
-    
     setShowSearch(!showSearch);
-    
-    Animated.timing(searchBarAnim, {
-      toValue,
-      duration: 300,
-      useNativeDriver: false,
-    }).start();
   };
 
+  // If still loading, return null to keep native splash screen visible
   if (loading) {
-    return (
-      <SafeAreaView style={styles.safeArea}>
-        <StatusBar barStyle="light-content" backgroundColor="#121212" />
-        <View style={styles.container}>
-          <ActivityIndicator size="large" color="#BB86FC" />
-          <Text style={styles.loadingText}>Loading Rules...</Text>
-        </View>
-      </SafeAreaView>
-    );
+    return null;
   }
 
+  // Only render app content once loading is complete
   if (error) {
     return (
       <SafeAreaView style={styles.safeArea}>
