@@ -1349,39 +1349,6 @@ export default function App() {
       const pathParts = path.map(String);
       toggleNestedSection(newSections, pathParts);
       
-      // Also update the originalSections so when we restore from them,
-      // they have the correct expansion state
-      const updateOriginalSections = () => {
-        const originalSectionsCopy = JSON.parse(JSON.stringify(originalSections));
-        
-        // Helper function to find and update the same section in originalSections
-        const findAndUpdateSection = (origSections, currentSections) => {
-          // Match sections by title
-          for (let i = 0; i < origSections.length; i++) {
-            for (let j = 0; j < currentSections.length; j++) {
-              if (origSections[i].title === currentSections[j].title) {
-                // Update the expansion state in the original
-                origSections[i].isExpanded = currentSections[j].isExpanded;
-                
-                // Recursively update subsections
-                if (origSections[i].subsections && currentSections[j].subsections) {
-                  findAndUpdateSection(origSections[i].subsections, currentSections[j].subsections);
-                }
-              }
-            }
-          };
-          
-          findAndUpdateSection(originalSectionsCopy, newSections);
-          setOriginalSections(originalSectionsCopy);
-        };
-        
-        findAndUpdateSection(originalSectionsCopy, newSections);
-        setOriginalSections(originalSectionsCopy);
-      };
-      
-      // Update originalSections to keep them in sync
-      updateOriginalSections();
-      
       return newSections;
     });
   };
@@ -1423,6 +1390,44 @@ export default function App() {
   useEffect(() => {
     fetchReadme();
   }, []);
+
+  // Add a useEffect to update originalSections when needed
+  useEffect(() => {
+    // Only update if we have sections and we're not searching
+    if (sections.length > 0 && (!searchQuery || searchQuery.length < 2)) {
+      // Keep track of expansion states in originalSections, but only when not searching
+      const updateOriginalWithExpansionStates = () => {
+        // Create helper function to copy expansion states
+        const copyExpansionStates = (source, target) => {
+          if (!source || !target) return;
+          
+          for (let i = 0; i < source.length && i < target.length; i++) {
+            if (source[i].title === target[i].title) {
+              // Only copy isExpanded property
+              target[i].isExpanded = source[i].isExpanded;
+              
+              // Recursively update subsections
+              if (source[i].subsections && target[i].subsections) {
+                copyExpansionStates(source[i].subsections, target[i].subsections);
+              }
+            }
+          }
+        };
+        
+        // Make a deep copy of originalSections
+        const updatedOriginalSections = JSON.parse(JSON.stringify(originalSections));
+        
+        // Copy expansion states from sections to updatedOriginalSections
+        copyExpansionStates(sections, updatedOriginalSections);
+        
+        // Update the state only if there are actual changes
+        setOriginalSections(updatedOriginalSections);
+      };
+      
+      // Call the update function
+      updateOriginalWithExpansionStates();
+    }
+  }, [sections]);  // Only depend on sections to avoid unnecessary updates
 
   // Modify the filterSectionsBySearch function to handle section expansion
   const filterSectionsBySearch = (sections, searchQuery) => {
