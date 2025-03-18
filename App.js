@@ -872,12 +872,12 @@ const InfoSettingsScreen = ({ lastFetchDate }) => {
       Animated.parallel([
         Animated.timing(animations[version].rotation, {
           toValue: newValue ? 1 : 0,
-          duration: 200,
+          duration: 100,
           useNativeDriver: true
         }),
         Animated.timing(animations[version].height, {
           toValue: newValue ? contentHeights[version] : 0,
-          duration: 200,
+          duration: 200, // Keep content height animation at 200ms for smoother expansion
           useNativeDriver: false
         })
       ]).start();
@@ -931,21 +931,20 @@ const InfoSettingsScreen = ({ lastFetchDate }) => {
                   <Text style={styles.versionDate}>2023-03-25</Text>
                   {appVersion === '1.2.0' && <View style={styles.currentVersionBadge}><Text style={styles.currentVersionText}>Current</Text></View>}
                 </View>
-                <Animated.Text 
-                  style={[
-                    styles.versionArrow,
-                    {
-                      transform: [{
-                        rotate: animations['v1.2.0'].rotation.interpolate({
-                          inputRange: [0, 1],
-                          outputRange: ['0deg', '180deg']
-                        })
-                      }]
-                    }
-                  ]}
+                <Animated.View 
+                  style={{ 
+                    transform: [{
+                      rotate: animations['v1.2.0'].rotation.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: ['0deg', '90deg']
+                      })
+                    }],
+                    marginRight: 8,
+                    width: 20
+                  }}
                 >
-                  ▶
-                </Animated.Text>
+                  <Text style={styles.versionArrow}>▶</Text>
+                </Animated.View>
               </TouchableOpacity>
               
               <Animated.View style={[
@@ -977,21 +976,20 @@ const InfoSettingsScreen = ({ lastFetchDate }) => {
                   <Text style={styles.versionDate}>2023-03-17</Text>
                   {appVersion === '1.1.0' && <View style={styles.currentVersionBadge}><Text style={styles.currentVersionText}>Current</Text></View>}
                 </View>
-                <Animated.Text 
-                  style={[
-                    styles.versionArrow,
-                    {
-                      transform: [{
-                        rotate: animations['v1.1.0'].rotation.interpolate({
-                          inputRange: [0, 1],
-                          outputRange: ['0deg', '180deg']
-                        })
-                      }]
-                    }
-                  ]}
+                <Animated.View 
+                  style={{ 
+                    transform: [{
+                      rotate: animations['v1.1.0'].rotation.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: ['0deg', '90deg']
+                      })
+                    }],
+                    marginRight: 8,
+                    width: 20
+                  }}
                 >
-                  ▶
-                </Animated.Text>
+                  <Text style={styles.versionArrow}>▶</Text>
+                </Animated.View>
               </TouchableOpacity>
               
               <Animated.View style={[
@@ -1029,21 +1027,20 @@ const InfoSettingsScreen = ({ lastFetchDate }) => {
                   <Text style={styles.versionDate}>2023-03-14</Text>
                   {appVersion === '1.0.0' && <View style={styles.currentVersionBadge}><Text style={styles.currentVersionText}>Current</Text></View>}
                 </View>
-                <Animated.Text 
-                  style={[
-                    styles.versionArrow,
-                    {
-                      transform: [{
-                        rotate: animations['v1.0.0'].rotation.interpolate({
-                          inputRange: [0, 1],
-                          outputRange: ['0deg', '180deg']
-                        })
-                      }]
-                    }
-                  ]}
+                <Animated.View 
+                  style={{ 
+                    transform: [{
+                      rotate: animations['v1.0.0'].rotation.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: ['0deg', '90deg']
+                      })
+                    }],
+                    marginRight: 8,
+                    width: 20
+                  }}
                 >
-                  ▶
-                </Animated.Text>
+                  <Text style={styles.versionArrow}>▶</Text>
+                </Animated.View>
               </TouchableOpacity>
               
               <Animated.View style={[
@@ -2031,8 +2028,8 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   versionArrow: {
-    fontSize: 16,
     color: '#BB86FC',
+    fontSize: 16,
   },
   versionContentContainer: {
     overflow: 'hidden',
