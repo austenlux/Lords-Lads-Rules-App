@@ -836,18 +836,24 @@ const InfoSettingsScreen = ({ lastFetchDate }) => {
   const appVersion = require('./package.json').version;
   
   const [expandedVersions, setExpandedVersions] = useState({
+    'v1.2.0': false,
     'v1.1.0': false,
     'v1.0.0': false
   });
   
   // Measured heights for content
   const [contentHeights, setContentHeights] = useState({
+    'v1.2.0': 0,
     'v1.1.0': 0,
     'v1.0.0': 0
   });
   
   // Create animated values for arrow rotations and content heights
   const animations = useRef({
+    'v1.2.0': {
+      rotation: new Animated.Value(0),
+      height: new Animated.Value(0)
+    },
     'v1.1.0': {
       rotation: new Animated.Value(0),
       height: new Animated.Value(0)
@@ -912,6 +918,52 @@ const InfoSettingsScreen = ({ lastFetchDate }) => {
           
           <View style={styles.changelogContainer}>
             <Text style={styles.changelogTitle}>Changelog</Text>
+            
+            {/* v1.2.0 */}
+            <View style={styles.versionContainer}>
+              <TouchableOpacity 
+                style={styles.versionHeader} 
+                onPress={() => toggleVersionExpansion('v1.2.0')}
+                activeOpacity={0.7}
+              >
+                <View style={styles.versionRow}>
+                  <Text style={styles.versionText}>v1.2.0</Text>
+                  <Text style={styles.versionDate}>2023-03-25</Text>
+                  {appVersion === '1.2.0' && <View style={styles.currentVersionBadge}><Text style={styles.currentVersionText}>Current</Text></View>}
+                </View>
+                <Animated.Text 
+                  style={[
+                    styles.versionArrow,
+                    {
+                      transform: [{
+                        rotate: animations['v1.2.0'].rotation.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: ['0deg', '90deg']
+                        })
+                      }]
+                    }
+                  ]}
+                >
+                  ▶
+                </Animated.Text>
+              </TouchableOpacity>
+              
+              <Animated.View style={[
+                styles.versionContentContainer,
+                { height: animations['v1.2.0'].height }
+              ]}>
+                <View 
+                  style={styles.versionContent}
+                  onLayout={(event) => measureContentHeight('v1.2.0', event)}
+                >
+                  <Text style={styles.changelogSubtitle}>UI and Usability Improvements:</Text>
+                  <Text style={styles.changelogItem}>• Added full changelog in the Info tab with expandable version sections</Text>
+                  <Text style={styles.changelogItem}>• Improved adaptive icon display on various Android launchers</Text>
+                  <Text style={styles.changelogItem}>• Fixed text overlapping issues in the changelog display</Text>
+                  <Text style={styles.changelogItem}>• Enhanced animation smoothness for expandable sections</Text>
+                </View>
+              </Animated.View>
+            </View>
             
             {/* v1.1.0 */}
             <View style={styles.versionContainer}>
