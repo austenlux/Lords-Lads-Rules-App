@@ -938,7 +938,7 @@ const InfoSettingsScreen = ({ lastFetchDate }) => {
                       transform: [{
                         rotate: animations['v1.2.0'].rotation.interpolate({
                           inputRange: [0, 1],
-                          outputRange: ['0deg', '180deg']
+                          outputRange: ['0deg', '90deg']
                         })
                       }]
                     }
@@ -984,7 +984,7 @@ const InfoSettingsScreen = ({ lastFetchDate }) => {
                       transform: [{
                         rotate: animations['v1.1.0'].rotation.interpolate({
                           inputRange: [0, 1],
-                          outputRange: ['0deg', '180deg']
+                          outputRange: ['0deg', '90deg']
                         })
                       }]
                     }
@@ -1036,7 +1036,7 @@ const InfoSettingsScreen = ({ lastFetchDate }) => {
                       transform: [{
                         rotate: animations['v1.0.0'].rotation.interpolate({
                           inputRange: [0, 1],
-                          outputRange: ['0deg', '180deg']
+                          outputRange: ['0deg', '90deg']
                         })
                       }]
                     }
@@ -2031,12 +2031,8 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   versionArrow: {
-    fontSize: 24,
+    fontSize: 16,
     color: '#BB86FC',
-    width: 24,
-    height: 24,
-    textAlign: 'center',
-    lineHeight: 24,
   },
   versionContentContainer: {
     overflow: 'hidden',
