@@ -2,6 +2,15 @@
 
 A comprehensive history of all releases and their changes.
 
+## v1.2.2 (2023-03-27)
+
+### UI and Performance Improvements
+* Made notification/status bar fully transparent throughout the app
+* Improved content layout with proper spacing below the status bar
+* Fixed tab navigation to always be visible for easier app section switching
+* Improved splash screen appearance with proper status bar styling
+* Optimized header element positioning for a more consistent user experience
+
 ## v1.2.1 (2023-03-26)
 
 ### Bug Fixes
