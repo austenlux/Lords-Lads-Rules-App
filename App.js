@@ -478,7 +478,7 @@ const HighlightedMarkdown = ({ content, searchQuery, style, onLinkPress }) => {
   );
 };
 
-const TitleSection = ({ title, content, searchQuery, onNavigate, onLongPress }) => {
+const TitleSection = ({ title, content, searchQuery, onNavigate }) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(20)).current;
 
@@ -556,8 +556,6 @@ const TitleSection = ({ title, content, searchQuery, onNavigate, onLongPress }) 
       }}>
         <View style={styles.titleWrapper}>
           <TouchableOpacity 
-            onLongPress={onLongPress}
-            delayLongPress={500}
             activeOpacity={1} 
           >
             <Text style={{
@@ -1133,7 +1131,6 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearch, setShowSearch] = useState(false);
   const [activeTab, setActiveTab] = useState('rules'); // 'rules' or 'info'
-  const [showTabs, setShowTabs] = useState(false); // Whether to show the tab bar
   const [lastFetchDate, setLastFetchDate] = useState(null); // Track when content was last fetched
   const searchBarAnim = useRef(new Animated.Value(0)).current;
   const scrollViewRef = useRef(null);
@@ -1627,11 +1624,6 @@ export default function App() {
     }
   };
 
-  // Add a function to toggle tab visibility
-  const toggleTabVisibility = () => {
-    setShowTabs(prevShowTabs => !prevShowTabs);
-  };
-
   // Update TitleSection component to include a long press handler
   const renderSection = (section, index, parentPath = []) => {
     const path = [...parentPath, index];
@@ -1644,7 +1636,6 @@ export default function App() {
           content={section.content}
           searchQuery={searchQuery}
           onNavigate={collapseAllAndExpandSection}
-          onLongPress={toggleTabVisibility}
         />
       );
     }
@@ -1727,23 +1718,21 @@ export default function App() {
         )}
       </View>
       
-      {/* Bottom Tab Navigation - Only show if showTabs is true */}
-      {showTabs && (
-        <View style={styles.tabBar}>
-          <TouchableOpacity 
-            style={[styles.tabButton, activeTab === 'rules' && styles.activeTabButton]} 
-            onPress={() => setActiveTab('rules')}
-          >
-            <Text style={[styles.tabButtonText, activeTab === 'rules' && styles.activeTabButtonText]}>Rules</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={[styles.tabButton, activeTab === 'info' && styles.activeTabButton]} 
-            onPress={() => setActiveTab('info')}
-          >
-            <Text style={[styles.tabButtonText, activeTab === 'info' && styles.activeTabButtonText]}>Info</Text>
-          </TouchableOpacity>
-        </View>
-      )}
+      {/* Bottom Tab Navigation - Always visible */}
+      <View style={styles.tabBar}>
+        <TouchableOpacity 
+          style={[styles.tabButton, activeTab === 'rules' && styles.activeTabButton]} 
+          onPress={() => setActiveTab('rules')}
+        >
+          <Text style={[styles.tabButtonText, activeTab === 'rules' && styles.activeTabButtonText]}>Rules</Text>
+        </TouchableOpacity>
+        <TouchableOpacity 
+          style={[styles.tabButton, activeTab === 'info' && styles.activeTabButton]} 
+          onPress={() => setActiveTab('info')}
+        >
+          <Text style={[styles.tabButtonText, activeTab === 'info' && styles.activeTabButtonText]}>Info</Text>
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 }
