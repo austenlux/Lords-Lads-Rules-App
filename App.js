@@ -1756,7 +1756,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     padding: 20,
-    paddingTop: 0,
+    paddingTop: StatusBar.currentHeight,
     paddingBottom: 40,
   },
   errorContainer: {
@@ -1888,6 +1888,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: 16,
+    paddingTop: StatusBar.currentHeight,
     backgroundColor: 'transparent',
     position: 'absolute',
     top: 0,
