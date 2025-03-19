@@ -834,6 +834,7 @@ const InfoSettingsScreen = ({ lastFetchDate }) => {
   const appVersion = require('./package.json').version;
   
   const [expandedVersions, setExpandedVersions] = useState({
+    'v1.2.2': false,
     'v1.2.1': false,
     'v1.2.0': false,
     'v1.1.0': false,
@@ -842,6 +843,7 @@ const InfoSettingsScreen = ({ lastFetchDate }) => {
   
   // Measured heights for content
   const [contentHeights, setContentHeights] = useState({
+    'v1.2.2': 0,
     'v1.2.1': 0,
     'v1.2.0': 0,
     'v1.1.0': 0,
@@ -850,6 +852,10 @@ const InfoSettingsScreen = ({ lastFetchDate }) => {
   
   // Create animated values for arrow rotations and content heights
   const animations = useRef({
+    'v1.2.2': {
+      rotation: new Animated.Value(0),
+      height: new Animated.Value(0)
+    },
     'v1.2.1': {
       rotation: new Animated.Value(0),
       height: new Animated.Value(0)
@@ -928,6 +934,52 @@ const InfoSettingsScreen = ({ lastFetchDate }) => {
           
           <View style={styles.changelogContainer}>
             <Text style={styles.changelogTitle}>Changelog</Text>
+            
+            {/* v1.2.2 */}
+            <View style={styles.versionContainer}>
+              <TouchableOpacity 
+                style={styles.versionHeader} 
+                onPress={() => toggleVersionExpansion('v1.2.2')}
+                activeOpacity={0.7}
+              >
+                <View style={styles.versionRow}>
+                  <Text style={styles.versionText}>v1.2.2</Text>
+                  <Text style={styles.versionDate}>2023-03-27</Text>
+                  {appVersion === '1.2.2' && <View style={styles.currentVersionBadge}><Text style={styles.currentVersionText}>Current</Text></View>}
+                </View>
+                <Animated.View 
+                  style={{ 
+                    transform: [{
+                      rotate: animations['v1.2.2'].rotation.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: ['0deg', '90deg']
+                      })
+                    }],
+                    marginRight: 8,
+                    width: 20
+                  }}
+                >
+                  <Text style={styles.versionArrow}>▶</Text>
+                </Animated.View>
+              </TouchableOpacity>
+              
+              <Animated.View style={[
+                styles.versionContentContainer,
+                { height: animations['v1.2.2'].height }
+              ]}>
+                <View 
+                  style={styles.versionContent}
+                  onLayout={(event) => measureContentHeight('v1.2.2', event)}
+                >
+                  <Text style={styles.changelogSubtitle}>UI and Performance Improvements:</Text>
+                  <Text style={styles.changelogItem}>• Made notification/status bar fully transparent throughout the app</Text>
+                  <Text style={styles.changelogItem}>• Improved content layout with proper spacing below the status bar</Text>
+                  <Text style={styles.changelogItem}>• Fixed tab navigation to always be visible for easier app section switching</Text>
+                  <Text style={styles.changelogItem}>• Improved splash screen appearance with proper status bar styling</Text>
+                  <Text style={styles.changelogItem}>• Optimized header element positioning for a more consistent user experience</Text>
+                </View>
+              </Animated.View>
+            </View>
             
             {/* v1.2.1 */}
             <View style={styles.versionContainer}>
