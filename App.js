@@ -1677,7 +1677,7 @@ export default function App() {
   if (error) {
     return (
       <SafeAreaView style={styles.safeArea}>
-        <StatusBar barStyle="light-content" backgroundColor="#121212" />
+        <StatusBar barStyle="light-content" backgroundColor="transparent" translucent={true} />
         <View style={styles.container}>
           <View style={styles.errorContainer}>
             <Text style={styles.errorTitle}>Unable to Load Rules</Text>
@@ -1697,7 +1697,7 @@ export default function App() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor="#121212" />
+      <StatusBar barStyle="light-content" backgroundColor="transparent" translucent={true} />
       
       {/* Main Content Area */}
       <View style={styles.mainContainer}>
