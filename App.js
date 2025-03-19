@@ -1784,7 +1784,7 @@ export default function App() {
         >
           <Text style={[styles.tabButtonText, activeTab === 'info' && styles.activeTabButtonText]}>Info</Text>
         </TouchableOpacity>
-      </View>
+        </View>
     </SafeAreaView>
   );
 }
