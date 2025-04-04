@@ -13,11 +13,18 @@ The latest release builds (APK for Android and IPA for iOS) are available on the
 4. If needed, enable "Install from Unknown Sources" in your Android settings
 
 ### iOS Installation
-1. Download the latest IPA file (e.g., `lords-and-lads-rules-1.0.0.ipa`) from the Releases page
-2. Install the IPA on your iOS device using a sideloading tool like AltStore or Sideloadly
-3. Trust the developer certificate in Settings > General > Device Management
+Due to Apple's restrictions, iOS builds cannot be freely distributed like Android APKs. To install the iOS version:
 
-Note: iOS sideloaded apps need to be re-signed and reinstalled every 7 days unless using a paid Apple Developer account.
+1. Contact the maintainers with your device's UDID
+2. Wait for a new build that includes your device in the provisioning profile
+3. Once your device is registered, download the IPA file from the Releases page
+4. Install using AltStore, Sideloadly, or Apple Configurator 2
+
+To find your UDID:
+1. Connect your iOS device to a Mac
+2. Open Finder
+3. Select your device
+4. Click on the device name to reveal the UDID
 
 ### Development Setup
 
