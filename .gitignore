@@ -19,6 +19,11 @@ DerivedData
 *.ipa
 *.xcuserstate
 ios/.xcode.env.local
+ios/Pods/
+ios/build/
+ios/*.xcworkspace/xcuserdata
+ios/*.xcodeproj/xcuserdata
+ios/*.xcodeproj/project.xcworkspace/xcuserdata
 
 # Android/IntelliJ
 build/
@@ -31,6 +36,12 @@ local.properties
 *.keystore
 !debug.keystore
 !release.keystore
+android/app/build/
+android/.gradle/
+android/captures/
+android/local.properties
+android/release/
+android/debug/
 
 # node.js
 node_modules/
@@ -74,4 +85,14 @@ yarn-error.*
 *.tsbuildinfo
 
 # Build artifacts
-releases/ 
+releases/
+
+# Generated files
+*.apk
+*.aab
+*.ipa
+*.dSYM.zip
+*.dSYM
+*.tar.gz
+*.gz
+*.zip 
