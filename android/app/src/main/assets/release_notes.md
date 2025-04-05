@@ -1,6 +1,13 @@
 # Lords & Lads Changelog
 
-A comprehensive history of all releases and their changes.
+## v1.4.0 (2024-04-5)
+
+### Features and Improvements
+* Added expansions tab with section support
+* Enhanced tab navigation with new icons and improved layout
+* Refactored markdown rendering and TOC handling
+* Added latest version badge to Info screen
+* Updated app registration and build configuration
 
 ## v1.3.0 (2025-04-04)
 
@@ -39,7 +46,7 @@ Note: iOS build is for simulator only. For physical devices, build locally with 
 
 ## v1.1.0 (2025-03-17)
 
-### Added search functionality:
+### Added search functionality
 * Real-time filtering of rules and Table of Contents
 * Preserves section hierarchy when filtering
 * Highlights matching text in search results
@@ -53,7 +60,7 @@ Note: iOS build is for simulator only. For physical devices, build locally with 
 
 ## v1.0.0 (2025-03-14)
 
-### Initial release featuring:
+### Initial release featuring
 * Beautiful dark theme UI
 * Full rules documentation from GitHub
 * Expandable/collapsible sections

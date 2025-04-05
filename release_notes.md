@@ -1,6 +1,6 @@
 # Lords & Lads Changelog
 
-## v1.4.0 (2024-04-5)
+## v1.4.0 (2024-04-05)
 
 ### Features and Improvements
 * Added expansions tab with section support
