@@ -1006,6 +1006,11 @@ const InfoSettingsScreen = ({ lastFetchDate }) => {
                   <View style={styles.versionRow}>
                     <Text style={styles.versionText}>{version.version}</Text>
                     <Text style={styles.versionDate}>{version.date}</Text>
+                    {index === 0 && (
+                      <View style={styles.latestBadge}>
+                        <Text style={styles.latestBadgeText}>Latest</Text>
+                      </View>
+                    )}
                   </View>
                   <Animated.View 
                     style={{ 
@@ -1993,6 +1998,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
+    gap: 8,
   },
   versionText: {
     fontSize: 18,
@@ -2039,6 +2045,19 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: 'bold',
     color: '#121212',
+  },
+  latestBadge: {
+    borderWidth: 1,
+    borderColor: '#2E7D32',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 4,
+    marginLeft: 8,
+  },
+  latestBadgeText: {
+    color: '#2E7D32',
+    fontSize: 12,
+    fontWeight: 'bold',
   },
 });
 
