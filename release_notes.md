@@ -1,6 +1,11 @@
 # Lords & Lads Changelog
 
-A comprehensive history of all releases and their changes.
+## v1.4.0 (2024-04-5)
+* Added expansions tab with section support
+* Enhanced tab navigation with new icons and improved layout
+* Refactored markdown rendering and TOC handling
+* Added latest version badge to Info screen
+* Updated app registration and build configuration
 
 ## v1.3.0 (2025-04-04)
 
