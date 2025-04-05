@@ -2264,3 +2264,7 @@ const markdownStyles = {
     borderRadius: 2,
   },
 };
+
+// Add AppRegistry registration
+import { AppRegistry } from 'react-native';
+AppRegistry.registerComponent('lords-and-lads-rules', () => App);
