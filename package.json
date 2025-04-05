@@ -16,7 +16,8 @@
     "react-native": "0.73.6",
     "react-native-device-info": "^14.0.4",
     "react-native-fs": "^2.20.0",
-    "react-native-markdown-display": "^7.0.2"
+    "react-native-markdown-display": "^7.0.2",
+    "react-native-svg": "^15.11.2"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

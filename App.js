@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, ScrollView, SafeAreaView, StatusBar, TextInput, Animated, Platform, NativeModules } from 'react-native';
 import Markdown from 'react-native-markdown-display';
 import RNFS from 'react-native-fs';
+import Svg, { Path } from 'react-native-svg';
 
 // Constants
 const CONTENT_URL = 'https://raw.githubusercontent.com/seanKenkeremath/lords-and-lads/master/README.md';
@@ -1660,15 +1661,29 @@ export default function App() {
           style={[styles.tabButton, activeTab === 'rules' && styles.activeTabButton]} 
           onPress={() => setActiveTab('rules')}
         >
-          <Text style={[styles.tabButtonText, activeTab === 'rules' && styles.activeTabButtonText]}>Rules</Text>
+          <View style={[styles.tabIconContainer, activeTab === 'rules' && styles.activeTabIconContainer]}>
+            <Svg width="32" height="32" viewBox="0 -960 960 960" style={styles.tabIcon}>
+              <Path
+                d="M320-160q-33 0-56.5-23.5T240-240v-120h120v-90q-35-2-66.5-15.5T236-506v-44h-46L60-680q36-46 89-65t107-19q27 0 52.5 4t51.5 15v-55h480v520q0 50-35 85t-85 35H320Zm120-200h240v80q0 17 11.5 28.5T720-240q17 0 28.5-11.5T760-280v-440H440v24l240 240v56h-56L510-514l-8 8q-14 14-29.5 25T440-464v104ZM224-630h92v86q12 8 25 11t27 3q23 0 41.5-7t36.5-25l8-8-56-56q-29-29-65-43.5T256-684q-20 0-38 3t-36 9l42 42Zm376 350H320v40h286q-3-9-4.5-19t-1.5-21Zm-280 40v-40 40Z"
+                fill={activeTab === 'rules' ? '#121212' : '#E1E1E1'}
+              />
+            </Svg>
+          </View>
         </TouchableOpacity>
         <TouchableOpacity 
           style={[styles.tabButton, activeTab === 'info' && styles.activeTabButton]} 
           onPress={() => setActiveTab('info')}
         >
-          <Text style={[styles.tabButtonText, activeTab === 'info' && styles.activeTabButtonText]}>Info</Text>
+          <View style={[styles.tabIconContainer, activeTab === 'info' && styles.activeTabIconContainer]}>
+            <Svg width="32" height="32" viewBox="0 -960 960 960" style={styles.tabIcon}>
+              <Path
+                d="M440-280h80v-240h-80v240Zm40-320q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm0 520q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"
+                fill={activeTab === 'info' ? '#121212' : '#E1E1E1'}
+              />
+            </Svg>
+          </View>
         </TouchableOpacity>
-        </View>
+      </View>
     </SafeAreaView>
   );
 }
@@ -1909,23 +1924,48 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-around',
-    padding: 8,
     backgroundColor: '#2C2C2C',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(187, 134, 252, 0.1)',
+    height: 49,
+    paddingBottom: Platform.OS === 'ios' ? 0 : 0,
   },
   tabButton: {
-    padding: 12,
-    borderRadius: 8,
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: '100%',
   },
   activeTabButton: {
+    backgroundColor: 'transparent',
+  },
+  tabIconContainer: {
+    width: 80,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  activeTabIconContainer: {
     backgroundColor: '#BB86FC',
+    borderRadius: 16,
+  },
+  tabIcon: {
+    width: 32,
+    height: 32,
+  },
+  activeTabIcon: {
+    backgroundColor: 'transparent',
   },
   tabButtonText: {
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: 10,
     color: '#E1E1E1',
+    marginTop: 2,
   },
   activeTabButtonText: {
     color: '#121212',
+    fontWeight: '600',
   },
   infoContainer: {
     padding: 20,
