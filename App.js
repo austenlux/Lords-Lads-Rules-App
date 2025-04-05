@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, ScrollView, SafeAreaView, StatusBar, TextInput, Animated, Platform, NativeModules } from 'react-native';
 import Markdown from 'react-native-markdown-display';
+import RNFS from 'react-native-fs';
 
 // Constants
 const CONTENT_URL = 'https://raw.githubusercontent.com/seanKenkeremath/lords-and-lads/master/README.md';
@@ -830,97 +831,157 @@ const RulesScreen = ({ content, sections, searchQuery, showSearch, toggleSearchB
 
 // Create an Info/Settings screen component
 const InfoSettingsScreen = ({ lastFetchDate }) => {
-  // Get app version directly from the package.json via require
-  const appVersion = require('./package.json').version;
-  
-  const [expandedVersions, setExpandedVersions] = useState({
-    'v1.2.2': false,
-    'v1.2.1': false,
-    'v1.2.0': false,
-    'v1.1.0': false,
-    'v1.0.0': false
-  });
-  
-  // Measured heights for content
-  const [contentHeights, setContentHeights] = useState({
-    'v1.2.2': 0,
-    'v1.2.1': 0,
-    'v1.2.0': 0,
-    'v1.1.0': 0,
-    'v1.0.0': 0
-  });
-  
-  // Create animated values for arrow rotations and content heights
-  const animations = useRef({
-    'v1.2.2': {
-      rotation: new Animated.Value(0),
-      height: new Animated.Value(0)
-    },
-    'v1.2.1': {
-      rotation: new Animated.Value(0),
-      height: new Animated.Value(0)
-    },
-    'v1.2.0': {
-      rotation: new Animated.Value(0),
-      height: new Animated.Value(0)
-    },
-    'v1.1.0': {
-      rotation: new Animated.Value(0),
-      height: new Animated.Value(0)
-    },
-    'v1.0.0': {
-      rotation: new Animated.Value(0),
-      height: new Animated.Value(0)
-    }
-  }).current;
-  
-  // Add useEffect to handle arrow rotation animations separately from content height
-  useEffect(() => {
-    // Update all arrow rotations when expandedVersions changes
-    Object.keys(expandedVersions).forEach(version => {
-      Animated.timing(animations[version].rotation, {
-        toValue: expandedVersions[version] ? 1 : 0,
-        duration: 100,
-        useNativeDriver: true
-      }).start();
-    });
-  }, [expandedVersions]);
-  
-  const toggleVersionExpansion = (version) => {
-    // Just update the state - the animation will be triggered by the useEffect above
-    setExpandedVersions(prev => {
-      const newValue = !prev[version];
-      
-      // Only animate the content height here, not the arrow
-      Animated.timing(animations[version].height, {
-        toValue: newValue ? contentHeights[version] : 0,
-        duration: 200,
-        useNativeDriver: false
-      }).start();
-      
-      return {
-        ...prev,
-        [version]: newValue
-      };
-    });
-  };
-  
-  // Measure content height
-  const measureContentHeight = (version, event) => {
-    const { height } = event.nativeEvent.layout;
-    if (height > 0 && contentHeights[version] !== height) {
-      setContentHeights(prev => ({
-        ...prev,
-        [version]: height
-      }));
-      
-      // If section is already expanded, update the animation value immediately
-      if (expandedVersions[version]) {
-        animations[version].height.setValue(height);
+  const [releaseNotes, setReleaseNotes] = useState([]);
+  const [expandedVersions, setExpandedVersions] = useState({});
+  const animations = useRef({}).current;
+  const contentHeights = useRef({}).current;
+
+  const parseReleaseNotes = (content) => {
+    const versions = [];
+    let currentVersion = null;
+    let currentSection = null;
+    
+    content.split('\n').forEach(line => {
+      // Skip the title and description
+      if (line.startsWith('# ') || line.trim() === '' || line.startsWith('A comprehensive')) {
+        return;
       }
-    }
+      
+      // Version line
+      if (line.startsWith('## ')) {
+        const match = line.match(/## (v[\d.]+) \((.*?)\)/);
+        if (match) {
+          currentVersion = {
+            version: match[1],
+            date: match[2],
+            sections: []
+          };
+          versions.push(currentVersion);
+        }
+        return;
+      }
+      
+      // Section title
+      if (line.startsWith('### ')) {
+        currentSection = {
+          title: line.replace('### ', ''),
+          items: []
+        };
+        if (currentVersion) {
+          currentVersion.sections.push(currentSection);
+        }
+        return;
+      }
+      
+      // Note line
+      if (line.startsWith('Note: ')) {
+        if (currentVersion) {
+          currentVersion.note = line.replace('Note: ', '');
+        }
+        return;
+      }
+      
+      // List item
+      if (line.startsWith('* ')) {
+        const item = line.replace('* ', '');
+        if (currentSection) {
+          currentSection.items.push(item);
+        }
+      }
+    });
+    
+    return versions;
   };
-  
+
+  useEffect(() => {
+    const loadReleaseNotes = async () => {
+      try {
+        const content = await RNFS.readFileAssets('release_notes.md', 'utf8');
+        const versions = parseReleaseNotes(content);
+        
+        // Initialize state for each version
+        const initialExpanded = {};
+        versions.forEach(version => {
+          initialExpanded[version.version] = false;
+          animations[version.version] = {
+            rotation: new Animated.Value(0),
+            height: new Animated.Value(0)
+          };
+          // Calculate dynamic height based on content
+          const baseHeight = 100; // Base height for version header and padding
+          const sectionHeight = version.sections.reduce((acc, section) => {
+            return acc + 30 + (section.items.length * 20); // 30px for section title, 20px per item
+          }, 0);
+          const noteHeight = version.note ? 30 : 0;
+          const padding = 20;
+          contentHeights[version.version] = baseHeight + sectionHeight + noteHeight + padding;
+        });
+        
+        setReleaseNotes(versions);
+        setExpandedVersions(initialExpanded);
+      } catch (error) {
+        console.error('Error loading release notes:', error);
+        // Fallback to hardcoded data if file reading fails
+        const fallbackVersions = [
+          {
+            version: 'v1.3.0',
+            date: '2025-04-04',
+            sections: [
+              {
+                title: 'iOS Support and UI Improvements',
+                items: [
+                  'Added iOS simulator support',
+                  'Enhanced UI with transparent status bar and updated icons',
+                  'Improved build configurations for both platforms',
+                  'Updated documentation with platform-specific guidance'
+                ]
+              }
+            ],
+            note: 'iOS build is for simulator only. For physical devices, build locally with your Apple Developer account.'
+          }
+        ];
+        setReleaseNotes(fallbackVersions);
+        setExpandedVersions({ 'v1.3.0': false });
+        animations['v1.3.0'] = {
+          rotation: new Animated.Value(0),
+          height: new Animated.Value(0)
+        };
+        const baseHeight = 100;
+        const sectionHeight = fallbackVersions[0].sections.reduce((acc, section) => {
+          return acc + 30 + (section.items.length * 20);
+        }, 0);
+        const noteHeight = fallbackVersions[0].note ? 30 : 0;
+        const padding = 20;
+        contentHeights['v1.3.0'] = baseHeight + sectionHeight + noteHeight + padding;
+      }
+    };
+    
+    loadReleaseNotes();
+  }, []);
+
+  const toggleVersionExpansion = (version) => {
+    const isExpanded = !expandedVersions[version];
+    
+    // Animate the arrow rotation
+    Animated.timing(animations[version].rotation, {
+      toValue: isExpanded ? 1 : 0,
+      duration: 200,
+      useNativeDriver: true
+    }).start();
+    
+    // Animate the content height
+    Animated.timing(animations[version].height, {
+      toValue: isExpanded ? contentHeights[version] : 0,
+      duration: 200,
+      useNativeDriver: false
+    }).start();
+    
+    setExpandedVersions(prev => ({
+      ...prev,
+      [version]: isExpanded
+    }));
+  };
+
   return (
     <ScrollView style={styles.scrollView}>
       <View style={styles.contentContainer}>
@@ -935,238 +996,56 @@ const InfoSettingsScreen = ({ lastFetchDate }) => {
           <View style={styles.changelogContainer}>
             <Text style={styles.changelogTitle}>Changelog</Text>
             
-            {/* v1.2.2 */}
-            <View style={styles.versionContainer}>
-              <TouchableOpacity 
-                style={styles.versionHeader} 
-                onPress={() => toggleVersionExpansion('v1.2.2')}
-                activeOpacity={0.7}
-              >
-                <View style={styles.versionRow}>
-                  <Text style={styles.versionText}>v1.2.2</Text>
-                  <Text style={styles.versionDate}>2023-03-27</Text>
-                  {appVersion === '1.2.2' && <View style={styles.currentVersionBadge}><Text style={styles.currentVersionText}>Current</Text></View>}
-                </View>
+            {releaseNotes.map((version, index) => (
+              <View key={version.version} style={styles.versionContainer}>
+                <TouchableOpacity 
+                  style={styles.versionHeader} 
+                  onPress={() => toggleVersionExpansion(version.version)}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.versionRow}>
+                    <Text style={styles.versionText}>{version.version}</Text>
+                    <Text style={styles.versionDate}>{version.date}</Text>
+                  </View>
+                  <Animated.View 
+                    style={{ 
+                      transform: [{
+                        rotate: animations[version.version]?.rotation.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: ['0deg', '90deg']
+                        }) || '0deg'
+                      }]
+                    }}
+                  >
+                    <Text style={styles.versionArrow}>▶</Text>
+                  </Animated.View>
+                </TouchableOpacity>
+                
                 <Animated.View 
-                  style={{ 
-                    transform: [{
-                      rotate: animations['v1.2.2'].rotation.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: ['0deg', '90deg']
-                      })
-                    }],
-                    marginRight: 8,
-                    width: 20
-                  }}
+                  style={[
+                    styles.versionContentContainer,
+                    { 
+                      height: animations[version.version]?.height || 0,
+                      overflow: 'hidden'
+                    }
+                  ]}
                 >
-                  <Text style={styles.versionArrow}>▶</Text>
+                  <View style={styles.versionContent}>
+                    {version.sections.map((section, sectionIndex) => (
+                      <View key={sectionIndex}>
+                        <Text style={styles.changelogSubtitle}>{section.title}:</Text>
+                        {section.items.map((item, itemIndex) => (
+                          <Text key={itemIndex} style={styles.changelogItem}>• {item}</Text>
+                        ))}
+                      </View>
+                    ))}
+                    {version.note && (
+                      <Text style={[styles.changelogItem, { marginTop: 8, fontStyle: 'italic' }]}>{version.note}</Text>
+                    )}
+                  </View>
                 </Animated.View>
-              </TouchableOpacity>
-              
-              <Animated.View style={[
-                styles.versionContentContainer,
-                { height: animations['v1.2.2'].height }
-              ]}>
-                <View 
-                  style={styles.versionContent}
-                  onLayout={(event) => measureContentHeight('v1.2.2', event)}
-                >
-                  <Text style={styles.changelogSubtitle}>UI and Performance Improvements:</Text>
-                  <Text style={styles.changelogItem}>• Made notification/status bar fully transparent throughout the app</Text>
-                  <Text style={styles.changelogItem}>• Improved content layout with proper spacing below the status bar</Text>
-                  <Text style={styles.changelogItem}>• Fixed tab navigation to always be visible for easier app section switching</Text>
-                  <Text style={styles.changelogItem}>• Improved splash screen appearance with proper status bar styling</Text>
-                  <Text style={styles.changelogItem}>• Optimized header element positioning for a more consistent user experience</Text>
-                </View>
-              </Animated.View>
-            </View>
-            
-            {/* v1.2.1 */}
-            <View style={styles.versionContainer}>
-              <TouchableOpacity 
-                style={styles.versionHeader} 
-                onPress={() => toggleVersionExpansion('v1.2.1')}
-                activeOpacity={0.7}
-              >
-                <View style={styles.versionRow}>
-                  <Text style={styles.versionText}>v1.2.1</Text>
-                  <Text style={styles.versionDate}>2023-03-26</Text>
-                  {appVersion === '1.2.1' && <View style={styles.currentVersionBadge}><Text style={styles.currentVersionText}>Current</Text></View>}
-                </View>
-                <Animated.View 
-                  style={{ 
-                    transform: [{
-                      rotate: animations['v1.2.1'].rotation.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: ['0deg', '90deg']
-                      })
-                    }],
-                    marginRight: 8,
-                    width: 20
-                  }}
-                >
-                  <Text style={styles.versionArrow}>▶</Text>
-                </Animated.View>
-              </TouchableOpacity>
-              
-              <Animated.View style={[
-                styles.versionContentContainer,
-                { height: animations['v1.2.1'].height }
-              ]}>
-                <View 
-                  style={styles.versionContent}
-                  onLayout={(event) => measureContentHeight('v1.2.1', event)}
-                >
-                  <Text style={styles.changelogSubtitle}>Bug Fixes:</Text>
-                  <Text style={styles.changelogItem}>• Fixed "Maximum call stack size exceeded" crash that affected some users</Text>
-                  <Text style={styles.changelogItem}>• Improved arrow animations in expandable sections throughout the app</Text>
-                  <Text style={styles.changelogItem}>• Fixed arrow rotation inconsistencies between Rules and Changelog sections</Text>
-                  <Text style={styles.changelogItem}>• Made highlighted search results bold for better visibility</Text>
-                </View>
-              </Animated.View>
-            </View>
-            
-            {/* v1.2.0 */}
-            <View style={styles.versionContainer}>
-              <TouchableOpacity 
-                style={styles.versionHeader} 
-                onPress={() => toggleVersionExpansion('v1.2.0')}
-                activeOpacity={0.7}
-              >
-                <View style={styles.versionRow}>
-                  <Text style={styles.versionText}>v1.2.0</Text>
-                  <Text style={styles.versionDate}>2023-03-25</Text>
-                  {appVersion === '1.2.0' && <View style={styles.currentVersionBadge}><Text style={styles.currentVersionText}>Current</Text></View>}
-                </View>
-                <Animated.View 
-                  style={{ 
-                    transform: [{
-                      rotate: animations['v1.2.0'].rotation.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: ['0deg', '90deg']
-                      })
-                    }],
-                    marginRight: 8,
-                    width: 20
-                  }}
-                >
-                  <Text style={styles.versionArrow}>▶</Text>
-                </Animated.View>
-              </TouchableOpacity>
-              
-              <Animated.View style={[
-                styles.versionContentContainer,
-                { height: animations['v1.2.0'].height }
-              ]}>
-                <View 
-                  style={styles.versionContent}
-                  onLayout={(event) => measureContentHeight('v1.2.0', event)}
-                >
-                  <Text style={styles.changelogSubtitle}>UI and Usability Improvements:</Text>
-                  <Text style={styles.changelogItem}>• Added full changelog in the Info tab with expandable version sections</Text>
-                  <Text style={styles.changelogItem}>• Improved adaptive icon display on various Android launchers</Text>
-                  <Text style={styles.changelogItem}>• Fixed text overlapping issues in the changelog display</Text>
-                  <Text style={styles.changelogItem}>• Enhanced animation smoothness for expandable sections</Text>
-                </View>
-              </Animated.View>
-            </View>
-            
-            {/* v1.1.0 */}
-            <View style={styles.versionContainer}>
-              <TouchableOpacity 
-                style={styles.versionHeader} 
-                onPress={() => toggleVersionExpansion('v1.1.0')}
-                activeOpacity={0.7}
-              >
-                <View style={styles.versionRow}>
-                  <Text style={styles.versionText}>v1.1.0</Text>
-                  <Text style={styles.versionDate}>2023-03-17</Text>
-                  {appVersion === '1.1.0' && <View style={styles.currentVersionBadge}><Text style={styles.currentVersionText}>Current</Text></View>}
-                </View>
-                <Animated.View 
-                  style={{ 
-                    transform: [{
-                      rotate: animations['v1.1.0'].rotation.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: ['0deg', '90deg']
-                      })
-                    }],
-                    marginRight: 8,
-                    width: 20
-                  }}
-                >
-                  <Text style={styles.versionArrow}>▶</Text>
-                </Animated.View>
-              </TouchableOpacity>
-              
-              <Animated.View style={[
-                styles.versionContentContainer,
-                { height: animations['v1.1.0'].height }
-              ]}>
-                <View 
-                  style={styles.versionContent}
-                  onLayout={(event) => measureContentHeight('v1.1.0', event)}
-                >
-                  <Text style={styles.changelogSubtitle}>Added search functionality:</Text>
-                  <Text style={styles.changelogItem}>• Real-time filtering of rules and Table of Contents</Text>
-                  <Text style={styles.changelogItem}>• Preserves section hierarchy when filtering</Text>
-                  <Text style={styles.changelogItem}>• Highlights matching text in search results</Text>
-                  <Text style={styles.changelogItem}>• Maintains section expansion states when clearing search</Text>
-                  <Text style={styles.changelogItem}>• Shows empty state message when no matches found</Text>
-                  
-                  <Text style={[styles.changelogSubtitle, {marginTop: 12}]}>Improved text rendering:</Text>
-                  <Text style={styles.changelogItem}>• Fixed HTML entities (& symbol now displays correctly)</Text>
-                  <Text style={styles.changelogItem}>• Corrected Table of Contents indentation</Text>
-                  <Text style={styles.changelogItem}>• Enhanced overall text formatting consistency</Text>
-                </View>
-              </Animated.View>
-            </View>
-            
-            {/* v1.0.0 */}
-            <View style={styles.versionContainer}>
-              <TouchableOpacity 
-                style={styles.versionHeader} 
-                onPress={() => toggleVersionExpansion('v1.0.0')}
-                activeOpacity={0.7}
-              >
-                <View style={styles.versionRow}>
-                  <Text style={styles.versionText}>v1.0.0</Text>
-                  <Text style={styles.versionDate}>2023-03-14</Text>
-                  {appVersion === '1.0.0' && <View style={styles.currentVersionBadge}><Text style={styles.currentVersionText}>Current</Text></View>}
-                </View>
-                <Animated.View 
-                  style={{ 
-                    transform: [{
-                      rotate: animations['v1.0.0'].rotation.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: ['0deg', '90deg']
-                      })
-                    }],
-                    marginRight: 8,
-                    width: 20
-                  }}
-                >
-                  <Text style={styles.versionArrow}>▶</Text>
-                </Animated.View>
-              </TouchableOpacity>
-              
-              <Animated.View style={[
-                styles.versionContentContainer,
-                { height: animations['v1.0.0'].height }
-              ]}>
-                <View 
-                  style={styles.versionContent}
-                  onLayout={(event) => measureContentHeight('v1.0.0', event)}
-                >
-                  <Text style={styles.changelogSubtitle}>Initial release featuring:</Text>
-                  <Text style={styles.changelogItem}>• Beautiful dark theme UI</Text>
-                  <Text style={styles.changelogItem}>• Full rules documentation from GitHub</Text>
-                  <Text style={styles.changelogItem}>• Expandable/collapsible sections</Text>
-                  <Text style={styles.changelogItem}>• Smooth animations and transitions</Text>
-                  <Text style={styles.changelogItem}>• Easy navigation between sections</Text>
-                </View>
-              </Animated.View>
-            </View>
+              </View>
+            ))}
           </View>
         </View>
       </View>
@@ -2267,4 +2146,4 @@ const markdownStyles = {
 
 // Add AppRegistry registration
 import { AppRegistry } from 'react-native';
-AppRegistry.registerComponent('lords-and-lads-rules', () => App);
+AppRegistry.registerComponent('LordsAndLadsRulesApp', () => App);
