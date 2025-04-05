@@ -6,6 +6,7 @@ import Svg, { Path } from 'react-native-svg';
 
 // Constants
 const CONTENT_URL = 'https://raw.githubusercontent.com/seanKenkeremath/lords-and-lads/master/README.md';
+const EXPANSIONS_URL = 'https://raw.githubusercontent.com/seanKenkeremath/lords-and-lads/master/expansions/README.md';
 
 // Add a utility function to highlight text matches
 const highlightMatches = (text, query) => {
@@ -118,8 +119,8 @@ const HighlightedMarkdown = ({ content, searchQuery, style, onLinkPress }) => {
         
         // For regular paragraphs, ensure inline code is properly formatted
         const processedParagraph = paragraph.replace(/`([^`]+)`/g, '`$1`');
-        
-        return (
+          
+          return (
           <Markdown key={index} style={style} onLinkPress={onLinkPress}>
             {processedParagraph}
           </Markdown>
@@ -208,7 +209,7 @@ const TitleSection = ({ title, content, searchQuery, onNavigate }) => {
   };
 
   return (
-    <View style={styles.titleContainer}>
+  <View style={styles.titleContainer}>
       <View style={styles.titleGlow} />
       <Animated.View style={{
         opacity: fadeAnim,
@@ -321,8 +322,8 @@ const TitleSection = ({ title, content, searchQuery, onNavigate }) => {
         )}
       </Animated.View>
       <View style={styles.titleDivider} />
-    </View>
-  );
+  </View>
+);
 };
 
 const Section = ({ title, level, content, subsections, onPress, isExpanded, path = [], onNavigate, sectionRefs, searchQuery }) => {
@@ -565,8 +566,8 @@ const InfoSettingsScreen = ({ lastFetchDate }) => {
         versions.forEach(version => {
           initialExpanded[version.version] = false;
           animations[version.version] = {
-            rotation: new Animated.Value(0),
-            height: new Animated.Value(0)
+      rotation: new Animated.Value(0),
+      height: new Animated.Value(0)
           };
           // Calculate dynamic height based on content
           const baseHeight = 100; // Base height for version header and padding
@@ -604,8 +605,8 @@ const InfoSettingsScreen = ({ lastFetchDate }) => {
         setReleaseNotes(fallbackVersions);
         setExpandedVersions({ 'v1.3.0': false });
         animations['v1.3.0'] = {
-          rotation: new Animated.Value(0),
-          height: new Animated.Value(0)
+      rotation: new Animated.Value(0),
+      height: new Animated.Value(0)
         };
         const baseHeight = 100;
         const sectionHeight = fallbackVersions[0].sections.reduce((acc, section) => {
@@ -624,28 +625,28 @@ const InfoSettingsScreen = ({ lastFetchDate }) => {
     const isExpanded = !expandedVersions[version];
     
     // Animate the arrow rotation
-    Animated.timing(animations[version].rotation, {
+      Animated.timing(animations[version].rotation, {
       toValue: isExpanded ? 1 : 0,
       duration: 200,
-      useNativeDriver: true
-    }).start();
+        useNativeDriver: true
+      }).start();
     
     // Animate the content height
-    Animated.timing(animations[version].height, {
+      Animated.timing(animations[version].height, {
       toValue: isExpanded ? contentHeights[version] : 0,
-      duration: 200,
-      useNativeDriver: false
-    }).start();
-    
+        duration: 200,
+        useNativeDriver: false
+      }).start();
+      
     setExpandedVersions(prev => ({
-      ...prev,
+        ...prev,
       [version]: isExpanded
     }));
   };
-
+  
   return (
     <ScrollView style={styles.scrollView}>
-      <View style={styles.contentContainer}>
+      <View style={[styles.contentContainer, { paddingTop: StatusBar.currentHeight }]}>
         <View style={styles.infoContainer}>
           <Text style={styles.infoTitle}>Lords & Lads</Text>
           
@@ -659,37 +660,37 @@ const InfoSettingsScreen = ({ lastFetchDate }) => {
             
             {releaseNotes.map((version, index) => (
               <View key={version.version} style={styles.versionContainer}>
-                <TouchableOpacity 
-                  style={styles.versionHeader} 
+              <TouchableOpacity 
+                style={styles.versionHeader} 
                   onPress={() => toggleVersionExpansion(version.version)}
-                  activeOpacity={0.7}
-                >
-                  <View style={styles.versionRow}>
+                activeOpacity={0.7}
+              >
+                <View style={styles.versionRow}>
                     <Text style={styles.versionText}>{version.version}</Text>
                     <Text style={styles.versionDate}>{version.date}</Text>
                     {index === 0 && (
                       <View style={styles.latestBadge}>
                         <Text style={styles.latestBadgeText}>Latest</Text>
-                      </View>
+                </View>
                     )}
-                  </View>
-                  <Animated.View 
-                    style={{ 
-                      transform: [{
+                </View>
+                <Animated.View 
+                  style={{ 
+                    transform: [{
                         rotate: animations[version.version]?.rotation.interpolate({
-                          inputRange: [0, 1],
-                          outputRange: ['0deg', '90deg']
+                        inputRange: [0, 1],
+                        outputRange: ['0deg', '90deg']
                         }) || '0deg'
                       }]
-                    }}
-                  >
-                    <Text style={styles.versionArrow}>▶</Text>
-                  </Animated.View>
-                </TouchableOpacity>
-                
+                  }}
+                >
+                  <Text style={styles.versionArrow}>▶</Text>
+                </Animated.View>
+              </TouchableOpacity>
+              
                 <Animated.View 
                   style={[
-                    styles.versionContentContainer,
+                styles.versionContentContainer,
                     { 
                       height: animations[version.version]?.height || 0,
                       overflow: 'hidden'
@@ -703,16 +704,16 @@ const InfoSettingsScreen = ({ lastFetchDate }) => {
                         {section.items.map((item, itemIndex) => (
                           <Text key={itemIndex} style={styles.changelogItem}>• {item}</Text>
                         ))}
-                      </View>
+                </View>
                     ))}
                     {version.note && (
                       <Text style={[styles.changelogItem, { marginTop: 8, fontStyle: 'italic' }]}>{version.note}</Text>
                     )}
-                  </View>
+            </View>
                 </Animated.View>
-              </View>
+                </View>
             ))}
-          </View>
+            </View>
         </View>
       </View>
     </ScrollView>
@@ -723,11 +724,12 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [content, setContent] = useState('');
+  const [expansionsContent, setExpansionsContent] = useState('');
   const [originalSections, setOriginalSections] = useState([]);
   const [sections, setSections] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearch, setShowSearch] = useState(false);
-  const [activeTab, setActiveTab] = useState('rules'); // 'rules' or 'info'
+  const [activeTab, setActiveTab] = useState('rules'); // 'rules', 'jester', or 'info'
   const [lastFetchDate, setLastFetchDate] = useState(null); // Track when content was last fetched
   const searchBarAnim = useRef(new Animated.Value(0)).current;
   const scrollViewRef = useRef(null);
@@ -1013,24 +1015,30 @@ export default function App() {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10-second timeout
       
-      const response = await fetch(CONTENT_URL, { 
-        signal: controller.signal 
-      });
+      // Fetch both README files in parallel
+      const [rulesResponse, expansionsResponse] = await Promise.all([
+        fetch(CONTENT_URL, { signal: controller.signal }),
+        fetch(EXPANSIONS_URL, { signal: controller.signal })
+      ]);
       
       clearTimeout(timeoutId);
       
-      if (!response.ok) {
-        throw new Error(`Failed to fetch content (Status: ${response.status})`);
+      if (!rulesResponse.ok || !expansionsResponse.ok) {
+        throw new Error(`Failed to fetch content (Status: ${!rulesResponse.ok ? rulesResponse.status : expansionsResponse.status})`);
       }
       
-      const text = await response.text();
+      const [rulesText, expansionsText] = await Promise.all([
+        rulesResponse.text(),
+        expansionsResponse.text()
+      ]);
       
       // Update last fetch date
       setLastFetchDate(new Date().toLocaleString());
       
       // Parse and display content
-      setContent(text);
-      const parsedSections = parseMarkdownSections(text);
+      setContent(rulesText);
+      setExpansionsContent(expansionsText);
+      const parsedSections = parseMarkdownSections(rulesText);
       setOriginalSections(parsedSections);
       setSections(parsedSections);
       setLoading(false);
@@ -1316,6 +1324,52 @@ export default function App() {
             renderSection={renderSection}
             scrollViewRef={scrollViewRef}
           />
+        ) : activeTab === 'jester' ? (
+          <View style={{ flex: 1 }}>
+            {/* Header with Search Icon/Bar */}
+            <View style={styles.headerContainer}>
+              {!showSearch ? (
+                <>
+                  <View style={styles.spacer}></View>
+                  <TouchableOpacity 
+                    style={styles.searchIconContainer} 
+                    onPress={toggleSearchBar}
+                  >
+                    <Text style={styles.searchIcon}>🔍</Text>
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <View style={styles.searchBarWrapper}>
+                  <TextInput
+                    ref={searchInputRef}
+                    style={styles.searchInput}
+                    placeholder="Search expansions..."
+                    placeholderTextColor="#888"
+                    value={searchQuery}
+                    onChangeText={handleSearchQueryChange}
+                    autoFocus={true}
+                  />
+                  <TouchableOpacity 
+                    style={styles.closeIconContainer} 
+                    onPress={toggleSearchBar}
+                  >
+                    <Text style={styles.closeIcon}>✕</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+            
+            <ScrollView style={styles.scrollView}>
+              <View style={[styles.contentContainer, { paddingTop: StatusBar.currentHeight }]}>
+                <TitleSection
+                  title="Expansions"
+                  content={expansionsContent.split('\n').slice(2).join('\n')}
+                  searchQuery={searchQuery}
+                  onNavigate={collapseAllAndExpandSection}
+                />
+              </View>
+            </ScrollView>
+          </View>
         ) : (
           <InfoSettingsScreen lastFetchDate={lastFetchDate} />
         )}
@@ -1337,6 +1391,19 @@ export default function App() {
           </View>
         </TouchableOpacity>
         <TouchableOpacity 
+          style={[styles.tabButton, activeTab === 'jester' && styles.activeTabButton]} 
+          onPress={() => setActiveTab('jester')}
+        >
+          <View style={[styles.tabIconContainer, activeTab === 'jester' && styles.activeTabIconContainer]}>
+            <Svg width="32" height="32" viewBox="0 -960 960 960" style={styles.tabIcon}>
+              <Path
+                d="M480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Zm-180 40q17 0 28.5-11.5T340-440q0-17-11.5-28.5T300-480q-17 0-28.5 11.5T260-440q0 17 11.5 28.5T300-400Zm180-40q17 0 28.5-11.5T520-480q0-17-11.5-28.5T480-520q-17 0-28.5 11.5T440-480q0 17 11.5 28.5T480-440Zm240 40q17 0 28.5-11.5T760-440q0-17-11.5-28.5T720-480q-17 0-28.5 11.5T680-440q0 17 11.5 28.5T720-400Zm-180-40q17 0 28.5-11.5T580-480q0-17-11.5-28.5T540-520q-17 0-28.5 11.5T500-480q0 17 11.5 28.5T540-440Zm-240-40q17 0 28.5-11.5T340-520q0-17-11.5-28.5T300-560q-17 0-28.5 11.5T260-520q0 17 11.5 28.5T300-480Zm180-40q17 0 28.5-11.5T520-560q0-17-11.5-28.5T480-600q-17 0-28.5 11.5T440-560q0 17 11.5 28.5T480-520Zm240 40q17 0 28.5-11.5T760-520q0-17-11.5-28.5T720-560q-17 0-28.5 11.5T680-520q0 17 11.5 28.5T720-480Z"
+                fill={activeTab === 'jester' ? '#121212' : '#E1E1E1'}
+              />
+            </Svg>
+          </View>
+        </TouchableOpacity>
+        <TouchableOpacity 
           style={[styles.tabButton, activeTab === 'info' && styles.activeTabButton]} 
           onPress={() => setActiveTab('info')}
         >
@@ -1349,7 +1416,7 @@ export default function App() {
             </Svg>
           </View>
         </TouchableOpacity>
-      </View>
+        </View>
     </SafeAreaView>
   );
 }
@@ -1440,7 +1507,9 @@ const styles = StyleSheet.create({
   },
   titleGlow: {
     position: 'absolute',
-    top: '30%',
+    top: 80,
+    left: '50%',
+    marginLeft: -100, // half of width to center
     width: 200,
     height: 200,
     backgroundColor: 'rgba(187, 134, 252, 0.05)',
