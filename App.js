@@ -116,364 +116,13 @@ const HighlightedMarkdown = ({ content, searchQuery, style, onLinkPress }) => {
           );
         }
         
-        // Special handling for lists
-        if (paragraph.trim().split('\n').some(line => line.trim().startsWith('*') || line.trim().startsWith('-'))) {
-          // For lists, we need to process each line individually
-          const lines = paragraph.split('\n');
-          
-          // Calculate the appropriate line height and spacing
-          const listItemLineHeight = style.listItem?.lineHeight || style.body?.lineHeight || 24;
-          const listItemMarginBottom = style.listItem?.marginBottom || 4;
-          
-          return (
-            <View key={index} style={[
-              style.bullet_list || { marginBottom: 16 },
-              // Ensure consistent spacing between list items
-              { marginTop: style.bullet_list?.marginTop || 0 }
-            ]}>
-              {lines.map((line, lineIndex) => {
-                if (line.trim().startsWith('*') || line.trim().startsWith('-')) {
-                  // Extract the bullet and the text
-                  const bulletMatch = line.match(/^(\s*)([\*\-]\s*)(.*)$/);
-                  if (bulletMatch) {
-                    const [_, indentation, bullet, text] = bulletMatch;
-                    
-                    // Decode HTML entities in the text
-                    const decodedText = decodeHtmlEntities(text);
-                    
-                    // Calculate indentation level based on leading spaces
-                    const indentLevel = indentation.length / 2; // Assuming 2 spaces per level
-                    const indentWidth = indentLevel * 16; // 16px per indent level
-                    
-                    // Check if this list item contains a link
-                    const linkMatch = decodedText.match(/\[([^\]]+)\]\(([^)]+)\)/);
-                    if (linkMatch) {
-                      // This is a list item with a link (like in TOC)
-                      const [fullMatch, linkText, linkUrl] = linkMatch;
-                      const beforeLink = decodedText.substring(0, decodedText.indexOf(fullMatch));
-                      const afterLink = decodedText.substring(decodedText.indexOf(fullMatch) + fullMatch.length);
-                      
-                      // Decode HTML entities in link text
-                      const decodedLinkText = decodeHtmlEntities(linkText);
-                      
-                      return (
-                        <View key={lineIndex} style={{ 
-                          flexDirection: 'row', 
-                          marginBottom: listItemMarginBottom,
-                          alignItems: 'flex-start',
-                          marginLeft: indentWidth, // Apply indentation
-                        }}>
-                          <Text style={{ 
-                            color: style.bullet_list_icon?.color || '#BB86FC', 
-                            marginRight: 8,
-                            fontSize: style.listItem?.fontSize || style.body?.fontSize || 16,
-                            lineHeight: listItemLineHeight,
-                          }}>
-                            {bullet.includes('*') ? '•' : '-'}
-                          </Text>
-                          <View style={{ flex: 1 }}>
-                            <Text style={{
-                              ...style.body,
-                              ...style.listItem,
-                              color: style.listItem?.color || style.body?.color || '#E1E1E1',
-                              fontSize: style.listItem?.fontSize || style.body?.fontSize || 16,
-                              lineHeight: listItemLineHeight,
-                              marginBottom: 0,
-                              marginTop: 0,
-                            }}>
-                              {beforeLink}
-                              {searchQuery && searchQuery.length >= 2 ? (
-                                // Render link with potential highlighting
-                                <Text 
-                                  style={{
-                                    ...style.link,
-                                    color: style.link?.color || '#03DAC6',
-                                    fontSize: style.link?.fontSize || style.body?.fontSize || 16,
-                                    textDecorationLine: style.link?.textDecorationLine || 'underline',
-                                  }}
-                                  onPress={() => onLinkPress && onLinkPress(linkUrl)}
-                                >
-                                  {decodedLinkText.split(new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi')).map((part, i) => 
-                                    part.toLowerCase() === searchQuery.toLowerCase() ? 
-                                      <Text key={i} style={[
-                                        {
-                                          color: style.link?.color || '#03DAC6',
-                                          fontSize: style.link?.fontSize || style.body?.fontSize || 16,
-                                          // Don't include lineHeight here as it's handled by the parent
-                                          textDecorationLine: style.link?.textDecorationLine || 'underline',
-                                        },
-                                        styles.highlightedText
-                                      ]}>{part}</Text> : 
-                                      part
-                                  )}
-                                </Text>
-                              ) : (
-                                // Render link without highlighting
-                                <Text 
-                                  style={{
-                                    ...style.link,
-                                    color: style.link?.color || '#03DAC6',
-                                    fontSize: style.link?.fontSize || style.body?.fontSize || 16,
-                                    textDecorationLine: style.link?.textDecorationLine || 'underline',
-                                  }}
-                                  onPress={() => onLinkPress && onLinkPress(linkUrl)}
-                                >
-                                  {decodedLinkText}
-                                </Text>
-                              )}
-                              {afterLink}
-                            </Text>
-                          </View>
-                        </View>
-                      );
-                    }
-                    
-                    // Regular list item without a link
-                    return (
-                      <View key={lineIndex} style={{ 
-                        flexDirection: 'row', 
-                        marginBottom: listItemMarginBottom,
-                        alignItems: 'flex-start',
-                        marginLeft: indentWidth, // Apply indentation
-                      }}>
-                        <Text style={{ 
-                          color: style.bullet_list_icon?.color || '#BB86FC', 
-                          marginRight: 8,
-                          fontSize: style.listItem?.fontSize || style.body?.fontSize || 16,
-                          lineHeight: listItemLineHeight,
-                        }}>
-                          {bullet.includes('*') ? '•' : '-'}
-                        </Text>
-                        <View style={{ flex: 1 }}>
-                          <Text style={{
-                            ...style.body,
-                            ...style.listItem,
-                            color: style.listItem?.color || style.body?.color || '#E1E1E1',
-                            fontSize: style.listItem?.fontSize || style.body?.fontSize || 16,
-                            lineHeight: listItemLineHeight,
-                            marginBottom: 0,
-                            marginTop: 0,
-                          }}>
-                            {searchQuery && searchQuery.length >= 2 ? 
-                              decodedText.split(new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi')).map((part, i) => 
-                                part.toLowerCase() === searchQuery.toLowerCase() ? 
-                                  <Text key={i} style={[
-                                    {
-                                      color: style.listItem?.color || style.body?.color || '#E1E1E1',
-                                      fontSize: style.listItem?.fontSize || style.body?.fontSize || 16,
-                                      // Don't include lineHeight here as it's handled by the parent
-                                    },
-                                    styles.highlightedText
-                                  ]}>{part}</Text> : 
-                                  part
-                              ) : 
-                              decodedText
-                            }
-                          </Text>
-                        </View>
-                      </View>
-                    );
-                  }
-                }
-                
-                // For non-list lines, just render them normally
-                return (
-                  <Text key={lineIndex} style={{
-                    ...style.body,
-                    ...style.paragraph,
-                    color: style.paragraph?.color || style.body?.color || '#E1E1E1',
-                    fontSize: style.paragraph?.fontSize || style.body?.fontSize || 16,
-                    lineHeight: style.paragraph?.lineHeight || style.body?.lineHeight || 24,
-                    marginBottom: 4,
-                  }}>
-                    {line}
-                  </Text>
-                );
-              })}
-            </View>
-          );
-        }
+        // For regular paragraphs, ensure inline code is properly formatted
+        const processedParagraph = paragraph.replace(/`([^`]+)`/g, '`$1`');
         
-        // Check if paragraph contains links
-        const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
-        const hasLinks = linkRegex.test(paragraph);
-        
-        if (hasLinks) {
-          // Decode the paragraph text first
-          const decodedParagraph = decodeHtmlEntities(paragraph);
-          
-          // Split the paragraph into segments (links and non-links)
-          const segments = [];
-          let lastIndex = 0;
-          let match;
-          
-          // Reset regex state
-          linkRegex.lastIndex = 0;
-          
-          while ((match = linkRegex.exec(decodedParagraph)) !== null) {
-            // Add text before the link
-            if (match.index > lastIndex) {
-              segments.push({
-                type: 'text',
-                content: decodedParagraph.substring(lastIndex, match.index)
-              });
-            }
-            
-            // Add the link
-            segments.push({
-              type: 'link',
-              text: match[1],
-              url: match[2]
-            });
-            
-            lastIndex = match.index + match[0].length;
-          }
-          
-          // Add any remaining text after the last link
-          if (lastIndex < decodedParagraph.length) {
-            segments.push({
-              type: 'text',
-              content: decodedParagraph.substring(lastIndex)
-            });
-          }
-          
-          // Render segments with highlighting and preserved links
-          return (
-            <View key={index} style={{ 
-              marginBottom: style.paragraph?.marginBottom || 20,
-              // Ensure consistent spacing between paragraphs
-              marginTop: style.paragraph?.marginTop || 0
-            }}>
-              <Text style={{
-                ...style.body,
-                ...style.paragraph,
-                color: style.paragraph?.color || style.body?.color || '#E1E1E1',
-                fontSize: style.paragraph?.fontSize || style.body?.fontSize || 16,
-                lineHeight: style.paragraph?.lineHeight || style.body?.lineHeight || 24,
-                // Remove any margin from the text itself as it's handled by the container
-                marginBottom: 0,
-                marginTop: 0,
-              }}>
-                {segments.map((segment, i) => {
-                  if (segment.type === 'text') {
-                    // Highlight regular text
-                    if (searchQuery && searchQuery.length >= 2) {
-                      const escapedQuery = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                      const parts = segment.content.split(new RegExp(`(${escapedQuery})`, 'gi'));
-                      
-                      // Return parts directly without wrapping each in a Text component
-                      return parts.map((part, j) => 
-                        part.toLowerCase() === searchQuery.toLowerCase() ? 
-                          <Text key={`${i}-${j}`} style={[
-                            // Preserve text styling
-                            {
-                              color: style.paragraph?.color || style.body?.color || '#E1E1E1',
-                              fontSize: style.paragraph?.fontSize || style.body?.fontSize || 16,
-                              // Don't include lineHeight here as it's handled by the parent
-                            },
-                            styles.highlightedText
-                          ]}>{part}</Text> : 
-                          part
-                      );
-                    } else {
-                      return segment.content;
-                    }
-                  } else if (segment.type === 'link') {
-                    // Decode link text
-                    const decodedLinkText = decodeHtmlEntities(segment.text);
-                    
-                    // Handle links with potential highlighting
-                    if (searchQuery && searchQuery.length >= 2) {
-                      const escapedQuery = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                      const parts = decodedLinkText.split(new RegExp(`(${escapedQuery})`, 'gi'));
-                      
-                      return (
-                        <Text 
-                          key={`link-${i}`} 
-                          style={{
-                            ...style.link,
-                            color: style.link?.color || '#03DAC6',
-                            fontSize: style.link?.fontSize || style.body?.fontSize || 16,
-                            // Don't include lineHeight here as it's handled by the parent
-                            textDecorationLine: 'underline',
-                          }}
-                          onPress={() => onLinkPress && onLinkPress(segment.url)}
-                        >
-                          {parts.map((part, j) => 
-                            part.toLowerCase() === searchQuery.toLowerCase() ? 
-                              <Text key={`${i}-${j}`} style={[
-                                // Preserve link styling
-                                {
-                                  color: style.link?.color || '#03DAC6',
-                                  fontSize: style.link?.fontSize || style.body?.fontSize || 16,
-                                  // Don't include lineHeight here as it's handled by the parent
-                                  textDecorationLine: 'underline'
-                                },
-                                styles.highlightedText
-                              ]}>{part}</Text> : 
-                              part
-                          )}
-                        </Text>
-                      );
-                    } else {
-                      return (
-                        <Text 
-                          key={`link-${i}`} 
-                          style={{
-                            ...style.link,
-                            color: style.link?.color || '#03DAC6',
-                            fontSize: style.link?.fontSize || style.body?.fontSize || 16,
-                            textDecorationLine: 'underline',
-                          }}
-                          onPress={() => onLinkPress && onLinkPress(segment.url)}
-                        >
-                          {decodedLinkText}
-                        </Text>
-                      );
-                    }
-                  }
-                  return null;
-                })}
-              </Text>
-            </View>
-          );
-        }
-        
-        // For regular paragraphs without links, use our custom text rendering
-        const decodedParagraph = decodeHtmlEntities(paragraph);
         return (
-          <View key={index} style={{ 
-            marginBottom: style.paragraph?.marginBottom || 20,
-            // Ensure consistent spacing between paragraphs
-            marginTop: style.paragraph?.marginTop || 0
-          }}>
-            <Text style={{
-              ...style.body,
-              ...style.paragraph,
-              color: style.paragraph?.color || style.body?.color || '#E1E1E1',
-              fontSize: style.paragraph?.fontSize || style.body?.fontSize || 16,
-              lineHeight: style.paragraph?.lineHeight || style.body?.lineHeight || 24,
-              // Remove any margin from the text itself as it's handled by the container
-              marginBottom: 0,
-              marginTop: 0,
-            }}>
-              {searchQuery && searchQuery.length >= 2 ? 
-                decodedParagraph.split(new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi')).map((part, i) => 
-                  part.toLowerCase() === searchQuery.toLowerCase() ? 
-                    <Text key={i} style={[
-                      {
-                        color: style.paragraph?.color || style.body?.color || '#E1E1E1',
-                        fontSize: style.paragraph?.fontSize || style.body?.fontSize || 16,
-                        // Don't include lineHeight here as it's handled by the parent
-                      },
-                      styles.highlightedText
-                    ]}>{part}</Text> : 
-                    part
-                ) : 
-                decodedParagraph
-              }
-            </Text>
-          </View>
+          <Markdown key={index} style={style} onLinkPress={onLinkPress}>
+            {processedParagraph}
+          </Markdown>
         );
       })}
     </View>
@@ -512,18 +161,29 @@ const TitleSection = ({ title, content, searchQuery, onNavigate }) => {
     const tocLines = [];
     const contentLines = [];
     let isToc = false;
+    let lastLineWasEmpty = false;
     
     for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
+      const line = lines[i].trim();
+      
       // Check if this line is part of a TOC (bullet point with a link)
-      if (line.trim().startsWith('*') && line.includes('[') && line.includes(']') && line.includes('#')) {
+      if (line.startsWith('*') && line.includes('[') && line.includes(']') && line.includes('#')) {
         isToc = true;
         tocLines.push(line);
-      } else if (isToc && line.trim() === '') {
-        // Empty line after TOC
+        lastLineWasEmpty = false;
+      } else if (isToc && line === '') {
+        // Only add empty line if it's not consecutive
+        if (!lastLineWasEmpty) {
+          tocLines.push('');
+          lastLineWasEmpty = true;
+        }
+      } else if (isToc) {
+        // End of TOC
         isToc = false;
+        contentLines.push(...lines.slice(i));
+        break;
       } else {
-        contentLines.push(line);
+        contentLines.push(lines[i]);
       }
     }
     
@@ -548,7 +208,7 @@ const TitleSection = ({ title, content, searchQuery, onNavigate }) => {
   };
 
   return (
-  <View style={styles.titleContainer}>
+    <View style={styles.titleContainer}>
       <View style={styles.titleGlow} />
       <Animated.View style={{
         opacity: fadeAnim,
@@ -661,8 +321,8 @@ const TitleSection = ({ title, content, searchQuery, onNavigate }) => {
         )}
       </Animated.View>
       <View style={styles.titleDivider} />
-  </View>
-);
+    </View>
+  );
 };
 
 const Section = ({ title, level, content, subsections, onPress, isExpanded, path = [], onNavigate, sectionRefs, searchQuery }) => {
@@ -1231,10 +891,16 @@ export default function App() {
     let currentSubsubsection = null;
     let currentContent = [];
     let isFirstSection = true;
+    let lastLineWasEmpty = false;
+    let isInToc = false;
 
     const finalizeContent = () => {
       const content = currentContent
         .filter(line => !line.match(/!\[.*?\]\(.*?\)/)) // Skip image markdown
+        .map(line => {
+          // Ensure text within backticks is properly formatted as code
+          return line.replace(/`([^`]+)`/g, '`$1`');
+        })
         .join('\n')
         .trim();
       currentContent = [];
@@ -2162,18 +1828,21 @@ const markdownStyles = {
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
   },
   code_block: {
     backgroundColor: '#1E1E1E',
     padding: 16,
     borderRadius: 8,
     marginVertical: 12,
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
   },
   fence: {
     backgroundColor: '#1E1E1E',
     padding: 16,
     borderRadius: 8,
     marginVertical: 12,
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
   },
   blockquote: {
     backgroundColor: '#1E1E1E',
