@@ -39,7 +39,7 @@ Note: iOS build is for simulator only. For physical devices, build locally with 
 
 ## v1.1.0 (2025-03-17)
 
-### Added search functionality:
+### Added search functionality
 * Real-time filtering of rules and Table of Contents
 * Preserves section hierarchy when filtering
 * Highlights matching text in search results
@@ -53,7 +53,7 @@ Note: iOS build is for simulator only. For physical devices, build locally with 
 
 ## v1.0.0 (2025-03-14)
 
-### Initial release featuring:
+### Initial release featuring
 * Beautiful dark theme UI
 * Full rules documentation from GitHub
 * Expandable/collapsible sections
