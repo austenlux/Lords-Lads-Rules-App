@@ -1,6 +1,8 @@
 # Lords & Lads Changelog
 
 ## v1.4.0 (2024-04-5)
+
+### Features and Improvements
 * Added expansions tab with section support
 * Enhanced tab navigation with new icons and improved layout
 * Refactored markdown rendering and TOC handling
