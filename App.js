@@ -7,6 +7,9 @@ import Svg, { Path } from 'react-native-svg';
 // Constants
 const CONTENT_URL = 'https://raw.githubusercontent.com/seanKenkeremath/lords-and-lads/master/README.md';
 const EXPANSIONS_URL = 'https://raw.githubusercontent.com/seanKenkeremath/lords-and-lads/master/expansions/README.md';
+const EXPANSIONS_BASE_URL = 'https://raw.githubusercontent.com/seanKenkeremath/lords-and-lads/master/expansions';
+const GITHUB_API_URL = 'https://api.github.com/repos/seanKenkeremath/lords-and-lads/contents/expansions';
+const EXPANSION_FOLDERS = ['jesters_gambit', 'malort_and_lads']; // We'll hardcode these for now since we know them
 
 // Add a utility function to highlight text matches
 const highlightMatches = (text, query) => {
@@ -364,6 +367,7 @@ const Section = ({ title, level, content, subsections, onPress, isExpanded, path
           sectionRefs[title] = ref;
         }
       }}
+      style={{ marginLeft }}
     >
       <TouchableOpacity 
         onPress={() => onPress(path)}
@@ -377,12 +381,10 @@ const Section = ({ title, level, content, subsections, onPress, isExpanded, path
             {decodedTitle.split(new RegExp(`(${searchQuery})`, 'gi')).map((part, i) => 
               part.toLowerCase() === searchQuery.toLowerCase() ? 
                 <Text key={i} style={[
-                  // Preserve original text styling
                   {
                     fontSize,
                     fontWeight: 'bold',
                     color: '#BB86FC',
-                    // Don't include lineHeight here as it's handled by the parent
                   },
                   styles.highlightedText
                 ]}>{part}</Text> : 
@@ -394,7 +396,7 @@ const Section = ({ title, level, content, subsections, onPress, isExpanded, path
         )}
       </TouchableOpacity>
       {isExpanded && (
-        <View style={[styles.sectionContent, { paddingLeft: 16 }]}>
+        <View style={styles.sectionContent}>
           {content && (
             <HighlightedMarkdown
               content={content}
@@ -403,7 +405,7 @@ const Section = ({ title, level, content, subsections, onPress, isExpanded, path
               onLinkPress={handleLinkPress}
             />
           )}
-          {subsections?.map((subsection, index) => (
+          {subsections && subsections.map((subsection, index) => (
             <Section
               key={index}
               {...subsection}
@@ -413,6 +415,8 @@ const Section = ({ title, level, content, subsections, onPress, isExpanded, path
               onNavigate={onNavigate}
               sectionRefs={sectionRefs}
               searchQuery={searchQuery}
+              subsections={subsection.subsections}
+              isExpanded={subsection.isExpanded}
             />
           ))}
         </View>
@@ -725,6 +729,7 @@ export default function App() {
   const [error, setError] = useState(null);
   const [content, setContent] = useState('');
   const [expansionsContent, setExpansionsContent] = useState('');
+  const [expansionSections, setExpansionSections] = useState([]);
   const [originalSections, setOriginalSections] = useState([]);
   const [sections, setSections] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -893,8 +898,6 @@ export default function App() {
     let currentSubsubsection = null;
     let currentContent = [];
     let isFirstSection = true;
-    let lastLineWasEmpty = false;
-    let isInToc = false;
 
     const finalizeContent = () => {
       const content = currentContent
@@ -924,10 +927,10 @@ export default function App() {
       if (line.startsWith('# ')) {
         if (currentSection) {
           assignContent();
-          currentSubsubsection = null;
-          currentSubsection = null;
           sections.push(currentSection);
         }
+        currentSubsubsection = null;
+        currentSubsection = null;
         if (isFirstSection) {
           currentSection = {
             title: line.replace('# ', ''),
@@ -948,6 +951,12 @@ export default function App() {
       } else if (line.startsWith('## ')) {
         assignContent();
         currentSubsubsection = null;
+        
+        // Initialize subsections array if it doesn't exist
+        if (currentSection && !currentSection.subsections) {
+          currentSection.subsections = [];
+        }
+        
         currentSubsection = {
           title: line.replace('## ', ''),
           level: 2,
@@ -955,18 +964,24 @@ export default function App() {
           subsections: [],
           content: '',
         };
-        if (currentSection) {
+        if (currentSection && currentSection.subsections) {
           currentSection.subsections.push(currentSubsection);
         }
       } else if (line.startsWith('### ')) {
         assignContent();
+        
+        // Initialize subsections array if it doesn't exist
+        if (currentSubsection && !currentSubsection.subsections) {
+          currentSubsection.subsections = [];
+        }
+        
         currentSubsubsection = {
           title: line.replace('### ', ''),
           level: 3,
           isExpanded: false,
           content: '',
         };
-        if (currentSubsection) {
+        if (currentSubsection && currentSubsection.subsections) {
           currentSubsection.subsections.push(currentSubsubsection);
         }
       } else {
@@ -985,6 +1000,32 @@ export default function App() {
 
   const toggleSection = (path) => {
     setSections(prevSections => {
+      const newSections = JSON.parse(JSON.stringify(prevSections));
+      
+      // Helper function to toggle nested section
+      const toggleNestedSection = (obj, pathParts) => {
+        if (pathParts.length === 1) {
+          obj[pathParts[0]].isExpanded = !obj[pathParts[0]].isExpanded;
+          return;
+        }
+        
+        const [current, ...rest] = pathParts;
+        if (current === 'subsections') {
+          toggleNestedSection(obj.subsections, rest);
+        } else {
+          toggleNestedSection(obj[current], rest);
+        }
+      };
+
+      const pathParts = path.map(String);
+      toggleNestedSection(newSections, pathParts);
+      
+      return newSections;
+    });
+  };
+
+  const toggleExpansionSection = (path) => {
+    setExpansionSections(prevSections => {
       const newSections = JSON.parse(JSON.stringify(prevSections));
       
       // Helper function to toggle nested section
@@ -1049,8 +1090,141 @@ export default function App() {
     }
   };
 
+  const fetchExpansions = async () => {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+      // First, fetch the directory listing from GitHub API
+      const directoryResponse = await fetch(GITHUB_API_URL, { signal: controller.signal });
+      if (!directoryResponse.ok) {
+        throw new Error(`Failed to fetch expansions directory (Status: ${directoryResponse.status})`);
+      }
+      const directoryContents = await directoryResponse.json();
+
+      // Filter for directories only
+      const expansionFolders = directoryContents
+        .filter(item => item.type === 'dir')
+        .map(item => item.name);
+
+      // Fetch all expansion READMEs in parallel
+      const expansionPromises = expansionFolders.map(folder => 
+        fetch(`${EXPANSIONS_BASE_URL}/${folder}/README.md`, { signal: controller.signal })
+          .then(response => response.text())
+          .catch(error => {
+            console.warn(`Failed to fetch README for ${folder}:`, error);
+            return null;
+          })
+      );
+
+      // Also fetch the main expansions README
+      expansionPromises.unshift(
+        fetch(EXPANSIONS_URL, { signal: controller.signal })
+          .then(response => response.text())
+      );
+
+      const allExpansionTexts = await Promise.all(expansionPromises);
+      clearTimeout(timeoutId);
+
+      // First text is the main expansions README
+      const [mainReadme, ...expansionReadmes] = allExpansionTexts;
+      setExpansionsContent(mainReadme);
+
+      // Parse each expansion README into sections
+      const sections = [];
+      expansionReadmes
+        .filter(text => text !== null)
+        .forEach(text => {
+          // Split the text into lines and process each line
+          const lines = text.split('\n');
+          let currentMainSection = null;
+          let currentSubSection = null;
+          let currentContent = [];
+
+          const finalizeContent = () => {
+            return currentContent.join('\n').trim();
+          };
+
+          lines.forEach((line, index) => {
+            if (line.startsWith('# ')) {
+              // New main section
+              if (currentMainSection) {
+                if (currentSubSection) {
+                  currentSubSection.content = finalizeContent();
+                  currentMainSection.subsections.push(currentSubSection);
+                  currentSubSection = null;
+                }
+                sections.push(currentMainSection);
+              }
+              currentMainSection = {
+                title: line.replace('# ', ''),
+                content: '',
+                level: 1,
+                isExpanded: false,
+                subsections: []
+              };
+              currentContent = [];
+            } else if (line.startsWith('## ')) {
+              // New subsection
+              if (currentSubSection) {
+                currentSubSection.content = finalizeContent();
+                if (currentMainSection) {
+                  currentMainSection.subsections.push(currentSubSection);
+                }
+              }
+              currentSubSection = {
+                title: line.replace('## ', ''),
+                content: '',
+                level: 2,
+                isExpanded: false,
+                subsections: []
+              };
+              currentContent = [];
+            } else if (line.startsWith('### ')) {
+              // New sub-subsection
+              if (currentContent.length > 0 && currentSubSection) {
+                currentSubSection.content = finalizeContent();
+              }
+              if (currentSubSection) {
+                currentSubSection.subsections.push({
+                  title: line.replace('### ', ''),
+                  content: '',
+                  level: 3,
+                  isExpanded: false
+                });
+              }
+              currentContent = [];
+            } else {
+              currentContent.push(line);
+            }
+
+            // Handle the last section/subsection at the end of the file
+            if (index === lines.length - 1) {
+              if (currentSubSection) {
+                currentSubSection.content = finalizeContent();
+                if (currentMainSection) {
+                  currentMainSection.subsections.push(currentSubSection);
+                }
+              } else if (currentMainSection) {
+                currentMainSection.content = finalizeContent();
+              }
+              if (currentMainSection) {
+                sections.push(currentMainSection);
+              }
+            }
+          });
+        });
+
+      setExpansionSections(sections);
+    } catch (err) {
+      console.error('Error fetching expansions:', err);
+      setError(err.message || 'Unable to load expansions. Please check your internet connection.');
+    }
+  };
+
   useEffect(() => {
-    fetchReadme();
+    Promise.all([fetchReadme(), fetchExpansions()])
+      .finally(() => setLoading(false));
   }, []);
 
   // Add a useEffect to update originalSections when needed
@@ -1263,7 +1437,7 @@ export default function App() {
         <Section
           {...section}
           path={path}
-          onPress={toggleSection}
+          onPress={activeTab === 'jester' ? toggleExpansionSection : toggleSection}
           onNavigate={collapseAllAndExpandSection}
           sectionRefs={sectionRefs.current}
           searchQuery={searchQuery}
@@ -1297,7 +1471,7 @@ export default function App() {
                 {"# Error\n\n" + error}
               </Markdown>
             </View>
-            <TouchableOpacity style={styles.retryButton} onPress={() => fetchReadme()}>
+            <TouchableOpacity style={styles.retryButton} onPress={() => fetchExpansions()}>
               <Text style={styles.retryButtonText}>Try Again</Text>
             </TouchableOpacity>
           </View>
@@ -1359,14 +1533,25 @@ export default function App() {
               )}
             </View>
             
-            <ScrollView style={styles.scrollView}>
-              <View style={[styles.contentContainer, { paddingTop: StatusBar.currentHeight }]}>
-                <TitleSection
-                  title="Expansions"
-                  content={expansionsContent.split('\n').slice(2).join('\n')}
-                  searchQuery={searchQuery}
-                  onNavigate={collapseAllAndExpandSection}
-                />
+            <ScrollView 
+              ref={scrollViewRef}
+              style={styles.scrollView} 
+              contentInsetAdjustmentBehavior="automatic"
+            >
+              <View style={styles.contentContainer}>
+                {expansionSections.length === 0 && searchQuery && searchQuery.length >= 2 ? (
+                  <EmptySearchResults query={searchQuery} />
+                ) : (
+                  <>
+                    <TitleSection
+                      title="Expansions"
+                      content={expansionsContent.split('\n').slice(2).join('\n')}
+                      searchQuery={searchQuery}
+                      onNavigate={collapseAllAndExpandSection}
+                    />
+                    {expansionSections.map((section, index) => renderSection(section, index))}
+                  </>
+                )}
               </View>
             </ScrollView>
           </View>
@@ -1437,11 +1622,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#121212',
     paddingTop: 0,
+    marginBottom: 60, // Add margin to account for tab bar
   },
   contentContainer: {
     padding: 20,
     paddingTop: StatusBar.currentHeight,
-    paddingBottom: 40,
+    paddingBottom: 100, // Increase padding to ensure content isn't cut off
   },
   errorContainer: {
     backgroundColor: '#2F1515',
@@ -1488,13 +1674,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 12,
+    paddingRight: 16,
   },
   sectionTitle: {
     fontWeight: 'bold',
     flex: 1,
+    color: '#BB86FC',
   },
   sectionContent: {
-    paddingLeft: 32,
+    paddingLeft: 16,
+    paddingTop: 8,
+    paddingBottom: 8,
   },
   titleContainer: {
     marginBottom: 48,
