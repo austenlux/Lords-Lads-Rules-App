@@ -11,21 +11,19 @@ const EXPANSIONS_BASE_URL = 'https://raw.githubusercontent.com/seanKenkeremath/l
 const GITHUB_API_URL = 'https://api.github.com/repos/seanKenkeremath/lords-and-lads/contents/expansions';
 const EXPANSION_FOLDERS = ['jesters_gambit', 'malort_and_lads']; // We'll hardcode these for now since we know them
 
-// Add a utility function to highlight text matches
+// Add a utility function to highlight text matches that works with the markdown library
 const highlightMatches = (text, query) => {
   if (!query || query.length < 2 || !text) {
     return text;
   }
   
-  // Escape special regex characters in the query
+  // For the markdown library, we need to use its native styling
+  // We can add a special class that the library will recognize
   const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const parts = text.split(new RegExp(`(${escapedQuery})`, 'gi'));
   
-  return parts.map((part, i) => 
-    part.toLowerCase() === query.toLowerCase() ? 
-      `<mark>${part}</mark>` : 
-      part
-  ).join('');
+  // Look for the query in the text and wrap it with **strong** markdown syntax
+  // The markdown library will render this with proper styling
+  return text.replace(new RegExp(escapedQuery, 'gi'), '**$&**');
 };
 
 // Utility function to decode HTML entities
@@ -39,122 +37,131 @@ const decodeHtmlEntities = (text) => {
     .replace(/&#039;/g, "'");
 };
 
-// Create a simpler highlighted text component
-const HighlightedText = ({ text, searchQuery, style }) => {
-  if (!text) return null;
-  
-  // Decode HTML entities in the text
-  const decodedText = decodeHtmlEntities(text);
-  
-  if (!searchQuery || searchQuery.length < 2) {
-    return <Text style={style}>{decodedText}</Text>;
+// Method 1: Using Text components with nested Text for highlighting
+const HighlightedText1 = ({ text, searchQuery, style }) => {
+  if (!text || !searchQuery || searchQuery.length < 2) {
+    return <Text style={style}>{text}</Text>;
   }
-
-  // Escape special regex characters in the query
+  
   const escapedQuery = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const parts = text.split(new RegExp(`(${escapedQuery})`, 'gi'));
   
-  // Split the text by the search query
-  const parts = decodedText.split(new RegExp(`(${escapedQuery})`, 'gi'));
-  
-  // Use a single Text component with nested Text components to maintain line spacing
   return (
-    <Text style={[
-      style,
-      // Ensure line height is explicitly set to prevent spacing issues
-      style.lineHeight ? null : { lineHeight: style.fontSize ? style.fontSize * 1.5 : 24 }
-    ]}>
-      {parts.map((part, index) => 
+    <Text style={style}>
+      {parts.map((part, i) => 
         part.toLowerCase() === searchQuery.toLowerCase() ? 
-          <Text key={index} style={[
-            // Preserve all original text styling
-            {
-              fontSize: style.fontSize,
-              fontWeight: style.fontWeight,
-              letterSpacing: style.letterSpacing,
-              // Don't include lineHeight here as it's handled by the parent
-            },
-            styles.highlightedText
-          ]}>{part}</Text> : 
+          <Text key={i} style={[style, styles.highlightedText]}>{part}</Text> : 
           part
       )}
     </Text>
   );
 };
 
-// Replace the HighlightedMarkdown component with a version that preserves links
+// Method 2: Using markdown library's mark style
+const HighlightedText2 = ({ text, searchQuery, style }) => {
+  if (!text || !searchQuery || searchQuery.length < 2) {
+    return text;
+  }
+  
+  const escapedQuery = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const parts = text.split(new RegExp(`(${escapedQuery})`, 'gi'));
+  
+  return parts.map((part, i) => 
+    part.toLowerCase() === searchQuery.toLowerCase() ? 
+      `<mark>${part}</mark>` : 
+      part
+  ).join('');
+};
+
+// Method 3: Using a custom View wrapper with background color
+const HighlightedText3 = ({ text, searchQuery, style }) => {
+  if (!text || !searchQuery || searchQuery.length < 2) {
+    return <Text style={style}>{text}</Text>;
+  }
+  
+  const escapedQuery = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const parts = text.split(new RegExp(`(${escapedQuery})`, 'gi'));
+  
+  return (
+    <Text style={style}>
+      {parts.map((part, i) => 
+        part.toLowerCase() === searchQuery.toLowerCase() ? 
+          <View key={i} style={styles.highlightedView}>
+            <Text style={[style, styles.highlightedText]}>{part}</Text>
+          </View> : 
+          part
+      )}
+    </Text>
+  );
+};
+
+// Method 4: Using a custom Text component with background color
+const HighlightedText4 = ({ text, searchQuery, style }) => {
+  if (!text || !searchQuery || searchQuery.length < 2) {
+    return <Text style={style}>{text}</Text>;
+  }
+  
+  const escapedQuery = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const parts = text.split(new RegExp(`(${escapedQuery})`, 'gi'));
+  
+  return (
+    <Text style={style}>
+      {parts.map((part, i) => 
+        part.toLowerCase() === searchQuery.toLowerCase() ? 
+          <Text key={i} style={[style, { backgroundColor: 'rgba(187, 134, 252, 0.3)' }]}>{part}</Text> : 
+          part
+      )}
+    </Text>
+  );
+};
+
+// Replace the HighlightedMarkdown component with a version that highlights text
 const HighlightedMarkdown = ({ content, searchQuery, style, onLinkPress }) => {
   if (!content) {
     return null;
   }
 
-  // For headings, blockquotes, and code blocks, use regular markdown
-  if (content.trim().startsWith('#') || 
-      content.trim().startsWith('>') || 
-      content.startsWith('```')) {
-    return (
-      <Markdown style={style} onLinkPress={onLinkPress}>
-        {content}
-      </Markdown>
-    );
-  }
-
-  // Process the content to find paragraphs and lists
-  const paragraphs = content.split('\n\n');
+  // Create enhanced style with proper list spacing and bold/strong styling
+  const enhancedStyle = {
+    ...style,
+    // If this is a list, add the gap for spacing
+    bullet_list: {
+      ...style.bullet_list,
+      marginBottom: 0, 
+      marginTop: 8,
+      gap: 8, // Add gap between list items at the same level
+    },
+    ordered_list: {
+      ...style.ordered_list,
+      marginBottom: 0,
+      marginTop: 8,
+      gap: 8, // Add gap between list items at the same level
+    },
+    listItem: {
+      ...style.listItem,
+      marginBottom: 0,
+      marginTop: 0,
+    },
+    // Make strong/bold text have the highlight style
+    strong: {
+      backgroundColor: 'rgba(187, 134, 252, 0.3)',
+      color: '#ffffff',
+      fontWeight: 'bold',
+    }
+  };
+  
+  // Pre-process the content to highlight matches using bold/strong markdown syntax
+  const highlightedContent = searchQuery && searchQuery.length >= 2 
+    ? highlightMatches(content, searchQuery)
+    : content;
   
   return (
-    <View>
-      {paragraphs.map((paragraph, index) => {
-        // Skip empty paragraphs
-        if (!paragraph.trim()) return null;
-        
-        // Check if this is a markdown heading, blockquote, or code block
-        if (paragraph.startsWith('#') || 
-            paragraph.startsWith('>') || 
-            paragraph.startsWith('```')) {
-          return (
-            <Markdown key={index} style={style} onLinkPress={onLinkPress}>
-              {paragraph}
-            </Markdown>
-          );
-        }
-        
-        // For regular paragraphs and lists, ensure inline code is properly formatted
-        const processedParagraph = paragraph.replace(/`([^`]+)`/g, '`$1`');
-        
-        // If this is a list item, add extra spacing
-        const isListItem = paragraph.trim().startsWith('*');
-        const listItemStyle = isListItem ? {
-          ...style,
-          listItem: {
-            ...style.listItem,
-            marginBottom: 0,
-            marginTop: 0,
-          },
-          bullet_list: {
-            ...style.bullet_list,
-            marginBottom: 0,
-            marginTop: 8,
-            gap: 8, // Add gap between list items at the same level
-          },
-          ordered_list: {
-            ...style.ordered_list,
-            marginBottom: 0,
-            marginTop: 8,
-            gap: 8, // Add gap between list items at the same level
-          }
-        } : style;
-          
-        return (
-          <Markdown 
-            key={index} 
-            style={listItemStyle}
-            onLinkPress={onLinkPress}
-          >
-            {processedParagraph}
-          </Markdown>
-        );
-      })}
-    </View>
+    <Markdown 
+      style={enhancedStyle}
+      onLinkPress={onLinkPress}
+    >
+      {highlightedContent}
+    </Markdown>
   );
 };
 
@@ -1836,6 +1843,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(187, 134, 252, 0.3)',
     color: '#ffffff',
     fontWeight: 'bold',
+  },
+  highlightedView: {
+    backgroundColor: 'rgba(187, 134, 252, 0.3)',
+    borderRadius: 2,
   },
   emptyStateContainer: {
     padding: 20,
