@@ -83,7 +83,6 @@ const HighlightedText = ({ text, searchQuery, style }) => {
 
 // Replace the HighlightedMarkdown component with a version that preserves links
 const HighlightedMarkdown = ({ content, searchQuery, style, onLinkPress }) => {
-  // If no content, return nothing
   if (!content) {
     return null;
   }
@@ -99,7 +98,7 @@ const HighlightedMarkdown = ({ content, searchQuery, style, onLinkPress }) => {
     );
   }
 
-  // Process the content to find paragraphs
+  // Process the content to find paragraphs and lists
   const paragraphs = content.split('\n\n');
   
   return (
@@ -108,11 +107,10 @@ const HighlightedMarkdown = ({ content, searchQuery, style, onLinkPress }) => {
         // Skip empty paragraphs
         if (!paragraph.trim()) return null;
         
-        // Check if this is a markdown heading, list, etc.
+        // Check if this is a markdown heading, blockquote, or code block
         if (paragraph.startsWith('#') || 
             paragraph.startsWith('>') || 
             paragraph.startsWith('```')) {
-          // Render as regular markdown for headings, blockquotes, and code blocks
           return (
             <Markdown key={index} style={style} onLinkPress={onLinkPress}>
               {paragraph}
@@ -120,11 +118,38 @@ const HighlightedMarkdown = ({ content, searchQuery, style, onLinkPress }) => {
           );
         }
         
-        // For regular paragraphs, ensure inline code is properly formatted
+        // For regular paragraphs and lists, ensure inline code is properly formatted
         const processedParagraph = paragraph.replace(/`([^`]+)`/g, '`$1`');
+        
+        // If this is a list item, add extra spacing
+        const isListItem = paragraph.trim().startsWith('*');
+        const listItemStyle = isListItem ? {
+          ...style,
+          listItem: {
+            ...style.listItem,
+            marginBottom: 0,
+            marginTop: 0,
+          },
+          bullet_list: {
+            ...style.bullet_list,
+            marginBottom: 0,
+            marginTop: 8,
+            gap: 8, // Add gap between list items at the same level
+          },
+          ordered_list: {
+            ...style.ordered_list,
+            marginBottom: 0,
+            marginTop: 8,
+            gap: 8, // Add gap between list items at the same level
+          }
+        } : style;
           
-          return (
-          <Markdown key={index} style={style} onLinkPress={onLinkPress}>
+        return (
+          <Markdown 
+            key={index} 
+            style={listItemStyle}
+            onLinkPress={onLinkPress}
+          >
             {processedParagraph}
           </Markdown>
         );
@@ -165,29 +190,21 @@ const TitleSection = ({ title, content, searchQuery, onNavigate }) => {
     const tocLines = [];
     const contentLines = [];
     let isToc = false;
-    let lastLineWasEmpty = false;
     
     for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].trim();
+      const line = lines[i];
       
       // Check if this line is part of a TOC (bullet point with a link)
-      if (line.startsWith('*') && line.includes('[') && line.includes(']') && line.includes('#')) {
+      if (line.trim().startsWith('*') && line.includes('[') && line.includes(']') && line.includes('#')) {
         isToc = true;
         tocLines.push(line);
-        lastLineWasEmpty = false;
-      } else if (isToc && line === '') {
-        // Only add empty line if it's not consecutive
-        if (!lastLineWasEmpty) {
-          tocLines.push('');
-          lastLineWasEmpty = true;
-        }
-      } else if (isToc) {
+      } else if (isToc && !line.trim().startsWith('*')) {
         // End of TOC
         isToc = false;
         contentLines.push(...lines.slice(i));
         break;
-      } else {
-        contentLines.push(lines[i]);
+      } else if (!isToc) {
+        contentLines.push(line);
       }
     }
     
@@ -308,7 +325,8 @@ const TitleSection = ({ title, content, searchQuery, onNavigate }) => {
                 },
                 listItem: {
                   ...markdownStyles.listItem,
-                  marginBottom: 8,
+                  marginBottom: 12,
+                  marginTop: 12,
                 },
                 bullet_list: {
                   ...markdownStyles.bullet_list,
@@ -2038,48 +2056,55 @@ const markdownStyles = {
     color: '#BB86FC',
     fontSize: 32,
     fontWeight: 'bold',
-    marginBottom: 24,
-    marginTop: 32,
+    marginBottom: 0,
+    marginTop: 0,
     lineHeight: 40,
   },
   heading2: {
     color: '#BB86FC',
     fontSize: 26,
     fontWeight: 'bold',
-    marginBottom: 20,
-    marginTop: 28,
+    marginBottom: 0,
+    marginTop: 0,
     lineHeight: 34,
   },
   heading3: {
     color: '#BB86FC',
     fontSize: 22,
     fontWeight: 'bold',
-    marginBottom: 16,
-    marginTop: 24,
+    marginBottom: 0,
+    marginTop: 0,
     lineHeight: 30,
   },
   link: {
     color: '#03DAC6',
   },
   listItem: {
-    marginBottom: 4,
+    marginBottom: 12,
+    marginTop: 12,
     color: '#E1E1E1',
   },
   paragraph: {
-    marginBottom: 20,
+    marginBottom: 8,
     color: '#E1E1E1',
   },
   bullet_list: {
-    marginBottom: 16,
+    marginBottom: 0,
+    marginTop: 0,
+    paddingLeft: 0,
   },
   ordered_list: {
-    marginBottom: 16,
+    marginBottom: 0,
+    marginTop: 0,
+    paddingLeft: 0,
   },
   bullet_list_icon: {
     color: '#BB86FC',
+    marginRight: 8,
   },
   ordered_list_icon: {
     color: '#BB86FC',
+    marginRight: 8,
   },
   code_inline: {
     color: '#03DAC6',
@@ -2093,14 +2118,14 @@ const markdownStyles = {
     backgroundColor: '#1E1E1E',
     padding: 16,
     borderRadius: 8,
-    marginVertical: 12,
+    marginVertical: 0,
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
   },
   fence: {
     backgroundColor: '#1E1E1E',
     padding: 16,
     borderRadius: 8,
-    marginVertical: 12,
+    marginVertical: 0,
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
   },
   blockquote: {
@@ -2108,11 +2133,11 @@ const markdownStyles = {
     borderLeftColor: '#BB86FC',
     borderLeftWidth: 4,
     padding: 16,
-    marginVertical: 12,
+    marginVertical: 0,
   },
   table: {
     borderColor: '#333',
-    marginVertical: 16,
+    marginVertical: 0,
   },
   tr: {
     borderBottomColor: '#333',
