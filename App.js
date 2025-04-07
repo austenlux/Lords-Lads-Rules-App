@@ -826,7 +826,7 @@ export default function App() {
   useEffect(() => {
     // Only reset if we're not currently searching and we have original sections
     if (originalExpansionSections.length > 0 && (!searchQuery || searchQuery.length < 2)) {
-      console.log('Force restoring expansion sections once on mount');
+      
       setExpansionSections(JSON.parse(JSON.stringify(originalExpansionSections)));
     }
   }, []); // Empty dependency array makes this run only once on mount
@@ -845,7 +845,7 @@ export default function App() {
   useEffect(() => {
     // Only restore original sections when switching tabs, if we have originals, and NOT searching
     if (activeTab === 'jester' && originalExpansionSections.length > 0 && (!searchQuery || searchQuery.length < 2)) {
-      console.log('Switching to jester tab, restoring expansion sections (not during search)');
+      
       setExpansionSections(JSON.parse(JSON.stringify(originalExpansionSections)));
     } else if (activeTab === 'rules' && originalSections.length > 0 && (!searchQuery || searchQuery.length < 2)) {
       setSections(JSON.parse(JSON.stringify(originalSections)));
@@ -876,7 +876,7 @@ export default function App() {
       
       // Only update if the sections are actually different
       if (originalExpansionSections.length === 0 || currentSectionsJSON !== originalSectionsJSON) {
-        console.log('Updating originalExpansionSections with expansion states');
+        
         
         // Make a deep copy of expansionSections
         const updatedOriginalSections = JSON.parse(JSON.stringify(expansionSections));
@@ -1277,7 +1277,7 @@ export default function App() {
   // Fix the fetchExpansions function to properly handle errors
   const fetchExpansions = async () => {
     try {
-      console.log('Starting to fetch expansions');
+      
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000);
 
@@ -1293,7 +1293,7 @@ export default function App() {
           .filter(item => item.type === 'dir')
           .map(item => item.name);
 
-        console.log('Found expansion folders:', expansionFolders);
+        
 
         // Fetch all expansion READMEs in parallel
         const expansionPromises = expansionFolders.map(folder => 
@@ -1429,13 +1429,13 @@ export default function App() {
             });
           });
 
-        console.log(`Successfully parsed ${sections.length} expansion sections`);
+        
         
         // Important: Set both state variables to ensure consistency
         const sectionsCopy = JSON.parse(JSON.stringify(sections));
         setExpansionSections(sections);
         setOriginalExpansionSections(sectionsCopy);
-        console.log('Original expansion sections set with', sectionsCopy.length, 'sections');
+        
         
       } catch (directoryError) {
         console.warn('Error fetching expansion directory, falling back to hardcoded folders:', directoryError);
@@ -1589,20 +1589,20 @@ export default function App() {
     if (showSearch) {
       // Only clear search and reset sections when hiding search bar
       if (searchQuery && searchQuery.length >= 2) {
-        console.log('Clearing search, restoring original content');
+        
         setSearchQuery('');
         
         // Reset sections to original state
         if (activeTab === 'rules') {
           setSections(JSON.parse(JSON.stringify(originalSections)));
         } else if (activeTab === 'jester') {
-          console.log(`Restoring ${originalExpansionSections.length} expansion sections on search close`);
+          
           // Make sure we have original expansion sections to restore from
           if (originalExpansionSections.length > 0) {
             setExpansionSections(JSON.parse(JSON.stringify(originalExpansionSections)));
           } else {
             // If we somehow don't have original expansion sections, try to fetch them
-            console.log('No original expansion sections found, fetching them');
+            
             fetchExpansions();
           }
         }
@@ -1698,10 +1698,10 @@ export default function App() {
       // Make sure expansions are loaded if needed
       if (expansionSections.length === 0 && originalExpansionSections.length > 0 && 
           (!searchQuery || searchQuery.length < 2)) {
-        console.log('Restoring empty expansion sections (not from search)');
+        
         setExpansionSections(JSON.parse(JSON.stringify(originalExpansionSections)));
       } else if (expansionSections.length === 0 && originalExpansionSections.length === 0) {
-        console.log('Fetching expansions');
+        
         fetchExpansions();
       }
       
