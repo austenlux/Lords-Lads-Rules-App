@@ -520,60 +520,6 @@ const RulesScreen = ({ content, sections, searchQuery, showSearch, toggleSearchB
   );
 };
 
-// Create a JesterScreen component that mirrors the RulesScreen for consistency
-const JesterScreen = ({ content, sections, searchQuery, showSearch, toggleSearchBar, handleSearchQueryChange, searchInputRef, renderSection, scrollViewRef }) => {
-  return (
-    <View style={{ flex: 1 }}>
-      {/* Header with Search Icon/Bar */}
-      <View style={styles.headerContainer}>
-        {!showSearch ? (
-          <>
-            <View style={styles.spacer}></View>
-            <TouchableOpacity 
-              style={styles.searchIconContainer} 
-              onPress={toggleSearchBar}
-            >
-              <Text style={styles.searchIcon}>🔍</Text>
-            </TouchableOpacity>
-          </>
-        ) : (
-          <View style={styles.searchBarWrapper}>
-            <TextInput
-              ref={searchInputRef}
-              style={styles.searchInput}
-              placeholder="Search expansions..."
-              placeholderTextColor="#888"
-              value={searchQuery}
-              onChangeText={handleSearchQueryChange}
-              autoFocus={true}
-            />
-            <TouchableOpacity 
-              style={styles.closeIconContainer} 
-              onPress={toggleSearchBar}
-            >
-              <Text style={styles.closeIcon}>✕</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      </View>
-      
-      <ScrollView 
-        ref={scrollViewRef}
-        style={styles.scrollView} 
-        contentInsetAdjustmentBehavior="automatic"
-      >
-        <View style={styles.contentContainer}>
-          {sections.length === 0 && searchQuery && searchQuery.length >= 2 ? (
-            <EmptySearchResults query={searchQuery} />
-          ) : (
-            sections.map((section, index) => renderSection(section, index))
-          )}
-        </View>
-      </ScrollView>
-    </View>
-  );
-};
-
 // Create an Info/Settings screen component
 const InfoSettingsScreen = ({ lastFetchDate }) => {
   const [releaseNotes, setReleaseNotes] = useState([]);
@@ -803,6 +749,91 @@ const InfoSettingsScreen = ({ lastFetchDate }) => {
   );
 };
 
+// Create a specific filter function for expansions that strictly removes non-matching sections
+const filterExpansionsBySearch = (sections, searchQuery) => {
+  if (!searchQuery || searchQuery.length < 2) {
+    return sections;
+  }
+
+  console.log('Starting expansion filtering with query:', searchQuery);
+
+  // Create a regex for the search
+  const escapedQuery = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const searchRegex = new RegExp(escapedQuery, 'gi');
+
+  // Helper function to check if text contains a match
+  const hasMatch = (text) => {
+    if (!text) return false;
+    searchRegex.lastIndex = 0; // Reset regex state
+    const match = searchRegex.test(decodeHtmlEntities(text));
+    return match;
+  };
+
+  // Deep copy to avoid modifying original
+  const sectionsCopy = JSON.parse(JSON.stringify(sections));
+  
+  // Simplified approach: directly filter out sections without matches
+  const filterSectionsRecursively = (sectionsList) => {
+    if (!sectionsList || !Array.isArray(sectionsList)) return [];
+    
+    return sectionsList.filter(section => {
+      // Always keep the title sections
+      if (section.isTitle) return true;
+      
+      // Check for direct matches in this section
+      const titleMatch = hasMatch(section.title);
+      const contentMatch = hasMatch(section.content);
+      const hasDirectMatch = titleMatch || contentMatch;
+      
+      // Process subsections if any
+      let hasMatchingSubsections = false;
+      if (section.subsections && section.subsections.length > 0) {
+        // Filter subsections recursively
+        const filteredSubsections = filterSectionsRecursively(section.subsections);
+        
+        // Update section's subsections with filtered result
+        section.subsections = filteredSubsections;
+        
+        // Check if any subsections matched
+        hasMatchingSubsections = filteredSubsections.length > 0;
+        
+        // Auto-expand if any subsections matched
+        if (hasMatchingSubsections) {
+          section.isExpanded = true;
+        }
+      }
+      
+      // For debugging
+      if (hasDirectMatch || hasMatchingSubsections) {
+        console.log(`Expansion search: keeping section "${section.title}" (directMatch: ${hasDirectMatch}, subsectionMatch: ${hasMatchingSubsections})`);
+      }
+      
+      // Auto-expand this section if it has a direct match
+      if (hasDirectMatch) {
+        section.isExpanded = true;
+      }
+      
+      // Only keep sections with direct matches or matching subsections
+      return hasDirectMatch || hasMatchingSubsections;
+    });
+  };
+  
+  // Apply the filtering recursively
+  const filteredSections = filterSectionsRecursively(sectionsCopy);
+  
+  // For debugging
+  console.log(`Expansion search: filtered from ${sections.length} to ${filteredSections.length} top-level sections`);
+  console.log(`Expansion search: ${filteredSections.filter(s => !s.isTitle).length} non-title sections remain`);
+  
+  // If we only have title sections left (no content sections), return empty array to show "no results"
+  const hasContentSections = filteredSections.some(s => !s.isTitle);
+  if (!hasContentSections) {
+    console.log('Expansion search: No content sections remain, showing empty result');
+    return [];
+  }
+  
+  return filteredSections;
+};
 
 export default function App() {
   const [loading, setLoading] = useState(true);
@@ -822,14 +853,13 @@ export default function App() {
   const sectionRefs = useRef({});
   const searchInputRef = useRef(null);
 
-  // Add an effect to reset expansionSections on mount - only run ONCE
+  // Add an effect to reset expansionSections on mount
   useEffect(() => {
-    // Only reset if we're not currently searching and we have original sections
-    if (originalExpansionSections.length > 0 && (!searchQuery || searchQuery.length < 2)) {
-      console.log('Force restoring expansion sections once on mount');
+    if (originalExpansionSections.length > 0) {
+      console.log('Force restoring expansion sections');
       setExpansionSections(JSON.parse(JSON.stringify(originalExpansionSections)));
     }
-  }, []); // Empty dependency array makes this run only once on mount
+  }, [originalExpansionSections]); // Added the full object as dependency
 
   // Add effect to handle search input focus
   useEffect(() => {
@@ -843,14 +873,14 @@ export default function App() {
 
   // Add effect to ensure expansions content when switching tabs
   useEffect(() => {
-    // Only restore original sections when switching tabs, if we have originals, and NOT searching
-    if (activeTab === 'jester' && originalExpansionSections.length > 0 && (!searchQuery || searchQuery.length < 2)) {
-      console.log('Switching to jester tab, restoring expansion sections (not during search)');
+    // Only restore original sections when switching tabs and if we have originals
+    if (activeTab === 'jester' && originalExpansionSections.length > 0) {
+      console.log('Switching to jester tab, restoring expansion sections');
       setExpansionSections(JSON.parse(JSON.stringify(originalExpansionSections)));
-    } else if (activeTab === 'rules' && originalSections.length > 0 && (!searchQuery || searchQuery.length < 2)) {
+    } else if (activeTab === 'rules' && originalSections.length > 0) {
       setSections(JSON.parse(JSON.stringify(originalSections)));
     }
-  }, [activeTab, searchQuery]); // Add searchQuery as dependency
+  }, [activeTab]); // Dependency on activeTab only to avoid infinite loop
 
   // Add a useEffect to handle tab switching with active search
   useEffect(() => {
@@ -870,19 +900,40 @@ export default function App() {
   useEffect(() => {
     // Only update if we have sections and we're not searching
     if (expansionSections.length > 0 && (!searchQuery || searchQuery.length < 2)) {
-      // Use a strict equality check to prevent circular updates
-      const currentSectionsJSON = JSON.stringify(expansionSections);
-      const originalSectionsJSON = JSON.stringify(originalExpansionSections);
-      
-      // Only update if the sections are actually different
-      if (originalExpansionSections.length === 0 || currentSectionsJSON !== originalSectionsJSON) {
-        console.log('Updating originalExpansionSections with expansion states');
+      // Don't update if we already have the same number of sections (prevents circular updates)
+      if (originalExpansionSections.length === 0 || 
+          (originalExpansionSections.length > 0 && expansionSections.length === originalExpansionSections.length)) {
+        // Keep track of expansion states in originalExpansionSections, but only when not searching
+        const updateOriginalWithExpansionStates = () => {
+          // Create helper function to copy expansion states
+          const copyExpansionStates = (source, target) => {
+            if (!source || !target) return;
+            
+            for (let i = 0; i < source.length && i < target.length; i++) {
+              if (source[i].title === target[i].title) {
+                // Only copy isExpanded property
+                target[i].isExpanded = source[i].isExpanded;
+                
+                // Recursively update subsections
+                if (source[i].subsections && target[i].subsections) {
+                  copyExpansionStates(source[i].subsections, target[i].subsections);
+                }
+              }
+            }
+          };
+          
+          // Make a deep copy of originalExpansionSections
+          const updatedOriginalSections = JSON.parse(JSON.stringify(originalExpansionSections));
+          
+          // Copy expansion states from expansionSections to updatedOriginalSections
+          copyExpansionStates(expansionSections, updatedOriginalSections);
+          
+          // Update the state only if there are actual changes
+          setOriginalExpansionSections(updatedOriginalSections);
+        };
         
-        // Make a deep copy of expansionSections
-        const updatedOriginalSections = JSON.parse(JSON.stringify(expansionSections));
-        
-        // Update the state only if needed
-        setOriginalExpansionSections(updatedOriginalSections);
+        // Call the update function
+        updateOriginalWithExpansionStates();
       }
     }
   }, [expansionSections, searchQuery]); // Only depend on expansionSections and searchQuery
@@ -1198,7 +1249,6 @@ export default function App() {
         
         if (pathParts.length === 1) {
           if (obj[pathParts[0]]) {
-            // Simply toggle expanded state regardless of search state
             obj[pathParts[0]].isExpanded = !obj[pathParts[0]].isExpanded;
           }
           return;
@@ -1487,95 +1537,212 @@ export default function App() {
       });
   }, []);
 
-  // Simple filter function for consistent behavior across tabs
+  // Update the filterSectionsBySearch function to be more robust
   const filterSectionsBySearch = (sections, searchQuery) => {
     if (!searchQuery || searchQuery.length < 2) {
       return sections;
     }
 
-    const query = searchQuery.toLowerCase();
-    const sectionsCopy = JSON.parse(JSON.stringify(sections));
-    
-    // Recursively mark and filter sections
-    const processSection = (section) => {
-      if (!section) return false;
-      
-      // Check direct match in title or content
-      const titleMatch = section.title && section.title.toLowerCase().includes(query);
-      const contentMatch = section.content && section.content.toLowerCase().includes(query);
-      const hasDirectMatch = titleMatch || contentMatch;
-      
-      // Process subsections
-      let hasMatchingSubsection = false;
-      if (section.subsections && section.subsections.length > 0) {
-        // Filter subsections
-        const newSubsections = [];
-        for (let i = 0; i < section.subsections.length; i++) {
-          if (processSection(section.subsections[i])) {
-            newSubsections.push(section.subsections[i]);
-            hasMatchingSubsection = true;
-          }
-        }
-        section.subsections = newSubsections;
-      }
-      
-      // If this section has matches, expand it
-      if (hasDirectMatch || hasMatchingSubsection) {
-        section.isExpanded = true;
-        return true;
-      }
-      
-      // No matches in this section
-      return false;
+    console.log(`Filtering with query: "${searchQuery}"`);
+
+    const escapedQuery = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const searchRegex = new RegExp(escapedQuery, 'gi');
+
+    const hasMatch = (text) => {
+      if (!text) return false;
+      searchRegex.lastIndex = 0; // Reset regex state
+      return searchRegex.test(decodeHtmlEntities(text));
     };
     
-    // Filter top-level sections
-    const filteredSections = [];
-    for (let i = 0; i < sectionsCopy.length; i++) {
-      // Always keep title sections
-      if (sectionsCopy[i].isTitle) {
-        filteredSections.push(sectionsCopy[i]);
-      } 
-      // For content sections, only keep if they match
-      else if (processSection(sectionsCopy[i])) {
-        filteredSections.push(sectionsCopy[i]);
-      }
+    // Make a deep copy to avoid mutating the original
+    const sectionsCopy = JSON.parse(JSON.stringify(sections));
+    
+    // First pass: mark all sections that contain matches
+    const markSections = (sectionsArray) => {
+      if (!sectionsArray || !Array.isArray(sectionsArray)) return;
+      
+      sectionsArray.forEach(section => {
+        if (!section) return;
+        
+        // Check if this section matches
+        const titleMatch = hasMatch(section.title);
+        const contentMatch = hasMatch(section.content);
+        section._hasDirectMatch = titleMatch || contentMatch;
+        
+        // Recursively mark subsections
+        if (section.subsections && section.subsections.length > 0) {
+          markSections(section.subsections);
+          
+          // Check if any subsections have matches
+          section._hasMatchingSubsection = section.subsections.some(sub => 
+            sub._hasDirectMatch || sub._hasMatchingSubsection
+          );
+        } else {
+          section._hasMatchingSubsection = false;
+        }
+        
+        // Mark if this section has any match (direct or in subsections)
+        section._hasAnyMatch = section._hasDirectMatch || section._hasMatchingSubsection;
+      });
+    };
+    
+    // Second pass: filter sections and expand matching ones
+    const filterAndExpandSections = (sectionsArray) => {
+      if (!sectionsArray || !Array.isArray(sectionsArray)) return [];
+      
+      return sectionsArray.filter(section => {
+        // Always keep title sections
+        if (section.isTitle) return true;
+        
+        // Skip sections with no matches
+        if (!section._hasAnyMatch) return false;
+        
+        // Auto-expand this section if it has matches
+        if (section._hasAnyMatch) {
+          section.isExpanded = true;
+        }
+        
+        // Filter subsections recursively
+        if (section.subsections && section.subsections.length > 0) {
+          section.subsections = filterAndExpandSections(section.subsections);
+        }
+        
+        return true;
+      });
+    };
+    
+    // Apply both passes
+    markSections(sectionsCopy);
+    const filteredSections = filterAndExpandSections(sectionsCopy);
+    
+    // If only title sections remain, return empty array for "no results"
+    const hasContentSections = filteredSections.some(s => !s.isTitle);
+    
+    if (!hasContentSections) {
+      console.log('No content sections match search, returning empty array');
+      return [];
     }
     
-    // If only title sections remain, return empty array
-    const contentSections = filteredSections.filter(s => !s.isTitle);
-    if (contentSections.length === 0) {
+    console.log(`Search matched ${filteredSections.filter(s => !s.isTitle).length} sections`);
+    return filteredSections;
+  };
+  
+  // Add the filterExpansionsBySearch function here as well
+  const filterExpansionsBySearch = (sections, searchQuery) => {
+    if (!searchQuery || searchQuery.length < 2) {
+      return sections;
+    }
+
+    console.log('Starting expansion filtering with query:', searchQuery);
+
+    // Create a regex for the search
+    const escapedQuery = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const searchRegex = new RegExp(escapedQuery, 'gi');
+
+    // Helper function to check if text contains a match
+    const hasMatch = (text) => {
+      if (!text) return false;
+      searchRegex.lastIndex = 0; // Reset regex state
+      const match = searchRegex.test(decodeHtmlEntities(text));
+      return match;
+    };
+
+    // Deep copy to avoid modifying original
+    const sectionsCopy = JSON.parse(JSON.stringify(sections));
+    
+    // Simplified approach: directly filter out sections without matches
+    const filterSectionsRecursively = (sectionsList) => {
+      if (!sectionsList || !Array.isArray(sectionsList)) return [];
+      
+      return sectionsList.filter(section => {
+        // Always keep the title sections
+        if (section.isTitle) return true;
+        
+        // Check for direct matches in this section
+        const titleMatch = hasMatch(section.title);
+        const contentMatch = hasMatch(section.content);
+        const hasDirectMatch = titleMatch || contentMatch;
+        
+        // Process subsections if any
+        let hasMatchingSubsections = false;
+        if (section.subsections && section.subsections.length > 0) {
+          // Filter subsections recursively
+          const filteredSubsections = filterSectionsRecursively(section.subsections);
+          
+          // Update section's subsections with filtered result
+          section.subsections = filteredSubsections;
+          
+          // Check if any subsections matched
+          hasMatchingSubsections = filteredSubsections.length > 0;
+          
+          // Auto-expand if any subsections matched
+          if (hasMatchingSubsections) {
+            section.isExpanded = true;
+          }
+        }
+        
+        // For debugging
+        if (hasDirectMatch || hasMatchingSubsections) {
+          console.log(`Expansion search: keeping section "${section.title}" (directMatch: ${hasDirectMatch}, subsectionMatch: ${hasMatchingSubsections})`);
+        }
+        
+        // Auto-expand this section if it has a direct match
+        if (hasDirectMatch) {
+          section.isExpanded = true;
+        }
+        
+        // Only keep sections with direct matches or matching subsections
+        return hasDirectMatch || hasMatchingSubsections;
+      });
+    };
+    
+    // Apply the filtering recursively
+    const filteredSections = filterSectionsRecursively(sectionsCopy);
+    
+    // For debugging
+    console.log(`Expansion search: filtered from ${sections.length} to ${filteredSections.length} top-level sections`);
+    console.log(`Expansion search: ${filteredSections.filter(s => !s.isTitle).length} non-title sections remain`);
+    
+    // If we only have title sections left (no content sections), return empty array to show "no results"
+    const hasContentSections = filteredSections.some(s => !s.isTitle);
+    if (!hasContentSections) {
+      console.log('Expansion search: No content sections remain, showing empty result');
       return [];
     }
     
     return filteredSections;
   };
-
-  // Simple search handler for both tabs
+   
+  // Move handleSearchQueryChange function here, inside the App component
   const handleSearchQueryChange = (newQuery) => {
     setSearchQuery(newQuery);
     
     // Only filter when query has 2+ characters
     if (newQuery && newQuery.length >= 2) {
+      console.log('Filtering with search:', newQuery);
+      
       if (activeTab === 'rules') {
-        // Filter rules sections
-        const filtered = filterSectionsBySearch(
-          JSON.parse(JSON.stringify(originalSections)), 
-          newQuery
-        );
-        setSections(filtered);
+        if (originalSections.length > 0) {
+          // Use the shared filter function
+          const filtered = filterSectionsBySearch(JSON.parse(JSON.stringify(originalSections)), newQuery);
+          console.log(`Rules search found ${filtered.filter(s => !s.isTitle).length} matching sections`);
+          setSections(filtered);
+        }
       } 
       else if (activeTab === 'jester') {
-        // Filter expansion sections exactly the same way
-        const filtered = filterSectionsBySearch(
-          JSON.parse(JSON.stringify(originalExpansionSections)), 
-          newQuery
-        );
-        setExpansionSections(filtered);
+        if (originalExpansionSections.length > 0) {
+          // Force expansion sections to use the exact same filter as rules
+          const filtered = filterSectionsBySearch(JSON.parse(JSON.stringify(originalExpansionSections)), newQuery);
+          console.log(`Expansion search found ${filtered.filter(s => !s.isTitle).length} matching sections`);
+          
+          // Important: clear existing expansions and set filtered result
+          setExpansionSections(filtered);
+        }
       }
     } 
-    // Restore original content when search is cleared
+    // Restore original sections when clearing search (2+ chars to 0-1 chars)
     else if (searchQuery && searchQuery.length >= 2) {
+      console.log('Clearing search, restoring original content');
       if (activeTab === 'rules') {
         setSections(JSON.parse(JSON.stringify(originalSections)));
       } else if (activeTab === 'jester') {
@@ -1587,24 +1754,21 @@ export default function App() {
   // Update toggleSearchBar to ensure proper content restoration
   const toggleSearchBar = () => {
     if (showSearch) {
-      // Only clear search and reset sections when hiding search bar
-      if (searchQuery && searchQuery.length >= 2) {
-        console.log('Clearing search, restoring original content');
-        setSearchQuery('');
-        
-        // Reset sections to original state
-        if (activeTab === 'rules') {
-          setSections(JSON.parse(JSON.stringify(originalSections)));
-        } else if (activeTab === 'jester') {
-          console.log(`Restoring ${originalExpansionSections.length} expansion sections on search close`);
-          // Make sure we have original expansion sections to restore from
-          if (originalExpansionSections.length > 0) {
-            setExpansionSections(JSON.parse(JSON.stringify(originalExpansionSections)));
-          } else {
-            // If we somehow don't have original expansion sections, try to fetch them
-            console.log('No original expansion sections found, fetching them');
-            fetchExpansions();
-          }
+      // Clear search query when hiding search bar
+      setSearchQuery('');
+      
+      // Reset sections to original state
+      if (activeTab === 'rules') {
+        setSections(JSON.parse(JSON.stringify(originalSections)));
+      } else if (activeTab === 'jester') {
+        console.log(`Restoring ${originalExpansionSections.length} expansion sections on search close`);
+        // Make sure we have original expansion sections to restore from
+        if (originalExpansionSections.length > 0) {
+          setExpansionSections(JSON.parse(JSON.stringify(originalExpansionSections)));
+        } else {
+          // If we somehow don't have original expansion sections, try to fetch them
+          console.log('No original expansion sections found, fetching them');
+          fetchExpansions();
         }
       }
     }
@@ -1695,7 +1859,14 @@ export default function App() {
     }
     
     if (activeTab === 'jester') {
-      // Make sure expansions are loaded if needed
+      console.log('Rendering Expansions Tab:', {
+        expansionSectionsLength: expansionSections.length,
+        originalExpansionSectionsLength: originalExpansionSections.length,
+        isSearchActive: searchQuery && searchQuery.length >= 2,
+        nonTitleSections: expansionSections.filter(s => !s.isTitle).length
+      });
+      
+      // If expansionSections is empty but we have original sections, restore them
       if (expansionSections.length === 0 && originalExpansionSections.length > 0 && 
           (!searchQuery || searchQuery.length < 2)) {
         console.log('Restoring empty expansion sections (not from search)');
@@ -1704,19 +1875,82 @@ export default function App() {
         console.log('Fetching expansions');
         fetchExpansions();
       }
-      
+
+      // Add debugging for search functionality
+      if (searchQuery && searchQuery.length >= 2) {
+        console.log('Active search:', searchQuery);
+      }
+
       return (
-        <RulesScreen 
-          content={expansionsContent}
-          sections={expansionSections}
-          searchQuery={searchQuery}
-          showSearch={showSearch}
-          toggleSearchBar={toggleSearchBar}
-          handleSearchQueryChange={handleSearchQueryChange}
-          searchInputRef={searchInputRef}
-          renderSection={renderSection}
-          scrollViewRef={scrollViewRef}
-        />
+        <View style={{ flex: 1 }}>
+          {/* Header with Search Icon/Bar */}
+          <View style={styles.headerContainer}>
+            {!showSearch ? (
+              <>
+                <View style={styles.spacer}></View>
+                <TouchableOpacity 
+                  style={styles.searchIconContainer} 
+                  onPress={toggleSearchBar}
+                >
+                  <Text style={styles.searchIcon}>🔍</Text>
+                </TouchableOpacity>
+              </>
+            ) : (
+              <View style={styles.searchBarWrapper}>
+                <TextInput
+                  ref={searchInputRef}
+                  style={styles.searchInput}
+                  placeholder="Search expansions..."
+                  placeholderTextColor="#888"
+                  value={searchQuery}
+                  onChangeText={handleSearchQueryChange}
+                  autoFocus={true}
+                />
+                <TouchableOpacity 
+                  style={styles.closeIconContainer} 
+                  onPress={toggleSearchBar}
+                >
+                  <Text style={styles.closeIcon}>✕</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
+          
+          <ScrollView 
+            ref={scrollViewRef}
+            style={styles.scrollView} 
+            contentInsetAdjustmentBehavior="automatic"
+          >
+            <View style={styles.contentContainer}>
+              {(() => {
+                // Empty state - either loading or no results
+                if (expansionSections.length === 0) {
+                  if (searchQuery && searchQuery.length >= 2) {
+                    return <EmptySearchResults query={searchQuery} />;
+                  }
+                  return (
+                    <View style={styles.emptyStateContainer}>
+                      <Text style={styles.emptyStateIcon}>⌛</Text>
+                      <Text style={styles.emptyStateTitle}>Loading Expansions...</Text>
+                      <TouchableOpacity 
+                        style={styles.retryButton} 
+                        onPress={fetchExpansions}
+                      >
+                        <Text style={styles.retryButtonText}>Retry Loading</Text>
+                      </TouchableOpacity>
+                    </View>
+                  );
+                }
+                
+                // We have sections, so show them - no additional filtering needed here
+                // since filtering is already handled in the search function
+                return expansionSections.map((section, index) => 
+                  renderSection(section, index)
+                );
+              })()}
+            </View>
+          </ScrollView>
+        </View>
       );
     }
     
@@ -2199,19 +2433,6 @@ const styles = StyleSheet.create({
   },
   latestBadgeText: {
     color: '#2E7D32',
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-  showMatchesButton: {
-    backgroundColor: '#BB86FC',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 4,
-    marginTop: 8,
-    marginLeft: 16,
-  },
-  showMatchesText: {
-    color: '#FFFFFF',
     fontSize: 12,
     fontWeight: 'bold',
   },
