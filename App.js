@@ -3,6 +3,7 @@ import { StyleSheet, View, Text, TouchableOpacity, ScrollView, SafeAreaView, Sta
 import Markdown from 'react-native-markdown-display';
 import RNFS from 'react-native-fs';
 import Svg, { Path } from 'react-native-svg';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Constants
 const CONTENT_URL = 'https://raw.githubusercontent.com/seanKenkeremath/lords-and-lads/master/README.md';
@@ -10,6 +11,111 @@ const EXPANSIONS_URL = 'https://raw.githubusercontent.com/seanKenkeremath/lords-
 const EXPANSIONS_BASE_URL = 'https://raw.githubusercontent.com/seanKenkeremath/lords-and-lads/master/expansions';
 const GITHUB_API_URL = 'https://api.github.com/repos/seanKenkeremath/lords-and-lads/contents/expansions';
 const EXPANSION_FOLDERS = ['jesters_gambit', 'malort_and_lads']; // We'll hardcode these for now since we know them
+
+// Cache keys for AsyncStorage persistence
+const CACHE_KEYS = {
+  RULES_MARKDOWN: '@cache_rules_markdown',
+  EXPANSION_TEXTS: '@cache_expansion_texts',
+  LAST_FETCH_DATE: '@cache_last_fetch_date',
+};
+
+// Build expansion sections from an array of raw markdown texts
+// First element is the main expansions README, rest are individual expansion READMEs
+const buildExpansionSections = (allExpansionTexts) => {
+  const [mainReadme, ...expansionReadmes] = allExpansionTexts;
+  const mainContent = mainReadme || "# Expansions\n\nNo content available.";
+
+  let sections = [];
+
+  // Add title section first
+  sections.push({
+    title: "Expansions",
+    level: 1,
+    isTitle: true,
+    content: mainReadme ? mainReadme.split('\n').slice(2).join('\n') : "No content available.",
+  });
+
+  // Then add all expansion sections
+  expansionReadmes
+    .filter(text => text !== null)
+    .forEach(text => {
+      const lines = text.split('\n');
+      let currentMainSection = null;
+      let currentSubSection = null;
+      let currentContent = [];
+
+      const finalizeContent = () => {
+        return currentContent.join('\n').trim();
+      };
+
+      lines.forEach((line, index) => {
+        if (line.startsWith('# ')) {
+          if (currentMainSection) {
+            if (currentSubSection) {
+              currentSubSection.content = finalizeContent();
+              currentMainSection.subsections.push(currentSubSection);
+              currentSubSection = null;
+            }
+            sections.push(currentMainSection);
+          }
+          currentMainSection = {
+            title: line.replace('# ', ''),
+            content: '',
+            level: 1,
+            isExpanded: false,
+            subsections: []
+          };
+          currentContent = [];
+        } else if (line.startsWith('## ')) {
+          if (currentSubSection) {
+            currentSubSection.content = finalizeContent();
+            if (currentMainSection) {
+              currentMainSection.subsections.push(currentSubSection);
+            }
+          }
+          currentSubSection = {
+            title: line.replace('## ', ''),
+            content: '',
+            level: 2,
+            isExpanded: false,
+            subsections: []
+          };
+          currentContent = [];
+        } else if (line.startsWith('### ')) {
+          if (currentContent.length > 0 && currentSubSection) {
+            currentSubSection.content = finalizeContent();
+          }
+          if (currentSubSection) {
+            currentSubSection.subsections.push({
+              title: line.replace('### ', ''),
+              content: '',
+              level: 3,
+              isExpanded: false
+            });
+          }
+          currentContent = [];
+        } else {
+          currentContent.push(line);
+        }
+
+        if (index === lines.length - 1) {
+          if (currentSubSection) {
+            currentSubSection.content = finalizeContent();
+            if (currentMainSection) {
+              currentMainSection.subsections.push(currentSubSection);
+            }
+          } else if (currentMainSection) {
+            currentMainSection.content = finalizeContent();
+          }
+          if (currentMainSection) {
+            sections.push(currentMainSection);
+          }
+        }
+      });
+    });
+
+  return { mainContent, sections };
+};
 
 // Add a utility function to highlight text matches that works with the markdown library
 const highlightMatches = (text, query) => {
@@ -690,6 +796,46 @@ export default function App() {
   const sectionRefs = useRef({});
   const searchInputRef = useRef(null);
 
+  // Load cached content from AsyncStorage for instant display on launch
+  const loadCachedContent = async () => {
+    try {
+      const [cachedRules, cachedExpansions, cachedFetchDate] = await Promise.all([
+        AsyncStorage.getItem(CACHE_KEYS.RULES_MARKDOWN),
+        AsyncStorage.getItem(CACHE_KEYS.EXPANSION_TEXTS),
+        AsyncStorage.getItem(CACHE_KEYS.LAST_FETCH_DATE),
+      ]);
+
+      if (cachedFetchDate) {
+        setLastFetchDate(cachedFetchDate);
+      }
+
+      let hasCachedData = false;
+
+      if (cachedRules) {
+        setContent(cachedRules);
+        const parsedSections = parseMarkdownSections(cachedRules);
+        setOriginalSections(parsedSections);
+        setSections(parsedSections);
+        hasCachedData = true;
+      }
+
+      if (cachedExpansions) {
+        const allExpansionTexts = JSON.parse(cachedExpansions);
+        const { mainContent, sections: expSections } = buildExpansionSections(allExpansionTexts);
+        setExpansionsContent(mainContent);
+        const sectionsCopy = JSON.parse(JSON.stringify(expSections));
+        setExpansionSections(expSections);
+        setOriginalExpansionSections(sectionsCopy);
+        hasCachedData = true;
+      }
+
+      return hasCachedData;
+    } catch (err) {
+      console.error('Error loading cached content:', err);
+      return false;
+    }
+  };
+
   // Add an effect to reset expansionSections on mount - only run ONCE
   useEffect(() => {
     // Only reset if we're not currently searching and we have original sections
@@ -1087,65 +1233,45 @@ export default function App() {
     });
   };
 
+  // Fetch rules from network, update state and cache. Returns true on success.
   const fetchReadme = async () => {
     try {
-      // Set a timeout to prevent hanging on slow connections
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10-second timeout
-      
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+
       try {
-        // Fetch both README files in parallel
-        const [rulesResponse, expansionsResponse] = await Promise.all([
-          fetch(CONTENT_URL, { signal: controller.signal }),
-          fetch(EXPANSIONS_URL, { signal: controller.signal })
-        ]);
-        
+        const rulesResponse = await fetch(CONTENT_URL, { signal: controller.signal });
         clearTimeout(timeoutId);
-        
-        if (!rulesResponse.ok || !expansionsResponse.ok) {
-          throw new Error(`Failed to fetch content (Status: ${!rulesResponse.ok ? rulesResponse.status : expansionsResponse.status})`);
+
+        if (!rulesResponse.ok) {
+          throw new Error(`Failed to fetch rules (Status: ${rulesResponse.status})`);
         }
-        
-        const [rulesText, expansionsText] = await Promise.all([
-          rulesResponse.text(),
-          expansionsResponse.text()
-        ]);
-        
-        // Update last fetch date
-        setLastFetchDate(new Date().toLocaleString());
-        
-        // Parse and display content
+
+        const rulesText = await rulesResponse.text();
+
+        // Update state with fresh content
         setContent(rulesText);
-        setExpansionsContent(expansionsText);
         const parsedSections = parseMarkdownSections(rulesText);
         setOriginalSections(parsedSections);
         setSections(parsedSections);
-        setLoading(false);
+
+        // Persist raw markdown to cache
+        await AsyncStorage.setItem(CACHE_KEYS.RULES_MARKDOWN, rulesText);
+
+        return true;
       } catch (error) {
         clearTimeout(timeoutId);
         throw error;
       }
     } catch (err) {
-      console.error('Error fetching content:', err);
-      setError(err.message || 'Unable to load content. Please check your internet connection.');
-      setLoading(false);
-      
-      // Set a default structure on error
-      const errorSections = [{
-        title: "Rules",
-        level: 1,
-        isTitle: true,
-        content: "Error loading rules: " + (err.message || "Unable to load content")
-      }];
-      setOriginalSections(errorSections);
-      setSections(errorSections);
+      console.error('Error fetching rules:', err);
+      return false;
     }
   };
 
-  // Fix the fetchExpansions function to properly handle errors
+  // Fetch expansions from network, update state and cache. Returns true on success.
   const fetchExpansions = async () => {
     try {
-      
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000);
 
@@ -1161,10 +1287,8 @@ export default function App() {
           .filter(item => item.type === 'dir')
           .map(item => item.name);
 
-        
-
         // Fetch all expansion READMEs in parallel
-        const expansionPromises = expansionFolders.map(folder => 
+        const expansionPromises = expansionFolders.map(folder =>
           fetch(`${EXPANSIONS_BASE_URL}/${folder}/README.md`, { signal: controller.signal })
             .then(response => {
               if (!response.ok) {
@@ -1198,161 +1322,59 @@ export default function App() {
         const allExpansionTexts = await Promise.all(expansionPromises);
         clearTimeout(timeoutId);
 
-        // First text is the main expansions README
-        const [mainReadme, ...expansionReadmes] = allExpansionTexts;
-        setExpansionsContent(mainReadme || "# Expansions\n\nNo content available.");
+        // Build sections from fetched texts using shared utility
+        const { mainContent, sections } = buildExpansionSections(allExpansionTexts);
+        setExpansionsContent(mainContent);
 
-        // Parse each expansion README into sections
-        let sections = [];
-        
-        // Add title section first
-        sections.push({
-          title: "Expansions",
-          level: 1,
-          isTitle: true,
-          content: mainReadme ? mainReadme.split('\n').slice(2).join('\n') : "No content available.",
-        });
-        
-        // Then add all expansion sections
-        expansionReadmes
-          .filter(text => text !== null)
-          .forEach(text => {
-            // Split the text into lines and process each line
-            const lines = text.split('\n');
-            let currentMainSection = null;
-            let currentSubSection = null;
-            let currentContent = [];
-
-            const finalizeContent = () => {
-              return currentContent.join('\n').trim();
-            };
-
-            lines.forEach((line, index) => {
-              if (line.startsWith('# ')) {
-                // New main section
-                if (currentMainSection) {
-                  if (currentSubSection) {
-                    currentSubSection.content = finalizeContent();
-                    currentMainSection.subsections.push(currentSubSection);
-                    currentSubSection = null;
-                  }
-                  sections.push(currentMainSection);
-                }
-                currentMainSection = {
-                  title: line.replace('# ', ''),
-                  content: '',
-                  level: 1,
-                  isExpanded: false,
-                  subsections: []
-                };
-                currentContent = [];
-              } else if (line.startsWith('## ')) {
-                // New subsection
-                if (currentSubSection) {
-                  currentSubSection.content = finalizeContent();
-                  if (currentMainSection) {
-                    currentMainSection.subsections.push(currentSubSection);
-                  }
-                }
-                currentSubSection = {
-                  title: line.replace('## ', ''),
-                  content: '',
-                  level: 2,
-                  isExpanded: false,
-                  subsections: []
-                };
-                currentContent = [];
-              } else if (line.startsWith('### ')) {
-                // New sub-subsection
-                if (currentContent.length > 0 && currentSubSection) {
-                  currentSubSection.content = finalizeContent();
-                }
-                if (currentSubSection) {
-                  currentSubSection.subsections.push({
-                    title: line.replace('### ', ''),
-                    content: '',
-                    level: 3,
-                    isExpanded: false
-                  });
-                }
-                currentContent = [];
-              } else {
-                currentContent.push(line);
-              }
-
-              // Handle the last section/subsection at the end of the file
-              if (index === lines.length - 1) {
-                if (currentSubSection) {
-                  currentSubSection.content = finalizeContent();
-                  if (currentMainSection) {
-                    currentMainSection.subsections.push(currentSubSection);
-                  }
-                } else if (currentMainSection) {
-                  currentMainSection.content = finalizeContent();
-                }
-                if (currentMainSection) {
-                  sections.push(currentMainSection);
-                }
-              }
-            });
-          });
-
-        
-        
-        // Important: Set both state variables to ensure consistency
         const sectionsCopy = JSON.parse(JSON.stringify(sections));
         setExpansionSections(sections);
         setOriginalExpansionSections(sectionsCopy);
-        
-        
-      } catch (directoryError) {
-        console.warn('Error fetching expansion directory, falling back to hardcoded folders:', directoryError);
-        
-        // Fallback to a simpler data structure if we get errors
-        const sections = [
-          {
-            title: "Expansions",
-            level: 1,
-            isTitle: true,
-            content: "Unable to load expansion content. Please check your internet connection and try again.",
-          }
-        ];
-        
-        // Important: Set both state variables to ensure consistency
-        setExpansionSections(sections);
-        setOriginalExpansionSections(JSON.parse(JSON.stringify(sections)));
+
+        // Persist raw expansion texts to cache (filter nulls for clean storage)
+        const cacheData = [allExpansionTexts[0], ...allExpansionTexts.slice(1).filter(t => t !== null)];
+        await AsyncStorage.setItem(CACHE_KEYS.EXPANSION_TEXTS, JSON.stringify(cacheData));
+
+        return true;
+      } catch (error) {
+        clearTimeout(timeoutId);
+        throw error;
       }
     } catch (err) {
       console.error('Error fetching expansions:', err);
-      setError(err.message || 'Unable to load expansions. Please check your internet connection.');
-      
-      // Set a minimal valid structure even on error
-      const sections = [
-        {
-          title: "Expansions",
-          level: 1,
-          isTitle: true,
-          content: "Error loading expansions: " + (err.message || "Unknown error"),
-        }
-      ];
-      
-      // Important: Set both state variables to ensure consistency
-      setExpansionSections(sections);
-      setOriginalExpansionSections(JSON.parse(JSON.stringify(sections)));
+      return false;
     }
   };
 
   useEffect(() => {
-    // Fetch both content types on mount
-    Promise.all([fetchReadme(), fetchExpansions()])
-      .then(() => {
+    const initializeContent = async () => {
+      // 1. Load cached content for instant display
+      const hasCachedData = await loadCachedContent();
+      if (hasCachedData) {
         setLoading(false);
-      })
-      .catch(error => {
-        console.error('Error loading content:', error);
-        setError('Failed to load content. Please try again.');
-        setLoading(false);
-      });
+      }
+
+      // 2. Fetch fresh content from network in the background
+      const [rulesSuccess, expansionsSuccess] = await Promise.all([
+        fetchReadme(),
+        fetchExpansions(),
+      ]);
+
+      // 3. Update last-synced date if either fetch succeeded
+      if (rulesSuccess || expansionsSuccess) {
+        const now = new Date().toLocaleString();
+        setLastFetchDate(now);
+        await AsyncStorage.setItem(CACHE_KEYS.LAST_FETCH_DATE, now);
+      }
+
+      // 4. If no cached data and network also failed, show error
+      if (!hasCachedData && !rulesSuccess && !expansionsSuccess) {
+        setError('Unable to load content. Please check your internet connection.');
+      }
+
+      setLoading(false);
+    };
+
+    initializeContent();
   }, []);
 
   // Simple filter function for consistent behavior across tabs
