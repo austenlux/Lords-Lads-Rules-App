@@ -37,85 +37,7 @@ const decodeHtmlEntities = (text) => {
     .replace(/&#039;/g, "'");
 };
 
-// Method 1: Using Text components with nested Text for highlighting
-const HighlightedText1 = ({ text, searchQuery, style }) => {
-  if (!text || !searchQuery || searchQuery.length < 2) {
-    return <Text style={style}>{text}</Text>;
-  }
-  
-  const escapedQuery = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const parts = text.split(new RegExp(`(${escapedQuery})`, 'gi'));
-  
-  return (
-    <Text style={style}>
-      {parts.map((part, i) => 
-        part.toLowerCase() === searchQuery.toLowerCase() ? 
-          <Text key={i} style={[style, styles.highlightedText]}>{part}</Text> : 
-          part
-      )}
-    </Text>
-  );
-};
-
-// Method 2: Using markdown library's mark style
-const HighlightedText2 = ({ text, searchQuery, style }) => {
-  if (!text || !searchQuery || searchQuery.length < 2) {
-    return text;
-  }
-  
-  const escapedQuery = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const parts = text.split(new RegExp(`(${escapedQuery})`, 'gi'));
-  
-  return parts.map((part, i) => 
-    part.toLowerCase() === searchQuery.toLowerCase() ? 
-      `<mark>${part}</mark>` : 
-      part
-  ).join('');
-};
-
-// Method 3: Using a custom View wrapper with background color
-const HighlightedText3 = ({ text, searchQuery, style }) => {
-  if (!text || !searchQuery || searchQuery.length < 2) {
-    return <Text style={style}>{text}</Text>;
-  }
-  
-  const escapedQuery = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const parts = text.split(new RegExp(`(${escapedQuery})`, 'gi'));
-  
-  return (
-    <Text style={style}>
-      {parts.map((part, i) => 
-        part.toLowerCase() === searchQuery.toLowerCase() ? 
-          <View key={i} style={styles.highlightedView}>
-            <Text style={[style, styles.highlightedText]}>{part}</Text>
-          </View> : 
-          part
-      )}
-    </Text>
-  );
-};
-
-// Method 4: Using a custom Text component with background color
-const HighlightedText4 = ({ text, searchQuery, style }) => {
-  if (!text || !searchQuery || searchQuery.length < 2) {
-    return <Text style={style}>{text}</Text>;
-  }
-  
-  const escapedQuery = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const parts = text.split(new RegExp(`(${escapedQuery})`, 'gi'));
-  
-  return (
-    <Text style={style}>
-      {parts.map((part, i) => 
-        part.toLowerCase() === searchQuery.toLowerCase() ? 
-          <Text key={i} style={[style, { backgroundColor: 'rgba(187, 134, 252, 0.3)' }]}>{part}</Text> : 
-          part
-      )}
-    </Text>
-  );
-};
-
-// Replace the HighlightedMarkdown component with a version that highlights text
+// Markdown component with search term highlighting
 const HighlightedMarkdown = ({ content, searchQuery, style, onLinkPress }) => {
   if (!content) {
     return null;
@@ -467,7 +389,7 @@ const EmptySearchResults = ({ query }) => {
 };
 
 // Create a Rules screen component
-const RulesScreen = ({ content, sections, searchQuery, showSearch, toggleSearchBar, handleSearchQueryChange, searchInputRef, renderSection, scrollViewRef }) => {
+const ContentScreen = ({ content, sections, searchQuery, showSearch, toggleSearchBar, handleSearchQueryChange, searchInputRef, renderSection, scrollViewRef, searchPlaceholder }) => {
   return (
     <View style={{ flex: 1 }}>
       {/* Header with Search Icon/Bar */}
@@ -487,61 +409,7 @@ const RulesScreen = ({ content, sections, searchQuery, showSearch, toggleSearchB
             <TextInput
               ref={searchInputRef}
               style={styles.searchInput}
-              placeholder="Search rules..."
-              placeholderTextColor="#888"
-              value={searchQuery}
-              onChangeText={handleSearchQueryChange}
-              autoFocus={true}
-            />
-            <TouchableOpacity 
-              style={styles.closeIconContainer} 
-              onPress={toggleSearchBar}
-            >
-              <Text style={styles.closeIcon}>✕</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      </View>
-      
-      <ScrollView 
-        ref={scrollViewRef}
-        style={styles.scrollView} 
-        contentInsetAdjustmentBehavior="automatic"
-      >
-        <View style={styles.contentContainer}>
-          {sections.length === 0 && searchQuery && searchQuery.length >= 2 ? (
-            <EmptySearchResults query={searchQuery} />
-          ) : (
-            sections.map((section, index) => renderSection(section, index))
-          )}
-        </View>
-      </ScrollView>
-    </View>
-  );
-};
-
-// Create a JesterScreen component that mirrors the RulesScreen for consistency
-const JesterScreen = ({ content, sections, searchQuery, showSearch, toggleSearchBar, handleSearchQueryChange, searchInputRef, renderSection, scrollViewRef }) => {
-  return (
-    <View style={{ flex: 1 }}>
-      {/* Header with Search Icon/Bar */}
-      <View style={styles.headerContainer}>
-        {!showSearch ? (
-          <>
-            <View style={styles.spacer}></View>
-            <TouchableOpacity 
-              style={styles.searchIconContainer} 
-              onPress={toggleSearchBar}
-            >
-              <Text style={styles.searchIcon}>🔍</Text>
-            </TouchableOpacity>
-          </>
-        ) : (
-          <View style={styles.searchBarWrapper}>
-            <TextInput
-              ref={searchInputRef}
-              style={styles.searchInput}
-              placeholder="Search expansions..."
+              placeholder={searchPlaceholder}
               placeholderTextColor="#888"
               value={searchQuery}
               onChangeText={handleSearchQueryChange}
@@ -1680,7 +1548,7 @@ export default function App() {
   const renderActiveScreen = () => {
     if (activeTab === 'rules') {
       return (
-        <RulesScreen 
+        <ContentScreen 
           content={content}
           sections={sections}
           searchQuery={searchQuery}
@@ -1690,6 +1558,7 @@ export default function App() {
           searchInputRef={searchInputRef}
           renderSection={renderSection}
           scrollViewRef={scrollViewRef}
+          searchPlaceholder="Search rules..."
         />
       );
     }
@@ -1706,7 +1575,7 @@ export default function App() {
       }
       
       return (
-        <RulesScreen 
+        <ContentScreen 
           content={expansionsContent}
           sections={expansionSections}
           searchQuery={searchQuery}
@@ -1716,6 +1585,7 @@ export default function App() {
           searchInputRef={searchInputRef}
           renderSection={renderSection}
           scrollViewRef={scrollViewRef}
+          searchPlaceholder="Search expansions..."
         />
       );
     }
@@ -1991,10 +1861,6 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontWeight: 'bold',
   },
-  highlightedView: {
-    backgroundColor: 'rgba(187, 134, 252, 0.3)',
-    borderRadius: 2,
-  },
   emptyStateContainer: {
     padding: 20,
     alignItems: 'center',
@@ -2176,18 +2042,6 @@ const styles = StyleSheet.create({
   changelogItem: {
     fontSize: 16,
     color: '#E1E1E1',
-  },
-  currentVersionBadge: {
-    backgroundColor: '#03DAC6',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 4,
-    marginLeft: 4,
-  },
-  currentVersionText: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    color: '#121212',
   },
   latestBadge: {
     borderWidth: 1,
