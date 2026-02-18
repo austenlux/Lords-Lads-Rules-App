@@ -117,19 +117,31 @@ const buildExpansionSections = (allExpansionTexts) => {
   return { mainContent, sections };
 };
 
-// Add a utility function to highlight text matches that works with the markdown library
+// Normalize search query: always trim and coerce to string so no caller can pass
+// leading/trailing space and break matching or produce invalid markdown.
+const normalizeSearchQuery = (query) => {
+  return (typeof query === 'string' ? query : '').trim();
+};
+
+// Highlight every occurrence of the query in the text. Uses markdown ** for bold.
+// We only ever search for the normalized (trimmed) query and we only ever wrap
+// the trimmed match in **, so we never produce "**word **" (space before closing
+// ** would show as literal asterisks). Matches that include trailing/leading space
+// in the source are still found by searching for the trimmed query; we wrap the
+// trimmed match so markdown always renders correctly.
 const highlightMatches = (text, query) => {
-  if (!query || query.length < 2 || !text) {
+  const normalizedQuery = normalizeSearchQuery(query);
+  if (!normalizedQuery || normalizedQuery.length < 2 || !text || typeof text !== 'string') {
     return text;
   }
-  
-  // For the markdown library, we need to use its native styling
-  // We can add a special class that the library will recognize
-  const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  
-  // Look for the query in the text and wrap it with **strong** markdown syntax
-  // The markdown library will render this with proper styling
-  return text.replace(new RegExp(escapedQuery, 'gi'), '**$&**');
+
+  const escapedForRegex = normalizedQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const regex = new RegExp(escapedForRegex, 'gi');
+
+  return text.replace(regex, (match) => {
+    const safeMatch = typeof match === 'string' ? match : String(match);
+    return '**' + safeMatch.trim() + '**';
+  });
 };
 
 // Utility function to decode HTML entities
@@ -178,9 +190,10 @@ const HighlightedMarkdown = ({ content, searchQuery, style, onLinkPress }) => {
     }
   };
   
-  // Pre-process the content to highlight matches using bold/strong markdown syntax
-  const highlightedContent = searchQuery && searchQuery.length >= 2 
-    ? highlightMatches(content, searchQuery)
+  // Pre-process the content to highlight matches; normalize query so trailing/leading space never breaks highlighting
+  const normalizedQuery = normalizeSearchQuery(searchQuery);
+  const highlightedContent = normalizedQuery.length >= 2
+    ? highlightMatches(content, normalizedQuery)
     : content;
   
   return (
@@ -250,7 +263,9 @@ const TitleSection = ({ title, content, searchQuery, onNavigate }) => {
   };
   
   const { tocContent, mainContent } = extractTableOfContents();
-  
+
+  const trimmedSearchQuery = normalizeSearchQuery(searchQuery);
+
   // Handle link presses in the TOC
   const handleTocLinkPress = (url) => {
     if (url.startsWith('#')) {
@@ -287,9 +302,9 @@ const TitleSection = ({ title, content, searchQuery, onNavigate }) => {
               textShadowOffset: { width: 0, height: 0 },
               textShadowRadius: 20,
             }}>
-              {searchQuery && searchQuery.length >= 2 ? 
-                decodedTitle.split(new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi')).map((part, i) => 
-                  part.toLowerCase() === searchQuery.toLowerCase() ? 
+              {trimmedSearchQuery.length >= 2 ?
+                decodedTitle.split(new RegExp(`(${trimmedSearchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi')).map((part, i) =>
+                  part.toLowerCase() === trimmedSearchQuery.toLowerCase() ? 
                     <Text key={i} style={[
                       // Preserve original title styling
                       {
@@ -385,6 +400,8 @@ const TitleSection = ({ title, content, searchQuery, onNavigate }) => {
 const Section = ({ title, level, content, subsections, onPress, isExpanded, path = [], onNavigate, sectionRefs, searchQuery }) => {
   const animatedRotation = useRef(new Animated.Value(isExpanded ? 1 : 0)).current;
 
+  const trimmedSearchQuery = normalizeSearchQuery(searchQuery);
+
   // Decode HTML entities in the title
   const decodedTitle = decodeHtmlEntities(title);
 
@@ -429,10 +446,10 @@ const Section = ({ title, level, content, subsections, onPress, isExpanded, path
         <Animated.View style={{ transform: [{ rotate }], marginRight: 8, width: 20 }}>
           <Text style={styles.chevron}>▶</Text>
         </Animated.View>
-        {searchQuery && searchQuery.length >= 2 ? (
+        {trimmedSearchQuery.length >= 2 ? (
           <Text style={[styles.sectionTitle, { fontSize, color: '#BB86FC' }]}>
-            {decodedTitle.split(new RegExp(`(${searchQuery})`, 'gi')).map((part, i) => 
-              part.toLowerCase() === searchQuery.toLowerCase() ? 
+            {decodedTitle.split(new RegExp(`(${trimmedSearchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi')).map((part, i) =>
+              part.toLowerCase() === trimmedSearchQuery.toLowerCase() ? 
                 <Text key={i} style={[
                   {
                     fontSize,
@@ -1379,11 +1396,12 @@ export default function App() {
 
   // Simple filter function for consistent behavior across tabs
   const filterSectionsBySearch = (sections, searchQuery) => {
-    if (!searchQuery || searchQuery.length < 2) {
+    const query = normalizeSearchQuery(searchQuery);
+    if (!query || query.length < 2) {
       return sections;
     }
 
-    const query = searchQuery.toLowerCase();
+    const queryLower = query.toLowerCase();
     const sectionsCopy = JSON.parse(JSON.stringify(sections));
     
     // Recursively mark and filter sections
@@ -1391,8 +1409,8 @@ export default function App() {
       if (!section) return false;
       
       // Check direct match in title or content
-      const titleMatch = section.title && section.title.toLowerCase().includes(query);
-      const contentMatch = section.content && section.content.toLowerCase().includes(query);
+      const titleMatch = section.title && section.title.toLowerCase().includes(queryLower);
+      const contentMatch = section.content && section.content.toLowerCase().includes(queryLower);
       const hasDirectMatch = titleMatch || contentMatch;
       
       // Process subsections
@@ -1441,31 +1459,30 @@ export default function App() {
     return filteredSections;
   };
 
-  // Simple search handler for both tabs
+  // Store raw input so user can type multi-word queries like "penalty that".
+  // Use normalized (trimmed) query only for matching/highlighting so trailing space never breaks display.
   const handleSearchQueryChange = (newQuery) => {
     setSearchQuery(newQuery);
-    
-    // Only filter when query has 2+ characters
-    if (newQuery && newQuery.length >= 2) {
+
+    const normalized = normalizeSearchQuery(newQuery);
+
+    if (normalized.length >= 2) {
       if (activeTab === 'rules') {
-        // Filter rules sections
         const filtered = filterSectionsBySearch(
-          JSON.parse(JSON.stringify(originalSections)), 
-          newQuery
+          JSON.parse(JSON.stringify(originalSections)),
+          normalized
         );
         setSections(filtered);
-      } 
-      else if (activeTab === 'jester') {
-        // Filter expansion sections exactly the same way
+      } else if (activeTab === 'jester') {
         const filtered = filterSectionsBySearch(
-          JSON.parse(JSON.stringify(originalExpansionSections)), 
-          newQuery
+          JSON.parse(JSON.stringify(originalExpansionSections)),
+          normalized
         );
         setExpansionSections(filtered);
       }
-    } 
-    // Restore original content when search is cleared
-    else if (searchQuery && searchQuery.length >= 2) {
+    }
+    // Restore when user clears or shortens query (use normalized length)
+    else if (searchQuery && normalizeSearchQuery(searchQuery).length >= 2) {
       if (activeTab === 'rules') {
         setSections(JSON.parse(JSON.stringify(originalSections)));
       } else if (activeTab === 'jester') {
