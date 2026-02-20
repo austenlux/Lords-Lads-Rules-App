@@ -114,13 +114,13 @@ The app is built with:
 
 ## Project Structure
 
-- `/android` - Android native code
-- `/ios` - iOS native code and Xcode project
+- `/android` - Android native code and resources (launcher icon, native launch drawable)
+- `/ios` - iOS native code and Xcode project (app icon, LaunchScreen.storyboard)
   - `LordsandLadsRules.xcworkspace` - Main Xcode workspace
   - `Podfile` - iOS dependencies
   - `LordsandLadsRules` - iOS app source
-- `/App.js` - Main app component
-- `/assets` - Images and other static assets
+- `/App.js` - Main app component; includes cross-platform splash (logo + 1s minimum) used on both Android and iOS
+- `/assets` - Shared source assets: `app_icon.png` (launcher icon), `logo_dark.png` (splash/launch logo). These are copied into each platform’s native resources so the app builds and deploys to both Android and iOS with consistent branding.
 
 ## iOS Requirements
 - iOS 15.1 or later
