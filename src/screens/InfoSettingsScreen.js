@@ -12,11 +12,18 @@ import {
 } from 'react-native';
 import RNFS from 'react-native-fs';
 
+const PAST_RELEASES_KEY = 'pastReleases';
+
 export default function InfoSettingsScreen({ lastFetchDate, styles }) {
   const [releaseNotes, setReleaseNotes] = useState([]);
   const [expandedVersions, setExpandedVersions] = useState({});
+  const [pastReleasesExpanded, setPastReleasesExpanded] = useState(false);
   const animations = useRef({}).current;
-  const contentHeights = useRef({}).current;
+
+  /** Max height for expanded section so content can wrap; avoids static height cut-off. */
+  const EXPANDED_MAX_HEIGHT = 3000;
+  /** Max height for the past-releases container so nested content can grow. */
+  const PAST_RELEASES_MAX_HEIGHT = 8000;
 
   const parseReleaseNotes = (content) => {
     const versions = [];
@@ -76,17 +83,13 @@ export default function InfoSettingsScreen({ lastFetchDate, styles }) {
           initialExpanded[version.version] = false;
           animations[version.version] = {
             rotation: new Animated.Value(0),
-            height: new Animated.Value(0),
+            maxHeight: new Animated.Value(0),
           };
-          const baseHeight = 100;
-          const sectionHeight = version.sections.reduce(
-            (acc, section) => acc + 30 + section.items.length * 20,
-            0
-          );
-          const noteHeight = version.note ? 30 : 0;
-          const padding = 20;
-          contentHeights[version.version] = baseHeight + sectionHeight + noteHeight + padding;
         });
+        animations[PAST_RELEASES_KEY] = {
+          rotation: new Animated.Value(0),
+          maxHeight: new Animated.Value(0),
+        };
         setReleaseNotes(versions);
         setExpandedVersions(initialExpanded);
       } catch (error) {
@@ -113,16 +116,12 @@ export default function InfoSettingsScreen({ lastFetchDate, styles }) {
         setExpandedVersions({ 'v1.3.0': false });
         animations['v1.3.0'] = {
           rotation: new Animated.Value(0),
-          height: new Animated.Value(0),
+          maxHeight: new Animated.Value(0),
         };
-        const baseHeight = 100;
-        const sectionHeight = fallbackVersions[0].sections.reduce(
-          (acc, section) => acc + 30 + section.items.length * 20,
-          0
-        );
-        const noteHeight = fallbackVersions[0].note ? 30 : 0;
-        const padding = 20;
-        contentHeights['v1.3.0'] = baseHeight + sectionHeight + noteHeight + padding;
+        animations[PAST_RELEASES_KEY] = {
+          rotation: new Animated.Value(0),
+          maxHeight: new Animated.Value(0),
+        };
       }
     };
     loadReleaseNotes();
@@ -135,13 +134,96 @@ export default function InfoSettingsScreen({ lastFetchDate, styles }) {
       duration: 200,
       useNativeDriver: true,
     }).start();
-    Animated.timing(animations[version].height, {
-      toValue: isExpanded ? contentHeights[version] : 0,
+    Animated.timing(animations[version].maxHeight, {
+      toValue: isExpanded ? EXPANDED_MAX_HEIGHT : 0,
       duration: 200,
       useNativeDriver: false,
     }).start();
     setExpandedVersions((prev) => ({ ...prev, [version]: isExpanded }));
   };
+
+  const togglePastReleasesExpansion = () => {
+    const isExpanded = !pastReleasesExpanded;
+    const anim = animations[PAST_RELEASES_KEY];
+    if (anim) {
+      Animated.timing(anim.rotation, {
+        toValue: isExpanded ? 1 : 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+      Animated.timing(anim.maxHeight, {
+        toValue: isExpanded ? PAST_RELEASES_MAX_HEIGHT : 0,
+        duration: 200,
+        useNativeDriver: false,
+      }).start();
+    }
+    setPastReleasesExpanded(isExpanded);
+  };
+
+  const latestRelease = releaseNotes.length > 0 ? releaseNotes[0] : null;
+  const pastReleases = releaseNotes.length > 1 ? releaseNotes.slice(1) : [];
+
+  const renderVersionBlock = (version, showLatestBadge = false) => (
+    <View key={version.version} style={styles.versionContainer}>
+      <TouchableOpacity
+        style={styles.versionHeader}
+        onPress={() => toggleVersionExpansion(version.version)}
+        activeOpacity={0.7}
+      >
+        <View style={styles.versionRow}>
+          <Text style={styles.versionText}>{version.version}</Text>
+          <Text style={styles.versionDate}>{version.date}</Text>
+          {showLatestBadge && (
+            <View style={styles.latestBadge}>
+              <Text style={styles.latestBadgeText}>Latest</Text>
+            </View>
+          )}
+        </View>
+        <Animated.View
+          style={{
+            transform: [
+              {
+                rotate:
+                  animations[version.version]?.rotation.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: ['0deg', '90deg'],
+                  }) || '0deg',
+              },
+            ],
+          }}
+        >
+          <Text style={styles.versionArrow}>▶</Text>
+        </Animated.View>
+      </TouchableOpacity>
+      <Animated.View
+        style={[
+          styles.versionContentContainer,
+          {
+            maxHeight: animations[version.version]?.maxHeight || 0,
+            overflow: 'hidden',
+          },
+        ]}
+      >
+        <View style={styles.versionContent}>
+          {version.sections.map((section, sectionIndex) => (
+            <View key={sectionIndex}>
+              <Text style={styles.changelogSubtitle}>{section.title}:</Text>
+              {section.items.map((item, itemIndex) => (
+                <Text key={itemIndex} style={styles.changelogItem}>
+                  • {item}
+                </Text>
+              ))}
+            </View>
+          ))}
+          {version.note && (
+            <Text style={[styles.changelogItem, { marginTop: 8, fontStyle: 'italic' }]}>
+              {version.note}
+            </Text>
+          )}
+        </View>
+      </Animated.View>
+    </View>
+  );
 
   return (
     <ScrollView style={styles.scrollView}>
@@ -154,28 +236,25 @@ export default function InfoSettingsScreen({ lastFetchDate, styles }) {
           </View>
           <View style={styles.changelogContainer}>
             <Text style={styles.changelogTitle}>Changelog</Text>
-            {releaseNotes.map((version, index) => (
-              <View key={version.version} style={styles.versionContainer}>
+
+            {latestRelease && renderVersionBlock(latestRelease, true)}
+
+            {pastReleases.length > 0 && (
+              <View style={styles.versionContainer}>
                 <TouchableOpacity
                   style={styles.versionHeader}
-                  onPress={() => toggleVersionExpansion(version.version)}
+                  onPress={togglePastReleasesExpansion}
                   activeOpacity={0.7}
                 >
                   <View style={styles.versionRow}>
-                    <Text style={styles.versionText}>{version.version}</Text>
-                    <Text style={styles.versionDate}>{version.date}</Text>
-                    {index === 0 && (
-                      <View style={styles.latestBadge}>
-                        <Text style={styles.latestBadgeText}>Latest</Text>
-                      </View>
-                    )}
+                    <Text style={styles.versionText}>Past releases</Text>
                   </View>
                   <Animated.View
                     style={{
                       transform: [
                         {
                           rotate:
-                            animations[version.version]?.rotation.interpolate({
+                            animations[PAST_RELEASES_KEY]?.rotation.interpolate({
                               inputRange: [0, 1],
                               outputRange: ['0deg', '90deg'],
                             }) || '0deg',
@@ -190,31 +269,17 @@ export default function InfoSettingsScreen({ lastFetchDate, styles }) {
                   style={[
                     styles.versionContentContainer,
                     {
-                      height: animations[version.version]?.height || 0,
+                      maxHeight: animations[PAST_RELEASES_KEY]?.maxHeight || 0,
                       overflow: 'hidden',
                     },
                   ]}
                 >
                   <View style={styles.versionContent}>
-                    {version.sections.map((section, sectionIndex) => (
-                      <View key={sectionIndex}>
-                        <Text style={styles.changelogSubtitle}>{section.title}:</Text>
-                        {section.items.map((item, itemIndex) => (
-                          <Text key={itemIndex} style={styles.changelogItem}>
-                            • {item}
-                          </Text>
-                        ))}
-                      </View>
-                    ))}
-                    {version.note && (
-                      <Text style={[styles.changelogItem, { marginTop: 8, fontStyle: 'italic' }]}>
-                        {version.note}
-                      </Text>
-                    )}
+                    {pastReleases.map((version) => renderVersionBlock(version, false))}
                   </View>
                 </Animated.View>
               </View>
-            ))}
+            )}
           </View>
         </View>
       </View>
