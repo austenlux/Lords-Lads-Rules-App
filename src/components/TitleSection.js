@@ -66,7 +66,6 @@ export default function TitleSection({ title, content, searchQuery, onNavigate, 
 
   return (
     <View style={styles.titleContainer}>
-      <View style={styles.titleGlow} />
       <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }], width: '100%', alignItems: 'center' }}>
         <View style={styles.titleWrapper}>
           <TouchableOpacity activeOpacity={1}>
@@ -122,7 +121,6 @@ export default function TitleSection({ title, content, searchQuery, onNavigate, 
           </View>
         )}
       </Animated.View>
-      <View style={styles.titleDivider} />
     </View>
   );
 }
