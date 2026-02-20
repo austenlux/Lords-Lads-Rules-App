@@ -16,3 +16,9 @@ export const CACHE_KEYS = {
   EXPANSION_TEXTS: '@cache_expansion_texts',
   LAST_FETCH_DATE: '@cache_last_fetch_date',
 };
+
+/** Venmo username for "Buy me coffee" links (no @). */
+export const VENMO_USERNAME = 'AustenLux';
+
+export const getVenmoPayUrl = (amount) =>
+  `https://venmo.com/${encodeURIComponent(VENMO_USERNAME)}?txn=pay&amount=${amount}`;

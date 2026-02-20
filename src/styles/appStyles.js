@@ -309,42 +309,51 @@ export default StyleSheet.create({
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 20,
   },
-  infoCard: {
-    padding: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(187, 134, 252, 0.3)',
-    borderRadius: 12,
-    marginBottom: 20,
-    backgroundColor: 'rgba(30, 30, 30, 0.7)',
-    width: '100%',
-    shadowColor: '#BB86FC',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 2,
+  infoSectionTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
   },
-  infoLabel: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#BB86FC',
-    marginBottom: 8,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-    opacity: 0.9,
-  },
-  infoValue: {
-    fontSize: 18,
-    color: '#FFFFFF',
-    fontWeight: '500',
-  },
-  changelogContainer: {
-    marginTop: 20,
-  },
-  changelogTitle: {
+  infoSectionTitle: {
     fontSize: 24,
     fontWeight: 'bold',
     color: '#BB86FC',
+    marginLeft: 10,
+  },
+  infoSectionWrapper: {
+    marginBottom: 20,
+    width: '100%',
+  },
+  infoTimestamp: {
+    fontSize: 15,
+    color: '#888',
+  },
+  paymentSection: {
     marginBottom: 16,
+  },
+  paymentSectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#E1E1E1',
+    marginBottom: 8,
+  },
+  amountButtonRow: {
+    flexDirection: 'row',
+    gap: 10,
+    flexWrap: 'wrap',
+  },
+  amountButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 18,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(187, 134, 252, 0.5)',
+    backgroundColor: 'rgba(30, 30, 30, 0.7)',
+  },
+  amountButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#BB86FC',
   },
   versionContainer: {
     padding: 12,
@@ -371,8 +380,8 @@ export default StyleSheet.create({
     marginRight: 12,
   },
   versionDate: {
-    fontSize: 16,
-    color: '#E1E1E1',
+    fontSize: 15,
+    color: '#888',
     marginRight: 12,
   },
   versionArrow: {

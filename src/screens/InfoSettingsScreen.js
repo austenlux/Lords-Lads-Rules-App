@@ -9,8 +9,13 @@ import {
   ScrollView,
   Animated,
   StatusBar,
+  Linking,
 } from 'react-native';
 import RNFS from 'react-native-fs';
+import { getVenmoPayUrl } from '../constants';
+import SyncedIcon from '../../assets/images/synced.svg';
+import VenmoIcon from '../../assets/images/venmo.svg';
+import ChangelogIcon from '../../assets/images/changelog.svg';
 
 const PAST_RELEASES_KEY = 'pastReleases';
 
@@ -229,14 +234,43 @@ export default function InfoSettingsScreen({ lastFetchDate, styles }) {
     <ScrollView style={styles.scrollView}>
       <View style={[styles.contentContainer, { paddingTop: StatusBar.currentHeight }]}>
         <View style={styles.infoContainer}>
-          <Text style={styles.infoTitle}>Lords & Lads</Text>
-          <View style={styles.infoCard}>
-            <Text style={styles.infoLabel}>Rules Last Synced</Text>
-            <Text style={styles.infoValue}>{lastFetchDate || 'Never'}</Text>
-          </View>
-          <View style={styles.changelogContainer}>
-            <Text style={styles.changelogTitle}>Changelog</Text>
+          <Text style={styles.infoTitle}>About</Text>
 
+          <View style={styles.infoSectionWrapper}>
+            <View style={styles.infoSectionTitleRow}>
+              <SyncedIcon width={24} height={24} fill="#26C6DA" />
+              <Text style={styles.infoSectionTitle}>Rules Last Synced</Text>
+            </View>
+            <Text style={styles.infoTimestamp}>{lastFetchDate || 'Never'}</Text>
+          </View>
+
+          <View style={styles.infoSectionWrapper}>
+            <View style={styles.infoSectionTitleRow}>
+              <VenmoIcon width={24} height={24} fill="#E8B923" />
+              <Text style={styles.infoSectionTitle}>Buy me some nails</Text>
+            </View>
+            <View style={styles.paymentSection}>
+              <Text style={[styles.infoTimestamp, { marginBottom: 8 }]}>Venmo @AustenLux</Text>
+              <View style={styles.amountButtonRow}>
+                {[5, 10, 20].map((amount) => (
+                  <TouchableOpacity
+                    key={`venmo-${amount}`}
+                    style={styles.amountButton}
+                    onPress={() => Linking.openURL(getVenmoPayUrl(amount))}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.amountButtonText}>${amount}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.infoSectionWrapper}>
+            <View style={styles.infoSectionTitleRow}>
+              <ChangelogIcon width={24} height={24} fill="#2E7D32" />
+              <Text style={styles.infoSectionTitle}>Changelog</Text>
+            </View>
             {latestRelease && renderVersionBlock(latestRelease, true)}
 
             {pastReleases.length > 0 && (
