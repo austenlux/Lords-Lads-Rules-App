@@ -9,10 +9,10 @@ import {
 import Markdown from 'react-native-markdown-display';
 import RulesIcon from './assets/images/rules.svg';
 import ExpansionsIcon from './assets/images/expansions.svg';
-import InfoIcon from './assets/images/info.svg';
+import AboutIcon from './assets/images/about.svg';
 import { styles, markdownStyles } from './src/styles';
 import { useContent } from './src/hooks/useContent';
-import { ContentScreen, InfoSettingsScreen } from './src/screens';
+import { ContentScreen, AboutScreen } from './src/screens';
 
 export default function App() {
   const {
@@ -93,7 +93,7 @@ export default function App() {
         />
       );
     }
-    return <InfoSettingsScreen lastFetchDate={lastFetchDate} styles={styles} />;
+    return <AboutScreen lastFetchDate={lastFetchDate} styles={styles} />;
   };
 
   return (
@@ -118,11 +118,11 @@ export default function App() {
           </View>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.tabButton, activeTab === 'info' && styles.activeTabButton]}
-          onPress={() => setActiveTab('info')}
+          style={[styles.tabButton, activeTab === 'about' && styles.activeTabButton]}
+          onPress={() => setActiveTab('about')}
         >
-          <View style={[styles.tabIconContainer, activeTab === 'info' && styles.activeTabIconContainer]}>
-            <InfoIcon width={32} height={32} color={activeTab === 'info' ? '#121212' : '#E1E1E1'} fill={activeTab === 'info' ? '#121212' : '#E1E1E1'} style={styles.tabIcon} />
+          <View style={[styles.tabIconContainer, activeTab === 'about' && styles.activeTabIconContainer]}>
+            <AboutIcon width={32} height={32} color={activeTab === 'about' ? '#121212' : '#E1E1E1'} fill={activeTab === 'about' ? '#121212' : '#E1E1E1'} style={styles.tabIcon} />
           </View>
         </TouchableOpacity>
       </View>
