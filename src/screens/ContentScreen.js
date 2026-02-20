@@ -4,6 +4,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, TextInput, ScrollView } from 'react-native';
 import { EmptySearchResults } from '../components';
+import SearchIcon from '../../assets/images/search.svg';
 
 export default function ContentScreen({
   content,
@@ -25,7 +26,7 @@ export default function ContentScreen({
           <>
             <View style={styles.spacer} />
             <TouchableOpacity style={styles.searchIconContainer} onPress={toggleSearchBar}>
-              <Text style={styles.searchIcon}>🔍</Text>
+              <SearchIcon width={24} height={24} fill="#2196F3" />
             </TouchableOpacity>
           </>
         ) : (
