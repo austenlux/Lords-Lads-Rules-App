@@ -1,6 +1,6 @@
 {
   "name": "lords-and-lads",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "private": true,
   "scripts": {
     "android": "react-native run-android",
@@ -8,9 +8,10 @@
     "start": "react-native start",
     "test": "jest",
     "lint": "eslint .",
-    "build:android": "cd android && ./gradlew assembleRelease",
+    "sync:release-notes": "cp release_notes.md android/app/src/main/assets/release_notes.md",
+    "build:android": "npm run sync:release-notes && cd android && ./gradlew assembleRelease",
     "build:apk": "npm run build:android",
-    "install:android:release": "cd android && ./gradlew installRelease"
+    "install:android:release": "npm run sync:release-notes && cd android && ./gradlew installRelease"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "^2.1.2",

@@ -1,6 +1,15 @@
 # Lords & Lads Changelog
 
-## v1.5.0 (2025-02-12)
+## v1.5.1 (2026-02-12)
+
+### What's New
+* New splash screen and app icon
+* Smoother transition from splash into the app; subtle logo behind Rules and Expansions
+* Cleaner rule and expansion headers
+* Simpler About / Venmo section; payment note pre-fills with 🪵🔩🔨
+* Release notes now load correctly in the app
+
+## v1.5.0 (2026-02-12)
 
 ### What's New
 * Works offline — Rules and expansions are saved on your device so you can open them without internet
@@ -9,7 +18,7 @@
 * Clearer tabs — Rules, Expansions, and Info have clearer icons and improved text formatting
 * Easier installs — You can build and install a standalone app for testing without running a dev server
 
-## v1.4.0 (2024-04-05)
+## v1.4.0 (2025-04-05)
 
 ### Features and Improvements
 * Added expansions tab with section support

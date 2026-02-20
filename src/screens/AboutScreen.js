@@ -261,7 +261,6 @@ export default function AboutScreen({ lastFetchDate, styles }) {
               <Text style={styles.aboutSectionTitle}>Buy me some nails</Text>
             </View>
             <View style={styles.paymentSection}>
-              <Text style={[styles.aboutTimestamp, { marginBottom: 12 }]}>Venmo @AustenLux</Text>
               <View style={styles.venmoGridRow}>
                 {VENMO_OPTIONS.slice(0, 3).map((item) => (
                   <View key={`venmo-${item.amount}`} style={styles.venmoGridCell}>
