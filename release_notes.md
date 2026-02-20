@@ -1,5 +1,14 @@
 # Lords & Lads Changelog
 
+## v1.5.1 (2026-02-12)
+
+### What's New
+* New splash screen and app icon
+* Smoother transition from splash into the app; subtle logo behind Rules and Expansions
+* Cleaner rule and expansion headers
+* Simpler About / Venmo section; payment note pre-fills with 🪵🔩🔨
+* Release notes now load correctly in the app
+
 ## v1.5.0 (2026-02-12)
 
 ### What's New
