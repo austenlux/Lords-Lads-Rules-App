@@ -1,6 +1,6 @@
 # Lords & Lads Changelog
 
-## v1.5.1 (2026-02-12)
+## v1.5.1 (2026-02-20)
 
 ### What's New
 * New splash screen and app icon
@@ -9,7 +9,7 @@
 * Simpler About / Venmo section; payment note pre-fills with 🪵🔩🔨
 * Release notes now load correctly in the app
 
-## v1.5.0 (2026-02-12)
+## v1.5.0 (2026-02-19)
 
 ### What's New
 * Works offline — Rules and expansions are saved on your device so you can open them without internet
