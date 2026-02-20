@@ -1,5 +1,5 @@
 /**
- * App layout and component styles (tab bar, headers, sections, info, etc.).
+ * App layout and component styles (tab bar, headers, sections, about, etc.).
  */
 import { StyleSheet, StatusBar } from 'react-native';
 
@@ -291,7 +291,7 @@ export default StyleSheet.create({
     color: '#121212',
     fontWeight: '600',
   },
-  infoContainer: {
+  aboutContainer: {
     padding: 20,
     alignItems: 'center',
     justifyContent: 'center',
@@ -299,7 +299,7 @@ export default StyleSheet.create({
     maxWidth: 500,
     alignSelf: 'center',
   },
-  infoTitle: {
+  aboutTitle: {
     fontSize: 36,
     fontWeight: 'bold',
     color: '#BB86FC',
@@ -309,22 +309,22 @@ export default StyleSheet.create({
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 20,
   },
-  infoSectionTitleRow: {
+  aboutSectionTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 12,
   },
-  infoSectionTitle: {
+  aboutSectionTitle: {
     fontSize: 24,
     fontWeight: 'bold',
     color: '#BB86FC',
     marginLeft: 10,
   },
-  infoSectionWrapper: {
+  aboutSectionWrapper: {
     marginBottom: 20,
     width: '100%',
   },
-  infoTimestamp: {
+  aboutTimestamp: {
     fontSize: 15,
     color: '#888',
   },

@@ -1,5 +1,5 @@
 /**
- * Info / Settings screen: app info, last sync date, changelog from release_notes.md.
+ * About screen: last sync date, support (Venmo), changelog from release_notes.md.
  */
 import React, { useState, useRef, useEffect } from 'react';
 import {
@@ -19,7 +19,7 @@ import ChangelogIcon from '../../assets/images/changelog.svg';
 
 const PAST_RELEASES_KEY = 'pastReleases';
 
-export default function InfoSettingsScreen({ lastFetchDate, styles }) {
+export default function AboutScreen({ lastFetchDate, styles }) {
   const [releaseNotes, setReleaseNotes] = useState([]);
   const [expandedVersions, setExpandedVersions] = useState({});
   const [pastReleasesExpanded, setPastReleasesExpanded] = useState(false);
@@ -233,24 +233,24 @@ export default function InfoSettingsScreen({ lastFetchDate, styles }) {
   return (
     <ScrollView style={styles.scrollView}>
       <View style={[styles.contentContainer, { paddingTop: StatusBar.currentHeight }]}>
-        <View style={styles.infoContainer}>
-          <Text style={styles.infoTitle}>About</Text>
+        <View style={styles.aboutContainer}>
+          <Text style={styles.aboutTitle}>About</Text>
 
-          <View style={styles.infoSectionWrapper}>
-            <View style={styles.infoSectionTitleRow}>
+          <View style={styles.aboutSectionWrapper}>
+            <View style={styles.aboutSectionTitleRow}>
               <SyncedIcon width={24} height={24} fill="#26C6DA" />
-              <Text style={styles.infoSectionTitle}>Rules Last Synced</Text>
+              <Text style={styles.aboutSectionTitle}>Rules last synced</Text>
             </View>
-            <Text style={styles.infoTimestamp}>{lastFetchDate || 'Never'}</Text>
+            <Text style={styles.aboutTimestamp}>{lastFetchDate || 'Never'}</Text>
           </View>
 
-          <View style={styles.infoSectionWrapper}>
-            <View style={styles.infoSectionTitleRow}>
+          <View style={styles.aboutSectionWrapper}>
+            <View style={styles.aboutSectionTitleRow}>
               <VenmoIcon width={24} height={24} fill="#E8B923" />
-              <Text style={styles.infoSectionTitle}>Buy me some nails</Text>
+              <Text style={styles.aboutSectionTitle}>Buy me some nails</Text>
             </View>
             <View style={styles.paymentSection}>
-              <Text style={[styles.infoTimestamp, { marginBottom: 8 }]}>Venmo @AustenLux</Text>
+              <Text style={[styles.aboutTimestamp, { marginBottom: 8 }]}>Venmo @AustenLux</Text>
               <View style={styles.amountButtonRow}>
                 {[5, 10, 20].map((amount) => (
                   <TouchableOpacity
@@ -266,10 +266,10 @@ export default function InfoSettingsScreen({ lastFetchDate, styles }) {
             </View>
           </View>
 
-          <View style={styles.infoSectionWrapper}>
-            <View style={styles.infoSectionTitleRow}>
+          <View style={styles.aboutSectionWrapper}>
+            <View style={styles.aboutSectionTitleRow}>
               <ChangelogIcon width={24} height={24} fill="#2E7D32" />
-              <Text style={styles.infoSectionTitle}>Changelog</Text>
+              <Text style={styles.aboutSectionTitle}>Changelog</Text>
             </View>
             {latestRelease && renderVersionBlock(latestRelease, true)}
 
