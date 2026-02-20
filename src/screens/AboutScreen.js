@@ -6,10 +6,12 @@ import {
   View,
   Text,
   TouchableOpacity,
+  Pressable,
   ScrollView,
   Animated,
   StatusBar,
   Linking,
+  Image,
 } from 'react-native';
 import RNFS from 'react-native-fs';
 import { getVenmoPayUrl } from '../constants';
@@ -18,6 +20,15 @@ import VenmoIcon from '../../assets/images/venmo.svg';
 import ChangelogIcon from '../../assets/images/changelog.svg';
 
 const PAST_RELEASES_KEY = 'pastReleases';
+
+const VENMO_OPTIONS = [
+  { amount: 2, label: '$2', image: require('../../assets/images/nail1.png') },
+  { amount: 5, label: '$5', image: require('../../assets/images/nail2.png') },
+  { amount: 20, label: '$20', image: require('../../assets/images/nail3.png') },
+  { amount: 50, label: '$50', image: require('../../assets/images/nail4.png') },
+  { amount: 100, label: '$100', image: require('../../assets/images/nail5.png') },
+  { amount: 250, label: '$250', image: require('../../assets/images/nail6.png') },
+];
 
 export default function AboutScreen({ lastFetchDate, styles }) {
   const [releaseNotes, setReleaseNotes] = useState([]);
@@ -250,17 +261,33 @@ export default function AboutScreen({ lastFetchDate, styles }) {
               <Text style={styles.aboutSectionTitle}>Buy me some nails</Text>
             </View>
             <View style={styles.paymentSection}>
-              <Text style={[styles.aboutTimestamp, { marginBottom: 8 }]}>Venmo @AustenLux</Text>
-              <View style={styles.amountButtonRow}>
-                {[5, 10, 20].map((amount) => (
-                  <TouchableOpacity
-                    key={`venmo-${amount}`}
-                    style={styles.amountButton}
-                    onPress={() => Linking.openURL(getVenmoPayUrl(amount))}
-                    activeOpacity={0.7}
-                  >
-                    <Text style={styles.amountButtonText}>${amount}</Text>
-                  </TouchableOpacity>
+              <Text style={[styles.aboutTimestamp, { marginBottom: 12 }]}>Venmo @AustenLux</Text>
+              <View style={styles.venmoGridRow}>
+                {VENMO_OPTIONS.slice(0, 3).map((item) => (
+                  <View key={`venmo-${item.amount}`} style={styles.venmoGridCell}>
+                    <Pressable
+                      style={({ pressed }) => [styles.nailButton, pressed && styles.nailButtonPressed]}
+                      onPress={() => Linking.openURL(getVenmoPayUrl(item.amount))}
+                      android_ripple={{ color: 'rgba(187, 134, 252, 0.4)' }}
+                    >
+                      <Image source={item.image} style={styles.nailImage} resizeMode="contain" />
+                      <Text style={styles.nailLabel}>{item.label}</Text>
+                    </Pressable>
+                  </View>
+                ))}
+              </View>
+              <View style={styles.venmoGridRow}>
+                {VENMO_OPTIONS.slice(3, 6).map((item) => (
+                  <View key={`venmo-${item.amount}`} style={styles.venmoGridCell}>
+                    <Pressable
+                      style={({ pressed }) => [styles.nailButton, pressed && styles.nailButtonPressed]}
+                      onPress={() => Linking.openURL(getVenmoPayUrl(item.amount))}
+                      android_ripple={{ color: 'rgba(187, 134, 252, 0.4)' }}
+                    >
+                      <Image source={item.image} style={styles.nailImage} resizeMode="contain" />
+                      <Text style={styles.nailLabel}>{item.label}</Text>
+                    </Pressable>
+                  </View>
                 ))}
               </View>
             </View>
