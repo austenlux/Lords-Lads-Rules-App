@@ -355,6 +355,35 @@ export default StyleSheet.create({
     fontWeight: '600',
     color: '#BB86FC',
   },
+  venmoGridRow: {
+    flexDirection: 'row',
+    marginBottom: 16,
+  },
+  venmoGridCell: {
+    flex: 1,
+    alignItems: 'center',
+    paddingHorizontal: 6,
+  },
+  nailButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 12,
+  },
+  nailButtonPressed: {
+    opacity: 0.8,
+  },
+  nailImage: {
+    width: 100,
+    height: 100,
+  },
+  nailLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#BB86FC',
+    marginTop: 8,
+  },
   versionContainer: {
     padding: 12,
     borderWidth: 1,
