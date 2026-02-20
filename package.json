@@ -20,6 +20,9 @@
     "react-native-markdown-display": "^7.0.2",
     "react-native-svg": "^15.11.2"
   },
+  "overrides": {
+    "markdown-it": "^12.3.2"
+  },
   "devDependencies": {
     "@babel/core": "^7.20.0",
     "@babel/preset-env": "^7.20.0",
