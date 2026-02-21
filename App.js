@@ -9,6 +9,7 @@ import {
   Dimensions,
   Animated,
 } from 'react-native';
+import PagerView from 'react-native-pager-view';
 import Markdown from 'react-native-markdown-display';
 import RulesIcon from './assets/images/rules.svg';
 import ExpansionsIcon from './assets/images/expansions.svg';
@@ -22,6 +23,9 @@ const SPLASH_FADE_MS = 400;
 const LOGO_SIZE_RATIO = 0.9;
 /** Slightly smaller than splash so the background logo never appears larger and avoids shift. */
 const BG_LOGO_SIZE_SCALE = 0.99;
+
+const TABS = ['rules', 'expansions', 'about'];
+const tabToIndex = (tab) => TABS.indexOf(tab);
 
 function getLogoLayout() {
   const { width, height } = Dimensions.get('window');
@@ -45,6 +49,7 @@ export default function App() {
   const splashOpacity = useRef(new Animated.Value(0)).current;
   const mainAppOpacity = useRef(new Animated.Value(0)).current;
   const fadeOutStarted = useRef(false);
+  const pagerRef = useRef(null);
 
   useEffect(() => {
     const t = setTimeout(() => setSplashMinTimeElapsed(true), SPLASH_MIN_MS);
@@ -100,10 +105,26 @@ export default function App() {
 
   const logoLayout = getLogoLayout();
 
-  const renderActiveScreen = () => {
-    if (activeTab === 'rules') {
+  useEffect(() => {
+    const index = tabToIndex(activeTab);
+    if (index >= 0 && pagerRef.current?.setPage) {
+      pagerRef.current.setPage(index);
+    }
+  }, [activeTab]);
+
+  const handlePageSelected = (e) => {
+    const index = e.nativeEvent.position;
+    if (TABS[index]) setActiveTab(TABS[index]);
+  };
+
+  const goToTab = (tab) => setActiveTab(tab);
+
+  const renderPage = (tab) => {
+    const isActive = activeTab === tab;
+    if (tab === 'rules') {
       return (
         <ContentScreen
+          key="rules"
           content={content}
           sections={sections}
           searchQuery={searchQuery}
@@ -112,15 +133,16 @@ export default function App() {
           handleSearchQueryChange={handleSearchQueryChange}
           searchInputRef={searchInputRef}
           renderSection={renderSection}
-          scrollViewRef={scrollViewRef}
+          scrollViewRef={isActive ? scrollViewRef : undefined}
           searchPlaceholder="Search rules..."
           styles={styles}
         />
       );
     }
-    if (activeTab === 'expansions') {
+    if (tab === 'expansions') {
       return (
         <ContentScreen
+          key="expansions"
           content={expansionsContent}
           sections={expansionSections}
           searchQuery={searchQuery}
@@ -129,13 +151,13 @@ export default function App() {
           handleSearchQueryChange={handleSearchQueryChange}
           searchInputRef={searchInputRef}
           renderSection={renderSection}
-          scrollViewRef={scrollViewRef}
+          scrollViewRef={isActive ? scrollViewRef : undefined}
           searchPlaceholder="Search expansions..."
           styles={styles}
         />
       );
     }
-    return <AboutScreen lastFetchDate={lastFetchDate} styles={styles} />;
+    return <AboutScreen key="about" lastFetchDate={lastFetchDate} styles={styles} />;
   };
 
   const mainContent = error ? (
@@ -156,11 +178,28 @@ export default function App() {
   ) : (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: 'transparent' }]}>
       <StatusBar barStyle="light-content" backgroundColor="transparent" translucent={true} />
-      <View style={styles.mainContainer}>{renderActiveScreen()}</View>
+      <View style={styles.mainContainer}>
+        <PagerView
+          ref={pagerRef}
+          style={{ flex: 1 }}
+          initialPage={tabToIndex(activeTab)}
+          onPageSelected={handlePageSelected}
+        >
+          <View key="0" style={{ flex: 1 }} collapsable={false}>
+            {renderPage('rules')}
+          </View>
+          <View key="1" style={{ flex: 1 }} collapsable={false}>
+            {renderPage('expansions')}
+          </View>
+          <View key="2" style={{ flex: 1 }} collapsable={false}>
+            {renderPage('about')}
+          </View>
+        </PagerView>
+      </View>
       <View style={styles.tabBar}>
         <TouchableOpacity
           style={[styles.tabButton, activeTab === 'rules' && styles.activeTabButton]}
-          onPress={() => setActiveTab('rules')}
+          onPress={() => goToTab('rules')}
         >
           <View style={[styles.tabIconContainer, activeTab === 'rules' && styles.activeTabIconContainer]}>
             <RulesIcon width={32} height={32} color={activeTab === 'rules' ? '#121212' : '#E1E1E1'} fill={activeTab === 'rules' ? '#121212' : '#E1E1E1'} style={styles.tabIcon} />
@@ -168,7 +207,7 @@ export default function App() {
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.tabButton, activeTab === 'expansions' && styles.activeTabButton]}
-          onPress={() => setActiveTab('expansions')}
+          onPress={() => goToTab('expansions')}
         >
           <View style={[styles.tabIconContainer, activeTab === 'expansions' && styles.activeTabIconContainer]}>
             <ExpansionsIcon width={32} height={32} color={activeTab === 'expansions' ? '#121212' : '#E1E1E1'} fill={activeTab === 'expansions' ? '#121212' : '#E1E1E1'} style={styles.tabIcon} />
@@ -176,7 +215,7 @@ export default function App() {
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.tabButton, activeTab === 'about' && styles.activeTabButton]}
-          onPress={() => setActiveTab('about')}
+          onPress={() => goToTab('about')}
         >
           <View style={[styles.tabIconContainer, activeTab === 'about' && styles.activeTabIconContainer]}>
             <AboutIcon width={32} height={32} color={activeTab === 'about' ? '#121212' : '#E1E1E1'} fill={activeTab === 'about' ? '#121212' : '#E1E1E1'} style={styles.tabIcon} />
