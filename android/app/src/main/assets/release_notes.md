@@ -6,7 +6,7 @@
 * New splash screen and app icon
 * Smoother transition from splash into the app; subtle logo behind Rules and Expansions
 * Cleaner rule and expansion headers
-* Simpler About / Venmo section; payment note pre-fills with 🪵🔩🔨
+* Simpler About page; Venmo payment note pre-fills
 * Release notes now load correctly in the app
 
 ## v1.5.0 (2026-02-19)
