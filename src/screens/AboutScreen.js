@@ -9,11 +9,11 @@ import {
   Pressable,
   ScrollView,
   Animated,
-  StatusBar,
   Linking,
   Image,
 } from 'react-native';
 import RNFS from 'react-native-fs';
+import { HEADER_HEIGHT } from '../styles';
 import { getVenmoPayUrl } from '../constants';
 import SyncedIcon from '../../assets/images/synced.svg';
 import VenmoIcon from '../../assets/images/venmo.svg';
@@ -243,7 +243,7 @@ export default function AboutScreen({ lastFetchDate, styles }) {
 
   return (
     <ScrollView style={styles.scrollView}>
-      <View style={[styles.contentContainer, { paddingTop: StatusBar.currentHeight }]}>
+      <View style={[styles.contentContainer, { paddingTop: HEADER_HEIGHT }]}>
         <View style={styles.aboutContainer}>
           <Text style={styles.aboutTitle}>About</Text>
 

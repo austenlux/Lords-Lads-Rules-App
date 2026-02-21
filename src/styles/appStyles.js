@@ -3,7 +3,10 @@
  */
 import { StyleSheet, StatusBar } from 'react-native';
 
-export default StyleSheet.create({
+const STATUS_BAR_HEIGHT = StatusBar.currentHeight ?? 0;
+const HEADER_HEIGHT = STATUS_BAR_HEIGHT + 74;
+
+const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: '#121212',
@@ -23,7 +26,7 @@ export default StyleSheet.create({
   },
   contentContainer: {
     padding: 20,
-    paddingTop: 16,
+    paddingTop: HEADER_HEIGHT,
     paddingBottom: 100,
   },
   errorContainer: {
@@ -86,7 +89,7 @@ export default StyleSheet.create({
   titleContainer: {
     marginBottom: 20,
     paddingBottom: 16,
-    paddingTop: 80,
+    paddingTop: 12,
     alignItems: 'center',
     position: 'relative',
     borderBottomWidth: 0,
@@ -143,16 +146,22 @@ export default StyleSheet.create({
     right: 0,
     zIndex: 10,
   },
-  /** Fixed search header above all tabs (in document flow, not absolute). */
+  /** Search header overlays content; transparent so content scrolls visibly behind it. */
   globalSearchHeader: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 10,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    paddingTop: (StatusBar.currentHeight ?? 0) + 12,
-    backgroundColor: '#121212',
-    minHeight: 56,
+    paddingTop: STATUS_BAR_HEIGHT + 10,
+    paddingBottom: 8,
+    backgroundColor: 'transparent',
+    minHeight: HEADER_HEIGHT,
+    height: HEADER_HEIGHT,
   },
   spacer: {
     flex: 1,
@@ -278,6 +287,7 @@ export default StyleSheet.create({
   },
   aboutContainer: {
     padding: 20,
+    paddingTop: 0,
     alignItems: 'center',
     justifyContent: 'center',
     width: '100%',
@@ -285,11 +295,12 @@ export default StyleSheet.create({
     alignSelf: 'center',
   },
   aboutTitle: {
-    fontSize: 36,
+    fontSize: 48,
     fontWeight: 'bold',
     color: '#BB86FC',
-    marginBottom: 30,
+    marginBottom: 24,
     textAlign: 'center',
+    lineHeight: 56,
     textShadowColor: 'rgba(187, 134, 252, 0.3)',
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 20,
@@ -448,3 +459,6 @@ export default StyleSheet.create({
     fontWeight: 'bold',
   },
 });
+
+export default styles;
+export { HEADER_HEIGHT };
