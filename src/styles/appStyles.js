@@ -23,7 +23,7 @@ export default StyleSheet.create({
   },
   contentContainer: {
     padding: 20,
-    paddingTop: StatusBar.currentHeight,
+    paddingTop: 16,
     paddingBottom: 100,
   },
   errorContainer: {
@@ -142,6 +142,17 @@ export default StyleSheet.create({
     left: 0,
     right: 0,
     zIndex: 10,
+  },
+  /** Fixed search header above all tabs (in document flow, not absolute). */
+  globalSearchHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    paddingTop: (StatusBar.currentHeight ?? 0) + 12,
+    backgroundColor: '#121212',
+    minHeight: 56,
   },
   spacer: {
     flex: 1,

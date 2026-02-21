@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
+  TextInput,
   TouchableOpacity,
   SafeAreaView,
   StatusBar,
@@ -14,6 +15,7 @@ import Markdown from 'react-native-markdown-display';
 import RulesIcon from './assets/images/rules.svg';
 import ExpansionsIcon from './assets/images/expansions.svg';
 import AboutIcon from './assets/images/about.svg';
+import SearchIcon from './assets/images/search.svg';
 import { styles, markdownStyles } from './src/styles';
 import { useContent } from './src/hooks/useContent';
 import { ContentScreen, AboutScreen } from './src/screens';
@@ -127,17 +129,11 @@ export default function App() {
       return (
         <ContentScreen
           key="rules"
-          content={content}
           sections={sections}
           searchQuery={searchQuery}
-          showSearch={showSearch}
-          toggleSearchBar={toggleSearchBar}
-          handleSearchQueryChange={handleSearchQueryChange}
-          searchInputRef={searchInputRef}
           renderSection={renderSection}
           scrollViewRef={rulesScrollViewRef}
           onScroll={saveScrollY('rules')}
-          searchPlaceholder="Search rules..."
           styles={styles}
         />
       );
@@ -146,17 +142,11 @@ export default function App() {
       return (
         <ContentScreen
           key="expansions"
-          content={expansionsContent}
           sections={expansionSections}
           searchQuery={searchQuery}
-          showSearch={showSearch}
-          toggleSearchBar={toggleSearchBar}
-          handleSearchQueryChange={handleSearchQueryChange}
-          searchInputRef={searchInputRef}
           renderSection={renderSection}
           scrollViewRef={expansionsScrollViewRef}
           onScroll={saveScrollY('expansions')}
-          searchPlaceholder="Search expansions..."
           styles={styles}
         />
       );
@@ -183,6 +173,31 @@ export default function App() {
     <SafeAreaView style={[styles.safeArea, { backgroundColor: 'transparent' }]}>
       <StatusBar barStyle="light-content" backgroundColor="transparent" translucent={true} />
       <View style={styles.mainContainer}>
+        <View style={styles.globalSearchHeader}>
+          {!showSearch ? (
+            <>
+              <View style={styles.spacer} />
+              <TouchableOpacity style={styles.searchIconContainer} onPress={toggleSearchBar}>
+                <SearchIcon width={24} height={24} fill="#2196F3" />
+              </TouchableOpacity>
+            </>
+          ) : (
+            <View style={styles.searchBarWrapper}>
+              <TextInput
+                ref={searchInputRef}
+                style={styles.searchInput}
+                placeholder={activeTab === 'rules' ? 'Search rules...' : activeTab === 'expansions' ? 'Search expansions...' : 'Search...'}
+                placeholderTextColor="#888"
+                value={searchQuery}
+                onChangeText={handleSearchQueryChange}
+                autoFocus={true}
+              />
+              <TouchableOpacity style={styles.closeIconContainer} onPress={toggleSearchBar}>
+                <Text style={styles.closeIcon}>✕</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
         <PagerView
           ref={pagerRef}
           style={{ flex: 1 }}
