@@ -16,6 +16,7 @@ export default function ContentScreen({
   searchInputRef,
   renderSection,
   scrollViewRef,
+  onScroll,
   searchPlaceholder,
   styles,
 }) {
@@ -50,6 +51,8 @@ export default function ContentScreen({
         ref={scrollViewRef}
         style={styles.scrollView}
         contentInsetAdjustmentBehavior="automatic"
+        onScroll={onScroll}
+        scrollEventThrottle={16}
       >
         <View style={styles.contentContainer}>
           {sections.length === 0 && searchQuery && searchQuery.length >= 2 ? (

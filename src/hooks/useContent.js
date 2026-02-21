@@ -30,6 +30,10 @@ export function useContent(styles, markdownStyles) {
   const [lastFetchDate, setLastFetchDate] = useState(null);
 
   const scrollViewRef = useRef(null);
+  const rulesScrollViewRef = useRef(null);
+  const expansionsScrollViewRef = useRef(null);
+  const scrollYByTab = useRef({ rules: 0, expansions: 0 });
+  const prevSearchQueryLen = useRef(0);
   const sectionRefs = useRef({});
   const searchInputRef = useRef(null);
 
@@ -92,13 +96,21 @@ export function useContent(styles, markdownStyles) {
     }
   }, [showSearch]);
 
+  // When search is cleared (user tapped X), restore both tabs to full content.
+  // Do not run on tab switch: only run when query length goes from >=2 to <2 so we don't wipe expanded state.
   useEffect(() => {
-    if (activeTab === 'expansions' && originalExpansionSections.length > 0 && (!searchQuery || searchQuery.length < 2)) {
-      setExpansionSections(JSON.parse(JSON.stringify(originalExpansionSections)));
-    } else if (activeTab === 'rules' && originalSections.length > 0 && (!searchQuery || searchQuery.length < 2)) {
-      setSections(JSON.parse(JSON.stringify(originalSections)));
+    const queryLen = searchQuery?.length ?? 0;
+    const hadSearch = prevSearchQueryLen.current >= 2;
+    prevSearchQueryLen.current = queryLen;
+    if (hadSearch && queryLen < 2) {
+      if (originalSections.length > 0) {
+        setSections(JSON.parse(JSON.stringify(originalSections)));
+      }
+      if (originalExpansionSections.length > 0) {
+        setExpansionSections(JSON.parse(JSON.stringify(originalExpansionSections)));
+      }
     }
-  }, [activeTab, searchQuery]);
+  }, [searchQuery]);
 
   useEffect(() => {
     if (searchQuery && searchQuery.length >= 2) {
@@ -110,15 +122,14 @@ export function useContent(styles, markdownStyles) {
     }
   }, [activeTab, searchQuery]);
 
+  // Only backfill originalExpansionSections when still empty (e.g. after first load).
+  // Do not overwrite with expansionSections when they differ, or we'd replace the full
+  // original with a filtered list when user clears search while on another tab.
   useEffect(() => {
-    if (expansionSections.length > 0 && (!searchQuery || searchQuery.length < 2)) {
-      const currentJSON = JSON.stringify(expansionSections);
-      const originalJSON = JSON.stringify(originalExpansionSections);
-      if (originalExpansionSections.length === 0 || currentJSON !== originalJSON) {
-        setOriginalExpansionSections(JSON.parse(JSON.stringify(expansionSections)));
-      }
+    if (originalExpansionSections.length === 0 && expansionSections.length > 0 && (!searchQuery || searchQuery.length < 2)) {
+      setOriginalExpansionSections(JSON.parse(JSON.stringify(expansionSections)));
     }
-  }, [expansionSections, searchQuery]);
+  }, [expansionSections, searchQuery, originalExpansionSections.length]);
 
   useEffect(() => {
     if (activeTab !== 'expansions') return;
@@ -245,12 +256,13 @@ export function useContent(styles, markdownStyles) {
       return next;
     });
 
+    const scrollRef = activeTab === 'rules' ? rulesScrollViewRef : expansionsScrollViewRef;
     setTimeout(() => {
       if (!actualTitle) return;
       const ref = sectionRefs.current[actualTitle];
-      if (ref && scrollViewRef.current) {
-        ref.measureLayout(scrollViewRef.current, (x, y) => {
-          scrollViewRef.current?.scrollTo({ y: y - 20, animated: true });
+      if (ref && scrollRef.current) {
+        ref.measureLayout(scrollRef.current, (x, y) => {
+          scrollRef.current?.scrollTo({ y: y - 20, animated: true });
         }, () => {});
       }
     }, 100);
@@ -362,6 +374,21 @@ export function useContent(styles, markdownStyles) {
     );
   };
 
+  const saveScrollY = (tab) => (e) => {
+    scrollYByTab.current[tab] = e.nativeEvent.contentOffset.y;
+  };
+
+  useEffect(() => {
+    const y = scrollYByTab.current[activeTab];
+    const ref = activeTab === 'rules' ? rulesScrollViewRef : activeTab === 'expansions' ? expansionsScrollViewRef : null;
+    if (ref?.current != null && typeof y === 'number') {
+      const id = requestAnimationFrame(() => {
+        ref.current?.scrollTo({ y, animated: false });
+      });
+      return () => cancelAnimationFrame(id);
+    }
+  }, [activeTab]);
+
   return {
     loading,
     error,
@@ -376,7 +403,10 @@ export function useContent(styles, markdownStyles) {
     activeTab,
     setActiveTab,
     lastFetchDate,
-    scrollViewRef,
+    scrollViewRef: activeTab === 'rules' ? rulesScrollViewRef : expansionsScrollViewRef,
+    rulesScrollViewRef,
+    expansionsScrollViewRef,
+    saveScrollY,
     sectionRefs,
     searchInputRef,
     fetchExpansions,
