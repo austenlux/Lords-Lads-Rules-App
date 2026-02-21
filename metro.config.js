@@ -11,9 +11,5 @@ module.exports = (async () => {
       assetExts: assetExts.filter((ext) => ext !== 'svg'),
       sourceExts: [...sourceExts, 'svg'],
     },
-    // Force SVGs (and all modules) to be read from disk every time—no transform cache.
-    // Prevents stale tab icons after replacing files in assets/images.
-    cacheStores: [],
-    cacheVersion: 'no-cache-svg',
   });
 })(); 
