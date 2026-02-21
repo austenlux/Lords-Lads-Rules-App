@@ -76,7 +76,9 @@ export default function App() {
     activeTab,
     setActiveTab,
     lastFetchDate,
-    scrollViewRef,
+    rulesScrollViewRef,
+    expansionsScrollViewRef,
+    saveScrollY,
     searchInputRef,
     fetchExpansions,
     handleSearchQueryChange,
@@ -133,7 +135,8 @@ export default function App() {
           handleSearchQueryChange={handleSearchQueryChange}
           searchInputRef={searchInputRef}
           renderSection={renderSection}
-          scrollViewRef={isActive ? scrollViewRef : undefined}
+          scrollViewRef={rulesScrollViewRef}
+          onScroll={saveScrollY('rules')}
           searchPlaceholder="Search rules..."
           styles={styles}
         />
@@ -151,7 +154,8 @@ export default function App() {
           handleSearchQueryChange={handleSearchQueryChange}
           searchInputRef={searchInputRef}
           renderSection={renderSection}
-          scrollViewRef={isActive ? scrollViewRef : undefined}
+          scrollViewRef={expansionsScrollViewRef}
+          onScroll={saveScrollY('expansions')}
           searchPlaceholder="Search expansions..."
           styles={styles}
         />
