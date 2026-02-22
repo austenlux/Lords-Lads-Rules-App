@@ -518,11 +518,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   toolInputPlaceholderText: {
-    fontSize: 16,
+    fontSize: 18,
     color: '#888',
   },
   toolInput: {
-    fontSize: 16,
+    fontSize: 18,
     color: '#E1E1E1',
     borderWidth: 1,
     borderColor: 'rgba(187, 134, 252, 0.4)',
@@ -562,7 +562,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   toolOutputValue: {
-    fontSize: 28,
+    fontSize: 18,
     fontWeight: '600',
     color: '#2E7D32',
   },
