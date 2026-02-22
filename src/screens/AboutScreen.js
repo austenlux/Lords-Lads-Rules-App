@@ -15,14 +15,16 @@ import {
 import RNFS from 'react-native-fs';
 import { HEADER_HEIGHT } from '../styles';
 import { getVenmoPayUrl } from '../constants';
+import CollapsibleSection, { DEFAULT_SECTION_EXPANDED } from '../components/CollapsibleSection';
 import SyncedIcon from '../../assets/images/synced.svg';
 import VenmoIcon from '../../assets/images/venmo.svg';
 import ChangelogIcon from '../../assets/images/changelog.svg';
 
 const PAST_RELEASES_KEY = 'pastReleases';
+const SECTION_KEYS = { RULES_SYNCED: 'rulesSynced', BUY_NAILS: 'buyNails', CHANGELOG: 'changelog' };
 
 const VENMO_OPTIONS = [
-  { amount: 2, label: '$2', image: require('../../assets/images/nail1.png') },
+  { amount: 1, label: '$1', image: require('../../assets/images/nail1.png') },
   { amount: 5, label: '$5', image: require('../../assets/images/nail2.png') },
   { amount: 20, label: '$20', image: require('../../assets/images/nail3.png') },
   { amount: 50, label: '$50', image: require('../../assets/images/nail4.png') },
@@ -34,6 +36,11 @@ export default function AboutScreen({ lastFetchDate, styles }) {
   const [releaseNotes, setReleaseNotes] = useState([]);
   const [expandedVersions, setExpandedVersions] = useState({});
   const [pastReleasesExpanded, setPastReleasesExpanded] = useState(false);
+  const [sectionsExpanded, setSectionsExpanded] = useState({
+    [SECTION_KEYS.RULES_SYNCED]: DEFAULT_SECTION_EXPANDED,
+    [SECTION_KEYS.BUY_NAILS]: DEFAULT_SECTION_EXPANDED,
+    [SECTION_KEYS.CHANGELOG]: DEFAULT_SECTION_EXPANDED,
+  });
   const animations = useRef({}).current;
 
   /** Max height for expanded section so content can wrap; avoids static height cut-off. */
@@ -158,6 +165,10 @@ export default function AboutScreen({ lastFetchDate, styles }) {
     setExpandedVersions((prev) => ({ ...prev, [version]: isExpanded }));
   };
 
+  const toggleAboutSection = (sectionKey) => {
+    setSectionsExpanded((prev) => ({ ...prev, [sectionKey]: !prev[sectionKey] }));
+  };
+
   const togglePastReleasesExpansion = () => {
     const isExpanded = !pastReleasesExpanded;
     const anim = animations[PAST_RELEASES_KEY];
@@ -180,12 +191,13 @@ export default function AboutScreen({ lastFetchDate, styles }) {
   const pastReleases = releaseNotes.length > 1 ? releaseNotes.slice(1) : [];
 
   const renderVersionBlock = (version, showLatestBadge = false) => (
-    <View key={version.version} style={styles.versionContainer}>
-      <TouchableOpacity
-        style={styles.versionHeader}
-        onPress={() => toggleVersionExpansion(version.version)}
-        activeOpacity={0.7}
-      >
+    <TouchableOpacity
+      key={version.version}
+      style={styles.versionContainer}
+      onPress={() => toggleVersionExpansion(version.version)}
+      activeOpacity={0.7}
+    >
+      <View style={styles.versionHeader}>
         <View style={styles.versionRow}>
           <Text style={styles.versionText}>{version.version}</Text>
           <Text style={styles.versionDate}>{version.date}</Text>
@@ -210,7 +222,7 @@ export default function AboutScreen({ lastFetchDate, styles }) {
         >
           <Text style={styles.versionArrow}>▶</Text>
         </Animated.View>
-      </TouchableOpacity>
+      </View>
       <Animated.View
         style={[
           styles.versionContentContainer,
@@ -219,6 +231,7 @@ export default function AboutScreen({ lastFetchDate, styles }) {
             overflow: 'hidden',
           },
         ]}
+        pointerEvents={expandedVersions[version.version] ? 'auto' : 'none'}
       >
         <View style={styles.versionContent}>
           {version.sections.map((section, sectionIndex) => (
@@ -238,7 +251,7 @@ export default function AboutScreen({ lastFetchDate, styles }) {
           )}
         </View>
       </Animated.View>
-    </View>
+    </TouchableOpacity>
   );
 
   return (
@@ -247,65 +260,82 @@ export default function AboutScreen({ lastFetchDate, styles }) {
         <View style={styles.aboutContainer}>
           <Text style={styles.aboutTitle}>About</Text>
 
-          <View style={styles.aboutSectionWrapper}>
-            <View style={styles.aboutSectionTitleRow}>
-              <SyncedIcon width={24} height={24} fill="#26C6DA" />
-              <Text style={styles.aboutSectionTitle}>Rules last synced</Text>
+          <CollapsibleSection
+            title="Rules last synced"
+            icon={<SyncedIcon width={24} height={24} fill="#26C6DA" />}
+            isExpanded={sectionsExpanded[SECTION_KEYS.RULES_SYNCED]}
+            onToggle={() => toggleAboutSection(SECTION_KEYS.RULES_SYNCED)}
+            styles={styles}
+            style={styles.aboutSectionWrapper}
+          >
+            <View style={styles.versionContainer}>
+              <Text style={styles.aboutTimestamp}>{lastFetchDate || 'Never'}</Text>
             </View>
-            <Text style={styles.aboutTimestamp}>{lastFetchDate || 'Never'}</Text>
-          </View>
+          </CollapsibleSection>
 
-          <View style={styles.aboutSectionWrapper}>
-            <View style={styles.aboutSectionTitleRow}>
-              <VenmoIcon width={24} height={24} fill="#E8B923" />
-              <Text style={styles.aboutSectionTitle}>Buy me some nails</Text>
-            </View>
-            <View style={styles.paymentSection}>
+          <CollapsibleSection
+            title="Buy me some nails"
+            icon={<VenmoIcon width={24} height={24} fill="#E8B923" />}
+            isExpanded={sectionsExpanded[SECTION_KEYS.BUY_NAILS]}
+            onToggle={() => toggleAboutSection(SECTION_KEYS.BUY_NAILS)}
+            styles={styles}
+            style={styles.aboutSectionWrapper}
+          >
+            <View style={styles.versionContainer}>
+              <View style={styles.paymentSection}>
               <View style={styles.venmoGridRow}>
                 {VENMO_OPTIONS.slice(0, 3).map((item) => (
                   <View key={`venmo-${item.amount}`} style={styles.venmoGridCell}>
-                    <Pressable
-                      style={({ pressed }) => [styles.nailButton, pressed && styles.nailButtonPressed]}
-                      onPress={() => Linking.openURL(getVenmoPayUrl(item.amount))}
-                      android_ripple={{ color: 'rgba(187, 134, 252, 0.4)' }}
-                    >
-                      <Image source={item.image} style={styles.nailImage} resizeMode="contain" />
-                      <Text style={styles.nailLabel}>{item.label}</Text>
-                    </Pressable>
+                    <View style={styles.nailButtonWrapper}>
+                      <Pressable
+                        style={({ pressed }) => [styles.nailButton, pressed && styles.nailButtonPressed]}
+                        onPress={() => Linking.openURL(getVenmoPayUrl(item.amount))}
+                        android_ripple={{ color: 'rgba(187, 134, 252, 0.4)', borderless: false }}
+                      >
+                        <Image source={item.image} style={styles.nailImage} resizeMode="contain" />
+                        <Text style={styles.nailLabel}>{item.label}</Text>
+                      </Pressable>
+                    </View>
                   </View>
                 ))}
               </View>
               <View style={styles.venmoGridRow}>
                 {VENMO_OPTIONS.slice(3, 6).map((item) => (
                   <View key={`venmo-${item.amount}`} style={styles.venmoGridCell}>
-                    <Pressable
-                      style={({ pressed }) => [styles.nailButton, pressed && styles.nailButtonPressed]}
-                      onPress={() => Linking.openURL(getVenmoPayUrl(item.amount))}
-                      android_ripple={{ color: 'rgba(187, 134, 252, 0.4)' }}
-                    >
-                      <Image source={item.image} style={styles.nailImage} resizeMode="contain" />
-                      <Text style={styles.nailLabel}>{item.label}</Text>
-                    </Pressable>
+                    <View style={styles.nailButtonWrapper}>
+                      <Pressable
+                        style={({ pressed }) => [styles.nailButton, pressed && styles.nailButtonPressed]}
+                        onPress={() => Linking.openURL(getVenmoPayUrl(item.amount))}
+                        android_ripple={{ color: 'rgba(187, 134, 252, 0.4)', borderless: false }}
+                      >
+                        <Image source={item.image} style={styles.nailImage} resizeMode="contain" />
+                        <Text style={styles.nailLabel}>{item.label}</Text>
+                      </Pressable>
+                    </View>
                   </View>
                 ))}
               </View>
             </View>
-          </View>
-
-          <View style={styles.aboutSectionWrapper}>
-            <View style={styles.aboutSectionTitleRow}>
-              <ChangelogIcon width={24} height={24} fill="#2E7D32" />
-              <Text style={styles.aboutSectionTitle}>Changelog</Text>
             </View>
+          </CollapsibleSection>
+
+          <CollapsibleSection
+            title="Changelog"
+            icon={<ChangelogIcon width={24} height={24} fill="#2E7D32" />}
+            isExpanded={sectionsExpanded[SECTION_KEYS.CHANGELOG]}
+            onToggle={() => toggleAboutSection(SECTION_KEYS.CHANGELOG)}
+            styles={styles}
+            style={styles.aboutSectionWrapper}
+          >
             {latestRelease && renderVersionBlock(latestRelease, true)}
 
             {pastReleases.length > 0 && (
-              <View style={styles.versionContainer}>
-                <TouchableOpacity
-                  style={styles.versionHeader}
-                  onPress={togglePastReleasesExpansion}
-                  activeOpacity={0.7}
-                >
+              <TouchableOpacity
+                style={styles.versionContainer}
+                onPress={togglePastReleasesExpansion}
+                activeOpacity={0.7}
+              >
+                <View style={styles.versionHeader}>
                   <View style={styles.versionRow}>
                     <Text style={styles.versionText}>Past releases</Text>
                   </View>
@@ -324,7 +354,7 @@ export default function AboutScreen({ lastFetchDate, styles }) {
                   >
                     <Text style={styles.versionArrow}>▶</Text>
                   </Animated.View>
-                </TouchableOpacity>
+                </View>
                 <Animated.View
                   style={[
                     styles.versionContentContainer,
@@ -333,14 +363,15 @@ export default function AboutScreen({ lastFetchDate, styles }) {
                       overflow: 'hidden',
                     },
                   ]}
+                  pointerEvents={pastReleasesExpanded ? 'auto' : 'none'}
                 >
                   <View style={styles.versionContent}>
                     {pastReleases.map((version) => renderVersionBlock(version, false))}
                   </View>
                 </Animated.View>
-              </View>
+              </TouchableOpacity>
             )}
-          </View>
+          </CollapsibleSection>
         </View>
       </View>
     </ScrollView>

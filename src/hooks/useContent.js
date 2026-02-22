@@ -96,6 +96,16 @@ export function useContent(styles, markdownStyles) {
     }
   }, [showSearch]);
 
+  // When switching to About tab, cancel search (close bar, dismiss keyboard, clear query) so search isn't active while hidden.
+  // Clearing searchQuery triggers the "search cleared" effect below to restore unfiltered sections and remove highlighting.
+  useEffect(() => {
+    if (activeTab === 'about') {
+      setShowSearch(false);
+      setSearchQuery('');
+      searchInputRef.current?.blur();
+    }
+  }, [activeTab]);
+
   // When search is cleared (user tapped X), restore both tabs to full content.
   // Do not run on tab switch: only run when query length goes from >=2 to <2 so we don't wipe expanded state.
   useEffect(() => {

@@ -1,10 +1,12 @@
 /**
  * Collapsible section with optional subsections and search highlighting.
+ * Uses shared CollapsibleSection for header and expand/collapse behavior.
  */
-import React, { useRef, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Animated } from 'react-native';
+import React from 'react';
+import { Text } from 'react-native';
 import { decodeHtmlEntities, normalizeSearchQuery } from '../utils/searchUtils';
 import HighlightedMarkdown from './HighlightedMarkdown';
+import CollapsibleSection from './CollapsibleSection';
 
 export default function Section({
   title,
@@ -20,25 +22,8 @@ export default function Section({
   styles,
   markdownStyles,
 }) {
-  const animatedRotation = useRef(new Animated.Value(isExpanded ? 1 : 0)).current;
   const trimmedSearchQuery = normalizeSearchQuery(searchQuery);
   const decodedTitle = decodeHtmlEntities(title);
-
-  useEffect(() => {
-    Animated.timing(animatedRotation, {
-      toValue: isExpanded ? 1 : 0,
-      duration: 100,
-      useNativeDriver: true,
-    }).start();
-  }, [isExpanded]);
-
-  const rotate = animatedRotation.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '90deg'],
-  });
-
-  const marginLeft = (level - 1) * 12;
-  const fontSize = 32 - (level - 1) * 4;
 
   const handleLinkPress = (url) => {
     if (url.startsWith('#')) {
@@ -49,64 +34,60 @@ export default function Section({
     return true;
   };
 
+  const fontSize = 32 - (level - 1) * 4;
+  const titleNode =
+    trimmedSearchQuery.length >= 2 ? (
+      <Text style={[styles.sectionTitle, { fontSize, color: '#BB86FC' }]}>
+        {decodedTitle
+          .split(new RegExp(`(${trimmedSearchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'))
+          .map((part, i) =>
+            part.toLowerCase() === trimmedSearchQuery.toLowerCase() ? (
+              <Text key={i} style={[{ fontSize, fontWeight: 'bold', color: '#BB86FC' }, styles.highlightedText]}>
+                {part}
+              </Text>
+            ) : (
+              part
+            )
+          )}
+      </Text>
+    ) : null;
+
   return (
-    <View
-      ref={(ref) => {
+    <CollapsibleSection
+      title={decodedTitle}
+      titleNode={titleNode}
+      isExpanded={isExpanded}
+      onToggle={() => onPress(path)}
+      level={level}
+      styles={styles}
+      sectionRef={(ref) => {
         if (ref) sectionRefs[title] = ref;
       }}
-      style={{ marginLeft }}
     >
-      <TouchableOpacity onPress={() => onPress(path)} style={styles.sectionHeader}>
-        <Animated.View style={{ transform: [{ rotate }], marginRight: 8, width: 20 }}>
-          <Text style={styles.chevron}>▶</Text>
-        </Animated.View>
-        {trimmedSearchQuery.length >= 2 ? (
-          <Text style={[styles.sectionTitle, { fontSize, color: '#BB86FC' }]}>
-            {decodedTitle
-              .split(new RegExp(`(${trimmedSearchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'))
-              .map((part, i) =>
-                part.toLowerCase() === trimmedSearchQuery.toLowerCase() ? (
-                  <Text key={i} style={[{ fontSize, fontWeight: 'bold', color: '#BB86FC' }, styles.highlightedText]}>
-                    {part}
-                  </Text>
-                ) : (
-                  part
-                )
-              )}
-          </Text>
-        ) : (
-          <Text style={[styles.sectionTitle, { fontSize, color: '#BB86FC' }]}>{decodedTitle}</Text>
-        )}
-      </TouchableOpacity>
-      {isExpanded && (
-        <View style={styles.sectionContent}>
-          {content && (
-            <HighlightedMarkdown
-              content={content}
-              searchQuery={searchQuery}
-              style={markdownStyles}
-              onLinkPress={handleLinkPress}
-            />
-          )}
-          {subsections &&
-            subsections.map((subsection, index) => (
-              <Section
-                key={index}
-                {...subsection}
-                level={level + 1}
-                path={[...path, 'subsections', index]}
-                onPress={onPress}
-                onNavigate={onNavigate}
-                sectionRefs={sectionRefs}
-                searchQuery={searchQuery}
-                subsections={subsection.subsections}
-                isExpanded={subsection.isExpanded}
-                styles={styles}
-                markdownStyles={markdownStyles}
-              />
-            ))}
-        </View>
+      {content && (
+        <HighlightedMarkdown
+          content={content}
+          searchQuery={searchQuery}
+          style={markdownStyles}
+          onLinkPress={handleLinkPress}
+        />
       )}
-    </View>
+      {subsections?.map((subsection, index) => (
+        <Section
+          key={index}
+          {...subsection}
+          level={level + 1}
+          path={[...path, 'subsections', index]}
+          onPress={onPress}
+          onNavigate={onNavigate}
+          sectionRefs={sectionRefs}
+          searchQuery={searchQuery}
+          subsections={subsection.subsections}
+          isExpanded={subsection.isExpanded}
+          styles={styles}
+          markdownStyles={markdownStyles}
+        />
+      ))}
+    </CollapsibleSection>
   );
 }
