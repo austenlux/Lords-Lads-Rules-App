@@ -598,12 +598,12 @@ const styles = StyleSheet.create({
     color: '#E1E1E1',
   },
   toolTableDataTextPlayers: {
-    fontSize: 13,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#3D7DD8',
   },
   toolTableDataTextNails: {
-    fontSize: 13,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#2E7D32',
   },
