@@ -482,13 +482,11 @@ const styles = StyleSheet.create({
   },
   toolInputBlock: {
     flex: 1,
-    width: '50%',
     alignItems: 'center',
     justifyContent: 'flex-start',
   },
   toolOutputBlock: {
     flex: 1,
-    width: '50%',
     alignItems: 'center',
     justifyContent: 'flex-start',
   },
@@ -566,6 +564,11 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#2E7D32',
   },
+  toolOutputValueUprising: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#E65100',
+  },
   toolQuickRefTitle: {
     fontSize: 16,
     fontWeight: '600',
@@ -622,6 +625,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: '#2E7D32',
+  },
+  toolTableDataTextUprising: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#E65100',
   },
   latestBadge: {
     borderWidth: 1,
