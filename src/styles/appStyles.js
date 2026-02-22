@@ -501,6 +501,7 @@ const styles = StyleSheet.create({
   },
   toolInputLabel: {
     fontSize: 14,
+    fontWeight: 'bold',
     color: '#E1E1E1',
   },
   toolInputContainer: {
@@ -543,6 +544,7 @@ const styles = StyleSheet.create({
   },
   toolOutputLabel: {
     fontSize: 14,
+    fontWeight: 'bold',
     color: '#FFFFFF',
   },
   toolOutputValueWrap: {
