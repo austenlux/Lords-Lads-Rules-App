@@ -11,17 +11,27 @@ import {
   Animated,
   Linking,
   Image,
+  Switch,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import RNFS from 'react-native-fs';
 import { HEADER_HEIGHT } from '../styles';
+
+const SETTINGS_KEYS = {
+  EXPAND_RULES_DEFAULT: '@lnl_expand_rules_default',
+  EXPAND_EXPANSIONS_DEFAULT: '@lnl_expand_expansions_default',
+};
 import { getVenmoPayUrl } from '../constants';
 import CollapsibleSection, { DEFAULT_SECTION_EXPANDED } from '../components/CollapsibleSection';
 import SyncedIcon from '../../assets/images/synced.svg';
 import VenmoIcon from '../../assets/images/venmo.svg';
 import ChangelogIcon from '../../assets/images/changelog.svg';
+import SettingsIcon from '../../assets/images/settings.svg';
+import RulesIcon from '../../assets/images/rules.svg';
+import ExpansionsIcon from '../../assets/images/expansions.svg';
 
 const PAST_RELEASES_KEY = 'pastReleases';
-const SECTION_KEYS = { RULES_SYNCED: 'rulesSynced', BUY_NAILS: 'buyNails', CHANGELOG: 'changelog' };
+const SECTION_KEYS = { RULES_SYNCED: 'rulesSynced', BUY_NAILS: 'buyNails', CHANGELOG: 'changelog', SETTINGS: 'settings' };
 
 const VENMO_OPTIONS = [
   { amount: 1, label: '$1', image: require('../../assets/images/nail1.png') },
@@ -40,8 +50,33 @@ export default function AboutScreen({ lastFetchDate, styles }) {
     [SECTION_KEYS.RULES_SYNCED]: DEFAULT_SECTION_EXPANDED,
     [SECTION_KEYS.BUY_NAILS]: DEFAULT_SECTION_EXPANDED,
     [SECTION_KEYS.CHANGELOG]: DEFAULT_SECTION_EXPANDED,
+    [SECTION_KEYS.SETTINGS]: false,
   });
+  const [expandRulesDefault, setExpandRulesDefault] = useState(false);
+  const [expandExpansionsDefault, setExpandExpansionsDefault] = useState(false);
   const animations = useRef({}).current;
+
+  useEffect(() => {
+    const load = async () => {
+      const [rules, expansions] = await Promise.all([
+        AsyncStorage.getItem(SETTINGS_KEYS.EXPAND_RULES_DEFAULT),
+        AsyncStorage.getItem(SETTINGS_KEYS.EXPAND_EXPANSIONS_DEFAULT),
+      ]);
+      setExpandRulesDefault(rules === 'true');
+      setExpandExpansionsDefault(expansions === 'true');
+    };
+    load();
+  }, []);
+
+  const setExpandRulesDefaultAndSave = async (value) => {
+    setExpandRulesDefault(value);
+    await AsyncStorage.setItem(SETTINGS_KEYS.EXPAND_RULES_DEFAULT, value ? 'true' : 'false');
+  };
+
+  const setExpandExpansionsDefaultAndSave = async (value) => {
+    setExpandExpansionsDefault(value);
+    await AsyncStorage.setItem(SETTINGS_KEYS.EXPAND_EXPANSIONS_DEFAULT, value ? 'true' : 'false');
+  };
 
   /** Max height for expanded section so content can wrap; avoids static height cut-off. */
   const EXPANDED_MAX_HEIGHT = 3000;
@@ -261,6 +296,43 @@ export default function AboutScreen({ lastFetchDate, styles }) {
           <Text style={styles.aboutTitle}>About</Text>
 
           <CollapsibleSection
+            title="Settings"
+            icon={<SettingsIcon width={24} height={24} fill="#C45C26" />}
+            isExpanded={sectionsExpanded[SECTION_KEYS.SETTINGS]}
+            onToggle={() => toggleAboutSection(SECTION_KEYS.SETTINGS)}
+            styles={styles}
+            style={styles.aboutSectionWrapper}
+          >
+            <View style={styles.versionContainer}>
+              <Text style={styles.settingsSectionTitle}>Expand all sections by default</Text>
+              <View style={styles.settingsRow}>
+                <View style={styles.settingsRowLabel}>
+                  <RulesIcon width={22} height={22} fill="#E1E1E1" style={styles.settingsRowIcon} />
+                  <Text style={styles.settingsRowText}>Rules</Text>
+                </View>
+                <Switch
+                  value={expandRulesDefault}
+                  onValueChange={setExpandRulesDefaultAndSave}
+                  trackColor={{ false: '#555', true: '#7B5CBF' }}
+                  thumbColor="#E1E1E1"
+                />
+              </View>
+              <View style={[styles.settingsRow, styles.settingsRowLast]}>
+                <View style={styles.settingsRowLabel}>
+                  <ExpansionsIcon width={22} height={22} fill="#E1E1E1" style={styles.settingsRowIcon} />
+                  <Text style={styles.settingsRowText}>Expansions</Text>
+                </View>
+                <Switch
+                  value={expandExpansionsDefault}
+                  onValueChange={setExpandExpansionsDefaultAndSave}
+                  trackColor={{ false: '#555', true: '#7B5CBF' }}
+                  thumbColor="#E1E1E1"
+                />
+              </View>
+            </View>
+          </CollapsibleSection>
+
+          <CollapsibleSection
             title="Rules last synced"
             icon={<SyncedIcon width={24} height={24} fill="#26C6DA" />}
             isExpanded={sectionsExpanded[SECTION_KEYS.RULES_SYNCED]}
@@ -270,52 +342,6 @@ export default function AboutScreen({ lastFetchDate, styles }) {
           >
             <View style={styles.versionContainer}>
               <Text style={styles.aboutTimestamp}>{lastFetchDate || 'Never'}</Text>
-            </View>
-          </CollapsibleSection>
-
-          <CollapsibleSection
-            title="Buy me some nails"
-            icon={<VenmoIcon width={24} height={24} fill="#E8B923" />}
-            isExpanded={sectionsExpanded[SECTION_KEYS.BUY_NAILS]}
-            onToggle={() => toggleAboutSection(SECTION_KEYS.BUY_NAILS)}
-            styles={styles}
-            style={styles.aboutSectionWrapper}
-          >
-            <View style={styles.versionContainer}>
-              <View style={styles.paymentSection}>
-              <View style={styles.venmoGridRow}>
-                {VENMO_OPTIONS.slice(0, 3).map((item) => (
-                  <View key={`venmo-${item.amount}`} style={styles.venmoGridCell}>
-                    <View style={styles.nailButtonWrapper}>
-                      <Pressable
-                        style={({ pressed }) => [styles.nailButton, pressed && styles.nailButtonPressed]}
-                        onPress={() => Linking.openURL(getVenmoPayUrl(item.amount))}
-                        android_ripple={{ color: 'rgba(187, 134, 252, 0.4)', borderless: false }}
-                      >
-                        <Image source={item.image} style={styles.nailImage} resizeMode="contain" />
-                        <Text style={styles.nailLabel}>{item.label}</Text>
-                      </Pressable>
-                    </View>
-                  </View>
-                ))}
-              </View>
-              <View style={styles.venmoGridRow}>
-                {VENMO_OPTIONS.slice(3, 6).map((item) => (
-                  <View key={`venmo-${item.amount}`} style={styles.venmoGridCell}>
-                    <View style={styles.nailButtonWrapper}>
-                      <Pressable
-                        style={({ pressed }) => [styles.nailButton, pressed && styles.nailButtonPressed]}
-                        onPress={() => Linking.openURL(getVenmoPayUrl(item.amount))}
-                        android_ripple={{ color: 'rgba(187, 134, 252, 0.4)', borderless: false }}
-                      >
-                        <Image source={item.image} style={styles.nailImage} resizeMode="contain" />
-                        <Text style={styles.nailLabel}>{item.label}</Text>
-                      </Pressable>
-                    </View>
-                  </View>
-                ))}
-              </View>
-            </View>
             </View>
           </CollapsibleSection>
 
@@ -371,6 +397,52 @@ export default function AboutScreen({ lastFetchDate, styles }) {
                 </Animated.View>
               </TouchableOpacity>
             )}
+          </CollapsibleSection>
+
+          <CollapsibleSection
+            title="Buy me some nails"
+            icon={<VenmoIcon width={24} height={24} fill="#E8B923" />}
+            isExpanded={sectionsExpanded[SECTION_KEYS.BUY_NAILS]}
+            onToggle={() => toggleAboutSection(SECTION_KEYS.BUY_NAILS)}
+            styles={styles}
+            style={styles.aboutSectionWrapper}
+          >
+            <View style={styles.versionContainer}>
+              <View style={styles.paymentSection}>
+              <View style={styles.venmoGridRow}>
+                {VENMO_OPTIONS.slice(0, 3).map((item) => (
+                  <View key={`venmo-${item.amount}`} style={styles.venmoGridCell}>
+                    <View style={styles.nailButtonWrapper}>
+                      <Pressable
+                        style={({ pressed }) => [styles.nailButton, pressed && styles.nailButtonPressed]}
+                        onPress={() => Linking.openURL(getVenmoPayUrl(item.amount))}
+                        android_ripple={{ color: 'rgba(187, 134, 252, 0.4)', borderless: false }}
+                      >
+                        <Image source={item.image} style={styles.nailImage} resizeMode="contain" />
+                        <Text style={styles.nailLabel}>{item.label}</Text>
+                      </Pressable>
+                    </View>
+                  </View>
+                ))}
+              </View>
+              <View style={styles.venmoGridRow}>
+                {VENMO_OPTIONS.slice(3, 6).map((item) => (
+                  <View key={`venmo-${item.amount}`} style={styles.venmoGridCell}>
+                    <View style={styles.nailButtonWrapper}>
+                      <Pressable
+                        style={({ pressed }) => [styles.nailButton, pressed && styles.nailButtonPressed]}
+                        onPress={() => Linking.openURL(getVenmoPayUrl(item.amount))}
+                        android_ripple={{ color: 'rgba(187, 134, 252, 0.4)', borderless: false }}
+                      >
+                        <Image source={item.image} style={styles.nailImage} resizeMode="contain" />
+                        <Text style={styles.nailLabel}>{item.label}</Text>
+                      </Pressable>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            </View>
+            </View>
           </CollapsibleSection>
         </View>
       </View>

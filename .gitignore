@@ -90,4 +90,7 @@ releases/
 *.dSYM
 *.tar.gz
 *.gz
-*.zip 
+*.zip
+
+# Cursor (personal rules / local config, not for the repo)
+.cursor/
