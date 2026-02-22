@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    height: 60,
+    height: 68,
     paddingBottom: 8,
     backgroundColor: '#121212',
     position: 'absolute',
@@ -257,17 +257,23 @@ const styles = StyleSheet.create({
   activeTabButton: {
     backgroundColor: 'transparent',
   },
+  tabButtonInner: {
+    alignItems: 'center',
+  },
+  activeTabButtonInner: {
+    backgroundColor: '#BB86FC',
+    borderRadius: 12,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+  },
   tabIconContainer: {
-    width: 80,
+    width: 40,
     height: 32,
-    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    overflow: 'hidden',
   },
   activeTabIconContainer: {
-    backgroundColor: '#BB86FC',
-    borderRadius: 16,
+    backgroundColor: 'transparent',
   },
   tabIcon: {
     width: 32,

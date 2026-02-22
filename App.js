@@ -14,11 +14,12 @@ import PagerView from 'react-native-pager-view';
 import Markdown from 'react-native-markdown-display';
 import RulesIcon from './assets/images/rules.svg';
 import ExpansionsIcon from './assets/images/expansions.svg';
+import ToolsIcon from './assets/images/tools.svg';
 import AboutIcon from './assets/images/about.svg';
 import SearchIcon from './assets/images/search.svg';
 import { styles, markdownStyles } from './src/styles';
 import { useContent } from './src/hooks/useContent';
-import { ContentScreen, AboutScreen } from './src/screens';
+import { ContentScreen, AboutScreen, ToolsScreen } from './src/screens';
 
 const SPLASH_MIN_MS = 1000;
 const SPLASH_FADE_MS = 400;
@@ -26,7 +27,7 @@ const LOGO_SIZE_RATIO = 0.9;
 /** Slightly smaller than splash so the background logo never appears larger and avoids shift. */
 const BG_LOGO_SIZE_SCALE = 0.99;
 
-const TABS = ['rules', 'expansions', 'about'];
+const TABS = ['rules', 'expansions', 'tools', 'about'];
 const tabToIndex = (tab) => TABS.indexOf(tab);
 
 function getLogoLayout() {
@@ -151,6 +152,9 @@ export default function App() {
         />
       );
     }
+    if (tab === 'tools') {
+      return <ToolsScreen key="tools" styles={styles} />;
+    }
     return <AboutScreen key="about" lastFetchDate={lastFetchDate} styles={styles} />;
   };
 
@@ -174,7 +178,7 @@ export default function App() {
       <StatusBar barStyle="light-content" backgroundColor="transparent" translucent={true} />
       <View style={styles.mainContainer}>
         <View
-          style={[styles.globalSearchHeader, activeTab === 'about' && { opacity: 0, pointerEvents: 'none' }]}
+          style={[styles.globalSearchHeader, (activeTab === 'tools' || activeTab === 'about') && { opacity: 0, pointerEvents: 'none' }]}
         >
           {!showSearch ? (
             <>
@@ -213,6 +217,9 @@ export default function App() {
             {renderPage('expansions')}
           </View>
           <View key="2" style={{ flex: 1 }} collapsable={false}>
+            {renderPage('tools')}
+          </View>
+          <View key="3" style={{ flex: 1 }} collapsable={false}>
             {renderPage('about')}
           </View>
         </PagerView>
@@ -222,24 +229,44 @@ export default function App() {
           style={[styles.tabButton, activeTab === 'rules' && styles.activeTabButton]}
           onPress={() => goToTab('rules')}
         >
-          <View style={[styles.tabIconContainer, activeTab === 'rules' && styles.activeTabIconContainer]}>
-            <RulesIcon width={32} height={32} color={activeTab === 'rules' ? '#121212' : '#E1E1E1'} fill={activeTab === 'rules' ? '#121212' : '#E1E1E1'} style={styles.tabIcon} />
+          <View style={[styles.tabButtonInner, activeTab === 'rules' && styles.activeTabButtonInner]}>
+            <View style={[styles.tabIconContainer, activeTab === 'rules' && styles.activeTabIconContainer]}>
+              <RulesIcon width={32} height={32} color={activeTab === 'rules' ? '#121212' : '#E1E1E1'} fill={activeTab === 'rules' ? '#121212' : '#E1E1E1'} style={styles.tabIcon} />
+            </View>
+            <Text style={[styles.tabButtonText, activeTab === 'rules' && styles.activeTabButtonText]}>Rules</Text>
           </View>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.tabButton, activeTab === 'expansions' && styles.activeTabButton]}
           onPress={() => goToTab('expansions')}
         >
-          <View style={[styles.tabIconContainer, activeTab === 'expansions' && styles.activeTabIconContainer]}>
-            <ExpansionsIcon width={32} height={32} color={activeTab === 'expansions' ? '#121212' : '#E1E1E1'} fill={activeTab === 'expansions' ? '#121212' : '#E1E1E1'} style={styles.tabIcon} />
+          <View style={[styles.tabButtonInner, activeTab === 'expansions' && styles.activeTabButtonInner]}>
+            <View style={[styles.tabIconContainer, activeTab === 'expansions' && styles.activeTabIconContainer]}>
+              <ExpansionsIcon width={32} height={32} color={activeTab === 'expansions' ? '#121212' : '#E1E1E1'} fill={activeTab === 'expansions' ? '#121212' : '#E1E1E1'} style={styles.tabIcon} />
+            </View>
+            <Text style={[styles.tabButtonText, activeTab === 'expansions' && styles.activeTabButtonText]}>Expansions</Text>
+          </View>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.tabButton, activeTab === 'tools' && styles.activeTabButton]}
+          onPress={() => goToTab('tools')}
+        >
+          <View style={[styles.tabButtonInner, activeTab === 'tools' && styles.activeTabButtonInner]}>
+            <View style={[styles.tabIconContainer, activeTab === 'tools' && styles.activeTabIconContainer]}>
+              <ToolsIcon width={32} height={32} color={activeTab === 'tools' ? '#121212' : '#E1E1E1'} fill={activeTab === 'tools' ? '#121212' : '#E1E1E1'} style={styles.tabIcon} />
+            </View>
+            <Text style={[styles.tabButtonText, activeTab === 'tools' && styles.activeTabButtonText]}>Tools</Text>
           </View>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.tabButton, activeTab === 'about' && styles.activeTabButton]}
           onPress={() => goToTab('about')}
         >
-          <View style={[styles.tabIconContainer, activeTab === 'about' && styles.activeTabIconContainer]}>
-            <AboutIcon width={32} height={32} color={activeTab === 'about' ? '#121212' : '#E1E1E1'} fill={activeTab === 'about' ? '#121212' : '#E1E1E1'} style={styles.tabIcon} />
+          <View style={[styles.tabButtonInner, activeTab === 'about' && styles.activeTabButtonInner]}>
+            <View style={[styles.tabIconContainer, activeTab === 'about' && styles.activeTabIconContainer]}>
+              <AboutIcon width={32} height={32} color={activeTab === 'about' ? '#121212' : '#E1E1E1'} fill={activeTab === 'about' ? '#121212' : '#E1E1E1'} style={styles.tabIcon} />
+            </View>
+            <Text style={[styles.tabButtonText, activeTab === 'about' && styles.activeTabButtonText]}>About</Text>
           </View>
         </TouchableOpacity>
       </View>
