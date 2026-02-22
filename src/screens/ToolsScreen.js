@@ -25,8 +25,8 @@ function lordNailFormula(n) {
   return Math.ceil(n / 2 - 1);
 }
 
-const QUICK_REF_COLUMNS = 9;
-const QUICK_REF_PLAYERS_START = 2;
+const QUICK_REF_COLUMNS = 8;
+const QUICK_REF_PLAYERS_START = 3;
 
 const PLAYERS_COLOR = '#3D7DD8';
 const NAILS_COLOR = '#2E7D32';
