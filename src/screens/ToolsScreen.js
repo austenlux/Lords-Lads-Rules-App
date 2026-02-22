@@ -75,7 +75,7 @@ export default function ToolsScreen({ styles }) {
               <View style={styles.toolInputOutputRow}>
                 <View style={styles.toolInputBlock}>
                   <View style={styles.toolLabelWithIcon}>
-                    <PlayersIcon width={18} height={18} fill={PLAYERS_COLOR} style={styles.toolLabelIcon} />
+                    <PlayersIcon width={22} height={22} fill={PLAYERS_COLOR} style={styles.toolLabelIcon} />
                     <Text style={styles.toolInputLabel}>Number of players</Text>
                   </View>
                   <View style={styles.toolInputContainer}>
@@ -95,7 +95,7 @@ export default function ToolsScreen({ styles }) {
                 </View>
                 <View style={styles.toolOutputBlock}>
                   <View style={styles.toolLabelWithIcon}>
-                    <NailsIcon width={18} height={18} fill={NAILS_COLOR} style={styles.toolLabelIcon} />
+                    <NailsIcon width={22} height={22} fill={NAILS_COLOR} style={styles.toolLabelIcon} />
                     <Text style={styles.toolOutputLabel}>Lord nails</Text>
                   </View>
                   <View style={styles.toolOutputValueWrap}>
