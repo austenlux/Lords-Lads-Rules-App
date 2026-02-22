@@ -27,11 +27,15 @@ import SyncedIcon from '../../assets/images/synced.svg';
 import VenmoIcon from '../../assets/images/venmo.svg';
 import ChangelogIcon from '../../assets/images/changelog.svg';
 import SettingsIcon from '../../assets/images/settings.svg';
+import InfoIcon from '../../assets/images/info.svg';
 import RulesIcon from '../../assets/images/rules.svg';
 import ExpansionsIcon from '../../assets/images/expansions.svg';
 
 const PAST_RELEASES_KEY = 'pastReleases';
-const SECTION_KEYS = { RULES_SYNCED: 'rulesSynced', BUY_NAILS: 'buyNails', CHANGELOG: 'changelog', SETTINGS: 'settings' };
+const SECTION_KEYS = { RULES_SYNCED: 'rulesSynced', BUY_NAILS: 'buyNails', CHANGELOG: 'changelog', SETTINGS: 'settings', INFO: 'info' };
+
+const RULEBOOK_REPO_URL = 'https://github.com/seanKenkeremath/lords-and-lads';
+const APP_REPO_URL = 'https://github.com/austenlux/Lords-Lads-Rules-App';
 
 const VENMO_OPTIONS = [
   { amount: 1, label: '$1', image: require('../../assets/images/nail1.png') },
@@ -51,6 +55,7 @@ export default function AboutScreen({ lastFetchDate, styles }) {
     [SECTION_KEYS.BUY_NAILS]: DEFAULT_SECTION_EXPANDED,
     [SECTION_KEYS.CHANGELOG]: DEFAULT_SECTION_EXPANDED,
     [SECTION_KEYS.SETTINGS]: false,
+    [SECTION_KEYS.INFO]: false,
   });
   const [expandRulesDefault, setExpandRulesDefault] = useState(false);
   const [expandExpansionsDefault, setExpandExpansionsDefault] = useState(false);
@@ -294,6 +299,30 @@ export default function AboutScreen({ lastFetchDate, styles }) {
       <View style={[styles.contentContainer, { paddingTop: HEADER_HEIGHT }]}>
         <View style={styles.aboutContainer}>
           <Text style={styles.aboutTitle}>About</Text>
+
+          <CollapsibleSection
+            title="Info"
+            icon={<InfoIcon width={24} height={24} />}
+            isExpanded={sectionsExpanded[SECTION_KEYS.INFO]}
+            onToggle={() => toggleAboutSection(SECTION_KEYS.INFO)}
+            styles={styles}
+            style={styles.aboutSectionWrapper}
+          >
+            <View style={styles.versionContainer}>
+              <View style={styles.infoBlock}>
+                <Text style={styles.infoText}>Rules from official rulebook repo:</Text>
+                <Pressable onPress={() => Linking.openURL(RULEBOOK_REPO_URL)}>
+                  <Text style={styles.infoLink}>{RULEBOOK_REPO_URL}</Text>
+                </Pressable>
+              </View>
+              <View style={[styles.infoBlock, styles.infoBlockLast]}>
+                <Text style={styles.infoText}>This app's repo:</Text>
+                <Pressable onPress={() => Linking.openURL(APP_REPO_URL)}>
+                  <Text style={styles.infoLink}>{APP_REPO_URL}</Text>
+                </Pressable>
+              </View>
+            </View>
+          </CollapsibleSection>
 
           <CollapsibleSection
             title="Settings"

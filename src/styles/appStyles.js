@@ -440,6 +440,23 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#E1E1E1',
   },
+  infoBlock: {
+    marginBottom: 16,
+  },
+  infoBlockLast: {
+    marginBottom: 0,
+  },
+  infoText: {
+    fontSize: 15,
+    color: '#E1E1E1',
+    marginBottom: 6,
+    lineHeight: 22,
+  },
+  infoLink: {
+    fontSize: 15,
+    color: '#5C7CFA',
+    textDecorationLine: 'underline',
+  },
   latestBadge: {
     borderWidth: 1,
     borderColor: '#2E7D32',
