@@ -304,7 +304,7 @@ export default function AboutScreen({ lastFetchDate, styles }) {
             style={styles.aboutSectionWrapper}
           >
             <View style={styles.versionContainer}>
-              <Text style={styles.settingsSectionTitle}>Expand all sections by default</Text>
+              <Text style={styles.versionText}>Expand all sections by default</Text>
               <View style={styles.settingsRow}>
                 <View style={styles.settingsRowLabel}>
                   <RulesIcon width={22} height={22} fill="#E1E1E1" style={styles.settingsRowIcon} />

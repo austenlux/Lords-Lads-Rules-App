@@ -4,6 +4,7 @@
  */
 import { useState, useEffect, useRef } from 'react';
 import { View } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   getCachedContent,
   fetchRules,
@@ -14,6 +15,24 @@ import {
 } from '../services/contentService';
 import { normalizeSearchQuery } from '../utils/searchUtils';
 import { TitleSection, Section } from '../components';
+
+const EXPAND_SETTINGS_KEYS = {
+  RULES: '@lnl_expand_rules_default',
+  EXPANSIONS: '@lnl_expand_expansions_default',
+};
+
+function applyExpandPreference(sections, expandAll) {
+  if (!sections || !expandAll) return sections;
+  const out = JSON.parse(JSON.stringify(sections));
+  const setExpanded = (list) => {
+    (list || []).forEach((s) => {
+      if (s.hasOwnProperty('isExpanded')) s.isExpanded = true;
+      if (s.subsections?.length) setExpanded(s.subsections);
+    });
+  };
+  setExpanded(out);
+  return out;
+}
 
 export function useContent(styles, markdownStyles) {
   const [loading, setLoading] = useState(true);
@@ -39,6 +58,13 @@ export function useContent(styles, markdownStyles) {
 
   const loadCachedContent = async () => {
     try {
+      const [expandRules, expandExpansions] = await Promise.all([
+        AsyncStorage.getItem(EXPAND_SETTINGS_KEYS.RULES),
+        AsyncStorage.getItem(EXPAND_SETTINGS_KEYS.EXPANSIONS),
+      ]);
+      const expandRulesDefault = expandRules === 'true';
+      const expandExpansionsDefault = expandExpansions === 'true';
+
       const { rulesMarkdown, expansionTexts, lastFetchDate: cachedDate } = await getCachedContent();
       if (cachedDate) setLastFetchDate(cachedDate);
       let hasCachedData = false;
@@ -46,7 +72,7 @@ export function useContent(styles, markdownStyles) {
         setContent(rulesMarkdown);
         const parsed = parseMarkdownSections(rulesMarkdown);
         setOriginalSections(parsed);
-        setSections(parsed);
+        setSections(applyExpandPreference(parsed, expandRulesDefault));
         hasCachedData = true;
       }
       if (expansionTexts) {
@@ -54,8 +80,8 @@ export function useContent(styles, markdownStyles) {
         const { mainContent, sections: expSections } = buildExpansionSections(allExpansionTexts);
         setExpansionsContent(mainContent);
         const sectionsCopy = JSON.parse(JSON.stringify(expSections));
-        setExpansionSections(expSections);
         setOriginalExpansionSections(sectionsCopy);
+        setExpansionSections(applyExpandPreference(expSections, expandExpansionsDefault));
         hasCachedData = true;
       }
       return hasCachedData;
@@ -70,7 +96,8 @@ export function useContent(styles, markdownStyles) {
     if (!result.success || !result.rulesText) return false;
     setContent(result.rulesText);
     setOriginalSections(result.sections);
-    setSections(result.sections);
+    const expandRules = await AsyncStorage.getItem(EXPAND_SETTINGS_KEYS.RULES);
+    setSections(applyExpandPreference(result.sections, expandRules === 'true'));
     return true;
   };
 
@@ -79,16 +106,20 @@ export function useContent(styles, markdownStyles) {
     if (!result.success || result.sections == null) return false;
     setExpansionsContent(result.mainContent);
     const sectionsCopy = JSON.parse(JSON.stringify(result.sections));
-    setExpansionSections(result.sections);
     setOriginalExpansionSections(sectionsCopy);
+    const expandExpansions = await AsyncStorage.getItem(EXPAND_SETTINGS_KEYS.EXPANSIONS);
+    setExpansionSections(applyExpandPreference(result.sections, expandExpansions === 'true'));
     return true;
   };
 
   useEffect(() => {
-    if (originalExpansionSections.length > 0 && (!searchQuery || searchQuery.length < 2)) {
-      setExpansionSections(JSON.parse(JSON.stringify(originalExpansionSections)));
-    }
-  }, []);
+    if (originalExpansionSections.length === 0 || (searchQuery && searchQuery.length >= 2)) return;
+    const apply = async () => {
+      const expand = await AsyncStorage.getItem(EXPAND_SETTINGS_KEYS.EXPANSIONS);
+      setExpansionSections(applyExpandPreference(JSON.parse(JSON.stringify(originalExpansionSections)), expand === 'true'));
+    };
+    apply();
+  }, [originalExpansionSections.length]);
 
   useEffect(() => {
     if (showSearch && searchInputRef.current) {
@@ -106,20 +137,25 @@ export function useContent(styles, markdownStyles) {
     }
   }, [activeTab]);
 
-  // When search is cleared (user tapped X), restore both tabs to full content.
-  // Do not run on tab switch: only run when query length goes from >=2 to <2 so we don't wipe expanded state.
+  // When search is cleared (user tapped X), restore both tabs to full content (with expand preference).
   useEffect(() => {
     const queryLen = searchQuery?.length ?? 0;
     const hadSearch = prevSearchQueryLen.current >= 2;
     prevSearchQueryLen.current = queryLen;
-    if (hadSearch && queryLen < 2) {
+    if (!hadSearch || queryLen >= 2) return;
+    const apply = async () => {
+      const [expandRules, expandExpansions] = await Promise.all([
+        AsyncStorage.getItem(EXPAND_SETTINGS_KEYS.RULES),
+        AsyncStorage.getItem(EXPAND_SETTINGS_KEYS.EXPANSIONS),
+      ]);
       if (originalSections.length > 0) {
-        setSections(JSON.parse(JSON.stringify(originalSections)));
+        setSections(applyExpandPreference(JSON.parse(JSON.stringify(originalSections)), expandRules === 'true'));
       }
       if (originalExpansionSections.length > 0) {
-        setExpansionSections(JSON.parse(JSON.stringify(originalExpansionSections)));
+        setExpansionSections(applyExpandPreference(JSON.parse(JSON.stringify(originalExpansionSections)), expandExpansions === 'true'));
       }
-    }
+    };
+    apply();
   }, [searchQuery]);
 
   useEffect(() => {
@@ -145,7 +181,10 @@ export function useContent(styles, markdownStyles) {
     if (activeTab !== 'expansions') return;
     if (expansionSections.length === 0 && (!searchQuery || searchQuery.length < 2)) {
       if (originalExpansionSections.length > 0) {
-        setExpansionSections(JSON.parse(JSON.stringify(originalExpansionSections)));
+        (async () => {
+          const expand = await AsyncStorage.getItem(EXPAND_SETTINGS_KEYS.EXPANSIONS);
+          setExpansionSections(applyExpandPreference(JSON.parse(JSON.stringify(originalExpansionSections)), expand === 'true'));
+        })();
       } else {
         fetchExpansions();
       }
