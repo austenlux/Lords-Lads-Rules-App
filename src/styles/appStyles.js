@@ -453,6 +453,34 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: 'bold',
   },
+  settingsSectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#E1E1E1',
+    marginBottom: 12,
+  },
+  settingsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(187, 134, 252, 0.2)',
+  },
+  settingsRowLabel: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  settingsRowIcon: {
+    marginRight: 8,
+  },
+  settingsRowText: {
+    fontSize: 16,
+    color: '#E1E1E1',
+  },
+  settingsRowLast: {
+    borderBottomWidth: 0,
+  },
   showMatchesButton: {
     backgroundColor: '#BB86FC',
     paddingHorizontal: 12,

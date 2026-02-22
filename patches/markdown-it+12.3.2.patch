@@ -1,0 +1,13 @@
+diff --git a/node_modules/markdown-it/package.json b/node_modules/markdown-it/package.json
+index 0000000..1111111 100644
+--- a/node_modules/markdown-it/package.json
++++ b/node_modules/markdown-it/package.json
+@@ -11,7 +11,7 @@
+   ],
+   "repository": "markdown-it/markdown-it",
+   "license": "MIT",
+-  "main": "index.js",
++  "main": "dist/markdown-it.js",
+   "bin": {
+     "markdown-it": "bin/markdown-it.js"
+   },
