@@ -599,11 +599,11 @@ const styles = StyleSheet.create({
   },
   toolTableDataTextPlayers: {
     fontSize: 13,
-    color: '#64B5F6',
+    color: '#3D7DD8',
   },
   toolTableDataTextNails: {
     fontSize: 13,
-    color: '#9E9E9E',
+    color: '#E8B923',
   },
   latestBadge: {
     borderWidth: 1,
