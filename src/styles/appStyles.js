@@ -1,7 +1,7 @@
 /**
  * App layout and component styles (tab bar, headers, sections, about, etc.).
  */
-import { StyleSheet, StatusBar } from 'react-native';
+import { StyleSheet, StatusBar, Platform } from 'react-native';
 
 const STATUS_BAR_HEIGHT = StatusBar.currentHeight ?? 0;
 const HEADER_HEIGHT = STATUS_BAR_HEIGHT + 74;
@@ -462,6 +462,140 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#5C7CFA',
     textDecorationLine: 'underline',
+  },
+  toolDescription: {
+    fontSize: 14,
+    color: '#E1E1E1',
+    lineHeight: 20,
+    marginBottom: 12,
+  },
+  toolDescriptionCode: {
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+    backgroundColor: 'rgba(187, 134, 252, 0.15)',
+    paddingHorizontal: 4,
+    borderRadius: 4,
+  },
+  toolInputOutputRow: {
+    flexDirection: 'row',
+    marginBottom: 12,
+  },
+  toolInputBlock: {
+    flex: 1,
+    width: '50%',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+  },
+  toolOutputBlock: {
+    flex: 1,
+    width: '50%',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+  },
+  toolLabelWithIcon: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  toolLabelIcon: {
+    marginRight: 6,
+  },
+  toolInputLabel: {
+    fontSize: 14,
+    color: '#E1E1E1',
+  },
+  toolInputContainer: {
+    position: 'relative',
+  },
+  toolInputPlaceholder: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  toolInputPlaceholderText: {
+    fontSize: 16,
+    color: '#888',
+  },
+  toolInput: {
+    fontSize: 16,
+    color: '#E1E1E1',
+    borderWidth: 1,
+    borderColor: 'rgba(187, 134, 252, 0.4)',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+    backgroundColor: 'rgba(30, 30, 30, 0.8)',
+    width: 80,
+    minWidth: 80,
+    textAlign: 'center',
+  },
+  toolInputHidden: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    opacity: 0,
+    pointerEvents: 'none',
+  },
+  toolOutputLabel: {
+    fontSize: 14,
+    color: '#BB86FC',
+  },
+  toolOutputValue: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#BB86FC',
+  },
+  toolQuickRefTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#BB86FC',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  toolTableWrap: {
+    borderWidth: 1,
+    borderColor: 'rgba(187, 134, 252, 0.35)',
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  toolTableRow: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(187, 134, 252, 0.25)',
+  },
+  toolTableRowLast: {
+    borderBottomWidth: 0,
+  },
+  toolTableLabelCell: {
+    width: 44,
+    paddingVertical: 8,
+    paddingHorizontal: 6,
+    backgroundColor: 'rgba(45, 45, 50, 0.8)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  toolTableLabelText: {
+    fontSize: 14,
+    color: '#E1E1E1',
+    fontWeight: '500',
+  },
+  toolTableDataCell: {
+    flex: 1,
+    minWidth: 28,
+    paddingVertical: 8,
+    paddingHorizontal: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(30, 30, 30, 0.6)',
+  },
+  toolTableDataText: {
+    fontSize: 13,
+    color: '#E1E1E1',
   },
   latestBadge: {
     borderWidth: 1,
