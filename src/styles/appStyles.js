@@ -491,12 +491,12 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
   },
   toolLabelWithIcon: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     alignItems: 'center',
     marginBottom: 6,
   },
   toolLabelIcon: {
-    marginRight: 6,
+    marginBottom: 4,
   },
   toolInputLabel: {
     fontSize: 14,
