@@ -12,6 +12,7 @@
     "build:android": "npm run sync:release-notes && cd android && ./gradlew assembleRelease",
     "build:apk": "npm run build:android",
     "install:android:release": "npm run sync:release-notes && cd android && ./gradlew installRelease",
+    "launch:android": "adb shell am start -n com.lux.lnlrules/.MainActivity",
     "postinstall": "patch-package"
   },
   "dependencies": {

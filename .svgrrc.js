@@ -48,5 +48,7 @@ module.exports = {
     '#f5f5f5': TINT_PROP,
     '#e0e0e0': TINT_PROP,
     '#e1e1e1': TINT_PROP,
+    // Crown icon (Lord Nail Calculator)
+    '#1C274C': TINT_PROP,
   },
 };
