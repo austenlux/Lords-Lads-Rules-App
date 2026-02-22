@@ -28,6 +28,9 @@ function lordNailFormula(n) {
 const QUICK_REF_COLUMNS = 9;
 const QUICK_REF_PLAYERS_START = 2;
 
+const PLAYERS_COLOR = '#64B5F6';
+const NAILS_COLOR = '#9E9E9E';
+
 export default function ToolsScreen({ styles }) {
   const [sectionsExpanded, setSectionsExpanded] = useState({
     [SECTION_KEYS.LORD_NAIL_CALC]: DEFAULT_SECTION_EXPANDED,
@@ -72,7 +75,7 @@ export default function ToolsScreen({ styles }) {
               <View style={styles.toolInputOutputRow}>
                 <View style={styles.toolInputBlock}>
                   <View style={styles.toolLabelWithIcon}>
-                    <PlayersIcon width={18} height={18} fill="#E1E1E1" style={styles.toolLabelIcon} />
+                    <PlayersIcon width={18} height={18} fill={PLAYERS_COLOR} style={styles.toolLabelIcon} />
                     <Text style={styles.toolInputLabel}>Number of players</Text>
                   </View>
                   <View style={styles.toolInputContainer}>
@@ -92,7 +95,7 @@ export default function ToolsScreen({ styles }) {
                 </View>
                 <View style={styles.toolOutputBlock}>
                   <View style={styles.toolLabelWithIcon}>
-                    <NailsIcon width={18} height={18} fill="#E1E1E1" style={styles.toolLabelIcon} />
+                    <NailsIcon width={18} height={18} fill={NAILS_COLOR} style={styles.toolLabelIcon} />
                     <Text style={styles.toolOutputLabel}>Lord nails</Text>
                   </View>
                   <Text style={styles.toolOutputValue}>
@@ -105,21 +108,21 @@ export default function ToolsScreen({ styles }) {
               <View style={styles.toolTableWrap}>
                 <View style={styles.toolTableRow}>
                   <View style={styles.toolTableLabelCell}>
-                    <PlayersIcon width={22} height={22} fill="#E1E1E1" />
+                    <PlayersIcon width={22} height={22} fill={PLAYERS_COLOR} />
                   </View>
                   {Array.from({ length: QUICK_REF_COLUMNS }, (_, i) => i + QUICK_REF_PLAYERS_START).map((n) => (
                     <View key={`p-${n}`} style={styles.toolTableDataCell}>
-                      <Text style={styles.toolTableDataText}>{n}</Text>
+                      <Text style={styles.toolTableDataTextPlayers}>{n}</Text>
                     </View>
                   ))}
                 </View>
                 <View style={[styles.toolTableRow, styles.toolTableRowLast]}>
                   <View style={styles.toolTableLabelCell}>
-                    <NailsIcon width={22} height={22} fill="#E1E1E1" />
+                    <NailsIcon width={22} height={22} fill={NAILS_COLOR} />
                   </View>
                   {Array.from({ length: QUICK_REF_COLUMNS }, (_, i) => i + QUICK_REF_PLAYERS_START).map((n) => (
                     <View key={`l-${n}`} style={styles.toolTableDataCell}>
-                      <Text style={styles.toolTableDataText}>{lordNailFormula(n)}</Text>
+                      <Text style={styles.toolTableDataTextNails}>{lordNailFormula(n)}</Text>
                     </View>
                   ))}
                 </View>
