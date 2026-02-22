@@ -545,8 +545,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#FFFFFF',
   },
+  toolOutputValueWrap: {
+    minHeight: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   toolOutputValue: {
-    fontSize: 18,
+    fontSize: 28,
     fontWeight: '600',
     color: '#2E7D32',
   },
