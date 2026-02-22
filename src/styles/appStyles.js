@@ -543,12 +543,12 @@ const styles = StyleSheet.create({
   },
   toolOutputLabel: {
     fontSize: 14,
-    color: '#BB86FC',
+    color: '#FFFFFF',
   },
   toolOutputValue: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#BB86FC',
+    color: '#2E7D32',
   },
   toolQuickRefTitle: {
     fontSize: 16,
@@ -599,10 +599,12 @@ const styles = StyleSheet.create({
   },
   toolTableDataTextPlayers: {
     fontSize: 13,
+    fontWeight: 'bold',
     color: '#3D7DD8',
   },
   toolTableDataTextNails: {
     fontSize: 13,
+    fontWeight: 'bold',
     color: '#2E7D32',
   },
   latestBadge: {
