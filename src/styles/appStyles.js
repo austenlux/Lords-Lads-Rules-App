@@ -477,6 +477,7 @@ const styles = StyleSheet.create({
   },
   toolInputOutputRow: {
     flexDirection: 'row',
+    marginTop: 16,
     marginBottom: 16,
   },
   toolInputBlock: {
@@ -547,7 +548,15 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#FFFFFF',
   },
-  toolOutputValueWrap: {
+  toolOutputBox: {
+    borderWidth: 1,
+    borderColor: 'rgba(187, 134, 252, 0.4)',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+    backgroundColor: 'rgba(30, 30, 30, 0.8)',
+    width: 80,
+    minWidth: 80,
     minHeight: 44,
     justifyContent: 'center',
     alignItems: 'center',

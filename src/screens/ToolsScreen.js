@@ -98,7 +98,7 @@ export default function ToolsScreen({ styles }) {
                     <NailsIcon width={22} height={22} fill={NAILS_COLOR} style={styles.toolLabelIcon} />
                     <Text style={styles.toolOutputLabel}>Lord nails</Text>
                   </View>
-                  <View style={styles.toolOutputValueWrap}>
+                  <View style={styles.toolOutputBox} pointerEvents="none">
                     <Text style={styles.toolOutputValue}>
                       {lordNails != null ? lordNails : '—'}
                     </Text>
