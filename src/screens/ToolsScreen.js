@@ -8,8 +8,9 @@ import CollapsibleSection, { DEFAULT_SECTION_EXPANDED } from '../components/Coll
 import CrownIcon from '../../assets/images/crown.svg';
 import PlayersIcon from '../../assets/images/players.svg';
 import NailsIcon from '../../assets/images/about.svg';
+import UprisingIcon from '../../assets/images/uprising.svg';
 
-const SECTION_KEYS = { LORD_NAIL_CALC: 'lordNailCalc' };
+const SECTION_KEYS = { NAIL_CALC: 'nailCalc' };
 
 /** Zero-width space: keeps one "character" in the field so the cursor shows when empty. */
 const ZWSP = '\u200B';
@@ -25,15 +26,26 @@ function lordNailFormula(n) {
   return Math.ceil(n / 2 - 1);
 }
 
+/** Rulebook: number of Uprising nails = ceil(n/7) where n = players. */
+function uprisingNailCount(players) {
+  if (players == null || !Number.isInteger(players) || players < 3) return null;
+  return Math.ceil(players / 7);
+}
+
+function uprisingNailFormula(n) {
+  return Math.ceil(n / 7);
+}
+
 const QUICK_REF_COLUMNS = 8;
 const QUICK_REF_PLAYERS_START = 3;
 
 const PLAYERS_COLOR = '#3D7DD8';
 const NAILS_COLOR = '#2E7D32';
+const UPRISING_COLOR = '#E65100';
 
 export default function ToolsScreen({ styles }) {
   const [sectionsExpanded, setSectionsExpanded] = useState({
-    [SECTION_KEYS.LORD_NAIL_CALC]: DEFAULT_SECTION_EXPANDED,
+    [SECTION_KEYS.NAIL_CALC]: DEFAULT_SECTION_EXPANDED,
   });
   const [playerCountInput, setPlayerCountInput] = useState(ZWSP);
 
@@ -45,6 +57,11 @@ export default function ToolsScreen({ styles }) {
   const lordNails = useMemo(() => {
     const n = parseInt(rawInput.trim(), 10);
     return lordNailCount(Number.isNaN(n) ? null : n);
+  }, [rawInput]);
+
+  const uprisingNails = useMemo(() => {
+    const n = parseInt(rawInput.trim(), 10);
+    return uprisingNailCount(Number.isNaN(n) ? null : n);
   }, [rawInput]);
 
   const handlePlayerCountChange = (text) => {
@@ -59,16 +76,18 @@ export default function ToolsScreen({ styles }) {
           <Text style={styles.aboutTitle}>Tools</Text>
 
           <CollapsibleSection
-            title="Lord Nail Calculator"
+            title="Nail Calculator"
             icon={<CrownIcon width={24} height={24} fill="#E8B923" />}
-            isExpanded={sectionsExpanded[SECTION_KEYS.LORD_NAIL_CALC]}
-            onToggle={() => toggleSection(SECTION_KEYS.LORD_NAIL_CALC)}
+            isExpanded={sectionsExpanded[SECTION_KEYS.NAIL_CALC]}
+            onToggle={() => toggleSection(SECTION_KEYS.NAIL_CALC)}
             styles={styles}
             style={styles.aboutSectionWrapper}
           >
             <View style={styles.versionContainer}>
               <Text style={styles.toolDescription}>
                 Number of Lord Nails = <Text style={styles.toolDescriptionCode}> ceil(n/2 − 1) </Text>
+                {'\n'}
+                Number of Uprising Nails = <Text style={styles.toolDescriptionCode}> ceil(n/7) </Text>
                 {'\n'}
                 <Text style={styles.toolDescriptionCode}> n </Text> = Number of players.
               </Text>
@@ -104,6 +123,17 @@ export default function ToolsScreen({ styles }) {
                     </Text>
                   </View>
                 </View>
+                <View style={styles.toolOutputBlock}>
+                  <View style={styles.toolLabelWithIcon}>
+                    <UprisingIcon width={22} height={22} fill={UPRISING_COLOR} style={styles.toolLabelIcon} />
+                    <Text style={styles.toolOutputLabel}>Uprising nails</Text>
+                  </View>
+                  <View style={styles.toolOutputBox} pointerEvents="none">
+                    <Text style={styles.toolOutputValueUprising}>
+                      {uprisingNails != null ? uprisingNails : '—'}
+                    </Text>
+                  </View>
+                </View>
               </View>
 
               <Text style={styles.toolQuickRefTitle}>Quick Reference</Text>
@@ -118,13 +148,23 @@ export default function ToolsScreen({ styles }) {
                     </View>
                   ))}
                 </View>
-                <View style={[styles.toolTableRow, styles.toolTableRowLast]}>
+                <View style={styles.toolTableRow}>
                   <View style={styles.toolTableLabelCell}>
                     <NailsIcon width={22} height={22} fill={NAILS_COLOR} />
                   </View>
                   {Array.from({ length: QUICK_REF_COLUMNS }, (_, i) => i + QUICK_REF_PLAYERS_START).map((n) => (
                     <View key={`l-${n}`} style={styles.toolTableDataCell}>
                       <Text style={styles.toolTableDataTextNails}>{lordNailFormula(n)}</Text>
+                    </View>
+                  ))}
+                </View>
+                <View style={[styles.toolTableRow, styles.toolTableRowLast]}>
+                  <View style={styles.toolTableLabelCell}>
+                    <UprisingIcon width={22} height={22} fill={UPRISING_COLOR} />
+                  </View>
+                  {Array.from({ length: QUICK_REF_COLUMNS }, (_, i) => i + QUICK_REF_PLAYERS_START).map((n) => (
+                    <View key={`u-${n}`} style={styles.toolTableDataCell}>
+                      <Text style={styles.toolTableDataTextUprising}>{uprisingNailFormula(n)}</Text>
                     </View>
                   ))}
                 </View>
