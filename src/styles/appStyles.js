@@ -287,7 +287,7 @@ const styles = StyleSheet.create({
   },
   aboutContainer: {
     padding: 20,
-    paddingTop: 0,
+    paddingTop: 12,
     alignItems: 'center',
     justifyContent: 'center',
     width: '100%',
@@ -317,15 +317,15 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   aboutSectionWrapper: {
-    marginBottom: 20,
+    marginBottom: 0,
     width: '100%',
   },
   aboutTimestamp: {
     fontSize: 15,
-    color: '#888',
+    color: '#E1E1E1',
   },
   paymentSection: {
-    marginBottom: 16,
+    marginBottom: 0,
   },
   paymentSectionTitle: {
     fontSize: 16,
@@ -353,12 +353,18 @@ const styles = StyleSheet.create({
   },
   venmoGridRow: {
     flexDirection: 'row',
-    marginBottom: 16,
+    marginBottom: 0,
   },
   venmoGridCell: {
     flex: 1,
     alignItems: 'center',
     paddingHorizontal: 6,
+  },
+  nailButtonWrapper: {
+    borderRadius: 12,
+    overflow: 'hidden',
+    width: '100%',
+    alignItems: 'center',
   },
   nailButton: {
     alignItems: 'center',
@@ -366,13 +372,14 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingVertical: 16,
     paddingHorizontal: 12,
+    overflow: 'hidden',
   },
   nailButtonPressed: {
     opacity: 0.8,
   },
   nailImage: {
-    width: 100,
-    height: 100,
+    width: 88,
+    height: 88,
   },
   nailLabel: {
     fontSize: 16,
@@ -386,6 +393,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(187, 134, 252, 0.3)',
     borderRadius: 8,
     marginBottom: 8,
+    backgroundColor: 'rgba(45, 45, 50, 0.75)',
   },
   versionHeader: {
     flexDirection: 'row',
@@ -406,7 +414,7 @@ const styles = StyleSheet.create({
   },
   versionDate: {
     fontSize: 15,
-    color: '#888',
+    color: '#E1E1E1',
     marginRight: 12,
   },
   versionArrow: {

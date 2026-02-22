@@ -173,7 +173,9 @@ export default function App() {
     <SafeAreaView style={[styles.safeArea, { backgroundColor: 'transparent' }]}>
       <StatusBar barStyle="light-content" backgroundColor="transparent" translucent={true} />
       <View style={styles.mainContainer}>
-        <View style={styles.globalSearchHeader}>
+        <View
+          style={[styles.globalSearchHeader, activeTab === 'about' && { opacity: 0, pointerEvents: 'none' }]}
+        >
           {!showSearch ? (
             <>
               <View style={styles.spacer} />
@@ -249,31 +251,27 @@ export default function App() {
       <StatusBar barStyle="light-content" backgroundColor="#121212" />
       <Animated.View style={{ flex: 1, opacity: mainAppOpacity }}>
         <View style={{ flex: 1 }}>
-          {(activeTab === 'rules' || activeTab === 'expansions') && (
-            <>
-              <Image
-                source={require('./assets/logo_dark_greyscale.png')}
-                style={{
-                  position: 'absolute',
-                  width: logoLayout.bgLogoSize,
-                  height: logoLayout.bgLogoSize,
-                  left: logoLayout.bgLogoLeft,
-                  top: logoLayout.bgLogoTop,
-                }}
-                resizeMode="contain"
-              />
-              <View
-                style={{
-                  position: 'absolute',
-                  left: logoLayout.bgLogoLeft,
-                  top: logoLayout.bgLogoTop,
-                  width: logoLayout.bgLogoSize,
-                  height: logoLayout.bgLogoSize,
-                  backgroundColor: 'rgba(18, 18, 18, 0.7)',
-                }}
-              />
-            </>
-          )}
+          <Image
+            source={require('./assets/logo_dark_greyscale.png')}
+            style={{
+              position: 'absolute',
+              width: logoLayout.bgLogoSize,
+              height: logoLayout.bgLogoSize,
+              left: logoLayout.bgLogoLeft,
+              top: logoLayout.bgLogoTop,
+            }}
+            resizeMode="contain"
+          />
+          <View
+            style={{
+              position: 'absolute',
+              left: logoLayout.bgLogoLeft,
+              top: logoLayout.bgLogoTop,
+              width: logoLayout.bgLogoSize,
+              height: logoLayout.bgLogoSize,
+              backgroundColor: 'rgba(18, 18, 18, 0.7)',
+            }}
+          />
           {mainContent}
         </View>
       </Animated.View>
