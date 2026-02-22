@@ -603,7 +603,7 @@ const styles = StyleSheet.create({
   },
   toolTableDataTextNails: {
     fontSize: 13,
-    color: '#E8B923',
+    color: '#2E7D32',
   },
   latestBadge: {
     borderWidth: 1,
