@@ -467,7 +467,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#E1E1E1',
     lineHeight: 20,
-    marginBottom: 12,
+    marginBottom: 16,
   },
   toolDescriptionCode: {
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
@@ -477,7 +477,7 @@ const styles = StyleSheet.create({
   },
   toolInputOutputRow: {
     flexDirection: 'row',
-    marginBottom: 12,
+    marginBottom: 16,
   },
   toolInputBlock: {
     flex: 1,
