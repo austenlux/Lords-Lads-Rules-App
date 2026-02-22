@@ -28,8 +28,8 @@ function lordNailFormula(n) {
 const QUICK_REF_COLUMNS = 9;
 const QUICK_REF_PLAYERS_START = 2;
 
-const PLAYERS_COLOR = '#64B5F6';
-const NAILS_COLOR = '#9E9E9E';
+const PLAYERS_COLOR = '#3D7DD8';
+const NAILS_COLOR = '#E8B923';
 
 export default function ToolsScreen({ styles }) {
   const [sectionsExpanded, setSectionsExpanded] = useState({
