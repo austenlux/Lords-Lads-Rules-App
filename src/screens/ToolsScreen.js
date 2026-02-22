@@ -41,7 +41,7 @@ const QUICK_REF_PLAYERS_START = 3;
 
 const PLAYERS_COLOR = '#3D7DD8';
 const NAILS_COLOR = '#2E7D32';
-const UPRISING_COLOR = '#E65100';
+const UPRISING_COLOR = '#CC4400';
 
 export default function ToolsScreen({ styles }) {
   const [sectionsExpanded, setSectionsExpanded] = useState({
@@ -95,7 +95,7 @@ export default function ToolsScreen({ styles }) {
                 <View style={styles.toolInputBlock}>
                   <View style={styles.toolLabelWithIcon}>
                     <PlayersIcon width={22} height={22} fill={PLAYERS_COLOR} style={styles.toolLabelIcon} />
-                    <Text style={styles.toolInputLabel}>Number of players</Text>
+                    <Text style={styles.toolInputLabel}>Players</Text>
                   </View>
                   <View style={styles.toolInputContainer}>
                     <TextInput

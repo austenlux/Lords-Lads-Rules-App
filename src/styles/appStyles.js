@@ -567,7 +567,7 @@ const styles = StyleSheet.create({
   toolOutputValueUprising: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#E65100',
+    color: '#CC4400',
   },
   toolQuickRefTitle: {
     fontSize: 16,
@@ -629,7 +629,7 @@ const styles = StyleSheet.create({
   toolTableDataTextUprising: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#E65100',
+    color: '#CC4400',
   },
   latestBadge: {
     borderWidth: 1,
