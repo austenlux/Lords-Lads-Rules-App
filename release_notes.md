@@ -1,5 +1,12 @@
 # Lords & Lads Changelog
 
+## v1.6.0 (2026-02-22)
+
+### What's New
+* New Tools tab with Nail Calculator.
+* About: new Info section with rulebook and app links.
+* About: new Settings section with preferences you can save.
+
 ## v1.5.2 (2026-02-22)
 
 ### What's New
