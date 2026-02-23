@@ -57,7 +57,7 @@
 	<false/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
-	<key>UIBackgroundColor</key>
-	<string>#6B37D6</string>
+  <key>UIBackgroundColor</key>
+	<string>#121212</string>
 </dict>
 </plist>

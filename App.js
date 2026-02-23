@@ -4,11 +4,12 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  SafeAreaView,
   StatusBar,
   Image,
   Dimensions,
   Animated,
+  Platform,
+  ScrollView,
 } from 'react-native';
 import PagerView from 'react-native-pager-view';
 import Markdown from 'react-native-markdown-display';
@@ -20,6 +21,7 @@ import SearchIcon from './assets/images/search.svg';
 import { styles, markdownStyles } from './src/styles';
 import { useContent } from './src/hooks/useContent';
 import { ContentScreen, AboutScreen, ToolsScreen } from './src/screens';
+import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
 
 const SPLASH_MIN_MS = 1000;
 const SPLASH_FADE_MS = 400;
@@ -29,6 +31,14 @@ const BG_LOGO_SIZE_SCALE = 0.99;
 
 const TABS = ['rules', 'expansions', 'tools', 'about'];
 const tabToIndex = (tab) => TABS.indexOf(tab);
+
+/** Tab bar height; used for explicit PagerView height on iOS to fix child layout. */
+const TAB_BAR_HEIGHT = 68;
+
+/** On iOS, PagerView children get 0 height with flex-only layout; use explicit height. */
+function getPageHeight() {
+  return Dimensions.get('window').height - TAB_BAR_HEIGHT;
+}
 
 function getLogoLayout() {
   const { width, height } = Dimensions.get('window');
@@ -49,10 +59,13 @@ function getLogoLayout() {
 export default function App() {
   const [splashMinTimeElapsed, setSplashMinTimeElapsed] = useState(false);
   const [splashDismissed, setSplashDismissed] = useState(false);
-  const splashOpacity = useRef(new Animated.Value(0)).current;
+  const isIOS = Platform.OS === 'ios';
+  const splashOpacity = useRef(new Animated.Value(isIOS ? 1 : 0)).current;
   const mainAppOpacity = useRef(new Animated.Value(0)).current;
   const fadeOutStarted = useRef(false);
   const pagerRef = useRef(null);
+  const iosScrollRef = useRef(null);
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     const t = setTimeout(() => setSplashMinTimeElapsed(true), SPLASH_MIN_MS);
@@ -60,12 +73,13 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    if (isIOS) return;
     Animated.timing(splashOpacity, {
       toValue: 1,
       duration: SPLASH_FADE_MS,
       useNativeDriver: true,
     }).start();
-  }, [splashOpacity]);
+  }, [splashOpacity, isIOS]);
 
   const {
     loading,
@@ -109,11 +123,27 @@ export default function App() {
   }, [splashMinTimeElapsed, loading, splashOpacity, mainAppOpacity]);
 
   const logoLayout = getLogoLayout();
+  const { width: windowWidth, height: windowHeight } = Dimensions.get('window');
+  const pageHeight = getPageHeight();
+  const pageStyle = Platform.OS === 'ios' ? { flex: 1, height: pageHeight } : { flex: 1 };
+
+  const [contentAreaHeight, setContentAreaHeight] = useState(null);
+  const handleContentAreaLayout = (e) => {
+    const { height } = e.nativeEvent.layout;
+    if (height > 0) setContentAreaHeight(height);
+  };
+  const effectivePageHeight = (Platform.OS === 'ios' && contentAreaHeight) ? contentAreaHeight : pageHeight;
+  const effectivePageStyle = Platform.OS === 'ios'
+    ? { flex: 1, height: effectivePageHeight, width: windowWidth }
+    : { flex: 1 };
 
   useEffect(() => {
     const index = tabToIndex(activeTab);
     if (index >= 0 && pagerRef.current?.setPage) {
       pagerRef.current.setPage(index);
+    }
+    if (isIOS && iosScrollRef.current != null && typeof index === 'number') {
+      iosScrollRef.current.scrollTo({ x: index * windowWidth, animated: true });
     }
   }, [activeTab]);
 
@@ -126,6 +156,7 @@ export default function App() {
 
   const renderPage = (tab) => {
     const isActive = activeTab === tab;
+    const contentHeight = Platform.OS === 'ios' ? effectivePageHeight : undefined;
     if (tab === 'rules') {
       return (
         <ContentScreen
@@ -136,6 +167,8 @@ export default function App() {
           scrollViewRef={rulesScrollViewRef}
           onScroll={saveScrollY('rules')}
           styles={styles}
+          contentHeight={contentHeight}
+          contentPaddingTop={isIOS ? insets.top + 74 : undefined}
         />
       );
     }
@@ -149,17 +182,22 @@ export default function App() {
           scrollViewRef={expansionsScrollViewRef}
           onScroll={saveScrollY('expansions')}
           styles={styles}
+          contentHeight={contentHeight}
+          contentPaddingTop={isIOS ? insets.top + 74 : undefined}
         />
       );
     }
     if (tab === 'tools') {
-      return <ToolsScreen key="tools" styles={styles} />;
+      return <ToolsScreen key="tools" styles={styles} contentHeight={contentHeight} contentPaddingTop={isIOS ? insets.top + 74 : undefined} />;
     }
-    return <AboutScreen key="about" lastFetchDate={lastFetchDate} styles={styles} />;
+    return <AboutScreen key="about" lastFetchDate={lastFetchDate} styles={styles} contentHeight={contentHeight} contentPaddingTop={isIOS ? insets.top + 74 : undefined} />;
   };
 
   const mainContent = error ? (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: 'transparent' }]}>
+    <SafeAreaView
+      style={[styles.safeArea, { backgroundColor: 'transparent' }]}
+      edges={isIOS ? ['left', 'right', 'bottom'] : undefined}
+    >
       <StatusBar barStyle="light-content" backgroundColor="transparent" translucent={true} />
       <View style={styles.container}>
         <View style={styles.errorContainer}>
@@ -174,11 +212,18 @@ export default function App() {
       </View>
     </SafeAreaView>
   ) : (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: 'transparent' }]}>
+    <SafeAreaView
+      style={[styles.safeArea, { backgroundColor: 'transparent' }]}
+      edges={isIOS ? ['left', 'right', 'bottom'] : undefined}
+    >
       <StatusBar barStyle="light-content" backgroundColor="transparent" translucent={true} />
-      <View style={styles.mainContainer}>
+      <View style={styles.mainContainer} onLayout={handleContentAreaLayout}>
         <View
-          style={[styles.globalSearchHeader, (activeTab === 'tools' || activeTab === 'about') && { opacity: 0, pointerEvents: 'none' }]}
+          style={[
+            styles.globalSearchHeader,
+            (activeTab === 'tools' || activeTab === 'about') && { opacity: 0, pointerEvents: 'none' },
+            isIOS && { paddingTop: insets.top + 10, minHeight: insets.top + 74, height: insets.top + 74 },
+          ]}
         >
           {!showSearch ? (
             <>
@@ -204,27 +249,46 @@ export default function App() {
             </View>
           )}
         </View>
+        {isIOS ? (
+          <ScrollView
+            ref={iosScrollRef}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            onMomentumScrollEnd={(e) => {
+              const index = Math.round(e.nativeEvent.contentOffset.x / windowWidth);
+              if (TABS[index]) setActiveTab(TABS[index]);
+            }}
+            style={{ flex: 1 }}
+          >
+            <View style={[effectivePageStyle, { width: windowWidth }]}>{renderPage('rules')}</View>
+            <View style={[effectivePageStyle, { width: windowWidth }]}>{renderPage('expansions')}</View>
+            <View style={[effectivePageStyle, { width: windowWidth }]}>{renderPage('tools')}</View>
+            <View style={[effectivePageStyle, { width: windowWidth }]}>{renderPage('about')}</View>
+          </ScrollView>
+        ) : (
         <PagerView
           ref={pagerRef}
-          style={{ flex: 1 }}
+          style={Platform.OS === 'ios' ? { flex: 1, height: effectivePageHeight } : { flex: 1 }}
           initialPage={tabToIndex(activeTab)}
           onPageSelected={handlePageSelected}
         >
-          <View key="0" style={{ flex: 1 }} collapsable={false}>
+          <View key="0" style={effectivePageStyle} collapsable={false}>
             {renderPage('rules')}
           </View>
-          <View key="1" style={{ flex: 1 }} collapsable={false}>
+          <View key="1" style={effectivePageStyle} collapsable={false}>
             {renderPage('expansions')}
           </View>
-          <View key="2" style={{ flex: 1 }} collapsable={false}>
+          <View key="2" style={effectivePageStyle} collapsable={false}>
             {renderPage('tools')}
           </View>
-          <View key="3" style={{ flex: 1 }} collapsable={false}>
+          <View key="3" style={effectivePageStyle} collapsable={false}>
             {renderPage('about')}
           </View>
         </PagerView>
+        )}
       </View>
-      <View style={styles.tabBar}>
+      <View style={[styles.tabBar, { height: 68 + insets.bottom, paddingBottom: 8 + insets.bottom }]}>
         <TouchableOpacity
           style={[styles.tabButton, activeTab === 'rules' && styles.activeTabButton]}
           onPress={() => goToTab('rules')}
@@ -274,8 +338,12 @@ export default function App() {
   );
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#121212' }}>
-      <StatusBar barStyle="light-content" backgroundColor="#121212" />
+    <View style={{ flex: 1, width: windowWidth, height: windowHeight, backgroundColor: '#121212' }}>
+      <StatusBar
+        barStyle="light-content"
+        backgroundColor={isIOS ? 'transparent' : '#121212'}
+        translucent={isIOS || undefined}
+      />
       <Animated.View style={{ flex: 1, opacity: mainAppOpacity }}>
         <View style={{ flex: 1 }}>
           <Image

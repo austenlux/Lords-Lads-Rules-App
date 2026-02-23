@@ -12,9 +12,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, RCTBridgeDelegate {
     let rootView = RCTRootView(bridge: bridge, moduleName: "LordsandLadsRules", initialProperties: nil)
     
     if #available(iOS 13.0, *) {
-      rootView.backgroundColor = UIColor.systemBackground
+      rootView.backgroundColor = UIColor(red: 18/255, green: 18/255, blue: 18/255, alpha: 1)
     } else {
-      rootView.backgroundColor = UIColor.white
+      rootView.backgroundColor = UIColor(red: 18/255, green: 18/255, blue: 18/255, alpha: 1)
     }
     
     window = UIWindow(frame: UIScreen.main.bounds)

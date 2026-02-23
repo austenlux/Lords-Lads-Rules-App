@@ -10,9 +10,11 @@
     "lint": "eslint .",
     "sync:release-notes": "cp release_notes.md android/app/src/main/assets/release_notes.md",
     "build:android": "npm run sync:release-notes && cd android && ./gradlew assembleRelease",
+    "build:android:bundle": "npm run sync:release-notes && cd android && ./gradlew bundleRelease",
     "build:apk": "npm run build:android",
     "install:android:release": "npm run sync:release-notes && cd android && ./gradlew installRelease",
     "launch:android": "adb shell am start -n com.lux.lnlrules/.MainActivity",
+    "install:ios:release": "npx react-native run-ios --mode Release --simulator \"iPhone 16 Pro\" --no-packager",
     "postinstall": "patch-package"
   },
   "dependencies": {
@@ -22,6 +24,7 @@
     "react-native-fs": "^2.20.0",
     "react-native-markdown-display": "^7.0.2",
     "react-native-pager-view": "^8.0.0",
+    "react-native-safe-area-context": "^5.6.2",
     "react-native-svg": "^15.15.3"
   },
   "overrides": {

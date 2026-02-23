@@ -12,6 +12,7 @@ import {
   Linking,
   Image,
   Switch,
+  Platform,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import RNFS from 'react-native-fs';
@@ -46,7 +47,7 @@ const VENMO_OPTIONS = [
   { amount: 250, label: '$250', image: require('../../assets/images/nail6.png') },
 ];
 
-export default function AboutScreen({ lastFetchDate, styles }) {
+export default function AboutScreen({ lastFetchDate, styles, contentHeight, contentPaddingTop }) {
   const [releaseNotes, setReleaseNotes] = useState([]);
   const [expandedVersions, setExpandedVersions] = useState({});
   const [pastReleasesExpanded, setPastReleasesExpanded] = useState(false);
@@ -295,8 +296,8 @@ export default function AboutScreen({ lastFetchDate, styles }) {
   );
 
   return (
-    <ScrollView style={styles.scrollView}>
-      <View style={[styles.contentContainer, { paddingTop: HEADER_HEIGHT }]}>
+    <ScrollView style={[styles.scrollView, contentHeight != null && (Platform.OS === 'ios' ? { minHeight: contentHeight } : { height: contentHeight, minHeight: contentHeight })]}>
+      <View style={[styles.contentContainer, { paddingTop: contentPaddingTop ?? HEADER_HEIGHT }]}>
         <View style={styles.aboutContainer}>
           <Text style={styles.aboutTitle}>About</Text>
 

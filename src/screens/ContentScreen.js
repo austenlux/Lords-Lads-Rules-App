@@ -3,7 +3,7 @@
  * Search UI lives in a fixed header above all tabs (in App.js).
  */
 import React from 'react';
-import { View, ScrollView } from 'react-native';
+import { View, ScrollView, Platform } from 'react-native';
 import { EmptySearchResults } from '../components';
 
 export default function ContentScreen({
@@ -13,16 +13,18 @@ export default function ContentScreen({
   scrollViewRef,
   onScroll,
   styles,
+  contentHeight,
+  contentPaddingTop,
 }) {
   return (
     <ScrollView
       ref={scrollViewRef}
-      style={styles.scrollView}
+      style={[styles.scrollView, contentHeight != null && (Platform.OS === 'ios' ? { minHeight: contentHeight } : { height: contentHeight, minHeight: contentHeight })]}
       contentInsetAdjustmentBehavior="automatic"
       onScroll={onScroll}
       scrollEventThrottle={16}
     >
-      <View style={styles.contentContainer}>
+      <View style={[styles.contentContainer, contentPaddingTop != null && { paddingTop: contentPaddingTop }]}>
         {sections.length === 0 && searchQuery && searchQuery.length >= 2 ? (
           <EmptySearchResults query={searchQuery} styles={styles} />
         ) : (

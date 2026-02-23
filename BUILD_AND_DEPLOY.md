@@ -43,6 +43,26 @@ The installed app does **not** need Metro or any dev tooling. It works offline a
 
 ---
 
+## iOS: standalone app on simulator (no Metro)
+
+Build and run the **Release** app on the iOS simulator. All JavaScript is bundled inside the app; no dev server is used or required.
+
+From the project root:
+
+```bash
+npm run install:ios:release
+```
+
+Or with an explicit simulator and no packager:
+
+```bash
+npx react-native run-ios --mode Release --simulator "iPhone 16 Pro" --no-packager
+```
+
+The app that launches is the same kind of artifact you’d ship to the store (bundled JS, no Metro). Use this to test the final build on the simulator.
+
+---
+
 ## iOS: standalone IPA (macOS only)
 
 1. **Open the workspace in Xcode:**
@@ -76,6 +96,7 @@ The installed app does **not** need Metro or any dev tooling. It works offline a
 |-----------------------------|------------------|
 | Build standalone Android APK | `npm run build:android` |
 | Build + install APK (USB)   | `npm run install:android:release` |
+| Build + run standalone iOS on simulator | `npm run install:ios:release` |
 | Build standalone iOS IPA    | Xcode: Product → Archive → Distribute App (or use `xcodebuild` as above) |
 
 Release artifacts are fully self-contained and do not require React Native tooling to be running after install.

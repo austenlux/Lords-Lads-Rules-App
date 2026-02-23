@@ -2,7 +2,7 @@
  * Tools tab: expandable sections for calculators and utilities.
  */
 import React, { useState, useMemo } from 'react';
-import { View, Text, ScrollView, TextInput } from 'react-native';
+import { View, Text, ScrollView, TextInput, Platform } from 'react-native';
 import { HEADER_HEIGHT } from '../styles';
 import CollapsibleSection, { DEFAULT_SECTION_EXPANDED } from '../components/CollapsibleSection';
 import CrownIcon from '../../assets/images/crown.svg';
@@ -43,7 +43,7 @@ const PLAYERS_COLOR = '#3D7DD8';
 const NAILS_COLOR = '#2E7D32';
 const UPRISING_COLOR = '#CC4400';
 
-export default function ToolsScreen({ styles }) {
+export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }) {
   const [sectionsExpanded, setSectionsExpanded] = useState({
     [SECTION_KEYS.NAIL_CALC]: DEFAULT_SECTION_EXPANDED,
   });
@@ -70,8 +70,8 @@ export default function ToolsScreen({ styles }) {
 
 
   return (
-    <ScrollView style={styles.scrollView}>
-      <View style={[styles.contentContainer, { paddingTop: HEADER_HEIGHT }]}>
+    <ScrollView style={[styles.scrollView, contentHeight != null && (Platform.OS === 'ios' ? { minHeight: contentHeight } : { height: contentHeight, minHeight: contentHeight })]}>
+      <View style={[styles.contentContainer, { paddingTop: contentPaddingTop ?? HEADER_HEIGHT }]}>
         <View style={styles.aboutContainer}>
           <Text style={styles.aboutTitle}>Tools</Text>
 
