@@ -310,7 +310,7 @@ export default function AboutScreen({ lastFetchDate, styles }) {
           >
             <View style={styles.versionContainer}>
               <View style={styles.infoBlock}>
-                <Text style={styles.infoText}>Rules from official rulebook repo:</Text>
+                <Text style={styles.infoText}>Rules loaded from official rulebook:</Text>
                 <Pressable onPress={() => Linking.openURL(RULEBOOK_REPO_URL)}>
                   <Text style={styles.infoLink}>{RULEBOOK_REPO_URL}</Text>
                 </Pressable>

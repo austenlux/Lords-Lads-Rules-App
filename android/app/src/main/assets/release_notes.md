@@ -1,5 +1,13 @@
 # Lords & Lads Changelog
 
+## v1.5.2 (2026-02-22)
+
+### What's New
+* Search clears when you switch to the About tab.
+* About sections use a consistent card layout.
+* Changelog cards are easier to use; fixed About page freezing.
+* Refined payment section layout and options.
+
 ## v1.5.1 (2026-02-20)
 
 ### What's New
