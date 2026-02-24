@@ -384,11 +384,11 @@ const styles = StyleSheet.create({
     opacity: 0.8,
   },
   nailImage: {
-    width: 88,
-    height: 88,
+    width: Platform.OS === 'ios' ? 72 : 88,
+    height: Platform.OS === 'ios' ? 72 : 88,
   },
   nailLabel: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '600',
     color: '#BB86FC',
     marginTop: 8,
