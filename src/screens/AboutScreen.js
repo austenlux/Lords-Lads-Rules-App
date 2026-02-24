@@ -140,7 +140,11 @@ export default function AboutScreen({ lastFetchDate, styles, contentHeight, cont
   useEffect(() => {
     const loadReleaseNotes = async () => {
       try {
-        const content = await RNFS.readFileAssets('release_notes.md', 'utf8');
+        const rawContent =
+          Platform.OS === 'ios'
+            ? await RNFS.readFile(`${RNFS.MainBundlePath}/release_notes.md`, 'utf8')
+            : await RNFS.readFileAssets('release_notes.md', 'utf8');
+        const content = rawContent.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
         const versions = parseReleaseNotes(content);
         const initialExpanded = {};
         versions.forEach((version) => {
