@@ -1,6 +1,8 @@
 package com.lux.lnlrules
 
 import android.app.Application
+import android.content.Context
+import android.content.res.Configuration
 import com.facebook.react.PackageList
 import com.facebook.react.ReactApplication
 import com.facebook.react.ReactHost
@@ -13,6 +15,12 @@ import com.facebook.react.soloader.OpenSourceMergedSoMapping
 import com.facebook.soloader.SoLoader
 
 class MainApplication : Application(), ReactApplication {
+
+    override fun attachBaseContext(base: Context) {
+        val config = Configuration(base.resources.configuration)
+        config.fontScale = 1.0f
+        super.attachBaseContext(base.createConfigurationContext(config))
+    }
 
     override val reactNativeHost: ReactNativeHost = object : DefaultReactNativeHost(this) {
         override fun getPackages(): List<ReactPackage> {
