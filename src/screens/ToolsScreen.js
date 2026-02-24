@@ -70,7 +70,10 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
 
 
   return (
-    <ScrollView style={[styles.scrollView, contentHeight != null && (Platform.OS === 'ios' ? { minHeight: contentHeight } : { height: contentHeight, minHeight: contentHeight })]}>
+    <ScrollView
+      style={[styles.scrollView, contentHeight != null && (Platform.OS === 'ios' ? { minHeight: contentHeight } : { height: contentHeight, minHeight: contentHeight })]}
+      contentInsetAdjustmentBehavior={Platform.OS === 'ios' ? 'never' : undefined}
+    >
       <View style={[styles.contentContainer, { paddingTop: contentPaddingTop ?? HEADER_HEIGHT }]}>
         <View style={styles.aboutContainer}>
           <Text style={styles.aboutTitle}>Tools</Text>

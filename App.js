@@ -34,6 +34,8 @@ const tabToIndex = (tab) => TABS.indexOf(tab);
 
 /** Tab bar height; used for explicit PagerView height on iOS to fix child layout. */
 const TAB_BAR_HEIGHT = 68;
+/** Cap bottom inset so we don't reserve more than needed for the OS gesture bar (avoids excessive gap). */
+const TAB_BAR_BOTTOM_INSET_MAX = 20;
 
 /** On iOS, PagerView children get 0 height with flex-only layout; use explicit height. */
 function getPageHeight() {
@@ -66,6 +68,7 @@ export default function App() {
   const pagerRef = useRef(null);
   const iosScrollRef = useRef(null);
   const insets = useSafeAreaInsets();
+  const tabBarBottomInset = Math.min(insets.bottom, TAB_BAR_BOTTOM_INSET_MAX);
 
   useEffect(() => {
     const t = setTimeout(() => setSplashMinTimeElapsed(true), SPLASH_MIN_MS);
@@ -154,6 +157,9 @@ export default function App() {
 
   const goToTab = (tab) => setActiveTab(tab);
 
+  /** iOS only: fixed height for search header (fits both icon and expanded bar; no jump on toggle). */
+  const IOS_HEADER_BAR_HEIGHT = 72;
+
   const renderPage = (tab) => {
     const isActive = activeTab === tab;
     const contentHeight = Platform.OS === 'ios' ? effectivePageHeight : undefined;
@@ -168,7 +174,7 @@ export default function App() {
           onScroll={saveScrollY('rules')}
           styles={styles}
           contentHeight={contentHeight}
-          contentPaddingTop={isIOS ? insets.top + 74 : undefined}
+          contentPaddingTop={isIOS ? insets.top + IOS_HEADER_BAR_HEIGHT : undefined}
         />
       );
     }
@@ -183,46 +189,25 @@ export default function App() {
           onScroll={saveScrollY('expansions')}
           styles={styles}
           contentHeight={contentHeight}
-          contentPaddingTop={isIOS ? insets.top + 74 : undefined}
+          contentPaddingTop={isIOS ? insets.top + IOS_HEADER_BAR_HEIGHT : undefined}
         />
       );
     }
     if (tab === 'tools') {
-      return <ToolsScreen key="tools" styles={styles} contentHeight={contentHeight} contentPaddingTop={isIOS ? insets.top + 74 : undefined} />;
+      return <ToolsScreen key="tools" styles={styles} contentHeight={contentHeight} contentPaddingTop={isIOS ? insets.top + IOS_HEADER_BAR_HEIGHT : undefined} />;
     }
-    return <AboutScreen key="about" lastFetchDate={lastFetchDate} styles={styles} contentHeight={contentHeight} contentPaddingTop={isIOS ? insets.top + 74 : undefined} />;
+    return <AboutScreen key="about" lastFetchDate={lastFetchDate} styles={styles} contentHeight={contentHeight} contentPaddingTop={isIOS ? insets.top + IOS_HEADER_BAR_HEIGHT : undefined} />;
   };
 
-  const mainContent = error ? (
-    <SafeAreaView
-      style={[styles.safeArea, { backgroundColor: 'transparent' }]}
-      edges={isIOS ? ['left', 'right', 'bottom'] : undefined}
-    >
-      <StatusBar barStyle="light-content" backgroundColor="transparent" translucent={true} />
-      <View style={styles.container}>
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorTitle}>Unable to Load Rules</Text>
-          <View style={styles.centered}>
-            <Markdown style={markdownStyles}>{"# Error\n\n" + error}</Markdown>
-          </View>
-          <TouchableOpacity style={styles.retryButton} onPress={() => fetchExpansions()}>
-            <Text style={styles.retryButtonText}>Try Again</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </SafeAreaView>
-  ) : (
-    <SafeAreaView
-      style={[styles.safeArea, { backgroundColor: 'transparent' }]}
-      edges={isIOS ? ['left', 'right', 'bottom'] : undefined}
-    >
+  const successContent = (
+    <>
       <StatusBar barStyle="light-content" backgroundColor="transparent" translucent={true} />
       <View style={styles.mainContainer} onLayout={handleContentAreaLayout}>
         <View
           style={[
             styles.globalSearchHeader,
             (activeTab === 'tools' || activeTab === 'about') && { opacity: 0, pointerEvents: 'none' },
-            isIOS && { paddingTop: insets.top + 10, minHeight: insets.top + 74, height: insets.top + 74 },
+            isIOS && { paddingTop: insets.top + 10, minHeight: insets.top + IOS_HEADER_BAR_HEIGHT, height: insets.top + IOS_HEADER_BAR_HEIGHT },
           ]}
         >
           {!showSearch ? (
@@ -288,7 +273,7 @@ export default function App() {
         </PagerView>
         )}
       </View>
-      <View style={[styles.tabBar, { height: 68 + insets.bottom, paddingBottom: 8 + insets.bottom }]}>
+      <View style={[styles.tabBar, { height: 68 + tabBarBottomInset, paddingBottom: tabBarBottomInset }]}>
         <TouchableOpacity
           style={[styles.tabButton, activeTab === 'rules' && styles.activeTabButton]}
           onPress={() => goToTab('rules')}
@@ -334,7 +319,57 @@ export default function App() {
           </View>
         </TouchableOpacity>
       </View>
+    </>
+  );
+
+  const mainContent = error ? (
+    isIOS ? (
+    <SafeAreaView
+      style={[styles.safeArea, { backgroundColor: 'transparent' }]}
+      edges={['left', 'right', 'bottom']}
+    >
+      <StatusBar barStyle="light-content" backgroundColor="transparent" translucent={true} />
+      <View style={styles.container}>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorTitle}>Unable to Load Rules</Text>
+          <View style={styles.centered}>
+            <Markdown style={markdownStyles}>{"# Error\n\n" + error}</Markdown>
+          </View>
+          <TouchableOpacity style={styles.retryButton} onPress={() => fetchExpansions()}>
+            <Text style={styles.retryButtonText}>Try Again</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
     </SafeAreaView>
+    ) : (
+    <View style={[styles.safeArea, { backgroundColor: 'transparent' }]}>
+      <StatusBar barStyle="light-content" backgroundColor="transparent" translucent={true} />
+      <View style={styles.container}>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorTitle}>Unable to Load Rules</Text>
+          <View style={styles.centered}>
+            <Markdown style={markdownStyles}>{"# Error\n\n" + error}</Markdown>
+          </View>
+          <TouchableOpacity style={styles.retryButton} onPress={() => fetchExpansions()}>
+            <Text style={styles.retryButtonText}>Try Again</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </View>
+    )
+  ) : (
+    isIOS ? (
+    <SafeAreaView
+      style={[styles.safeArea, { backgroundColor: 'transparent' }]}
+      edges={['left', 'right', 'bottom']}
+    >
+      {successContent}
+    </SafeAreaView>
+    ) : (
+    <View style={[styles.safeArea, { backgroundColor: 'transparent' }]}>
+      {successContent}
+    </View>
+    )
   );
 
   return (

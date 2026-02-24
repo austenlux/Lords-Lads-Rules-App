@@ -20,7 +20,7 @@ export default function ContentScreen({
     <ScrollView
       ref={scrollViewRef}
       style={[styles.scrollView, contentHeight != null && (Platform.OS === 'ios' ? { minHeight: contentHeight } : { height: contentHeight, minHeight: contentHeight })]}
-      contentInsetAdjustmentBehavior="automatic"
+      contentInsetAdjustmentBehavior={Platform.OS === 'ios' ? 'never' : undefined}
       onScroll={onScroll}
       scrollEventThrottle={16}
     >
