@@ -37,7 +37,7 @@ export default function CollapsibleSection({
   });
 
   const marginLeft = (level - 1) * 12;
-  const fontSize = 32 - (level - 1) * 4;
+  const fontSize = 28 - (level - 1) * 4;
 
   return (
     <View ref={sectionRef} style={[style, { marginLeft }]}>

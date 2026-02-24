@@ -542,7 +542,7 @@ const styles = StyleSheet.create({
     pointerEvents: 'none',
   },
   toolOutputLabel: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: 'bold',
     color: '#FFFFFF',
   },
