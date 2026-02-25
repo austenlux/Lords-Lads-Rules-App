@@ -12,7 +12,6 @@ import {
   ScrollView,
 } from 'react-native';
 import PagerView from 'react-native-pager-view';
-import Markdown from 'react-native-markdown-display';
 import RulesIcon from './assets/images/rules.svg';
 import ExpansionsIcon from './assets/images/expansions.svg';
 import ToolsIcon from './assets/images/tools.svg';
@@ -86,7 +85,6 @@ export default function App() {
 
   const {
     loading,
-    error,
     content,
     expansionsContent,
     expansionSections,
@@ -96,11 +94,13 @@ export default function App() {
     activeTab,
     setActiveTab,
     lastFetchDate,
+    rulesEmpty,
+    expansionsEmpty,
+    retryFetchContent,
     rulesScrollViewRef,
     expansionsScrollViewRef,
     saveScrollY,
     searchInputRef,
-    fetchExpansions,
     handleSearchQueryChange,
     toggleSearchBar,
     renderSection,
@@ -175,6 +175,9 @@ export default function App() {
           styles={styles}
           contentHeight={contentHeight}
           contentPaddingTop={isIOS ? insets.top + IOS_HEADER_BAR_HEIGHT : undefined}
+          isEmptyState={rulesEmpty}
+          onRetry={retryFetchContent}
+          emptyStateContentLabel="rules"
         />
       );
     }
@@ -190,6 +193,9 @@ export default function App() {
           styles={styles}
           contentHeight={contentHeight}
           contentPaddingTop={isIOS ? insets.top + IOS_HEADER_BAR_HEIGHT : undefined}
+          isEmptyState={expansionsEmpty}
+          onRetry={retryFetchContent}
+          emptyStateContentLabel="expansions"
         />
       );
     }
@@ -206,7 +212,7 @@ export default function App() {
         <View
           style={[
             styles.globalSearchHeader,
-            (activeTab === 'tools' || activeTab === 'about') && { opacity: 0, pointerEvents: 'none' },
+            (activeTab === 'tools' || activeTab === 'about' || (rulesEmpty && expansionsEmpty)) && { opacity: 0, pointerEvents: 'none' },
             isIOS && { paddingTop: insets.top + 10, minHeight: insets.top + IOS_HEADER_BAR_HEIGHT, height: insets.top + IOS_HEADER_BAR_HEIGHT },
           ]}
         >
@@ -322,54 +328,17 @@ export default function App() {
     </>
   );
 
-  const mainContent = error ? (
-    isIOS ? (
+  const mainContent = isIOS ? (
     <SafeAreaView
       style={[styles.safeArea, { backgroundColor: 'transparent' }]}
       edges={['left', 'right', 'bottom']}
     >
-      <StatusBar barStyle="light-content" backgroundColor="transparent" translucent={true} />
-      <View style={styles.container}>
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorTitle}>Unable to Load Rules</Text>
-          <View style={styles.centered}>
-            <Markdown style={markdownStyles}>{"# Error\n\n" + error}</Markdown>
-          </View>
-          <TouchableOpacity style={styles.retryButton} onPress={() => fetchExpansions()}>
-            <Text style={styles.retryButtonText}>Try Again</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+      {successContent}
     </SafeAreaView>
-    ) : (
-    <View style={[styles.safeArea, { backgroundColor: 'transparent' }]}>
-      <StatusBar barStyle="light-content" backgroundColor="transparent" translucent={true} />
-      <View style={styles.container}>
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorTitle}>Unable to Load Rules</Text>
-          <View style={styles.centered}>
-            <Markdown style={markdownStyles}>{"# Error\n\n" + error}</Markdown>
-          </View>
-          <TouchableOpacity style={styles.retryButton} onPress={() => fetchExpansions()}>
-            <Text style={styles.retryButtonText}>Try Again</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </View>
-    )
   ) : (
-    isIOS ? (
-    <SafeAreaView
-      style={[styles.safeArea, { backgroundColor: 'transparent' }]}
-      edges={['left', 'right', 'bottom']}
-    >
-      {successContent}
-    </SafeAreaView>
-    ) : (
     <View style={[styles.safeArea, { backgroundColor: 'transparent' }]}>
       {successContent}
     </View>
-    )
   );
 
   return (

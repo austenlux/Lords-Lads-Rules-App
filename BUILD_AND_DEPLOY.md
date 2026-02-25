@@ -25,6 +25,8 @@ cd android && ./gradlew assembleRelease
 
 ### Install the APK on a device
 
+**Always use the release-signed build.** `npm run install:android:release` and `npm run build:android` both use `release.keystore` (see `android/app/build.gradle`). If install fails with `INSTALL_FAILED_UPDATE_INCOMPATIBLE`, the device has an app signed with a different key. Common cases: (1) an old debug build was installed; (2) the app was installed from the Play Store—Google re-signs with the Play signing key, so a local release APK (signed with your upload key) is treated as a different app. Uninstall the existing app once, then install the local release APK.
+
 **Option A – Build and install in one step (device connected via USB):**
 
 ```bash

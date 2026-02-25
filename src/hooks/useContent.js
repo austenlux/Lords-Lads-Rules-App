@@ -36,7 +36,6 @@ function applyExpandPreference(sections, expandAll) {
 
 export function useContent(styles, markdownStyles) {
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [content, setContent] = useState('');
   const [expansionsContent, setExpansionsContent] = useState('');
   const [expansionSections, setExpansionSections] = useState([]);
@@ -110,6 +109,16 @@ export function useContent(styles, markdownStyles) {
     const expandExpansions = await AsyncStorage.getItem(EXPAND_SETTINGS_KEYS.EXPANSIONS);
     setExpansionSections(applyExpandPreference(result.sections, expandExpansions === 'true'));
     return true;
+  };
+
+  /** Refetch both rules and expansions (e.g. from empty-state Retry). Persists to cache on success. */
+  const retryFetchContent = async () => {
+    const [rulesOk, expansionsOk] = await Promise.all([fetchReadme(), fetchExpansions()]);
+    if (rulesOk || expansionsOk) {
+      const now = new Date().toLocaleString();
+      setLastFetchDate(now);
+      await saveLastFetchDate(now);
+    }
   };
 
   useEffect(() => {
@@ -190,9 +199,6 @@ export function useContent(styles, markdownStyles) {
         const now = new Date().toLocaleString();
         setLastFetchDate(now);
         await saveLastFetchDate(now);
-      }
-      if (!hasCachedData && !rulesOk && !expansionsOk) {
-        setError('Unable to load content. Please check your internet connection.');
       }
       setLoading(false);
     };
@@ -430,7 +436,6 @@ export function useContent(styles, markdownStyles) {
 
   return {
     loading,
-    error,
     content,
     expansionsContent,
     expansionSections,
@@ -442,6 +447,9 @@ export function useContent(styles, markdownStyles) {
     activeTab,
     setActiveTab,
     lastFetchDate,
+    rulesEmpty: originalSections.length === 0,
+    expansionsEmpty: originalExpansionSections.length === 0,
+    retryFetchContent,
     scrollViewRef: activeTab === 'rules' ? rulesScrollViewRef : expansionsScrollViewRef,
     rulesScrollViewRef,
     expansionsScrollViewRef,
