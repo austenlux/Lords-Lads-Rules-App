@@ -9,8 +9,12 @@ import CrownIcon from '../../assets/images/crown.svg';
 import PlayersIcon from '../../assets/images/players.svg';
 import NailsIcon from '../../assets/images/about.svg';
 import UprisingIcon from '../../assets/images/uprising.svg';
+import StatsIcon from '../../assets/images/stats.svg';
 
-const SECTION_KEYS = { NAIL_CALC: 'nailCalc' };
+const SECTION_KEYS = { NAIL_CALC: 'nailCalc', GAME_STAT_TRACKER: 'gameStatTracker' };
+
+/** Icon color matching About tab Info icon (info.svg stroke). */
+const INFO_BLUE = '#5C7CFA';
 
 /** Zero-width space: keeps one "character" in the field so the cursor shows when empty. */
 const ZWSP = '\u200B';
@@ -46,6 +50,7 @@ const UPRISING_COLOR = '#CC4400';
 export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }) {
   const [sectionsExpanded, setSectionsExpanded] = useState({
     [SECTION_KEYS.NAIL_CALC]: DEFAULT_SECTION_EXPANDED,
+    [SECTION_KEYS.GAME_STAT_TRACKER]: DEFAULT_SECTION_EXPANDED,
   });
   const [playerCountInput, setPlayerCountInput] = useState(ZWSP);
 
@@ -172,6 +177,19 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                   ))}
                 </View>
               </View>
+            </View>
+          </CollapsibleSection>
+
+          <CollapsibleSection
+            title="Game Stat Tracker"
+            icon={<StatsIcon width={24} height={24} fill={INFO_BLUE} />}
+            isExpanded={sectionsExpanded[SECTION_KEYS.GAME_STAT_TRACKER]}
+            onToggle={() => toggleSection(SECTION_KEYS.GAME_STAT_TRACKER)}
+            styles={styles}
+            style={styles.aboutSectionWrapper}
+          >
+            <View style={styles.versionContainer}>
+              <Text style={styles.toolDescription}>Coming soon.</Text>
             </View>
           </CollapsibleSection>
         </View>
