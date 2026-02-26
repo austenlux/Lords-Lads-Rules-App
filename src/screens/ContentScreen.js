@@ -5,6 +5,7 @@
 import React, { useState } from 'react';
 import { View, ScrollView, Platform, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { EmptySearchResults } from '../components';
+import NoWifiIcon from '../components/NoWifiIcon';
 
 export default function ContentScreen({
   sections,
@@ -51,7 +52,9 @@ export default function ContentScreen({
           <EmptySearchResults query={searchQuery} styles={styles} />
         ) : showFetchFailedEmpty ? (
           <View style={styles.emptyStateContainer}>
-            <Text style={styles.emptyStateIcon}>📡</Text>
+            <View style={styles.emptyStateIcon}>
+              <NoWifiIcon width={50} height={50} />
+            </View>
             <Text style={styles.emptyStateTitle}>{emptyTitle}</Text>
             <Text style={styles.emptyStateText}>{emptyMessage}</Text>
             {onRetry && (
