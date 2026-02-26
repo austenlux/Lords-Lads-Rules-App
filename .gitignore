@@ -34,8 +34,7 @@ local.properties
 *.hprof
 .cxx/
 *.keystore
-!debug.keystore
-!release.keystore
+android/keystore.properties
 android/app/build/
 android/.gradle/
 android/captures/
