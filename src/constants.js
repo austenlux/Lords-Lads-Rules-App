@@ -61,21 +61,45 @@ Answer the <latest_user_prompt> based ONLY on the data in <rulebook_core> and <r
 </final_instruction>`;
 
 /**
+ * Cleans rulebook Markdown before embedding it in the system prompt:
+ *  1. Removes the Table of Contents section entirely (it adds noise, not value).
+ *  2. Strips Markdown heading hashes (## / ###) so they don't look like prompt
+ *     section markers.
+ *  3. Strips < and > characters that would corrupt the XML-style prompt tags.
+ */
+const sanitizeRulebookContent = (text) => {
+  if (!text?.trim()) return '';
+
+  return text
+    // Remove the ToC block: from its header line to (not including) the next header.
+    .replace(/^#{1,6}\s+(?:table\s+of\s+contents|contents)\s*\n[\s\S]*?(?=^#{1,6}\s)/gim, '')
+    // Strip Markdown heading hashes at the start of lines (keep the heading text).
+    .replace(/^#{1,6}\s+/gm, '')
+    // Strip characters that conflict with XML-style prompt section tags.
+    .replace(/[<>]/g, '')
+    .trim();
+};
+
+/**
  * Builds the complete, ready-to-send prompt for Gemini Nano.
  *
  * @param {string}   rules       Raw Markdown from the Rules tab.
  * @param {string}   expansions  Raw Markdown from the Expansions tab.
  * @param {Array}    history     Array of settled {role, text} message objects (most-recent last).
+ *                               Only the last HISTORY_TURNS exchanges are included.
  * @param {string}   question    The user's current transcribed question.
  */
+const HISTORY_TURNS = 3; // number of back-and-forth exchanges to keep (user+assistant = 1 turn)
+
 export const buildGameAssistantPrompt = (rules, expansions, history, question) => {
-  const historyText = history?.length
-    ? history.map((m) => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.text}`).join('\n')
+  const recentHistory = history?.slice(-(HISTORY_TURNS * 2)) ?? [];
+  const historyText = recentHistory.length
+    ? recentHistory.map((m) => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.text}`).join('\n')
     : 'No previous conversation.';
 
   return GAME_ASSISTANT_SYSTEM_PROMPT
-    .replace(P.RULES,      rules?.trim()      || 'Not available.')
-    .replace(P.EXPANSIONS, expansions?.trim() || 'Not available.')
+    .replace(P.RULES,      sanitizeRulebookContent(rules)      || 'Not available.')
+    .replace(P.EXPANSIONS, sanitizeRulebookContent(expansions) || 'Not available.')
     .replace(P.HISTORY,    historyText)
     .replace(P.QUESTION,   question);
 };

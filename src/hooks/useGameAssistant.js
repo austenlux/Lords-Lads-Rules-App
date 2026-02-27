@@ -315,12 +315,10 @@ export function useGameAssistant() {
         const assistantMsgId = nextId();
         activeAssistantMsgId.current = assistantMsgId;
 
-        // Snapshot settled messages (cap at last 10 = ~5 exchanges) for history.
-        // Must be read from state synchronously before the new assistant bubble is appended.
-        const HISTORY_LIMIT = 10;
+        // Snapshot all settled messages before this turn — buildGameAssistantPrompt
+        // applies the recency cap and sanitization internally.
         const historySnapshot = messages
           .filter((m) => m.text?.trim())
-          .slice(-HISTORY_LIMIT)
           .map((m) => ({ role: m.role, text: m.text }));
 
         setMessages((prev) => [...prev, { id: assistantMsgId, role: 'assistant', text: '' }]);
