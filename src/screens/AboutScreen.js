@@ -156,67 +156,98 @@ export default function AboutScreen({
     });
   }, [availableVoices]);
 
+  // ── Animation helpers ────────────────────────────────────────────────────
+  // Single helper so all collapse/expand calls are consistent.
+  const animateSection = (anim, toExpanded, expandedHeight, duration = 200) => {
+    if (!anim) return;
+    Animated.timing(anim.rotation, { toValue: toExpanded ? 1 : 0, duration, useNativeDriver: true }).start();
+    Animated.timing(anim.maxHeight, { toValue: toExpanded ? expandedHeight : 0, duration, useNativeDriver: false }).start();
+  };
+
+  // Collapse every locale sub-section inside the Voice Assistant card.
+  const collapseAllLocales = () => {
+    Object.values(voiceLocaleAnims).forEach(a => animateSection(a, false, 0, 150));
+    setExpandedLocales({});
+  };
+
+  // Collapse every individual voice card inside Voice Assistant Metadata.
+  const collapseAllDebugVoices = () => {
+    Object.values(debugVoiceAnims).forEach(a => animateSection(a, false, 0, 150));
+    setExpandedDebugVoices({});
+  };
+
+  // Collapse every version block inside Past Releases.
+  const collapseAllVersions = () => {
+    Object.keys(expandedVersions).forEach(v => {
+      if (animations[v]) animateSection(animations[v], false, 0, 150);
+    });
+    setExpandedVersions({});
+  };
+
+  // Collapse everything nested inside the Settings top-level section.
+  const collapseSettingsChildren = () => {
+    animateSection(animations['expandDefaults'], false, 0, 150);
+    setExpandDefaultsExpanded(false);
+    animateSection(animations['voiceParent'], false, 0, 150);
+    setVoiceParentExpanded(false);
+    collapseAllLocales();
+  };
+
+  // Collapse everything nested inside the Changelog top-level section.
+  const collapseChangelogChildren = () => {
+    animateSection(animations[PAST_RELEASES_KEY], false, 0, 150);
+    setPastReleasesExpanded(false);
+    collapseAllVersions();
+  };
+
+  // Collapse everything nested inside the Debug top-level section.
+  const collapseDebugChildren = () => {
+    animateSection(animations['voiceMeta'], false, 0, 150);
+    setVoiceMetaExpanded(false);
+    collapseAllDebugVoices();
+  };
+
+  // ── Toggle functions ─────────────────────────────────────────────────────
+
+  const toggleAboutSection = (sectionKey) => {
+    const willCollapse = sectionsExpanded[sectionKey];
+    if (willCollapse) {
+      if (sectionKey === SECTION_KEYS.SETTINGS)  collapseSettingsChildren();
+      if (sectionKey === SECTION_KEYS.CHANGELOG) collapseChangelogChildren();
+      if (sectionKey === SECTION_KEYS.DEBUG)     collapseDebugChildren();
+    }
+    setSectionsExpanded(prev => ({ ...prev, [sectionKey]: !prev[sectionKey] }));
+  };
+
   const toggleVoiceLocale = (localeKey) => {
     const isExpanded = !expandedLocales[localeKey];
-    const anim = voiceLocaleAnims[localeKey];
-    if (anim) {
-      Animated.timing(anim.rotation, { toValue: isExpanded ? 1 : 0, duration: 200, useNativeDriver: true }).start();
-      Animated.timing(anim.maxHeight, { toValue: isExpanded ? VOICE_SECTION_MAX_HEIGHT : 0, duration: 200, useNativeDriver: false }).start();
-    }
+    animateSection(voiceLocaleAnims[localeKey], isExpanded, VOICE_SECTION_MAX_HEIGHT);
     setExpandedLocales(prev => ({ ...prev, [localeKey]: isExpanded }));
   };
 
   const toggleExpandDefaults = () => {
     const isExpanded = !expandDefaultsExpanded;
-    const anim = animations['expandDefaults'];
-    if (anim) {
-      Animated.timing(anim.rotation, { toValue: isExpanded ? 1 : 0, duration: 200, useNativeDriver: true }).start();
-      Animated.timing(anim.maxHeight, { toValue: isExpanded ? EXPAND_DEFAULTS_MAX_HEIGHT : 0, duration: 200, useNativeDriver: false }).start();
-    }
+    animateSection(animations['expandDefaults'], isExpanded, EXPAND_DEFAULTS_MAX_HEIGHT);
     setExpandDefaultsExpanded(isExpanded);
   };
 
   const toggleVoiceParent = () => {
     const isExpanded = !voiceParentExpanded;
-    const anim = animations['voiceParent'];
-    if (anim) {
-      Animated.timing(anim.rotation, { toValue: isExpanded ? 1 : 0, duration: 200, useNativeDriver: true }).start();
-      Animated.timing(anim.maxHeight, { toValue: isExpanded ? VOICE_PARENT_MAX_HEIGHT : 0, duration: 200, useNativeDriver: false }).start();
-    }
-    if (!isExpanded) {
-      Object.entries(voiceLocaleAnims).forEach(([, localeAnim]) => {
-        Animated.timing(localeAnim.rotation, { toValue: 0, duration: 150, useNativeDriver: true }).start();
-        Animated.timing(localeAnim.maxHeight, { toValue: 0, duration: 150, useNativeDriver: false }).start();
-      });
-      setExpandedLocales({});
-    }
+    animateSection(animations['voiceParent'], isExpanded, VOICE_PARENT_MAX_HEIGHT);
+    if (!isExpanded) collapseAllLocales();
     setVoiceParentExpanded(isExpanded);
   };
 
   const toggleVoiceMeta = () => {
     const isExpanded = !voiceMetaExpanded;
-    const anim = animations['voiceMeta'];
-    if (anim) {
-      Animated.timing(anim.rotation, { toValue: isExpanded ? 1 : 0, duration: 200, useNativeDriver: true }).start();
-      Animated.timing(anim.maxHeight, { toValue: isExpanded ? VOICE_META_MAX_HEIGHT : 0, duration: 200, useNativeDriver: false }).start();
-    }
-    if (!isExpanded) {
-      Object.entries(debugVoiceAnims).forEach(([, a]) => {
-        Animated.timing(a.rotation, { toValue: 0, duration: 150, useNativeDriver: true }).start();
-        Animated.timing(a.maxHeight, { toValue: 0, duration: 150, useNativeDriver: false }).start();
-      });
-      setExpandedDebugVoices({});
-    }
+    animateSection(animations['voiceMeta'], isExpanded, VOICE_META_MAX_HEIGHT);
+    if (!isExpanded) collapseAllDebugVoices();
     setVoiceMetaExpanded(isExpanded);
   };
 
   const toggleDebugVoice = (voiceId) => {
     const isExpanded = !expandedDebugVoices[voiceId];
-    const anim = debugVoiceAnims[voiceId];
-    if (anim) {
-      Animated.timing(anim.rotation, { toValue: isExpanded ? 1 : 0, duration: 200, useNativeDriver: true }).start();
-      Animated.timing(anim.maxHeight, { toValue: isExpanded ? DEBUG_VOICE_MAX_HEIGHT : 0, duration: 200, useNativeDriver: false }).start();
-    }
+    animateSection(debugVoiceAnims[voiceId], isExpanded, DEBUG_VOICE_MAX_HEIGHT);
     setExpandedDebugVoices(prev => ({ ...prev, [voiceId]: isExpanded }));
   };
 
@@ -333,38 +364,14 @@ export default function AboutScreen({
 
   const toggleVersionExpansion = (version) => {
     const isExpanded = !expandedVersions[version];
-    Animated.timing(animations[version].rotation, {
-      toValue: isExpanded ? 1 : 0,
-      duration: 200,
-      useNativeDriver: true,
-    }).start();
-    Animated.timing(animations[version].maxHeight, {
-      toValue: isExpanded ? EXPANDED_MAX_HEIGHT : 0,
-      duration: 200,
-      useNativeDriver: false,
-    }).start();
-    setExpandedVersions((prev) => ({ ...prev, [version]: isExpanded }));
-  };
-
-  const toggleAboutSection = (sectionKey) => {
-    setSectionsExpanded((prev) => ({ ...prev, [sectionKey]: !prev[sectionKey] }));
+    animateSection(animations[version], isExpanded, EXPANDED_MAX_HEIGHT);
+    setExpandedVersions(prev => ({ ...prev, [version]: isExpanded }));
   };
 
   const togglePastReleasesExpansion = () => {
     const isExpanded = !pastReleasesExpanded;
-    const anim = animations[PAST_RELEASES_KEY];
-    if (anim) {
-      Animated.timing(anim.rotation, {
-        toValue: isExpanded ? 1 : 0,
-        duration: 200,
-        useNativeDriver: true,
-      }).start();
-      Animated.timing(anim.maxHeight, {
-        toValue: isExpanded ? PAST_RELEASES_MAX_HEIGHT : 0,
-        duration: 200,
-        useNativeDriver: false,
-      }).start();
-    }
+    animateSection(animations[PAST_RELEASES_KEY], isExpanded, PAST_RELEASES_MAX_HEIGHT);
+    if (!isExpanded) collapseAllVersions();
     setPastReleasesExpanded(isExpanded);
   };
 
