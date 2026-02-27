@@ -21,7 +21,7 @@ cd android && ./gradlew assembleRelease
 ```
 
 - **Output:** `android/app/build/outputs/apk/release/lords-and-lads-rules-<versionName>.apk` (e.g. `lords-and-lads-rules-1.4.0.apk`).
-- **Signing:** Uses `android/app/release.keystore` (configured in `android/app/build.gradle`). Keep this keystore safe; you need it for all future updates.
+- **Signing:** Uses `android/app/release.keystore` with credentials loaded from `android/keystore.properties`. Both files are gitignored and must be present locally to build. Keep the keystore safe; you need it for all future updates.
 
 ### Install the APK on a device
 
