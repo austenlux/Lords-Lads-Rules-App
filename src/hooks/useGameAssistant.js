@@ -68,7 +68,8 @@ export function useGameAssistant() {
 
   // Prevents concurrent invocations of askTheRules.
   const isBusy = useRef(false);
-  // Stable ref to the latest assistant message id so chunk events can update it.
+  // Refs to the in-progress message ids so event callbacks can update them live.
+  const activeUserMsgId = useRef(null);
   const activeAssistantMsgId = useRef(null);
   const msgCounter = useRef(0);
 
@@ -121,16 +122,26 @@ export function useGameAssistant() {
   useEffect(() => {
     if (Platform.OS !== 'android') return;
 
-    // Live interim text — update partialSpeech for any external UI that uses it.
+    // Live interim text — update partialSpeech and the in-progress user bubble.
     const partialSub = NativeVoiceAssistant.onSpeechPartialResults(({ value }) => {
       setPartialSpeech(value);
+      const id = activeUserMsgId.current;
+      if (id) {
+        setMessages((prev) =>
+          prev.map((m) => (m.id === id ? { ...m, text: value } : m)),
+        );
+      }
     });
 
-    // Final recognised text — mirror into partialSpeech only.
-    // The user message bubble is added to history only after startListening() resolves
-    // with confirmed non-empty speech (see askTheRules below).
+    // Final recognised text — update bubble and partialSpeech.
     const finalSub = NativeVoiceAssistant.onSpeechFinalResults(({ value }) => {
       setPartialSpeech(value);
+      const id = activeUserMsgId.current;
+      if (id) {
+        setMessages((prev) =>
+          prev.map((m) => (m.id === id ? { ...m, text: value } : m)),
+        );
+      }
     });
 
     // Build fullAnswer chunk-by-chunk; also stream into the assistant bubble.
@@ -191,6 +202,7 @@ export function useGameAssistant() {
     setIsThinking(false);
     setIsListening(false);
     isBusy.current = false;
+    activeUserMsgId.current = null;
     activeAssistantMsgId.current = null;
     // Messages are intentionally NOT cleared here — conversation history is
     // preserved for the app lifecycle so the user can re-open the modal and
@@ -238,6 +250,11 @@ export function useGameAssistant() {
       setFullAnswer('');
       setPartialSpeech('');
 
+      // Add a user bubble immediately — it updates live with partials as the user speaks.
+      const userMsgId = nextId();
+      activeUserMsgId.current = userMsgId;
+      setMessages((prev) => [...prev, { id: userMsgId, role: 'user', text: '' }]);
+
       try {
         // 1. Verify Gemini Nano is ready ──────────────────────────────────
         const modelStatus = await NativeVoiceAssistant.checkModelStatus();
@@ -272,15 +289,19 @@ export function useGameAssistant() {
         const spokenQuestion = await NativeVoiceAssistant.startListening();
         setIsListening(false);
 
+        activeUserMsgId.current = null;
+
         if (!spokenQuestion?.trim()) {
-          // No speech captured — nothing is added to chat history.
+          // No speech — remove the empty bubble from history.
+          setMessages((prev) => prev.filter((m) => m.id !== userMsgId));
           setError(ERRORS.NO_SPEECH);
           return;
         }
 
-        // Only now commit the user's words to the conversation history.
-        const userMsgId = nextId();
-        setMessages((prev) => [...prev, { id: userMsgId, role: 'user', text: spokenQuestion }]);
+        // Ensure the bubble has the final confirmed text.
+        setMessages((prev) =>
+          prev.map((m) => (m.id === userMsgId ? { ...m, text: spokenQuestion } : m)),
+        );
 
         // 4. Ask Gemini Nano ──────────────────────────────────────────────
         // fullAnswer builds up live via onAIChunkReceived events.

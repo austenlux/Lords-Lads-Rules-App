@@ -65,15 +65,6 @@ function UserBubble({ text }) {
   );
 }
 
-function ListeningIndicator({ partialText }) {
-  return (
-    <View style={styles.listeningRow}>
-      <Text style={styles.listeningText}>
-        {partialText?.trim() ? partialText.trim() : 'Listening…'}
-      </Text>
-    </View>
-  );
-}
 
 function AssistantBubble({ text }) {
   return (
@@ -99,7 +90,7 @@ const FAB_GAP     = 10;
 const TOP_MARGIN  = 8;
 const STATUS_BAR  = Platform.OS === 'android' ? (StatusBar.currentHeight ?? 24) : 44;
 
-export default function VoiceAssistantModal({ messages, isListening, partialSpeech, isOpen, fabBottom = 96 }) {
+export default function VoiceAssistantModal({ messages, isOpen, fabBottom = 96 }) {
   const listRef = useRef(null);
   const mountOpacity = useRef(new Animated.Value(0)).current;
 
@@ -112,12 +103,12 @@ export default function VoiceAssistantModal({ messages, isListening, partialSpee
     }).start();
   }, [isOpen, mountOpacity]);
 
-  // Auto-scroll to bottom whenever messages, listening state, or partial text changes.
+  // Auto-scroll to bottom whenever messages update.
   useEffect(() => {
     if (isOpen) {
       setTimeout(() => listRef.current?.scrollToEnd({ animated: true }), 50);
     }
-  }, [isOpen, messages, isListening, partialSpeech]);
+  }, [isOpen, messages]);
 
   if (!isOpen && mountOpacity._value === 0) return null;
 
@@ -149,7 +140,6 @@ export default function VoiceAssistantModal({ messages, isListening, partialSpee
           onContentSizeChange={() =>
             listRef.current?.scrollToEnd({ animated: true })
           }
-          ListFooterComponent={isListening ? <ListeningIndicator partialText={partialSpeech} /> : null}
         />
       </View>
     </Animated.View>
@@ -227,16 +217,6 @@ const styles = StyleSheet.create({
   },
   thinkingText: {
     fontSize: 14,
-    color: '#666666',
-    fontStyle: 'italic',
-  },
-  listeningRow: {
-    paddingHorizontal: 4,
-    paddingVertical: 6,
-    alignItems: 'flex-end',
-  },
-  listeningText: {
-    fontSize: 13,
     color: '#666666',
     fontStyle: 'italic',
   },

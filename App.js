@@ -440,8 +440,6 @@ export default function App() {
           {/* Conversation modal — floats above the FAB */}
           <VoiceAssistantModal
             messages={messages}
-            isListening={isListening}
-            partialSpeech={partialSpeech}
             isOpen={isConvoOpen}
             fabBottom={TAB_BAR_HEIGHT + tabBarBottomInset + 16}
           />
