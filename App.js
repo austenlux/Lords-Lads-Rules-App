@@ -21,7 +21,7 @@ import { styles, markdownStyles } from './src/styles';
 import { useContent } from './src/hooks/useContent';
 import { useGameAssistant } from './src/hooks/useGameAssistant';
 import { ContentScreen, AboutScreen, ToolsScreen } from './src/screens';
-import { VoiceAssistantFAB } from './src/components';
+import { VoiceAssistantFAB, VoiceAssistantModal } from './src/components';
 import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
 
 const SPLASH_MIN_MS = 1000;
@@ -95,6 +95,7 @@ export default function App() {
     availableVoices,
     selectedVoiceId,
     previewVoice,
+    messages,
   } = useGameAssistant();
 
   const {
@@ -400,27 +401,46 @@ export default function App() {
           {mainContent}
         </View>
       </Animated.View>
-      {/* Voice Assistant FAB — only when Gemini Nano supported, splash gone, and on content tabs */}
+      {/* Voice Assistant — FAB + conversation modal */}
       {aiSupported && splashDismissed && (
         <View
           pointerEvents={(activeTab === 'rules' || activeTab === 'expansions') ? 'box-none' : 'none'}
           style={[
             {
               position: 'absolute',
-              right: 20,
-              bottom: TAB_BAR_HEIGHT + tabBarBottomInset + 16,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              top: 0,
               zIndex: 10,
             },
             (activeTab !== 'rules' && activeTab !== 'expansions') && { opacity: 0 },
           ]}
         >
-          <VoiceAssistantFAB
-            isListening={isListening}
+          {/* Conversation modal — floats above the FAB */}
+          <VoiceAssistantModal
+            messages={messages}
             isThinking={isThinking}
-            isActive={aiActive}
-            onPress={() => askTheRules([content, expansionsContent].filter(Boolean).join('\n\n'))}
-            onStop={stopAssistant}
+            fabBottom={TAB_BAR_HEIGHT + tabBarBottomInset + 16}
           />
+
+          {/* FAB — anchored bottom-right */}
+          <View
+            pointerEvents="box-none"
+            style={{
+              position: 'absolute',
+              right: 20,
+              bottom: TAB_BAR_HEIGHT + tabBarBottomInset + 16,
+            }}
+          >
+            <VoiceAssistantFAB
+              isListening={isListening}
+              isThinking={isThinking}
+              isActive={aiActive}
+              onPress={() => askTheRules([content, expansionsContent].filter(Boolean).join('\n\n'))}
+              onStop={stopAssistant}
+            />
+          </View>
         </View>
       )}
 

@@ -64,9 +64,19 @@ export function useGameAssistant() {
   const [error, setError] = useState(null);
   const [availableVoices, setAvailableVoices] = useState([]);
   const [selectedVoiceId, setSelectedVoiceId] = useState(null);
+  const [messages, setMessages] = useState([]);
 
   // Prevents concurrent invocations of askTheRules.
   const isBusy = useRef(false);
+  // Stable ref to the latest message id so event callbacks can update it.
+  const activeUserMsgId = useRef(null);
+  const activeAssistantMsgId = useRef(null);
+  const msgCounter = useRef(0);
+
+  const nextId = () => {
+    msgCounter.current += 1;
+    return `msg_${msgCounter.current}`;
+  };
 
   // ── Support check (runs once on mount) ──────────────────────────────────
 
@@ -112,19 +122,37 @@ export function useGameAssistant() {
   useEffect(() => {
     if (Platform.OS !== 'android') return;
 
-    // Live interim text while the user is still speaking.
+    // Live interim text while the user is still speaking — update active user bubble.
     const partialSub = NativeVoiceAssistant.onSpeechPartialResults(({ value }) => {
       setPartialSpeech(value);
+      const id = activeUserMsgId.current;
+      if (id) {
+        setMessages((prev) =>
+          prev.map((m) => (m.id === id ? { ...m, text: value } : m)),
+        );
+      }
     });
 
-    // Final recognised text — mirror into partialSpeech so the UI doesn't blank.
+    // Final recognised text — mirror into the user bubble and partialSpeech.
     const finalSub = NativeVoiceAssistant.onSpeechFinalResults(({ value }) => {
       setPartialSpeech(value);
+      const id = activeUserMsgId.current;
+      if (id) {
+        setMessages((prev) =>
+          prev.map((m) => (m.id === id ? { ...m, text: value } : m)),
+        );
+      }
     });
 
-    // Build fullAnswer chunk-by-chunk for real-time streaming display.
+    // Build fullAnswer chunk-by-chunk; also stream into the assistant bubble.
     const chunkSub = NativeVoiceAssistant.onAIChunkReceived(({ chunk }) => {
       setFullAnswer((prev) => prev + chunk);
+      const id = activeAssistantMsgId.current;
+      if (id) {
+        setMessages((prev) =>
+          prev.map((m) => (m.id === id ? { ...m, text: m.text + chunk } : m)),
+        );
+      }
     });
 
     // TTS queue fully drained — assistant has finished speaking, return to idle.
@@ -174,6 +202,9 @@ export function useGameAssistant() {
     setIsThinking(false);
     setIsListening(false);
     isBusy.current = false;
+    activeUserMsgId.current = null;
+    activeAssistantMsgId.current = null;
+    setMessages([]);
   }, []);
 
   // ── Voice preview ────────────────────────────────────────────────────────
@@ -216,6 +247,11 @@ export function useGameAssistant() {
       setError(null);
       setFullAnswer('');
       setPartialSpeech('');
+
+      // Append a live user bubble that will be updated by partial/final STT events.
+      const userMsgId = nextId();
+      activeUserMsgId.current = userMsgId;
+      setMessages((prev) => [...prev, { id: userMsgId, role: 'user', text: '' }]);
 
       try {
         // 1. Verify Gemini Nano is ready ──────────────────────────────────
@@ -260,8 +296,14 @@ export function useGameAssistant() {
         // fullAnswer builds up live via onAIChunkReceived events.
         // TTS starts sentence-by-sentence inside the native module.
         // isThinking stays true until onTTSFinished fires (queue fully drained).
+        activeUserMsgId.current = null; // STT is done; stop updating user bubble.
+        const assistantMsgId = nextId();
+        activeAssistantMsgId.current = assistantMsgId;
+        setMessages((prev) => [...prev, { id: assistantMsgId, role: 'assistant', text: '' }]);
+
         setIsThinking(true);
         await NativeVoiceAssistant.askQuestion(spokenQuestion, readmeContext);
+        activeAssistantMsgId.current = null; // Streaming done; stop updating assistant bubble.
         // Do NOT clear isThinking here — onTTSFinished handles that once TTS is done.
 
       } catch (err) {
@@ -305,7 +347,9 @@ export function useGameAssistant() {
     selectedVoiceId,
     /** select a voice, persist it, and play a short preview phrase */
     previewVoice,
-    /** immediately stop inference + TTS and return to idle */
+    /** immediately stop inference + TTS, clear messages, and return to idle */
     stopAssistant,
+    /** live conversation: [{id, role:'user'|'assistant', text}] */
+    messages,
   };
 }
