@@ -14,6 +14,8 @@ import React, { useRef, useEffect } from 'react';
 import {
   Animated,
   FlatList,
+  Platform,
+  StatusBar,
   StyleSheet,
   Text,
   View,
@@ -81,9 +83,12 @@ function AssistantBubble({ text, isStreaming }) {
 
 // ─────────────────────────────────────────────────── Component ──
 
-// FAB height (60) + gap above it (12)
-const FAB_SIZE = 60;
-const FAB_GAP  = 12;
+// FAB height (60) + gap between FAB top edge and panel bottom
+const FAB_SIZE    = 60;
+const FAB_GAP     = 10;
+// Small gap between panel top and the status bar
+const TOP_MARGIN  = 8;
+const STATUS_BAR  = Platform.OS === 'android' ? (StatusBar.currentHeight ?? 24) : 44;
 
 export default function VoiceAssistantModal({ messages, isThinking, fabBottom = 96 }) {
   const listRef = useRef(null);
@@ -113,14 +118,17 @@ export default function VoiceAssistantModal({ messages, isThinking, fabBottom = 
   const lastMsg = messages[messages.length - 1];
   const isLastStreaming = isThinking && lastMsg?.role === 'assistant';
 
+  // Bottom edge of the panel sits just above the FAB.
   const panelBottom = fabBottom + FAB_SIZE + FAB_GAP;
+  // Maximum height before the panel would overlap the status bar.
+  const availableHeight = fabBottom + FAB_SIZE - STATUS_BAR - TOP_MARGIN;
 
   return (
     <Animated.View
       style={[styles.container, { opacity: mountOpacity, bottom: panelBottom }]}
       pointerEvents={visible ? 'box-none' : 'none'}
     >
-      <View style={styles.panel}>
+      <View style={[styles.panel, { maxHeight: availableHeight }]}>
         <FlatList
           ref={listRef}
           data={messages}
@@ -153,12 +161,10 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     right: 0,
-    top: 0,
-    // bottom is set dynamically via fabBottom prop
+    // bottom and panel maxHeight set dynamically from fabBottom prop
   },
   panel: {
     marginHorizontal: 12,
-    maxHeight: 420,
     backgroundColor: COLORS.backdrop,
     borderRadius: 20,
     borderWidth: 1,
