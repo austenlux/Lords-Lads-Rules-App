@@ -86,4 +86,13 @@ dependencies {
     } else {
         implementation jscFlavor
     }
+
+    // Gemini Nano on-device inference via Android AICore
+    // Verify latest version at: https://developers.google.com/ml-kit/guides
+    implementation("com.google.mlkit:genai-prompt:16.0.0")
+
+    // ML Kit on-device speech recognition
+    implementation("com.google.mlkit:speech-recognition:16.0.0")
+
+    // Android TTS is part of the Android SDK — no dependency needed
 }

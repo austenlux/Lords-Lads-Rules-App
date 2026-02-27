@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.res.Configuration
 import com.facebook.react.PackageList
 import com.facebook.react.ReactApplication
+import com.lux.lnlrules.voiceassistant.VoiceAssistantPackage
 import com.facebook.react.ReactHost
 import com.facebook.react.ReactNativeHost
 import com.facebook.react.ReactPackage
@@ -24,7 +25,9 @@ class MainApplication : Application(), ReactApplication {
 
     override val reactNativeHost: ReactNativeHost = object : DefaultReactNativeHost(this) {
         override fun getPackages(): List<ReactPackage> {
-            return PackageList(this).packages
+            val packages = PackageList(this).packages
+            packages.add(VoiceAssistantPackage())
+            return packages
         }
 
         override fun getJSMainModuleName(): String = "index"
