@@ -123,7 +123,6 @@ export default function VoiceAssistantFAB({ isListening, isThinking, isActive, h
 
       <Pressable
         onPress={isStoppable ? onStop : onPress}
-        android_ripple={{ color: 'rgba(255,255,255,0.2)', borderless: true, radius: FAB_RADIUS }}
         style={({ pressed }) => [
           styles.fab,
           { backgroundColor: fabColor },
