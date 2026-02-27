@@ -161,6 +161,13 @@ export default function AboutScreen({
       Animated.timing(anim.rotation, { toValue: isExpanded ? 1 : 0, duration: 200, useNativeDriver: true }).start();
       Animated.timing(anim.maxHeight, { toValue: isExpanded ? VOICE_PARENT_MAX_HEIGHT : 0, duration: 200, useNativeDriver: false }).start();
     }
+    if (!isExpanded) {
+      Object.entries(voiceLocaleAnims).forEach(([, localeAnim]) => {
+        Animated.timing(localeAnim.rotation, { toValue: 0, duration: 150, useNativeDriver: true }).start();
+        Animated.timing(localeAnim.maxHeight, { toValue: 0, duration: 150, useNativeDriver: false }).start();
+      });
+      setExpandedLocales({});
+    }
     setVoiceParentExpanded(isExpanded);
   };
 
