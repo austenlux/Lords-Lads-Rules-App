@@ -19,6 +19,7 @@ import {
   Animated,
   Pressable,
   StyleSheet,
+  Text,
   View,
 } from 'react-native';
 import MicIcon from '../../assets/images/mic.svg';
@@ -123,13 +124,11 @@ export default function VoiceAssistantFAB({ isListening, isThinking, isActive, o
   });
 
   // ── Derived visuals ───────────────────────────────────────────────────
-  // When the AI is generating/speaking the button becomes a stop button.
-  const isStoppable = isThinking;
+  // The kill switch is available as soon as the loop is active — listening OR thinking.
+  const isStoppable = isListening || isThinking;
 
   const fabColor = isStoppable
     ? COLORS.stop
-    : isListening
-    ? COLORS.listening
     : COLORS.idle;
 
   return (
@@ -149,7 +148,6 @@ export default function VoiceAssistantFAB({ isListening, isThinking, isActive, o
 
       <Pressable
         onPress={isStoppable ? onStop : onPress}
-        disabled={isListening}
         android_ripple={{ color: 'rgba(255,255,255,0.2)', borderless: true, radius: FAB_RADIUS }}
         style={({ pressed }) => [
           styles.fab,
@@ -158,12 +156,12 @@ export default function VoiceAssistantFAB({ isListening, isThinking, isActive, o
         ]}
         accessibilityRole="button"
         accessibilityLabel={
-          isListening ? 'Listening…' : isThinking ? 'Stop assistant' : 'Ask the rules'
+          isStoppable ? 'Stop assistant' : 'Ask the rules'
         }
       >
         {isStoppable ? (
-          /* Stop icon — solid white square */
-          <View style={styles.stopIcon} />
+          /* Stop icon — X */
+          <Text style={styles.stopIcon}>✕</Text>
         ) : (
           <Animated.View style={{ transform: [{ rotate: spin }] }}>
             <MicIcon
@@ -210,9 +208,9 @@ const styles = StyleSheet.create({
     borderRadius: PULSE_RADIUS,
   },
   stopIcon: {
-    width: 20,
-    height: 20,
-    borderRadius: 3,
-    backgroundColor: COLORS.stopIcon,
+    fontSize: 22,
+    fontWeight: '700',
+    color: COLORS.stopIcon,
+    lineHeight: 24,
   },
 });

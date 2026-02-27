@@ -257,7 +257,10 @@ export function useGameAssistant() {
         setIsThinking(false);
 
       } catch (err) {
-        setError(err?.message ?? ERRORS.UNEXPECTED);
+        // Ignore user-initiated cancellations — stopAssistant already resets state.
+        if (err?.message !== 'Assistant stopped by user') {
+          setError(err?.message ?? ERRORS.UNEXPECTED);
+        }
         setIsListening(false);
         setIsThinking(false);
       } finally {

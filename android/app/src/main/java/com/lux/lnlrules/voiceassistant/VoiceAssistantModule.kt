@@ -274,13 +274,20 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
     }
 
     /**
-     * Kill switch: immediately cancels the active Gemini Nano inference job,
+     * Kill switch: cancels the active Gemini Nano inference job, stops STT,
      * stops TTS playback, clears the sentence buffer, and releases audio focus.
+     * Safe to call at any point in the voice loop — listening, thinking, or speaking.
      */
     override fun stopAssistant() {
         activeInferenceJob?.cancel()
         activeInferenceJob = null
         sentenceBuffer.clear()
+        // Cancel any in-flight STT session and reject its promise.
+        mainHandler.post {
+            speechRecognizer?.cancel()
+            listeningPromise?.reject("CANCELLED", "Assistant stopped by user")
+            listeningPromise = null
+        }
         tts?.stop()
         abandonAudioFocus()
     }
