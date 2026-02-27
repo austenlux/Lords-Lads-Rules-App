@@ -93,6 +93,7 @@ export default function App() {
     isListening,
     isThinking,
     isActive: aiActive,
+    partialSpeech,
     askTheRules,
     stopAssistant,
     availableVoices,
@@ -440,6 +441,7 @@ export default function App() {
           <VoiceAssistantModal
             messages={messages}
             isListening={isListening}
+            partialSpeech={partialSpeech}
             isOpen={isConvoOpen}
             fabBottom={TAB_BAR_HEIGHT + tabBarBottomInset + 16}
           />

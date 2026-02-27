@@ -65,10 +65,12 @@ function UserBubble({ text }) {
   );
 }
 
-function ListeningIndicator() {
+function ListeningIndicator({ partialText }) {
   return (
     <View style={styles.listeningRow}>
-      <Text style={styles.listeningText}>Listening…</Text>
+      <Text style={styles.listeningText}>
+        {partialText?.trim() ? partialText.trim() : 'Listening…'}
+      </Text>
     </View>
   );
 }
@@ -97,7 +99,7 @@ const FAB_GAP     = 10;
 const TOP_MARGIN  = 8;
 const STATUS_BAR  = Platform.OS === 'android' ? (StatusBar.currentHeight ?? 24) : 44;
 
-export default function VoiceAssistantModal({ messages, isListening, isOpen, fabBottom = 96 }) {
+export default function VoiceAssistantModal({ messages, isListening, partialSpeech, isOpen, fabBottom = 96 }) {
   const listRef = useRef(null);
   const mountOpacity = useRef(new Animated.Value(0)).current;
 
@@ -110,12 +112,12 @@ export default function VoiceAssistantModal({ messages, isListening, isOpen, fab
     }).start();
   }, [isOpen, mountOpacity]);
 
-  // Auto-scroll to bottom whenever messages update.
+  // Auto-scroll to bottom whenever messages, listening state, or partial text changes.
   useEffect(() => {
-    if (isOpen && messages.length > 0) {
+    if (isOpen) {
       setTimeout(() => listRef.current?.scrollToEnd({ animated: true }), 50);
     }
-  }, [isOpen, messages]);
+  }, [isOpen, messages, isListening, partialSpeech]);
 
   if (!isOpen && mountOpacity._value === 0) return null;
 
@@ -147,7 +149,7 @@ export default function VoiceAssistantModal({ messages, isListening, isOpen, fab
           onContentSizeChange={() =>
             listRef.current?.scrollToEnd({ animated: true })
           }
-          ListFooterComponent={isListening ? <ListeningIndicator /> : null}
+          ListFooterComponent={isListening ? <ListeningIndicator partialText={partialSpeech} /> : null}
         />
       </View>
     </Animated.View>
