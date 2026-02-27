@@ -95,8 +95,11 @@ const TOP_MARGIN  = 8;
 const STATUS_BAR  = Platform.OS === 'android' ? (StatusBar.currentHeight ?? 24) : 44;
 
 export default function VoiceAssistantModal({ messages, isOpen, fabBottom = 96 }) {
-  const listRef = useRef(null);
-  const mountOpacity = useRef(new Animated.Value(0)).current;
+  const listRef           = useRef(null);
+  const mountOpacity      = useRef(new Animated.Value(0)).current;
+  // Tracks the true pixel height of all rendered content so we can scroll to
+  // the absolute bottom (past bottom padding) rather than just to the last item.
+  const contentHeightRef  = useRef(0);
 
   // Fade in/out driven by isOpen, not by message count.
   useEffect(() => {
@@ -107,27 +110,35 @@ export default function VoiceAssistantModal({ messages, isOpen, fabBottom = 96 }
     }).start();
   }, [isOpen, mountOpacity]);
 
-  // Auto-scroll to bottom whenever messages change or the panel opens.
-  // Uses requestAnimationFrame for the first pass (runs after paint, so the
-  // list knows its rendered height), then two staggered retries to catch
-  // Markdown blocks that re-measure themselves asynchronously.
+  // Scrolls to the absolute bottom of the content area, including any
+  // bottom padding.  scrollToEnd() only targets the last *item*, so it stops
+  // short of the padding.  scrollToOffset with the tracked content height
+  // reliably reaches the final pixel.
+  const scrollToBottom = () => {
+    if (!listRef.current) return;
+    const offset = contentHeightRef.current;
+    if (offset > 0) {
+      listRef.current.scrollToOffset({ offset, animated: false });
+    } else {
+      listRef.current.scrollToEnd({ animated: false });
+    }
+  };
+
+  // Auto-scroll whenever messages change or the panel opens.
+  // Three-pass to handle Markdown blocks that re-measure asynchronously.
   useEffect(() => {
     if (!isOpen) return;
-    const scroll = () => listRef.current?.scrollToEnd({ animated: false });
 
-    // First pass: after the current paint cycle.
-    const raf = requestAnimationFrame(scroll);
-    // Second pass: catch Markdown that measures on a second layout pass.
-    const t1 = setTimeout(scroll, 200);
-    // Third pass: safety net for large Markdown blocks on slower devices.
-    const t2 = setTimeout(scroll, 500);
+    const raf = requestAnimationFrame(scrollToBottom);
+    const t1  = setTimeout(scrollToBottom, 200);
+    const t2  = setTimeout(scrollToBottom, 500);
 
     return () => {
       cancelAnimationFrame(raf);
       clearTimeout(t1);
       clearTimeout(t2);
     };
-  }, [isOpen, messages]);
+  }, [isOpen, messages]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!isOpen && mountOpacity._value === 0) return null;
 
@@ -156,12 +167,10 @@ export default function VoiceAssistantModal({ messages, isOpen, fabBottom = 96 }
               <AssistantBubble text={item.text} />
             )
           }
-          onContentSizeChange={() =>
-            // animated: false here so streaming text snaps instantly to the
-            // true bottom instead of launching an animation that undershoots
-            // when the Markdown hasn't finished re-measuring yet.
-            listRef.current?.scrollToEnd({ animated: false })
-          }
+          onContentSizeChange={(_, h) => {
+            contentHeightRef.current = h;
+            scrollToBottom();
+          }}
         />
       </View>
     </Animated.View>

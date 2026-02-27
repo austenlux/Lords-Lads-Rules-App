@@ -865,7 +865,7 @@ export default function AboutScreen({
                         <View style={styles.debugMetaRow}>
                           <Text style={styles.debugMetaLabel}>Mode</Text>
                           <Text style={[styles.debugMetaValue, { color: ragDebugResult.usedRAG ? '#81C784' : '#FF7043' }]}>
-                            {ragDebugResult.usedRAG ? 'RAG (chunks)' : 'Fallback (full content)'}
+                            {ragDebugResult.usedRAG ? 'RAG (chunks)' : `Fallback — ${ragDebugResult.status ?? 'unknown'}`}
                           </Text>
                         </View>
                         <View style={styles.debugMetaRow}>

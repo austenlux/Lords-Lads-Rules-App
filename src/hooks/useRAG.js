@@ -21,6 +21,7 @@ import {
   embedChunks,
   embedText,
   retrieveTopK,
+  MIN_SIMILARITY,
   SOURCE,
 } from '../services/RAGService';
 import {
@@ -136,7 +137,19 @@ export function useRAG() {
 
     try {
       const queryVector = await embedText(query);
-      if (!queryVector) return null;
+
+      if (!queryVector) {
+        // Embedder failed — record so the debug panel shows the failure.
+        setLastRAGResult({
+          query,
+          chunks: [],
+          usedRAG: false,
+          status: 'embedder_failed',
+          promptSnippet: '',
+          elapsedMs: Date.now() - t0,
+        });
+        return null;
+      }
 
       let topChunks;
 
@@ -144,19 +157,24 @@ export function useRAG() {
       if (embeddedChunksRef.current.length > 0) {
         topChunks = retrieveTopK(queryVector, embeddedChunksRef.current);
       } else {
-        // Slow path: query SQLite-vec.
-        topChunks = await queryTopK(queryVector);
+        // Slow path: query SQLite-vec.  sqlite-vec returns `distance` (lower
+        // is better); normalise to `score` (1 − distance) so the debug panel
+        // and threshold check use a consistent 0-1 scale.
+        const dbRows = await queryTopK(queryVector, 5);
+        topChunks = (dbRows ?? [])
+          .map((r) => ({ ...r, score: r.score ?? (1 - (r.distance ?? 1)) }))
+          .filter((r) => r.score >= (MIN_SIMILARITY ?? 0.25));
       }
 
       const elapsedMs = Date.now() - t0;
 
-      // If no chunk scored above the similarity threshold, fall back to full
-      // content so the model isn't fed irrelevant snippets.
+      // No chunks scored above the similarity threshold — fall back.
       if (!topChunks?.length) {
         setLastRAGResult({
           query,
           chunks: [],
           usedRAG: false,
+          status: 'below_threshold',
           promptSnippet: fullPromptForDebug.slice(0, 800),
           elapsedMs,
         });
@@ -170,6 +188,7 @@ export function useRAG() {
         query,
         chunks: topChunks,
         usedRAG: true,
+        status: 'ok',
         promptSnippet: fullPromptForDebug.slice(0, 800),
         elapsedMs,
       });
@@ -178,7 +197,15 @@ export function useRAG() {
         rulesContext:      rulesChunks.map((c) => c.text).join('\n\n'),
         expansionsContext: expansionChunks.map((c) => c.text).join('\n\n'),
       };
-    } catch {
+    } catch (err) {
+      setLastRAGResult({
+        query,
+        chunks: [],
+        usedRAG: false,
+        status: `error: ${err?.message ?? 'unknown'}`,
+        promptSnippet: '',
+        elapsedMs: Date.now() - t0,
+      });
       return null;
     }
   }, []);
