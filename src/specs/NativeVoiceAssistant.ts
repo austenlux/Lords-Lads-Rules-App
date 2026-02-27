@@ -12,6 +12,9 @@ export type SpeechResult = {value: string};
 /** A single streamed text chunk from Gemini Nano inference. */
 export type AIChunk = {chunk: string};
 
+/** Fired when the TTS queue is fully drained (all spoken sentences complete). */
+export type TTSDone = {status: string};
+
 // ─────────────────────────────────────────────────────── Spec ──
 
 /**
@@ -93,6 +96,12 @@ export interface Spec extends TurboModule {
 
   /** Fired for each streamed text chunk from Gemini Nano during askQuestion(). */
   readonly onAIChunkReceived: EventEmitter<AIChunk>;
+
+  /**
+   * Fired once when the TTS queue is fully drained after an AI response.
+   * Use this to transition the FAB from "stop" back to "idle".
+   */
+  readonly onTTSFinished: EventEmitter<TTSDone>;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('VoiceAssistant');

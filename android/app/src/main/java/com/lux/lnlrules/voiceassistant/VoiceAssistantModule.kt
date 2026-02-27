@@ -508,8 +508,11 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
     private val utteranceProgressListener = object : UtteranceProgressListener() {
         override fun onStart(utteranceId: String) = Unit
         override fun onDone(utteranceId: String) {
-            // Release audio focus once TTS finishes all queued utterances.
-            if (tts?.isSpeaking == false) abandonAudioFocus()
+            // When the queue is fully drained, release audio focus and notify JS.
+            if (tts?.isSpeaking == false) {
+                abandonAudioFocus()
+                emitOnTTSFinished(Arguments.createMap().apply { putString("status", "done") })
+            }
         }
         @Deprecated("Deprecated in API 21", ReplaceWith("onError(utteranceId, errorCode)"))
         override fun onError(utteranceId: String) = abandonAudioFocus()

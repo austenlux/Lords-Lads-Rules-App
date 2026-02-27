@@ -127,10 +127,17 @@ export function useGameAssistant() {
       setFullAnswer((prev) => prev + chunk);
     });
 
+    // TTS queue fully drained — assistant has finished speaking, return to idle.
+    const ttsDoneSub = NativeVoiceAssistant.onTTSFinished(() => {
+      setIsThinking(false);
+      isBusy.current = false;
+    });
+
     return () => {
       partialSub?.remove();
       finalSub?.remove();
       chunkSub?.remove();
+      ttsDoneSub?.remove();
     };
   }, []);
 
@@ -252,18 +259,19 @@ export function useGameAssistant() {
         // 4. Ask Gemini Nano ──────────────────────────────────────────────
         // fullAnswer builds up live via onAIChunkReceived events.
         // TTS starts sentence-by-sentence inside the native module.
+        // isThinking stays true until onTTSFinished fires (queue fully drained).
         setIsThinking(true);
         await NativeVoiceAssistant.askQuestion(spokenQuestion, readmeContext);
-        setIsThinking(false);
+        // Do NOT clear isThinking here — onTTSFinished handles that once TTS is done.
 
       } catch (err) {
         // Ignore user-initiated cancellations — stopAssistant already resets state.
         if (err?.message !== 'Assistant stopped by user') {
           setError(err?.message ?? ERRORS.UNEXPECTED);
         }
+        // On error, reset everything immediately (no TTS will fire).
         setIsListening(false);
         setIsThinking(false);
-      } finally {
         isBusy.current = false;
       }
     },
