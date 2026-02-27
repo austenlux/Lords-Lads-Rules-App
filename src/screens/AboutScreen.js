@@ -396,9 +396,16 @@ export default function AboutScreen({
                         <View style={[styles.voiceRadioOuter, isSelected && styles.voiceRadioOuterSelected]}>
                           {isSelected && <View style={styles.voiceRadioInner} />}
                         </View>
-                        <Text style={[styles.voiceRadioText, isSelected && styles.voiceRadioTextSelected]}>
-                          {voice.name}
-                        </Text>
+                        <View style={{ flex: 1 }}>
+                          <Text style={[styles.voiceRadioText, isSelected && styles.voiceRadioTextSelected]}>
+                            {voice.name}
+                          </Text>
+                          {voice.rawId && (
+                            <Text style={{ fontSize: 11, color: '#888', marginTop: 2 }}>
+                              {voice.rawId}
+                            </Text>
+                          )}
+                        </View>
                       </Pressable>
                     );
                   })}

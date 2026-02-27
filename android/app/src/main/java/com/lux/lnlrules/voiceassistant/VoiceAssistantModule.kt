@@ -15,6 +15,7 @@ import android.speech.SpeechRecognizer
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.speech.tts.Voice
+import android.util.Log
 import androidx.annotation.RequiresApi
 import org.json.JSONArray
 import org.json.JSONObject
@@ -323,9 +324,14 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
 
             val jsonArray = JSONArray()
             voices.forEachIndexed { index, voice ->
+                // Log full voice metadata so we can inspect actual names on the device.
+                Log.d(NAME, "VOICE[$index] id=${voice.name} | quality=${voice.quality} | " +
+                        "latency=${voice.latency} | locale=${voice.locale} | " +
+                        "features=${voice.features}")
                 val obj = JSONObject()
                 obj.put("id", voice.name)
                 obj.put("name", finalNames[index])
+                obj.put("rawId", voice.name)   // temporary: exposed so UI can show it
                 obj.put("language", voice.locale.toLanguageTag())
                 jsonArray.put(obj)
             }
