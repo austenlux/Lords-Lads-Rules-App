@@ -17,9 +17,9 @@
 import React, { useEffect, useRef } from 'react';
 import {
   Animated,
-  Pressable,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from 'react-native';
 import MicIcon from '../../assets/images/mic.svg';
@@ -121,20 +121,14 @@ export default function VoiceAssistantFAB({ isListening, isThinking, isActive, h
         pointerEvents="none"
       />
 
-      <Pressable
+      <TouchableOpacity
         onPress={isStoppable ? onStop : onPress}
-        style={({ pressed }) => [
-          styles.fab,
-          { backgroundColor: fabColor },
-          pressed && styles.fabPressed,
-        ]}
+        activeOpacity={0.8}
+        style={[styles.fab, { backgroundColor: fabColor }]}
         accessibilityRole="button"
-        accessibilityLabel={
-          isStoppable ? 'Stop assistant' : 'Ask the rules'
-        }
+        accessibilityLabel={isStoppable ? 'Stop assistant' : 'Ask the rules'}
       >
         {isStoppable ? (
-          /* Stop icon — X */
           <Text style={styles.stopIcon}>✕</Text>
         ) : (
           <MicIcon
@@ -144,7 +138,7 @@ export default function VoiceAssistantFAB({ isListening, isThinking, isActive, h
             color={COLORS.icon}
           />
         )}
-      </Pressable>
+      </TouchableOpacity>
     </Animated.View>
   );
 }
@@ -169,9 +163,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.35,
     shadowRadius: 6,
-  },
-  fabPressed: {
-    opacity: 0.85,
   },
   pulseRing: {
     position: 'absolute',
