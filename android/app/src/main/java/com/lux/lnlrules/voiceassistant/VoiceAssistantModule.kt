@@ -29,6 +29,7 @@ import com.google.mlkit.genai.prompt.GenerativeModel
 import com.lux.lnlrules.NativeVoiceAssistantSpec
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
@@ -67,6 +68,9 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
     // ── TTS
     private var tts: TextToSpeech? = null
     private var ttsReady = false
+
+    // Active Gemini Nano inference job — cancelled by stopAssistant().
+    private var activeInferenceJob: Job? = null
 
     // Buffer that accumulates streaming chunks until a sentence boundary is found.
     private val sentenceBuffer = StringBuilder()
@@ -244,7 +248,7 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
      * Resolves with the full response text when streaming finishes.
      */
     override fun askQuestion(question: String, context: String, promise: Promise) {
-        moduleScope.launch {
+        activeInferenceJob = moduleScope.launch {
             try {
                 val prompt = buildPrompt(question, context)
                 val fullResponse = StringBuilder()
@@ -263,8 +267,22 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
                 promise.resolve(fullResponse.toString())
             } catch (e: Exception) {
                 promise.reject("ASK_QUESTION_ERROR", e.message ?: "Unknown error", e)
+            } finally {
+                activeInferenceJob = null
             }
         }
+    }
+
+    /**
+     * Kill switch: immediately cancels the active Gemini Nano inference job,
+     * stops TTS playback, clears the sentence buffer, and releases audio focus.
+     */
+    override fun stopAssistant() {
+        activeInferenceJob?.cancel()
+        activeInferenceJob = null
+        sentenceBuffer.clear()
+        tts?.stop()
+        abandonAudioFocus()
     }
 
     private fun buildPrompt(question: String, context: String): String = buildString {

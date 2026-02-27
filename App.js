@@ -91,6 +91,7 @@ export default function App() {
     isThinking,
     isActive: aiActive,
     askTheRules,
+    stopAssistant,
     availableVoices,
     selectedVoiceId,
     previewVoice,
@@ -418,6 +419,7 @@ export default function App() {
             isThinking={isThinking}
             isActive={aiActive}
             onPress={() => askTheRules(content)}
+            onStop={stopAssistant}
           />
         </View>
       )}

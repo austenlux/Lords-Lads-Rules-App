@@ -155,6 +155,20 @@ export function useGameAssistant() {
     }
   }, []);
 
+  // ── Kill switch ──────────────────────────────────────────────────────────
+
+  /**
+   * Immediately stops the assistant: cancels the Gemini Nano inference job,
+   * kills TTS, and resets all active state so the FAB returns to idle.
+   */
+  const stopAssistant = useCallback(() => {
+    if (Platform.OS !== 'android') return;
+    NativeVoiceAssistant.stopAssistant();
+    setIsThinking(false);
+    setIsListening(false);
+    isBusy.current = false;
+  }, []);
+
   // ── Voice preview ────────────────────────────────────────────────────────
 
   /**
@@ -280,5 +294,7 @@ export function useGameAssistant() {
     selectedVoiceId,
     /** select a voice, persist it, and play a short preview phrase */
     previewVoice,
+    /** immediately stop inference + TTS and return to idle */
+    stopAssistant,
   };
 }

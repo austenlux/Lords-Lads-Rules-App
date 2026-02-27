@@ -62,6 +62,12 @@ export interface Spec extends TurboModule {
   /** Immediately stops any in-progress TTS playback. */
   stopSpeaking(): void;
 
+  /**
+   * Kill switch: cancels the active Gemini Nano inference job, stops TTS,
+   * clears the sentence buffer, and releases audio focus.
+   */
+  stopAssistant(): void;
+
   // ── Voice selection ───────────────────────────────────────────────────────
 
   /**

@@ -34,13 +34,15 @@ const COLORS = {
   idle:      '#BB86FC',   // app purple accent
   listening: '#CF6679',   // app red / error accent
   thinking:  '#7B57B0',   // dimmed purple while generating
+  stop:      '#CF6679',   // red stop button when AI is talking
   icon:      '#121212',   // dark background colour for icon
+  stopIcon:  '#FFFFFF',   // white stop square
   shadow:    '#000',
 };
 
 // ─────────────────────────────────────────────── Component ──
 
-export default function VoiceAssistantFAB({ isListening, isThinking, isActive, onPress }) {
+export default function VoiceAssistantFAB({ isListening, isThinking, isActive, onPress, onStop }) {
   // ── Fade-in on mount ──────────────────────────────────────────────────
   const mountOpacity = useRef(new Animated.Value(0)).current;
 
@@ -121,10 +123,13 @@ export default function VoiceAssistantFAB({ isListening, isThinking, isActive, o
   });
 
   // ── Derived visuals ───────────────────────────────────────────────────
-  const fabColor = isListening
+  // When the AI is generating/speaking the button becomes a stop button.
+  const isStoppable = isThinking;
+
+  const fabColor = isStoppable
+    ? COLORS.stop
+    : isListening
     ? COLORS.listening
-    : isThinking
-    ? COLORS.thinking
     : COLORS.idle;
 
   return (
@@ -143,8 +148,8 @@ export default function VoiceAssistantFAB({ isListening, isThinking, isActive, o
       />
 
       <Pressable
-        onPress={onPress}
-        disabled={isActive}
+        onPress={isStoppable ? onStop : onPress}
+        disabled={isListening}
         android_ripple={{ color: 'rgba(255,255,255,0.2)', borderless: true, radius: FAB_RADIUS }}
         style={({ pressed }) => [
           styles.fab,
@@ -153,17 +158,22 @@ export default function VoiceAssistantFAB({ isListening, isThinking, isActive, o
         ]}
         accessibilityRole="button"
         accessibilityLabel={
-          isListening ? 'Listening…' : isThinking ? 'Thinking…' : 'Ask the rules'
+          isListening ? 'Listening…' : isThinking ? 'Stop assistant' : 'Ask the rules'
         }
       >
-        <Animated.View style={{ transform: [{ rotate: spin }] }}>
-          <MicIcon
-            width={28}
-            height={28}
-            fill={COLORS.icon}
-            color={COLORS.icon}
-          />
-        </Animated.View>
+        {isStoppable ? (
+          /* Stop icon — solid white square */
+          <View style={styles.stopIcon} />
+        ) : (
+          <Animated.View style={{ transform: [{ rotate: spin }] }}>
+            <MicIcon
+              width={28}
+              height={28}
+              fill={COLORS.icon}
+              color={COLORS.icon}
+            />
+          </Animated.View>
+        )}
       </Pressable>
     </Animated.View>
   );
@@ -198,5 +208,11 @@ const styles = StyleSheet.create({
     width: PULSE_SIZE,
     height: PULSE_SIZE,
     borderRadius: PULSE_RADIUS,
+  },
+  stopIcon: {
+    width: 20,
+    height: 20,
+    borderRadius: 3,
+    backgroundColor: COLORS.stopIcon,
   },
 });
