@@ -475,7 +475,7 @@ export default function AboutScreen({
               </Animated.View>
             </TouchableOpacity>
 
-            {/* ── Card: Voice Assistant Voice ── */}
+            {/* ── Card: Voice Assistant ── */}
             {isVoiceAssistantSupported && voiceLocaleGroups.length > 0 && (
               <TouchableOpacity
                 style={styles.versionContainer}
@@ -484,12 +484,7 @@ export default function AboutScreen({
               >
                 <View style={styles.versionHeader}>
                   <View style={styles.versionRow}>
-                    <Text style={styles.versionText}>Voice Assistant Voice</Text>
-                    {selectedVoiceId && (
-                      <View style={styles.latestBadge}>
-                        <Text style={styles.latestBadgeText}>Active</Text>
-                      </View>
-                    )}
+                    <Text style={styles.versionText}>Voice Assistant</Text>
                   </View>
                   <Animated.View style={{ transform: [{ rotate: animations['voiceParent']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
                     <Text style={styles.versionArrow}>▶</Text>
@@ -513,7 +508,7 @@ export default function AboutScreen({
                         >
                           <View style={styles.versionHeader}>
                             <View style={styles.versionRow}>
-                              <Text style={styles.versionText}>{group.display}</Text>
+                              <Text style={[styles.versionText, { flexShrink: 1 }]}>{group.display}</Text>
                               {groupHasSelection && (
                                 <View style={styles.latestBadge}>
                                   <Text style={styles.latestBadgeText}>Active</Text>
