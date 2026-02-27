@@ -522,6 +522,8 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
      * Appends [chunk] to the sentence buffer.
      * When a sentence boundary (. ! ?) is detected, the complete sentence is spoken
      * immediately so TTS starts before inference is fully complete.
+     * The raw chunk is already emitted to JS for UI display before this is called,
+     * so sanitization here only affects the audio output.
      */
     private fun accumulateAndSpeak(chunk: String) {
         sentenceBuffer.append(chunk)
@@ -530,7 +532,8 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
         if (boundary >= 0) {
             val sentence = text.substring(0, boundary + 1).trim()
             sentenceBuffer.delete(0, boundary + 1)
-            if (sentence.isNotEmpty()) speak(sentence)
+            val cleaned = sanitizeTextForSpeech(sentence)
+            if (cleaned.isNotEmpty()) speak(cleaned)
         }
     }
 
@@ -538,9 +541,45 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
     private fun flushRemainingBuffer() {
         val remaining = sentenceBuffer.toString().trim()
         if (remaining.isNotEmpty()) {
-            speak(remaining)
+            speak(sanitizeTextForSpeech(remaining))
             sentenceBuffer.clear()
         }
+    }
+
+    /**
+     * Strips Markdown and other noise from [text] so the TTS engine reads it naturally.
+     *
+     * Rules applied in order:
+     *  1. Expand common abbreviations before other transforms remove their punctuation.
+     *  2. Replace list-item prefixes (* / - at line start) with a brief pause marker.
+     *  3. Strip remaining Markdown symbols: **, *, _, #, `, ~~ (strikethrough).
+     *  4. Collapse consecutive whitespace.
+     */
+    private fun sanitizeTextForSpeech(text: String): String {
+        var s = text
+
+        // 1. Abbreviation expansion (must run before punctuation is stripped).
+        s = s.replace(Regex("\\be\\.g\\."), "for example")
+        s = s.replace(Regex("\\bi\\.e\\."), "that is")
+        s = s.replace(Regex("\\betc\\."), "etcetera")
+        s = s.replace(Regex("\\bvs\\."), "versus")
+        s = s.replace(Regex("\\bapprox\\."), "approximately")
+        s = s.replace(Regex("\\bmax\\."), "maximum")
+        s = s.replace(Regex("\\bmin\\."), "minimum")
+        s = s.replace(Regex("\\bfig\\."), "figure")
+        s = s.replace(Regex("\\bw/o\\b"), "without")
+        s = s.replace(Regex("\\bw/\\b"), "with")
+
+        // 2. List-item prefixes → brief pause (comma + space) so items are separated naturally.
+        s = s.replace(Regex("(?m)^[*\\-]\\s+"), ", ")
+
+        // 3. Strip Markdown symbols.
+        s = s.replace(Regex("[*_`#~]"), "")
+
+        // 4. Collapse excess whitespace.
+        s = s.replace(Regex("[ \\t]{2,}"), " ").trim()
+
+        return s
     }
 
     // ──────────────────────────────────────────────────── Audio focus ──
