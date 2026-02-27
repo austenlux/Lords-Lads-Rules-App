@@ -1,7 +1,7 @@
 /**
  * About screen: last sync date, support (Venmo), changelog from release_notes.md.
  */
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -70,6 +70,10 @@ export default function AboutScreen({
   const [expandRulesDefault, setExpandRulesDefault] = useState(false);
   const [expandExpansionsDefault, setExpandExpansionsDefault] = useState(false);
   const animations = useRef({}).current;
+  const voiceLocaleAnims = useRef({}).current;
+  const [expandedLocales, setExpandedLocales] = useState({});
+
+  const VOICE_SECTION_MAX_HEIGHT = 1500;
 
   useEffect(() => {
     const load = async () => {
@@ -91,6 +95,37 @@ export default function AboutScreen({
   const setExpandExpansionsDefaultAndSave = async (value) => {
     setExpandExpansionsDefault(value);
     await AsyncStorage.setItem(SETTINGS_KEYS.EXPAND_EXPANSIONS_DEFAULT, value ? 'true' : 'false');
+  };
+
+  // ── Voice locale section animations ─────────────────────────────────────
+
+  useEffect(() => {
+    if (!availableVoices.length) return;
+    availableVoices.forEach(({ language }) => {
+      if (!voiceLocaleAnims[language]) {
+        voiceLocaleAnims[language] = {
+          rotation: new Animated.Value(0),
+          maxHeight: new Animated.Value(0),
+        };
+      }
+    });
+    setExpandedLocales(prev => {
+      const next = { ...prev };
+      availableVoices.forEach(({ language }) => {
+        if (!(language in next)) next[language] = false;
+      });
+      return next;
+    });
+  }, [availableVoices]);
+
+  const toggleVoiceLocale = (localeKey) => {
+    const isExpanded = !expandedLocales[localeKey];
+    const anim = voiceLocaleAnims[localeKey];
+    if (anim) {
+      Animated.timing(anim.rotation, { toValue: isExpanded ? 1 : 0, duration: 200, useNativeDriver: true }).start();
+      Animated.timing(anim.maxHeight, { toValue: isExpanded ? VOICE_SECTION_MAX_HEIGHT : 0, duration: 200, useNativeDriver: false }).start();
+    }
+    setExpandedLocales(prev => ({ ...prev, [localeKey]: isExpanded }));
   };
 
   /** Max height for expanded section so content can wrap; avoids static height cut-off. */
@@ -244,6 +279,16 @@ export default function AboutScreen({
   const latestRelease = releaseNotes.length > 0 ? releaseNotes[0] : null;
   const pastReleases = releaseNotes.length > 1 ? releaseNotes.slice(1) : [];
 
+  const voiceLocaleGroups = useMemo(() => {
+    if (!availableVoices.length) return [];
+    const map = {};
+    availableVoices.forEach(v => {
+      if (!map[v.language]) map[v.language] = { key: v.language, display: v.localeDisplay, voices: [] };
+      map[v.language].voices.push(v);
+    });
+    return Object.values(map).sort((a, b) => a.display.localeCompare(b.display));
+  }, [availableVoices]);
+
   const renderVersionBlock = (version, showLatestBadge = false) => (
     <TouchableOpacity
       key={version.version}
@@ -363,7 +408,7 @@ export default function AboutScreen({
                   thumbColor="#E1E1E1"
                 />
               </View>
-              <View style={[styles.settingsRow, isVoiceAssistantSupported && availableVoices.length > 0 ? {} : styles.settingsRowLast]}>
+              <View style={[styles.settingsRow, styles.settingsRowLast]}>
                 <View style={styles.settingsRowLabel}>
                   <ExpansionsIcon width={22} height={22} fill="#E1E1E1" style={styles.settingsRowIcon} />
                   <Text style={styles.settingsRowText}>Expansions</Text>
@@ -375,43 +420,70 @@ export default function AboutScreen({
                   thumbColor="#E1E1E1"
                 />
               </View>
+            </View>
 
-              {isVoiceAssistantSupported && availableVoices.length > 0 && (
-                <>
-                  <Text style={styles.voiceSubsectionTitle}>Voice Assistant Voice</Text>
-                  {availableVoices.map((voice, index) => {
-                    const isSelected = voice.id === selectedVoiceId;
-                    const isLast = index === availableVoices.length - 1;
-                    return (
-                      <Pressable
-                        key={voice.id}
-                        onPress={() => onVoiceSelect?.(voice.id)}
-                        style={({ pressed }) => [
-                          styles.voiceRadioItem,
-                          isLast && styles.voiceRadioItemLast,
-                          pressed && styles.voiceRadioItemPressed,
-                        ]}
-                        android_ripple={{ color: 'rgba(187, 134, 252, 0.2)', borderless: false }}
-                      >
-                        <View style={[styles.voiceRadioOuter, isSelected && styles.voiceRadioOuterSelected]}>
-                          {isSelected && <View style={styles.voiceRadioInner} />}
-                        </View>
-                        <View style={{ flex: 1 }}>
-                          <Text style={[styles.voiceRadioText, isSelected && styles.voiceRadioTextSelected]}>
-                            {voice.name}
-                          </Text>
-                          {voice.rawId && (
-                            <Text style={{ fontSize: 11, color: '#888', marginTop: 2 }}>
-                              {voice.rawId}
-                            </Text>
+            {isVoiceAssistantSupported && voiceLocaleGroups.length > 0 && (
+              <>
+                <Text style={styles.voiceSubsectionTitle}>Voice Assistant Voice</Text>
+                {voiceLocaleGroups.map(group => {
+                  const groupHasSelection = group.voices.some(v => v.id === selectedVoiceId);
+                  const anim = voiceLocaleAnims[group.key];
+                  const rotation = anim?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] });
+                  return (
+                    <TouchableOpacity
+                      key={group.key}
+                      style={styles.versionContainer}
+                      onPress={() => toggleVoiceLocale(group.key)}
+                      activeOpacity={0.7}
+                    >
+                      <View style={styles.versionHeader}>
+                        <View style={styles.versionRow}>
+                          <Text style={styles.versionText}>{group.display}</Text>
+                          {groupHasSelection && (
+                            <View style={styles.latestBadge}>
+                              <Text style={styles.latestBadgeText}>Active</Text>
+                            </View>
                           )}
                         </View>
-                      </Pressable>
-                    );
-                  })}
-                </>
-              )}
-            </View>
+                        <Animated.View style={{ transform: [{ rotate: rotation || '0deg' }] }}>
+                          <Text style={styles.versionArrow}>▶</Text>
+                        </Animated.View>
+                      </View>
+                      <Animated.View
+                        style={{ maxHeight: anim?.maxHeight || 0, overflow: 'hidden' }}
+                        pointerEvents={expandedLocales[group.key] ? 'auto' : 'none'}
+                      >
+                        <View style={styles.versionContent}>
+                          {group.voices.map((voice, index) => {
+                            const isSelected = voice.id === selectedVoiceId;
+                            const isLast = index === group.voices.length - 1;
+                            return (
+                              <Pressable
+                                key={voice.id}
+                                onPress={() => onVoiceSelect?.(voice.id)}
+                                style={({ pressed }) => [
+                                  styles.voiceRadioItem,
+                                  isLast && styles.voiceRadioItemLast,
+                                  pressed && styles.voiceRadioItemPressed,
+                                ]}
+                                android_ripple={{ color: 'rgba(187, 134, 252, 0.2)', borderless: false }}
+                              >
+                                <View style={[styles.voiceRadioOuter, isSelected && styles.voiceRadioOuterSelected]}>
+                                  {isSelected && <View style={styles.voiceRadioInner} />}
+                                </View>
+                                <Text style={[styles.voiceRadioText, isSelected && styles.voiceRadioTextSelected]}>
+                                  {voice.name}
+                                </Text>
+                              </Pressable>
+                            );
+                          })}
+                        </View>
+                      </Animated.View>
+                    </TouchableOpacity>
+                  );
+                })}
+              </>
+            )}
           </CollapsibleSection>
 
           <CollapsibleSection
