@@ -308,7 +308,7 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
         }
         try {
             val voices = tts?.voices
-                ?.filter { !it.isNetworkConnectionRequired }
+                ?.filter { !it.isNetworkConnectionRequired && it.locale.language == "en" }
                 ?.sortedWith(compareBy({ it.locale.toLanguageTag() }, { -it.quality }, { it.name }))
                 ?: emptyList()
 
