@@ -291,12 +291,16 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
     // ────────────────────────────────────────────────── Voice selection ──
 
     /**
-     * Returns all offline English TTS voices as a JSON array.
-     * Each element: { "id": voice.name, "name": display label, "language": BCP-47 tag }
+     * Returns a JSON object:
+     *   { "voices": [{ "id", "name", "language" }, …], "activeVoiceId": string }
+     *
+     * Only includes offline (network-free) English voices.
+     * Display names are derived from the voice identifier (gender, quality, region).
+     * activeVoiceId is the name of the voice currently set on the TTS engine.
      */
     override fun getAvailableVoices(promise: Promise) {
         if (!ttsReady) {
-            promise.resolve("[]")
+            promise.resolve("{\"voices\":[],\"activeVoiceId\":\"\"}")
             return
         }
         try {
@@ -305,15 +309,31 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
                 ?.sortedWith(compareBy({ it.locale.toLanguageTag() }, { it.name }))
                 ?: emptyList()
 
+            // Build raw display names, then deduplicate with numeric suffixes.
+            val rawNames = voices.map { buildRawVoiceDisplayName(it) }
+            val nameCounters = mutableMapOf<String, Int>()
+            val nameOccurrences = rawNames.groupingBy { it }.eachCount()
+            val finalNames = rawNames.map { raw ->
+                if (nameOccurrences[raw]!! > 1) {
+                    val n = (nameCounters[raw] ?: 0) + 1
+                    nameCounters[raw] = n
+                    "$raw $n"
+                } else raw
+            }
+
             val jsonArray = JSONArray()
             voices.forEachIndexed { index, voice ->
                 val obj = JSONObject()
                 obj.put("id", voice.name)
-                obj.put("name", buildVoiceDisplayName(voice, index + 1))
+                obj.put("name", finalNames[index])
                 obj.put("language", voice.locale.toLanguageTag())
                 jsonArray.put(obj)
             }
-            promise.resolve(jsonArray.toString())
+
+            val result = JSONObject()
+            result.put("voices", jsonArray)
+            result.put("activeVoiceId", tts?.voice?.name ?: "")
+            promise.resolve(result.toString())
         } catch (e: Exception) {
             promise.reject("VOICES_ERROR", e.message ?: "Failed to enumerate voices", e)
         }
@@ -329,17 +349,46 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
         tts?.voice = voice
     }
 
-    /** Builds a human-readable label, e.g. "Voice 1 (US)" or "Voice 2 (UK)". */
-    private fun buildVoiceDisplayName(voice: Voice, ordinal: Int): String {
+    /**
+     * Derives a human-readable display name from a [Voice].
+     *
+     * Google TTS voice names follow the pattern: `{locale}#{gender}_{num}-{type}`
+     * e.g. `en-us-x-sfg#male_1-local`, `en-us-x-iob#female_2-local`
+     *
+     * Falls back gracefully for engines that don't use this convention.
+     * Quality flag "Enhanced" is added for QUALITY_VERY_HIGH voices.
+     */
+    private fun buildRawVoiceDisplayName(voice: Voice): String {
+        val nameLower = voice.name.lowercase()
+
+        // Try to parse the #gender_num segment.
+        val afterHash = nameLower.substringAfter('#', "")
+        val genderSegment = if (afterHash.isNotEmpty()) afterHash.substringBefore('-') else ""
+
+        val gender: String? = when {
+            genderSegment.startsWith("female") -> "Female"
+            genderSegment.startsWith("male")   -> "Male"
+            nameLower.contains("female")        -> "Female"
+            nameLower.contains("male")          -> "Male"
+            else                                -> null
+        }
+
         val region = when (voice.locale.country.uppercase()) {
             "US" -> "US"
             "GB" -> "UK"
             "AU" -> "AU"
             "CA" -> "CA"
-            "IN" -> "IN"
-            else -> voice.locale.country.uppercase().ifEmpty { voice.locale.toLanguageTag() }
+            "IN" -> "India"
+            else -> voice.locale.country.uppercase().ifEmpty { null }
         }
-        return "Voice $ordinal ($region)"
+
+        val enhanced = voice.quality >= Voice.QUALITY_VERY_HIGH
+
+        return buildString {
+            append(gender ?: "Voice")
+            if (region != null) append(" ($region)")
+            if (enhanced) append(" · Enhanced")
+        }
     }
 
     private fun initTts() {

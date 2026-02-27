@@ -84,13 +84,19 @@ export function useGameAssistant() {
     const load = async () => {
       try {
         const json = await NativeVoiceAssistant.getAvailableVoices();
-        const voices = JSON.parse(json);
+        const { voices, activeVoiceId } = JSON.parse(json);
         setAvailableVoices(voices);
 
         const savedId = await AsyncStorage.getItem(VOICE_STORAGE_KEY);
-        if (savedId && voices.some((v) => v.id === savedId)) {
-          setSelectedVoiceId(savedId);
-          NativeVoiceAssistant.setVoice(savedId);
+        // Prefer the user's saved choice; fall back to the engine's current voice.
+        const effectiveId =
+          savedId && voices.some((v) => v.id === savedId)
+            ? savedId
+            : activeVoiceId || null;
+
+        if (effectiveId) {
+          setSelectedVoiceId(effectiveId);
+          NativeVoiceAssistant.setVoice(effectiveId);
         }
       } catch {
         // Silently ignore — voice selection is non-critical.
