@@ -118,17 +118,16 @@ export default function VoiceAssistantModal({ messages, isThinking, fabBottom = 
   const lastMsg = messages[messages.length - 1];
   const isLastStreaming = isThinking && lastMsg?.role === 'assistant';
 
-  // Bottom edge of the panel sits just above the FAB.
+  // Panel sits between status bar and the top of the FAB.
   const panelBottom = fabBottom + FAB_SIZE + FAB_GAP;
-  // Maximum height before the panel would overlap the status bar.
-  const availableHeight = fabBottom + FAB_SIZE - STATUS_BAR - TOP_MARGIN;
+  const panelTop    = STATUS_BAR + TOP_MARGIN;
 
   return (
     <Animated.View
-      style={[styles.container, { opacity: mountOpacity, bottom: panelBottom }]}
+      style={[styles.container, { opacity: mountOpacity, top: panelTop, bottom: panelBottom }]}
       pointerEvents={visible ? 'box-none' : 'none'}
     >
-      <View style={[styles.panel, { maxHeight: availableHeight }]}>
+      <View style={styles.panel}>
         <FlatList
           ref={listRef}
           data={messages}
@@ -161,9 +160,10 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     right: 0,
-    // bottom and panel maxHeight set dynamically from fabBottom prop
+    // top and bottom set dynamically from fabBottom prop
   },
   panel: {
+    flex: 1,
     marginHorizontal: 12,
     backgroundColor: COLORS.backdrop,
     borderRadius: 20,
