@@ -17,9 +17,9 @@
 import React, { useEffect, useRef } from 'react';
 import {
   Animated,
+  Pressable,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
 } from 'react-native';
 import MicIcon from '../../assets/images/mic.svg';
@@ -61,8 +61,11 @@ export default function VoiceAssistantFAB({ isListening, isThinking, isActive, h
 
   useEffect(() => {
     if (!isListening) {
-      pulseOpacity.setValue(0);
-      pulseScale.setValue(1);
+      // stopAnimation fires its callback only after any in-flight frame has
+      // truly settled, preventing a race where loop.stop() halts mid-frame and
+      // leaves pulseOpacity stuck at a non-zero value indefinitely.
+      pulseOpacity.stopAnimation(() => pulseOpacity.setValue(0));
+      pulseScale.stopAnimation(() => pulseScale.setValue(1));
       return;
     }
 
@@ -95,7 +98,11 @@ export default function VoiceAssistantFAB({ isListening, isThinking, isActive, h
       ]),
     );
     loop.start();
-    return () => loop.stop();
+    return () => {
+      loop.stop();
+      pulseOpacity.stopAnimation(() => pulseOpacity.setValue(0));
+      pulseScale.stopAnimation(() => pulseScale.setValue(1));
+    };
   }, [isListening, pulseScale, pulseOpacity]);
 
   // ── Derived visuals ───────────────────────────────────────────────────
@@ -121,10 +128,16 @@ export default function VoiceAssistantFAB({ isListening, isThinking, isActive, h
         pointerEvents="none"
       />
 
-      <TouchableOpacity
+      {/* android_ripple={null} completely disables the Android system ripple
+          that TouchableOpacity/Pressable would otherwise inherit from the
+          theme's ?attr/selectableItemBackground, preventing the stuck-ripple bug. */}
+      <Pressable
         onPress={isStoppable ? onStop : onPress}
-        activeOpacity={0.8}
-        style={[styles.fab, { backgroundColor: fabColor }]}
+        android_ripple={null}
+        style={({ pressed }) => [
+          styles.fab,
+          { backgroundColor: fabColor, opacity: pressed ? 0.8 : 1 },
+        ]}
         accessibilityRole="button"
         accessibilityLabel={isStoppable ? 'Stop assistant' : 'Ask the rules'}
       >
@@ -138,7 +151,7 @@ export default function VoiceAssistantFAB({ isListening, isThinking, isActive, h
             color={COLORS.icon}
           />
         )}
-      </TouchableOpacity>
+      </Pressable>
     </Animated.View>
   );
 }
