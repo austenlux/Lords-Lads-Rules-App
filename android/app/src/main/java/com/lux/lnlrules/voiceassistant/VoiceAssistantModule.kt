@@ -14,7 +14,10 @@ import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
+import android.speech.tts.Voice
 import androidx.annotation.RequiresApi
+import org.json.JSONArray
+import org.json.JSONObject
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
@@ -283,6 +286,60 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
         if (!ttsReady || text.isBlank()) return
         requestAudioFocus()
         tts?.speak(text, TextToSpeech.QUEUE_ADD, null, UTTERANCE_ID)
+    }
+
+    // ────────────────────────────────────────────────── Voice selection ──
+
+    /**
+     * Returns all offline English TTS voices as a JSON array.
+     * Each element: { "id": voice.name, "name": display label, "language": BCP-47 tag }
+     */
+    override fun getAvailableVoices(promise: Promise) {
+        if (!ttsReady) {
+            promise.resolve("[]")
+            return
+        }
+        try {
+            val voices = tts?.voices
+                ?.filter { !it.isNetworkConnectionRequired && it.locale.language == "en" }
+                ?.sortedWith(compareBy({ it.locale.toLanguageTag() }, { it.name }))
+                ?: emptyList()
+
+            val jsonArray = JSONArray()
+            voices.forEachIndexed { index, voice ->
+                val obj = JSONObject()
+                obj.put("id", voice.name)
+                obj.put("name", buildVoiceDisplayName(voice, index + 1))
+                obj.put("language", voice.locale.toLanguageTag())
+                jsonArray.put(obj)
+            }
+            promise.resolve(jsonArray.toString())
+        } catch (e: Exception) {
+            promise.reject("VOICES_ERROR", e.message ?: "Failed to enumerate voices", e)
+        }
+    }
+
+    /**
+     * Sets the active TTS voice for all subsequent speak() calls.
+     * No-op if TTS is not ready or the voice id is not found.
+     */
+    override fun setVoice(voiceId: String) {
+        if (!ttsReady) return
+        val voice = tts?.voices?.find { it.name == voiceId } ?: return
+        tts?.voice = voice
+    }
+
+    /** Builds a human-readable label, e.g. "Voice 1 (US)" or "Voice 2 (UK)". */
+    private fun buildVoiceDisplayName(voice: Voice, ordinal: Int): String {
+        val region = when (voice.locale.country.uppercase()) {
+            "US" -> "US"
+            "GB" -> "UK"
+            "AU" -> "AU"
+            "CA" -> "CA"
+            "IN" -> "IN"
+            else -> voice.locale.country.uppercase().ifEmpty { voice.locale.toLanguageTag() }
+        }
+        return "Voice $ordinal ($region)"
     }
 
     private fun initTts() {

@@ -1,5 +1,8 @@
-import type {TurboModule, CodegenTypes} from 'react-native';
+import type {TurboModule} from 'react-native';
 import {TurboModuleRegistry} from 'react-native';
+// EventEmitter must be imported as a bare identifier — codegen detects it by name,
+// and CodegenTypes.EventEmitter (a TSQualifiedName) is not recognized.
+import type {EventEmitter} from 'react-native/Libraries/Types/CodegenTypes';
 
 // ─────────────────────────────────────────── Event payload types ──
 
@@ -56,16 +59,31 @@ export interface Spec extends TurboModule {
    */
   speak(text: string): void;
 
+  // ── Voice selection ───────────────────────────────────────────────────────
+
+  /**
+   * Returns a JSON-encoded array of available TTS voices.
+   * Each element: { id: string, name: string, language: string }
+   * Only includes English, offline (network-free) voices.
+   */
+  getAvailableVoices(): Promise<string>;
+
+  /**
+   * Selects the TTS voice for all subsequent speak() calls.
+   * @param voiceId  The id returned by getAvailableVoices().
+   */
+  setVoice(voiceId: string): void;
+
   // ── Events ───────────────────────────────────────────────────────────────
 
   /** Fired repeatedly with interim STT results while the user is still speaking. */
-  readonly onSpeechPartialResults: CodegenTypes.EventEmitter<SpeechResult>;
+  readonly onSpeechPartialResults: EventEmitter<SpeechResult>;
 
   /** Fired once with the final STT result after the user stops speaking. */
-  readonly onSpeechFinalResults: CodegenTypes.EventEmitter<SpeechResult>;
+  readonly onSpeechFinalResults: EventEmitter<SpeechResult>;
 
   /** Fired for each streamed text chunk from Gemini Nano during askQuestion(). */
-  readonly onAIChunkReceived: CodegenTypes.EventEmitter<AIChunk>;
+  readonly onAIChunkReceived: EventEmitter<AIChunk>;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('VoiceAssistant');

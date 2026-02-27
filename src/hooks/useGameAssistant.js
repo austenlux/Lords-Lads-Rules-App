@@ -25,10 +25,14 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { PermissionsAndroid, Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import NativeVoiceAssistant from '../specs/NativeVoiceAssistant';
 
 // Any status other than 'unavailable' means hardware + AICore support exists.
 const SUPPORTED_STATUSES = new Set(['available', 'downloadable', 'downloading']);
+
+const VOICE_STORAGE_KEY = '@lnl_voice_id';
+const VOICE_PREVIEW_TEXT = 'This is a preview of the selected voice.';
 
 // ─────────────────────────────────────────── Constants ──
 
@@ -58,6 +62,8 @@ export function useGameAssistant() {
   const [partialSpeech, setPartialSpeech] = useState('');
   const [fullAnswer, setFullAnswer] = useState('');
   const [error, setError] = useState(null);
+  const [availableVoices, setAvailableVoices] = useState([]);
+  const [selectedVoiceId, setSelectedVoiceId] = useState(null);
 
   // Prevents concurrent invocations of askTheRules.
   const isBusy = useRef(false);
@@ -69,6 +75,30 @@ export function useGameAssistant() {
     NativeVoiceAssistant.checkModelStatus()
       .then((status) => setIsSupported(SUPPORTED_STATUSES.has(status)))
       .catch(() => setIsSupported(false));
+  }, []);
+
+  // ── Voice list + persisted selection (loads once, after TTS is ready) ───
+
+  useEffect(() => {
+    if (Platform.OS !== 'android') return;
+    const load = async () => {
+      try {
+        const json = await NativeVoiceAssistant.getAvailableVoices();
+        const voices = JSON.parse(json);
+        setAvailableVoices(voices);
+
+        const savedId = await AsyncStorage.getItem(VOICE_STORAGE_KEY);
+        if (savedId && voices.some((v) => v.id === savedId)) {
+          setSelectedVoiceId(savedId);
+          NativeVoiceAssistant.setVoice(savedId);
+        }
+      } catch {
+        // Silently ignore — voice selection is non-critical.
+      }
+    };
+    // Give TTS a moment to initialize before enumerating voices.
+    const t = setTimeout(load, 1000);
+    return () => clearTimeout(t);
   }, []);
 
   // ── Event subscriptions ──────────────────────────────────────────────────
@@ -116,6 +146,24 @@ export function useGameAssistant() {
       return result === PermissionsAndroid.RESULTS.GRANTED;
     } catch {
       return false;
+    }
+  }, []);
+
+  // ── Voice preview ────────────────────────────────────────────────────────
+
+  /**
+   * Selects [voiceId], persists it, and speaks a short preview phrase
+   * so the user can hear the voice immediately after tapping.
+   */
+  const previewVoice = useCallback(async (voiceId) => {
+    if (Platform.OS !== 'android') return;
+    NativeVoiceAssistant.setVoice(voiceId);
+    setSelectedVoiceId(voiceId);
+    NativeVoiceAssistant.speak(VOICE_PREVIEW_TEXT);
+    try {
+      await AsyncStorage.setItem(VOICE_STORAGE_KEY, voiceId);
+    } catch {
+      // Persist failure is non-critical.
     }
   }, []);
 
@@ -219,5 +267,11 @@ export function useGameAssistant() {
     askTheRules,
     /** expose so the UI can pre-check permission (e.g. on first render) */
     requestMicPermission,
+    /** list of available offline TTS voices; empty on unsupported devices */
+    availableVoices,
+    /** currently selected voice id, or null for system default */
+    selectedVoiceId,
+    /** select a voice, persist it, and play a short preview phrase */
+    previewVoice,
   };
 }

@@ -672,6 +672,56 @@ const styles = StyleSheet.create({
   settingsRowLast: {
     borderBottomWidth: 0,
   },
+  voiceSubsectionTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#BB86FC',
+    marginTop: 16,
+    marginBottom: 10,
+  },
+  voiceRadioItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 4,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(187, 134, 252, 0.15)',
+  },
+  voiceRadioItemLast: {
+    borderBottomWidth: 0,
+  },
+  voiceRadioItemPressed: {
+    opacity: 0.7,
+  },
+  voiceRadioOuter: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 2,
+    borderColor: '#BB86FC',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  voiceRadioOuterSelected: {
+    borderColor: '#BB86FC',
+    backgroundColor: 'transparent',
+  },
+  voiceRadioInner: {
+    width: 11,
+    height: 11,
+    borderRadius: 6,
+    backgroundColor: '#BB86FC',
+  },
+  voiceRadioText: {
+    fontSize: 15,
+    color: '#E1E1E1',
+    flex: 1,
+  },
+  voiceRadioTextSelected: {
+    color: '#BB86FC',
+    fontWeight: '600',
+  },
   showMatchesButton: {
     backgroundColor: '#BB86FC',
     paddingHorizontal: 12,

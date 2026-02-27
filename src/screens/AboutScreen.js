@@ -47,7 +47,16 @@ const VENMO_OPTIONS = [
   { amount: 250, label: '$250', image: require('../../assets/images/nail6.png') },
 ];
 
-export default function AboutScreen({ lastFetchDate, styles, contentHeight, contentPaddingTop }) {
+export default function AboutScreen({
+  lastFetchDate,
+  styles,
+  contentHeight,
+  contentPaddingTop,
+  isVoiceAssistantSupported = false,
+  availableVoices = [],
+  selectedVoiceId = null,
+  onVoiceSelect,
+}) {
   const [releaseNotes, setReleaseNotes] = useState([]);
   const [expandedVersions, setExpandedVersions] = useState({});
   const [pastReleasesExpanded, setPastReleasesExpanded] = useState(false);
@@ -354,7 +363,7 @@ export default function AboutScreen({ lastFetchDate, styles, contentHeight, cont
                   thumbColor="#E1E1E1"
                 />
               </View>
-              <View style={[styles.settingsRow, styles.settingsRowLast]}>
+              <View style={[styles.settingsRow, isVoiceAssistantSupported && availableVoices.length > 0 ? {} : styles.settingsRowLast]}>
                 <View style={styles.settingsRowLabel}>
                   <ExpansionsIcon width={22} height={22} fill="#E1E1E1" style={styles.settingsRowIcon} />
                   <Text style={styles.settingsRowText}>Expansions</Text>
@@ -366,6 +375,35 @@ export default function AboutScreen({ lastFetchDate, styles, contentHeight, cont
                   thumbColor="#E1E1E1"
                 />
               </View>
+
+              {isVoiceAssistantSupported && availableVoices.length > 0 && (
+                <>
+                  <Text style={styles.voiceSubsectionTitle}>Voice Assistant Voice</Text>
+                  {availableVoices.map((voice, index) => {
+                    const isSelected = voice.id === selectedVoiceId;
+                    const isLast = index === availableVoices.length - 1;
+                    return (
+                      <Pressable
+                        key={voice.id}
+                        onPress={() => onVoiceSelect?.(voice.id)}
+                        style={({ pressed }) => [
+                          styles.voiceRadioItem,
+                          isLast && styles.voiceRadioItemLast,
+                          pressed && styles.voiceRadioItemPressed,
+                        ]}
+                        android_ripple={{ color: 'rgba(187, 134, 252, 0.2)', borderless: false }}
+                      >
+                        <View style={[styles.voiceRadioOuter, isSelected && styles.voiceRadioOuterSelected]}>
+                          {isSelected && <View style={styles.voiceRadioInner} />}
+                        </View>
+                        <Text style={[styles.voiceRadioText, isSelected && styles.voiceRadioTextSelected]}>
+                          {voice.name}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </>
+              )}
             </View>
           </CollapsibleSection>
 

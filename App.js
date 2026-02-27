@@ -91,6 +91,9 @@ export default function App() {
     isThinking,
     isActive: aiActive,
     askTheRules,
+    availableVoices,
+    selectedVoiceId,
+    previewVoice,
   } = useGameAssistant();
 
   const {
@@ -212,7 +215,19 @@ export default function App() {
     if (tab === 'tools') {
       return <ToolsScreen key="tools" styles={styles} contentHeight={contentHeight} contentPaddingTop={isIOS ? insets.top + IOS_HEADER_BAR_HEIGHT : undefined} />;
     }
-    return <AboutScreen key="about" lastFetchDate={lastFetchDate} styles={styles} contentHeight={contentHeight} contentPaddingTop={isIOS ? insets.top + IOS_HEADER_BAR_HEIGHT : undefined} />;
+    return (
+      <AboutScreen
+        key="about"
+        lastFetchDate={lastFetchDate}
+        styles={styles}
+        contentHeight={contentHeight}
+        contentPaddingTop={isIOS ? insets.top + IOS_HEADER_BAR_HEIGHT : undefined}
+        isVoiceAssistantSupported={aiSupported}
+        availableVoices={availableVoices}
+        selectedVoiceId={selectedVoiceId}
+        onVoiceSelect={previewVoice}
+      />
+    );
   };
 
   const successContent = (
