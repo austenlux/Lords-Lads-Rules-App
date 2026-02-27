@@ -107,11 +107,17 @@ export default function VoiceAssistantModal({ messages, isOpen, fabBottom = 96 }
     }).start();
   }, [isOpen, mountOpacity]);
 
-  // Auto-scroll to bottom whenever messages update.
+  // Auto-scroll to bottom whenever messages change or the panel opens.
+  // Two-phase: immediate smooth scroll + a delayed follow-up to catch any
+  // Markdown content that re-measures its height after the first render.
   useEffect(() => {
-    if (isOpen) {
-      setTimeout(() => listRef.current?.scrollToEnd({ animated: true }), 50);
-    }
+    if (!isOpen) return;
+    listRef.current?.scrollToEnd({ animated: true });
+    const delayed = setTimeout(
+      () => listRef.current?.scrollToEnd({ animated: false }),
+      150,
+    );
+    return () => clearTimeout(delayed);
   }, [isOpen, messages]);
 
   if (!isOpen && mountOpacity._value === 0) return null;
@@ -142,7 +148,10 @@ export default function VoiceAssistantModal({ messages, isOpen, fabBottom = 96 }
             )
           }
           onContentSizeChange={() =>
-            listRef.current?.scrollToEnd({ animated: true })
+            // animated: false here so streaming text snaps instantly to the
+            // true bottom instead of launching an animation that undershoots
+            // when the Markdown hasn't finished re-measuring yet.
+            listRef.current?.scrollToEnd({ animated: false })
           }
         />
       </View>
