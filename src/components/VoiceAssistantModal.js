@@ -55,7 +55,7 @@ const markdownStyles = {
 // ──────────────────────────────────────────────────── Helpers ──
 
 function UserBubble({ text }) {
-  const displayText = text.trim() || '…';
+  const displayText = text.trim() || 'Listening…';
   return (
     <View style={styles.bubbleRow}>
       <View style={[styles.bubble, styles.userBubble]}>

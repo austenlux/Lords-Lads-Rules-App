@@ -290,6 +290,9 @@ export function useGameAssistant() {
         setIsListening(false);
 
         if (!spokenQuestion?.trim()) {
+          // Remove the pending user bubble — no speech was captured.
+          setMessages((prev) => prev.filter((m) => m.id !== userMsgId));
+          activeUserMsgId.current = null;
           setError(ERRORS.NO_SPEECH);
           return;
         }

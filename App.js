@@ -423,21 +423,18 @@ export default function App() {
           {mainContent}
         </View>
       </Animated.View>
-      {/* Voice Assistant — FAB + conversation modal */}
+      {/* Voice Assistant — FAB + conversation modal (visible on all tabs) */}
       {aiSupported && splashDismissed && (
         <View
-          pointerEvents={(activeTab === 'rules' || activeTab === 'expansions') ? 'box-none' : 'none'}
-          style={[
-            {
-              position: 'absolute',
-              left: 0,
-              right: 0,
-              bottom: 0,
-              top: 0,
-              zIndex: 10,
-            },
-            (activeTab !== 'rules' && activeTab !== 'expansions') && { opacity: 0 },
-          ]}
+          pointerEvents="box-none"
+          style={{
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            bottom: 0,
+            top: 0,
+            zIndex: 10,
+          }}
         >
           {/* Conversation modal — floats above the FAB */}
           <VoiceAssistantModal
