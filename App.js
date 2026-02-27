@@ -418,7 +418,7 @@ export default function App() {
             isListening={isListening}
             isThinking={isThinking}
             isActive={aiActive}
-            onPress={() => askTheRules(content)}
+            onPress={() => askTheRules([content, expansionsContent].filter(Boolean).join('\n\n'))}
             onStop={stopAssistant}
           />
         </View>
