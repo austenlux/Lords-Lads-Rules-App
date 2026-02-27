@@ -125,11 +125,23 @@ export default function App() {
     renderSection,
   } = useContent(styles, markdownStyles);
 
+  // Builds a fully-labeled context string for the LLM prompt.
+  const buildLabeledContext = useCallback((rules, expansions) => {
+    const parts = [];
+    if (rules?.trim()) {
+      parts.push(`The following are the rules to the game:\n\n${rules}`);
+    }
+    if (expansions?.trim()) {
+      parts.push(`The following are the expansions to the game:\n\n${expansions}`);
+    }
+    return parts.join('\n\n');
+  }, []);
+
   // Keep the latest rules context in a ref so the auto-continue effect can read it
   // without needing content/expansionsContent as effect dependencies.
   useEffect(() => {
-    convoContextRef.current = [content, expansionsContent].filter(Boolean).join('\n\n');
-  }, [content, expansionsContent]);
+    convoContextRef.current = buildLabeledContext(content, expansionsContent);
+  }, [content, expansionsContent, buildLabeledContext]);
 
   // Auto-start the next listening turn after the assistant finishes speaking.
   // Triggers only when isThinking transitions true→false while the convo is open.
@@ -460,7 +472,7 @@ export default function App() {
               hasConversation={isConvoOpen}
               onPress={() => {
                 setIsConvoOpen(true);
-                askTheRules([content, expansionsContent].filter(Boolean).join('\n\n'));
+                askTheRules(buildLabeledContext(content, expansionsContent));
               }}
               onStop={() => {
                 stopAssistant();

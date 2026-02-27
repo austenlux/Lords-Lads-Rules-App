@@ -72,6 +72,8 @@ export function useGameAssistant() {
   const activeUserMsgId = useRef(null);
   const activeAssistantMsgId = useRef(null);
   const msgCounter = useRef(0);
+  // Snapshot of serialized history built just before each askQuestion call.
+  const historyJsonRef = useRef('[]');
 
   const nextId = () => {
     msgCounter.current += 1;
@@ -314,10 +316,25 @@ export function useGameAssistant() {
         // isThinking stays true until onTTSFinished fires (queue fully drained).
         const assistantMsgId = nextId();
         activeAssistantMsgId.current = assistantMsgId;
-        setMessages((prev) => [...prev, { id: assistantMsgId, role: 'assistant', text: '' }]);
+        setMessages((prev) => {
+          // Build history from all settled messages before this turn.
+          // Cap at last 10 messages (~5 exchanges) to stay within context window.
+          const HISTORY_LIMIT = 10;
+          const settled = prev.filter((m) => m.text?.trim());
+          const historySlice = settled.slice(-HISTORY_LIMIT);
+          // Store for native call (captured in closure).
+          historyJsonRef.current = JSON.stringify(
+            historySlice.map((m) => ({ role: m.role, text: m.text })),
+          );
+          return [...prev, { id: assistantMsgId, role: 'assistant', text: '' }];
+        });
 
         setIsThinking(true);
-        await NativeVoiceAssistant.askQuestion(spokenQuestion, readmeContext);
+        await NativeVoiceAssistant.askQuestion(
+          spokenQuestion,
+          readmeContext,
+          historyJsonRef.current ?? '[]',
+        );
         activeAssistantMsgId.current = null; // Streaming done; stop updating assistant bubble.
         // Do NOT clear isThinking here — onTTSFinished handles that once TTS is done.
 

@@ -47,11 +47,14 @@ export interface Spec extends TurboModule {
   // ── Inference ────────────────────────────────────────────────────────────
 
   /**
-   * Streams a question to Gemini Nano with the provided context (e.g. README text).
+   * Streams a question to Gemini Nano with labeled context and conversation history.
+   * @param question       The user's spoken question for this turn.
+   * @param context        Pre-labeled rules/expansions context string.
+   * @param historyJson    JSON array of past turns: [{role,text},…] (most-recent last).
    * Each chunk arrives via onAIChunkReceived; TTS begins sentence-by-sentence immediately.
    * Resolves with the full concatenated response when streaming is complete.
    */
-  askQuestion(question: string, context: string): Promise<string>;
+  askQuestion(question: string, context: string, historyJson: string): Promise<string>;
 
   // ── Text-to-speech (TTS) ─────────────────────────────────────────────────
 
