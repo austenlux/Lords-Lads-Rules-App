@@ -20,7 +20,15 @@ const FETCH_TIMEOUT_MS = 10000;
  */
 export function buildExpansionSections(allExpansionTexts) {
   const [mainReadme, ...expansionReadmes] = allExpansionTexts;
-  const mainContent = mainReadme || '# Expansions\n\nNo content available.';
+
+  // mainContent is used for RAG ingestion — it must include ALL expansion
+  // READMEs, not just the directory index. The directory index only lists
+  // expansion names, so feeding it alone to the LLM produces answers like
+  // "Expansions are listed in the directory."
+  const allTexts = [mainReadme, ...expansionReadmes].filter(Boolean);
+  const mainContent = allTexts.length > 0
+    ? allTexts.join('\n\n---\n\n')
+    : '# Expansions\n\nNo content available.';
   const sections = [];
 
   sections.push({
