@@ -72,8 +72,22 @@ export default function AboutScreen({
   const animations = useRef({}).current;
   const voiceLocaleAnims = useRef({}).current;
   const [expandedLocales, setExpandedLocales] = useState({});
+  const [expandDefaultsExpanded, setExpandDefaultsExpanded] = useState(false);
+  const [voiceParentExpanded, setVoiceParentExpanded] = useState(false);
 
   const VOICE_SECTION_MAX_HEIGHT = 1500;
+  const EXPAND_DEFAULTS_MAX_HEIGHT = 300;
+  const VOICE_PARENT_MAX_HEIGHT = 8000;
+
+  // Initialise animation pairs for the two inner settings cards.
+  useEffect(() => {
+    if (!animations['expandDefaults']) {
+      animations['expandDefaults'] = { rotation: new Animated.Value(0), maxHeight: new Animated.Value(0) };
+    }
+    if (!animations['voiceParent']) {
+      animations['voiceParent'] = { rotation: new Animated.Value(0), maxHeight: new Animated.Value(0) };
+    }
+  }, []);
 
   useEffect(() => {
     const load = async () => {
@@ -126,6 +140,26 @@ export default function AboutScreen({
       Animated.timing(anim.maxHeight, { toValue: isExpanded ? VOICE_SECTION_MAX_HEIGHT : 0, duration: 200, useNativeDriver: false }).start();
     }
     setExpandedLocales(prev => ({ ...prev, [localeKey]: isExpanded }));
+  };
+
+  const toggleExpandDefaults = () => {
+    const isExpanded = !expandDefaultsExpanded;
+    const anim = animations['expandDefaults'];
+    if (anim) {
+      Animated.timing(anim.rotation, { toValue: isExpanded ? 1 : 0, duration: 200, useNativeDriver: true }).start();
+      Animated.timing(anim.maxHeight, { toValue: isExpanded ? EXPAND_DEFAULTS_MAX_HEIGHT : 0, duration: 200, useNativeDriver: false }).start();
+    }
+    setExpandDefaultsExpanded(isExpanded);
+  };
+
+  const toggleVoiceParent = () => {
+    const isExpanded = !voiceParentExpanded;
+    const anim = animations['voiceParent'];
+    if (anim) {
+      Animated.timing(anim.rotation, { toValue: isExpanded ? 1 : 0, duration: 200, useNativeDriver: true }).start();
+      Animated.timing(anim.maxHeight, { toValue: isExpanded ? VOICE_PARENT_MAX_HEIGHT : 0, duration: 200, useNativeDriver: false }).start();
+    }
+    setVoiceParentExpanded(isExpanded);
   };
 
   /** Max height for expanded section so content can wrap; avoids static height cut-off. */
@@ -394,95 +428,138 @@ export default function AboutScreen({
             styles={styles}
             style={styles.aboutSectionWrapper}
           >
-            <View style={styles.versionContainer}>
-              <Text style={styles.versionText}>Expand all sections by default</Text>
-              <View style={styles.settingsRow}>
-                <View style={styles.settingsRowLabel}>
-                  <RulesIcon width={22} height={22} fill="#E1E1E1" style={styles.settingsRowIcon} />
-                  <Text style={styles.settingsRowText}>Rules</Text>
+            {/* ── Card: Expand all sections by default ── */}
+            <TouchableOpacity
+              style={styles.versionContainer}
+              onPress={toggleExpandDefaults}
+              activeOpacity={0.7}
+            >
+              <View style={styles.versionHeader}>
+                <View style={styles.versionRow}>
+                  <Text style={styles.versionText}>Expand all sections by default</Text>
                 </View>
-                <Switch
-                  value={expandRulesDefault}
-                  onValueChange={setExpandRulesDefaultAndSave}
-                  trackColor={{ false: '#555', true: '#7B5CBF' }}
-                  thumbColor="#E1E1E1"
-                />
+                <Animated.View style={{ transform: [{ rotate: animations['expandDefaults']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
+                  <Text style={styles.versionArrow}>▶</Text>
+                </Animated.View>
               </View>
-              <View style={[styles.settingsRow, styles.settingsRowLast]}>
-                <View style={styles.settingsRowLabel}>
-                  <ExpansionsIcon width={22} height={22} fill="#E1E1E1" style={styles.settingsRowIcon} />
-                  <Text style={styles.settingsRowText}>Expansions</Text>
+              <Animated.View
+                style={{ maxHeight: animations['expandDefaults']?.maxHeight || 0, overflow: 'hidden' }}
+                pointerEvents={expandDefaultsExpanded ? 'auto' : 'none'}
+              >
+                <View style={styles.versionContent}>
+                  <View style={styles.settingsRow}>
+                    <View style={styles.settingsRowLabel}>
+                      <RulesIcon width={22} height={22} fill="#E1E1E1" style={styles.settingsRowIcon} />
+                      <Text style={styles.settingsRowText}>Rules</Text>
+                    </View>
+                    <Switch
+                      value={expandRulesDefault}
+                      onValueChange={setExpandRulesDefaultAndSave}
+                      trackColor={{ false: '#555', true: '#7B5CBF' }}
+                      thumbColor="#E1E1E1"
+                    />
+                  </View>
+                  <View style={[styles.settingsRow, styles.settingsRowLast]}>
+                    <View style={styles.settingsRowLabel}>
+                      <ExpansionsIcon width={22} height={22} fill="#E1E1E1" style={styles.settingsRowIcon} />
+                      <Text style={styles.settingsRowText}>Expansions</Text>
+                    </View>
+                    <Switch
+                      value={expandExpansionsDefault}
+                      onValueChange={setExpandExpansionsDefaultAndSave}
+                      trackColor={{ false: '#555', true: '#7B5CBF' }}
+                      thumbColor="#E1E1E1"
+                    />
+                  </View>
                 </View>
-                <Switch
-                  value={expandExpansionsDefault}
-                  onValueChange={setExpandExpansionsDefaultAndSave}
-                  trackColor={{ false: '#555', true: '#7B5CBF' }}
-                  thumbColor="#E1E1E1"
-                />
-              </View>
-            </View>
+              </Animated.View>
+            </TouchableOpacity>
 
+            {/* ── Card: Voice Assistant Voice ── */}
             {isVoiceAssistantSupported && voiceLocaleGroups.length > 0 && (
-              <>
-                <Text style={styles.voiceSubsectionTitle}>Voice Assistant Voice</Text>
-                {voiceLocaleGroups.map(group => {
-                  const groupHasSelection = group.voices.some(v => v.id === selectedVoiceId);
-                  const anim = voiceLocaleAnims[group.key];
-                  const rotation = anim?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] });
-                  return (
-                    <TouchableOpacity
-                      key={group.key}
-                      style={styles.versionContainer}
-                      onPress={() => toggleVoiceLocale(group.key)}
-                      activeOpacity={0.7}
-                    >
-                      <View style={styles.versionHeader}>
-                        <View style={styles.versionRow}>
-                          <Text style={styles.versionText}>{group.display}</Text>
-                          {groupHasSelection && (
-                            <View style={styles.latestBadge}>
-                              <Text style={styles.latestBadgeText}>Active</Text>
-                            </View>
-                          )}
-                        </View>
-                        <Animated.View style={{ transform: [{ rotate: rotation || '0deg' }] }}>
-                          <Text style={styles.versionArrow}>▶</Text>
-                        </Animated.View>
+              <TouchableOpacity
+                style={styles.versionContainer}
+                onPress={toggleVoiceParent}
+                activeOpacity={0.7}
+              >
+                <View style={styles.versionHeader}>
+                  <View style={styles.versionRow}>
+                    <Text style={styles.versionText}>Voice Assistant Voice</Text>
+                    {selectedVoiceId && (
+                      <View style={styles.latestBadge}>
+                        <Text style={styles.latestBadgeText}>Active</Text>
                       </View>
-                      <Animated.View
-                        style={{ maxHeight: anim?.maxHeight || 0, overflow: 'hidden' }}
-                        pointerEvents={expandedLocales[group.key] ? 'auto' : 'none'}
-                      >
-                        <View style={styles.versionContent}>
-                          {group.voices.map((voice, index) => {
-                            const isSelected = voice.id === selectedVoiceId;
-                            const isLast = index === group.voices.length - 1;
-                            return (
-                              <Pressable
-                                key={voice.id}
-                                onPress={() => onVoiceSelect?.(voice.id)}
-                                style={({ pressed }) => [
-                                  styles.voiceRadioItem,
-                                  isLast && styles.voiceRadioItemLast,
-                                  pressed && styles.voiceRadioItemPressed,
-                                ]}
-                                android_ripple={{ color: 'rgba(187, 134, 252, 0.2)', borderless: false }}
-                              >
-                                <View style={[styles.voiceRadioOuter, isSelected && styles.voiceRadioOuterSelected]}>
-                                  {isSelected && <View style={styles.voiceRadioInner} />}
+                    )}
+                  </View>
+                  <Animated.View style={{ transform: [{ rotate: animations['voiceParent']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
+                    <Text style={styles.versionArrow}>▶</Text>
+                  </Animated.View>
+                </View>
+                <Animated.View
+                  style={{ maxHeight: animations['voiceParent']?.maxHeight || 0, overflow: 'hidden' }}
+                  pointerEvents={voiceParentExpanded ? 'auto' : 'none'}
+                >
+                  <View style={styles.versionContent}>
+                    {voiceLocaleGroups.map(group => {
+                      const groupHasSelection = group.voices.some(v => v.id === selectedVoiceId);
+                      const localeAnim = voiceLocaleAnims[group.key];
+                      const localeRotation = localeAnim?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] });
+                      return (
+                        <TouchableOpacity
+                          key={group.key}
+                          style={styles.versionContainer}
+                          onPress={() => toggleVoiceLocale(group.key)}
+                          activeOpacity={0.7}
+                        >
+                          <View style={styles.versionHeader}>
+                            <View style={styles.versionRow}>
+                              <Text style={styles.versionText}>{group.display}</Text>
+                              {groupHasSelection && (
+                                <View style={styles.latestBadge}>
+                                  <Text style={styles.latestBadgeText}>Active</Text>
                                 </View>
-                                <Text style={[styles.voiceRadioText, isSelected && styles.voiceRadioTextSelected]}>
-                                  {voice.name}
-                                </Text>
-                              </Pressable>
-                            );
-                          })}
-                        </View>
-                      </Animated.View>
-                    </TouchableOpacity>
-                  );
-                })}
-              </>
+                              )}
+                            </View>
+                            <Animated.View style={{ transform: [{ rotate: localeRotation || '0deg' }] }}>
+                              <Text style={styles.versionArrow}>▶</Text>
+                            </Animated.View>
+                          </View>
+                          <Animated.View
+                            style={{ maxHeight: localeAnim?.maxHeight || 0, overflow: 'hidden' }}
+                            pointerEvents={expandedLocales[group.key] ? 'auto' : 'none'}
+                          >
+                            <View style={styles.versionContent}>
+                              {group.voices.map((voice, index) => {
+                                const isSelected = voice.id === selectedVoiceId;
+                                const isLast = index === group.voices.length - 1;
+                                return (
+                                  <Pressable
+                                    key={voice.id}
+                                    onPress={() => onVoiceSelect?.(voice.id)}
+                                    style={({ pressed }) => [
+                                      styles.voiceRadioItem,
+                                      isLast && styles.voiceRadioItemLast,
+                                      pressed && styles.voiceRadioItemPressed,
+                                    ]}
+                                    android_ripple={{ color: 'rgba(187, 134, 252, 0.2)', borderless: false }}
+                                  >
+                                    <View style={[styles.voiceRadioOuter, isSelected && styles.voiceRadioOuterSelected]}>
+                                      {isSelected && <View style={styles.voiceRadioInner} />}
+                                    </View>
+                                    <Text style={[styles.voiceRadioText, isSelected && styles.voiceRadioTextSelected]}>
+                                      {voice.name}
+                                    </Text>
+                                  </Pressable>
+                                );
+                              })}
+                            </View>
+                          </Animated.View>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+                </Animated.View>
+              </TouchableOpacity>
             )}
           </CollapsibleSection>
 
