@@ -55,13 +55,20 @@ const markdownStyles = {
 // ──────────────────────────────────────────────────── Helpers ──
 
 function UserBubble({ text }) {
-  const displayText = text.trim() || 'Listening…';
   return (
     <View style={styles.bubbleRow}>
       <View style={[styles.bubble, styles.userBubble]}>
         <Text style={styles.roleLabel}>You</Text>
-        <Text style={styles.userText}>{displayText}</Text>
+        <Text style={styles.userText}>{text}</Text>
       </View>
+    </View>
+  );
+}
+
+function ListeningIndicator() {
+  return (
+    <View style={styles.listeningRow}>
+      <Text style={styles.listeningText}>Listening…</Text>
     </View>
   );
 }
@@ -90,7 +97,7 @@ const FAB_GAP     = 10;
 const TOP_MARGIN  = 8;
 const STATUS_BAR  = Platform.OS === 'android' ? (StatusBar.currentHeight ?? 24) : 44;
 
-export default function VoiceAssistantModal({ messages, isOpen, fabBottom = 96 }) {
+export default function VoiceAssistantModal({ messages, isListening, isOpen, fabBottom = 96 }) {
   const listRef = useRef(null);
   const mountOpacity = useRef(new Animated.Value(0)).current;
 
@@ -140,6 +147,7 @@ export default function VoiceAssistantModal({ messages, isOpen, fabBottom = 96 }
           onContentSizeChange={() =>
             listRef.current?.scrollToEnd({ animated: true })
           }
+          ListFooterComponent={isListening ? <ListeningIndicator /> : null}
         />
       </View>
     </Animated.View>
@@ -217,6 +225,16 @@ const styles = StyleSheet.create({
   },
   thinkingText: {
     fontSize: 14,
+    color: '#666666',
+    fontStyle: 'italic',
+  },
+  listeningRow: {
+    paddingHorizontal: 4,
+    paddingVertical: 6,
+    alignItems: 'flex-end',
+  },
+  listeningText: {
+    fontSize: 13,
     color: '#666666',
     fontStyle: 'italic',
   },

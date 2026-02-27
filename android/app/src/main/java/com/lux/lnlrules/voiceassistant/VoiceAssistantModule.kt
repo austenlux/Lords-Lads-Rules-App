@@ -591,8 +591,9 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
         // 2. List-item prefixes → brief pause so items are separated naturally.
         s = RE_LIST_PREFIX.replace(s, ", ")
 
-        // 3. Strip Markdown symbols.
+        // 3. Strip Markdown symbols and emoji.
         s = RE_MD_SYMBOLS.replace(s, "")
+        s = RE_EMOJI.replace(s, "")
 
         // 4. Collapse excess whitespace.
         s = RE_WHITESPACE.replace(s, " ").trim()
@@ -665,6 +666,17 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
         private val RE_LIST_PREFIX = Regex("(?m)^[*\\-]\\s+")
         private val RE_MD_SYMBOLS  = Regex("[*_`#~]")
         private val RE_WHITESPACE  = Regex("[ \\t]{2,}")
+        // Emoji: surrogate-pair ranges covering most Unicode emoji blocks,
+        // plus common BMP symbol/emoji ranges and variation selectors.
+        private val RE_EMOJI = Regex(
+            "[\uD83C-\uD83E][\uDC00-\uDFFF]|" +   // Supplementary emoji (surrogate pairs)
+            "[\uD83C][\uDDE0-\uDDFF]|" +            // Regional indicator / flag sequences
+            "[\u2600-\u27BF]\uFE0F?|" +             // Misc symbols & dingbats
+            "[\u2300-\u23FF]\uFE0F?|" +             // Misc technical
+            "[\u2B00-\u2BFF]\uFE0F?|" +             // Misc symbols & arrows
+            "[\u2000-\u206F]\uFE0F?|" +             // General punctuation extras
+            "\uFE0F|\u200D|\u20E3|\uFEFF"            // Variation selector, ZWJ, combining enclosing keycap, BOM
+        )
 
         // Minimum buffer length before we consider speaking at a phrase boundary (, ; :).
         // Keeps TTS chunks long enough to sound natural.
