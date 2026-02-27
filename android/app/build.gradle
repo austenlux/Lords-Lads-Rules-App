@@ -55,6 +55,13 @@ android {
         }
     }
 
+    kotlinOptions {
+        // genai-prompt:1.0.0-beta1 is compiled with Kotlin 2.2 metadata; our project uses
+        // Kotlin 1.9.x which can read up to 2.0.0. Suppress the version check so the compiler
+        // falls back to JVM bytecode instead of erroring out.
+        freeCompilerArgs += ["-Xskip-metadata-version-check"]
+    }
+
     buildTypes {
         debug {
             signingConfig signingConfigs.debug

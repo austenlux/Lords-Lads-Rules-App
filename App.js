@@ -19,7 +19,9 @@ import AboutIcon from './assets/images/about.svg';
 import SearchIcon from './assets/images/search.svg';
 import { styles, markdownStyles } from './src/styles';
 import { useContent } from './src/hooks/useContent';
+import { useGameAssistant } from './src/hooks/useGameAssistant';
 import { ContentScreen, AboutScreen, ToolsScreen } from './src/screens';
+import { VoiceAssistantFAB } from './src/components';
 import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
 
 const SPLASH_MIN_MS = 1000;
@@ -82,6 +84,14 @@ export default function App() {
       useNativeDriver: true,
     }).start();
   }, [splashOpacity, isIOS]);
+
+  const {
+    isSupported: aiSupported,
+    isListening,
+    isThinking,
+    isActive: aiActive,
+    askTheRules,
+  } = useGameAssistant();
 
   const {
     loading,
@@ -374,6 +384,26 @@ export default function App() {
           {mainContent}
         </View>
       </Animated.View>
+      {/* Voice Assistant FAB — only shown when Gemini Nano is supported on this device */}
+      {aiSupported && (
+        <View
+          style={{
+            position: 'absolute',
+            right: 20,
+            bottom: TAB_BAR_HEIGHT + tabBarBottomInset + 16,
+            zIndex: 10,
+          }}
+          pointerEvents="box-none"
+        >
+          <VoiceAssistantFAB
+            isListening={isListening}
+            isThinking={isThinking}
+            isActive={aiActive}
+            onPress={() => askTheRules(content)}
+          />
+        </View>
+      )}
+
       {!splashDismissed && (
         <Animated.View
           style={{

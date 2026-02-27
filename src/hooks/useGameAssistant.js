@@ -27,6 +27,9 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { PermissionsAndroid, Platform } from 'react-native';
 import NativeVoiceAssistant from '../specs/NativeVoiceAssistant';
 
+// Any status other than 'unavailable' means hardware + AICore support exists.
+const SUPPORTED_STATUSES = new Set(['available', 'downloadable', 'downloading']);
+
 // ─────────────────────────────────────────── Constants ──
 
 const MIC_PERMISSION_RATIONALE = {
@@ -49,6 +52,7 @@ const ERRORS = {
 // ─────────────────────────────────────────── Hook ──
 
 export function useGameAssistant() {
+  const [isSupported, setIsSupported] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [isThinking, setIsThinking] = useState(false);
   const [partialSpeech, setPartialSpeech] = useState('');
@@ -57,6 +61,15 @@ export function useGameAssistant() {
 
   // Prevents concurrent invocations of askTheRules.
   const isBusy = useRef(false);
+
+  // ── Support check (runs once on mount) ──────────────────────────────────
+
+  useEffect(() => {
+    if (Platform.OS !== 'android') return;
+    NativeVoiceAssistant.checkModelStatus()
+      .then((status) => setIsSupported(SUPPORTED_STATUSES.has(status)))
+      .catch(() => setIsSupported(false));
+  }, []);
 
   // ── Event subscriptions ──────────────────────────────────────────────────
 
@@ -188,6 +201,8 @@ export function useGameAssistant() {
   // ── Public API ───────────────────────────────────────────────────────────
 
   return {
+    /** true only if device hardware + AICore supports Gemini Nano */
+    isSupported,
     /** true while the microphone is active */
     isListening,
     /** true while Gemini Nano is generating a response */

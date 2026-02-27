@@ -18,8 +18,8 @@ import androidx.annotation.RequiresApi
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
-import com.google.mlkit.genai.prompt.DownloadStatus
-import com.google.mlkit.genai.prompt.FeatureStatus
+import com.google.mlkit.genai.common.DownloadStatus
+import com.google.mlkit.genai.common.FeatureStatus
 import com.google.mlkit.genai.prompt.Generation
 import com.google.mlkit.genai.prompt.GenerativeModel
 import com.lux.lnlrules.NativeVoiceAssistantSpec

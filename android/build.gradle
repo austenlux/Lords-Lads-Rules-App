@@ -3,7 +3,7 @@
 buildscript {
     ext {
         buildToolsVersion = "35.0.0"
-        minSdkVersion = 24
+        minSdkVersion = 26  // ML Kit genai-prompt requires API 26; also aligns with AudioFocusRequest (API 26)
         compileSdkVersion = 35
         targetSdkVersion = 35
         ndkVersion = "26.1.10909125"
