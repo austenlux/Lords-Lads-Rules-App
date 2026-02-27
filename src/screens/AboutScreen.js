@@ -501,7 +501,8 @@ export default function AboutScreen({
                 >
                   <View style={styles.versionContent}>
                     {voiceLocaleGroups.map(group => {
-                      const groupHasSelection = group.voices.some(v => v.id === selectedVoiceId);
+                      const allGroupVoices = [...(group.male ?? []), ...(group.female ?? []), ...(group.unknown ?? [])];
+                      const groupHasSelection = allGroupVoices.some(v => v.id === selectedVoiceId);
                       const localeAnim = voiceLocaleAnims[group.key];
                       const localeRotation = localeAnim?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] });
                       return (
