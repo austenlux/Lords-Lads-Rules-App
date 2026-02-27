@@ -28,6 +28,7 @@ import {
   saveIndex,
   queryTopK,
 } from '../services/VectorStore';
+import { setLastRAGResult } from '../services/RAGDebugStore';
 
 // djb2 hash — must match the one in VectorStore.js
 function hashString(str) {
@@ -127,9 +128,11 @@ export function useRAG() {
    * @param {string} query
    * @returns {Promise<{rulesContext: string, expansionsContext: string} | null>}
    */
-  const retrieve = useCallback(async (query) => {
+  const retrieve = useCallback(async (query, fullPromptForDebug = '') => {
     if (Platform.OS !== 'android') return null;
     if (!query?.trim()) return null;
+
+    const t0 = Date.now();
 
     try {
       const queryVector = await embedText(query);
@@ -145,10 +148,31 @@ export function useRAG() {
         topChunks = await queryTopK(queryVector);
       }
 
-      if (!topChunks?.length) return null;
+      const elapsedMs = Date.now() - t0;
 
-      const rulesChunks      = topChunks.filter((c) => c.source === SOURCE.RULES);
-      const expansionChunks  = topChunks.filter((c) => c.source === SOURCE.EXPANSIONS);
+      // If no chunk scored above the similarity threshold, fall back to full
+      // content so the model isn't fed irrelevant snippets.
+      if (!topChunks?.length) {
+        setLastRAGResult({
+          query,
+          chunks: [],
+          usedRAG: false,
+          promptSnippet: fullPromptForDebug.slice(0, 800),
+          elapsedMs,
+        });
+        return null;
+      }
+
+      const rulesChunks     = topChunks.filter((c) => c.source === SOURCE.RULES);
+      const expansionChunks = topChunks.filter((c) => c.source === SOURCE.EXPANSIONS);
+
+      setLastRAGResult({
+        query,
+        chunks: topChunks,
+        usedRAG: true,
+        promptSnippet: fullPromptForDebug.slice(0, 800),
+        elapsedMs,
+      });
 
       return {
         rulesContext:      rulesChunks.map((c) => c.text).join('\n\n'),

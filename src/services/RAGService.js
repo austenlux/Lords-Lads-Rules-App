@@ -18,9 +18,10 @@ import NativeEmbedder from '../specs/NativeEmbedder';
 
 // ── Chunking parameters ───────────────────────────────────────────────────────
 
-const CHUNK_SIZE    = 500;  // target characters per chunk
-const CHUNK_OVERLAP = 100;  // overlap between consecutive chunks
-const TOP_K         = 3;    // number of chunks returned per query
+const CHUNK_SIZE           = 500;   // target characters per chunk
+const CHUNK_OVERLAP        = 100;   // overlap between consecutive chunks
+const TOP_K                = 5;     // number of chunks returned per query
+export const MIN_SIMILARITY = 0.25; // chunks scoring below this are discarded
 
 // ── Source identifiers ────────────────────────────────────────────────────────
 
@@ -141,6 +142,17 @@ function dotProduct(a, b) {
  * @param {number}    [k]  defaults to TOP_K
  * @returns {Array<{id, source, text, score: number}>}
  */
+/**
+ * Given a query embedding and an array of embedded chunks, returns the top-k
+ * chunks ranked by cosine similarity (highest first), filtered to those that
+ * score at or above MIN_SIMILARITY. Returns an empty array if nothing is
+ * relevant enough — the caller should fall back to full-content prompting.
+ *
+ * @param {number[]}  queryVector
+ * @param {Array<{id, source, text, vector}>} embeddedChunks
+ * @param {number}    [k]  defaults to TOP_K
+ * @returns {Array<{id, source, text, score: number}>}
+ */
 export function retrieveTopK(queryVector, embeddedChunks, k = TOP_K) {
   return embeddedChunks
     .map((chunk) => ({
@@ -149,6 +161,7 @@ export function retrieveTopK(queryVector, embeddedChunks, k = TOP_K) {
       text:   chunk.text,
       score:  dotProduct(queryVector, chunk.vector),
     }))
+    .filter((chunk) => chunk.score >= MIN_SIMILARITY)
     .sort((a, b) => b.score - a.score)
     .slice(0, k);
 }

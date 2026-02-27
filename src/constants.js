@@ -62,9 +62,9 @@ Answer the <latest_user_prompt> based ONLY on the data in <rulebook_core> and <r
 
 /**
  * Cleans rulebook Markdown before embedding it in the system prompt:
- *  1. Removes the Table of Contents section entirely (it adds noise, not value).
- *  2. Strips Markdown heading hashes (## / ###) so they don't look like prompt
- *     section markers.
+ *  1. Removes the Table of Contents section (noise, no value for the LLM).
+ *  2. Keeps Markdown heading hashes (## / ###) — they are critical context
+ *     for RAG chunks so the model knows which section each snippet belongs to.
  *  3. Strips < and > characters that would corrupt the XML-style prompt tags.
  */
 const sanitizeRulebookContent = (text) => {
@@ -73,9 +73,8 @@ const sanitizeRulebookContent = (text) => {
   return text
     // Remove the ToC block: from its header line to (not including) the next header.
     .replace(/^#{1,6}\s+(?:table\s+of\s+contents|contents)\s*\n[\s\S]*?(?=^#{1,6}\s)/gim, '')
-    // Strip Markdown heading hashes at the start of lines (keep the heading text).
-    .replace(/^#{1,6}\s+/gm, '')
     // Strip characters that conflict with XML-style prompt section tags.
+    // Heading hashes are intentionally preserved for RAG context.
     .replace(/[<>]/g, '')
     .trim();
 };

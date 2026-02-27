@@ -16,6 +16,7 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import RNFS from 'react-native-fs';
+import { getLastRAGResult, subscribeToRAGDebug } from '../services/RAGDebugStore';
 import { HEADER_HEIGHT } from '../styles';
 
 const SETTINGS_KEYS = {
@@ -70,6 +71,14 @@ export default function AboutScreen({
     [SECTION_KEYS.DEBUG]: false,
   });
   const [debugVisible, setDebugVisible] = useState(false);
+  const [ragDebugResult, setRagDebugResult] = useState(() => getLastRAGResult());
+  const [ragDebugExpanded, setRagDebugExpanded] = useState(false);
+
+  // Keep RAG debug panel live — updates whenever a new query completes.
+  useEffect(() => {
+    return subscribeToRAGDebug((result) => setRagDebugResult(result));
+  }, []);
+
   const [expandRulesDefault, setExpandRulesDefault] = useState(false);
   const [expandExpansionsDefault, setExpandExpansionsDefault] = useState(false);
   const animations = useRef({}).current;
@@ -205,6 +214,7 @@ export default function AboutScreen({
     animateSection(animations['voiceMeta'], false, 0, 150);
     setVoiceMetaExpanded(false);
     collapseAllDebugVoices();
+    setRagDebugExpanded(false);
   };
 
   // ── Toggle functions ─────────────────────────────────────────────────────
@@ -823,6 +833,77 @@ export default function AboutScreen({
                     })}
                   </View>
                 </Animated.View>
+              </TouchableOpacity>
+              {/* ── RAG Debug ── */}
+              <TouchableOpacity
+                style={styles.versionContainer}
+                onPress={() => setRagDebugExpanded(v => !v)}
+                activeOpacity={0.7}
+              >
+                <View style={styles.versionHeader}>
+                  <View style={styles.versionRow}>
+                    <Text style={styles.versionText}>RAG Last Query</Text>
+                    {ragDebugResult && (
+                      <Text style={[styles.versionText, { fontSize: 11, color: ragDebugResult.usedRAG ? '#81C784' : '#FF7043', marginLeft: 8 }]}>
+                        {ragDebugResult.usedRAG ? '✓ RAG used' : '⚠ fallback'}
+                      </Text>
+                    )}
+                  </View>
+                  <Text style={styles.versionArrow}>{ragDebugExpanded ? '▼' : '▶'}</Text>
+                </View>
+                {ragDebugExpanded && (
+                  <View style={[styles.versionContent, { paddingTop: 8 }]}>
+                    {!ragDebugResult ? (
+                      <Text style={[styles.versionText, { color: '#888', fontStyle: 'italic', fontSize: 13 }]}>No query yet this session.</Text>
+                    ) : (
+                      <>
+                        {/* Header stats */}
+                        <View style={styles.debugMetaRow}>
+                          <Text style={styles.debugMetaLabel}>Query</Text>
+                          <Text style={styles.debugMetaValue}>{ragDebugResult.query}</Text>
+                        </View>
+                        <View style={styles.debugMetaRow}>
+                          <Text style={styles.debugMetaLabel}>Mode</Text>
+                          <Text style={[styles.debugMetaValue, { color: ragDebugResult.usedRAG ? '#81C784' : '#FF7043' }]}>
+                            {ragDebugResult.usedRAG ? 'RAG (chunks)' : 'Fallback (full content)'}
+                          </Text>
+                        </View>
+                        <View style={styles.debugMetaRow}>
+                          <Text style={styles.debugMetaLabel}>Elapsed</Text>
+                          <Text style={styles.debugMetaValue}>{ragDebugResult.elapsedMs}ms</Text>
+                        </View>
+                        <View style={styles.debugMetaRow}>
+                          <Text style={styles.debugMetaLabel}>Chunks</Text>
+                          <Text style={styles.debugMetaValue}>{ragDebugResult.chunks?.length ?? 0}</Text>
+                        </View>
+
+                        {/* Per-chunk detail */}
+                        {ragDebugResult.chunks?.length > 0 && (
+                          <>
+                            <Text style={[styles.debugMetaLabel, { marginTop: 10, marginBottom: 4 }]}>Retrieved Chunks</Text>
+                            {ragDebugResult.chunks.map((chunk, i) => (
+                              <View key={chunk.id} style={{ marginBottom: 10, borderLeftWidth: 2, borderLeftColor: '#BB86FC', paddingLeft: 8 }}>
+                                <View style={styles.debugMetaRow}>
+                                  <Text style={styles.debugMetaLabel}>#{i + 1} score</Text>
+                                  <Text style={[styles.debugMetaValue, { color: chunk.score >= 0.5 ? '#81C784' : chunk.score >= 0.25 ? '#FFD54F' : '#FF7043' }]}>
+                                    {chunk.score.toFixed(3)}
+                                  </Text>
+                                </View>
+                                <View style={styles.debugMetaRow}>
+                                  <Text style={styles.debugMetaLabel}>source</Text>
+                                  <Text style={styles.debugMetaValue}>{chunk.source}</Text>
+                                </View>
+                                <Text style={[styles.debugMetaValue, { fontSize: 12, color: '#999', marginTop: 4, lineHeight: 16 }]} numberOfLines={4}>
+                                  {chunk.text}
+                                </Text>
+                              </View>
+                            ))}
+                          </>
+                        )}
+                      </>
+                    )}
+                  </View>
+                )}
               </TouchableOpacity>
             </CollapsibleSection>
           )}
