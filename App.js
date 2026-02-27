@@ -23,7 +23,6 @@ import { useGameAssistant } from './src/hooks/useGameAssistant';
 import { ContentScreen, AboutScreen, ToolsScreen } from './src/screens';
 import { VoiceAssistantFAB, VoiceAssistantModal } from './src/components';
 import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
-import { buildGameAssistantPrompt } from './src/constants';
 
 const SPLASH_MIN_MS = 1000;
 const SPLASH_FADE_MS = 400;
@@ -65,7 +64,7 @@ export default function App() {
   const [splashDismissed, setSplashDismissed] = useState(false);
   const [isConvoOpen, setIsConvoOpen] = useState(false);
   const prevIsThinkingRef = useRef(false);
-  const convoContextRef = useRef('');
+  const convoContextRef = useRef({ rules: '', expansions: '' });
   const isIOS = Platform.OS === 'ios';
   const splashOpacity = useRef(new Animated.Value(isIOS ? 1 : 0)).current;
   const mainAppOpacity = useRef(new Animated.Value(0)).current;
@@ -126,10 +125,10 @@ export default function App() {
     renderSection,
   } = useContent(styles, markdownStyles);
 
-  // Keep the latest rules context in a ref so the auto-continue effect can read it
+  // Keep the latest content in a ref so the auto-continue effect can read it
   // without needing content/expansionsContent as effect dependencies.
   useEffect(() => {
-    convoContextRef.current = buildGameAssistantPrompt(content, expansionsContent);
+    convoContextRef.current = { rules: content, expansions: expansionsContent };
   }, [content, expansionsContent]);
 
   // Auto-start the next listening turn after the assistant finishes speaking.
@@ -139,7 +138,7 @@ export default function App() {
     prevIsThinkingRef.current = isThinking;
     if (wasThinking && !isThinking && isConvoOpen && !isListening) {
       const timer = setTimeout(() => {
-        askTheRules(convoContextRef.current);
+        askTheRules(convoContextRef.current.rules, convoContextRef.current.expansions);
       }, 600);
       return () => clearTimeout(timer);
     }
@@ -461,7 +460,7 @@ export default function App() {
               hasConversation={isConvoOpen}
               onPress={() => {
                 setIsConvoOpen(true);
-                askTheRules(buildGameAssistantPrompt(content, expansionsContent));
+                askTheRules(content, expansionsContent);
               }}
               onStop={() => {
                 stopAssistant();

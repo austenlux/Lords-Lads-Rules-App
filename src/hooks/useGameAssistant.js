@@ -18,7 +18,7 @@
  *    useGameAssistant();
  *
  *  // In a FAB press handler:
- *  askTheRules(rulesMarkdownString);
+ *  askTheRules(rulesMarkdown, expansionsMarkdown);
  *
  * Android-only: returns a no-op on iOS until Phase 4 (iOS support).
  */
@@ -27,6 +27,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { PermissionsAndroid, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NativeVoiceAssistant from '../specs/NativeVoiceAssistant';
+import { buildGameAssistantPrompt } from '../constants';
 
 // Any status other than 'unavailable' means hardware + AICore support exists.
 const SUPPORTED_STATUSES = new Set(['available', 'downloadable', 'downloading']);
@@ -72,8 +73,6 @@ export function useGameAssistant() {
   const activeUserMsgId = useRef(null);
   const activeAssistantMsgId = useRef(null);
   const msgCounter = useRef(0);
-  // Snapshot of serialized history built just before each askQuestion call.
-  const historyJsonRef = useRef('[]');
 
   const nextId = () => {
     msgCounter.current += 1;
@@ -240,12 +239,11 @@ export function useGameAssistant() {
   /**
    * Runs the full voice-to-AI-to-voice loop.
    *
-   * @param {string} readmeContext  The rules markdown to use as AI context.
-   *                                 Pass the string from useContent so Gemini
-   *                                 Nano answers questions about *your* game.
+   * @param {string} rules       Raw Markdown from the Rules tab.
+   * @param {string} expansions  Raw Markdown from the Expansions tab.
    */
   const askTheRules = useCallback(
-    async (readmeContext = '') => {
+    async (rules = '', expansions = '') => {
       if (isBusy.current) return;
       if (Platform.OS !== 'android') {
         setError(ERRORS.NOT_ANDROID);
@@ -316,25 +314,22 @@ export function useGameAssistant() {
         // isThinking stays true until onTTSFinished fires (queue fully drained).
         const assistantMsgId = nextId();
         activeAssistantMsgId.current = assistantMsgId;
-        setMessages((prev) => {
-          // Build history from all settled messages before this turn.
-          // Cap at last 10 messages (~5 exchanges) to stay within context window.
-          const HISTORY_LIMIT = 10;
-          const settled = prev.filter((m) => m.text?.trim());
-          const historySlice = settled.slice(-HISTORY_LIMIT);
-          // Store for native call (captured in closure).
-          historyJsonRef.current = JSON.stringify(
-            historySlice.map((m) => ({ role: m.role, text: m.text })),
-          );
-          return [...prev, { id: assistantMsgId, role: 'assistant', text: '' }];
-        });
+
+        // Snapshot settled messages (cap at last 10 = ~5 exchanges) for history.
+        // Must be read from state synchronously before the new assistant bubble is appended.
+        const HISTORY_LIMIT = 10;
+        const historySnapshot = messages
+          .filter((m) => m.text?.trim())
+          .slice(-HISTORY_LIMIT)
+          .map((m) => ({ role: m.role, text: m.text }));
+
+        setMessages((prev) => [...prev, { id: assistantMsgId, role: 'assistant', text: '' }]);
+
+        // Build the complete prompt on the JS side — Kotlin receives a finished string.
+        const fullPrompt = buildGameAssistantPrompt(rules, expansions, historySnapshot, spokenQuestion);
 
         setIsThinking(true);
-        await NativeVoiceAssistant.askQuestion(
-          spokenQuestion,
-          readmeContext,
-          historyJsonRef.current ?? '[]',
-        );
+        await NativeVoiceAssistant.askQuestion(fullPrompt);
         activeAssistantMsgId.current = null; // Streaming done; stop updating assistant bubble.
         // Do NOT clear isThinking here — onTTSFinished handles that once TTS is done.
 
@@ -349,7 +344,7 @@ export function useGameAssistant() {
         isBusy.current = false;
       }
     },
-    [requestMicPermission],
+    [requestMicPermission, messages],
   );
 
   // ── Public API ───────────────────────────────────────────────────────────

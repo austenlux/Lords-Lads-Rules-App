@@ -18,47 +18,66 @@ export const CACHE_KEYS = {
 };
 
 /**
- * System prompt template for the on-device Gemini Nano game rules assistant.
- *
- * Use buildGameAssistantPrompt() to produce the final prompt — it replaces
- * RULEBOOK_PLACEHOLDER with the actual rules and expansions content.
+ * Placeholders used inside GAME_ASSISTANT_SYSTEM_PROMPT.
+ * Kept private — use buildGameAssistantPrompt() to produce the final prompt.
  */
-const RULEBOOK_PLACEHOLDER = '{RULEBOOK_CONTENT}';
-
-export const GAME_ASSISTANT_SYSTEM_PROMPT = `## <role>
-Expert Game Rules Assistant. Zero fluff.
-</role>
-
-## <constraints>
-- VERBOSITY: Max 2 sentences.
-- PROHIBITED: No code, no math, no creative writing.
-- SCOPE: Only answer questions about the provided game rules.
-- UNCERTAINTY: If not in rules, say "That information is not in the rulebook."
-</constraints>
-
-## <rulebook_context>
-${RULEBOOK_PLACEHOLDER}
-</rulebook_context>
-
-## <instruction>
-Answer the user's query based strictly on the <rulebook_context> above.
-</instruction>`;
+const P = {
+  RULES:      '{RULES_CONTENT}',
+  EXPANSIONS: '{EXPANSIONS_CONTENT}',
+  HISTORY:    '{CONVERSATION_HISTORY}',
+  QUESTION:   '{CURRENT_QUESTION}',
+};
 
 /**
- * Returns the final system prompt with rules and expansions embedded inside
- * <rulebook_context>.  Either or both sections may be empty.
- * @param {string} rules       - Raw Markdown from the Rules tab.
- * @param {string} expansions  - Raw Markdown from the Expansions tab.
+ * Full system prompt template for the on-device Gemini Nano game rules assistant.
+ * All four placeholders are filled by buildGameAssistantPrompt().
  */
-export const buildGameAssistantPrompt = (rules, expansions) => {
-  const parts = [];
-  if (rules?.trim()) {
-    parts.push(`The following are the rules to the game:\n\n${rules}`);
-  }
-  if (expansions?.trim()) {
-    parts.push(`The following are the expansions to the game:\n\n${expansions}`);
-  }
-  return GAME_ASSISTANT_SYSTEM_PROMPT.replace(RULEBOOK_PLACEHOLDER, parts.join('\n\n'));
+export const GAME_ASSISTANT_SYSTEM_PROMPT = `## <role>
+Expert Game Rules Assistant.
+- Provide short, direct, and factual answers.
+- Zero conversational fluff.
+- Only answer questions about the provided game rules or expansions.
+- If not found, say: "That information is not in the rulebook."
+</role>
+
+## <rulebook_core>
+${P.RULES}
+</rulebook_core>
+
+## <rulebook_expansions>
+${P.EXPANSIONS}
+</rulebook_expansions>
+
+## <conversation_history>
+${P.HISTORY}
+</conversation_history>
+
+## <latest_user_prompt>
+${P.QUESTION}
+</latest_user_prompt>
+
+## <final_instruction>
+Answer the <latest_user_prompt> based ONLY on the data in <rulebook_core> and <rulebook_expansions>. Refer to the <conversation_history> if the user is asking a follow-up question.
+</final_instruction>`;
+
+/**
+ * Builds the complete, ready-to-send prompt for Gemini Nano.
+ *
+ * @param {string}   rules       Raw Markdown from the Rules tab.
+ * @param {string}   expansions  Raw Markdown from the Expansions tab.
+ * @param {Array}    history     Array of settled {role, text} message objects (most-recent last).
+ * @param {string}   question    The user's current transcribed question.
+ */
+export const buildGameAssistantPrompt = (rules, expansions, history, question) => {
+  const historyText = history?.length
+    ? history.map((m) => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.text}`).join('\n')
+    : 'No previous conversation.';
+
+  return GAME_ASSISTANT_SYSTEM_PROMPT
+    .replace(P.RULES,      rules?.trim()      || 'Not available.')
+    .replace(P.EXPANSIONS, expansions?.trim() || 'Not available.')
+    .replace(P.HISTORY,    historyText)
+    .replace(P.QUESTION,   question);
 };
 
 /** Venmo username for "Buy me coffee" links (no @). */

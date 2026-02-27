@@ -247,10 +247,10 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
      *   2. Accumulated in sentenceBuffer; complete sentences are spoken immediately.
      * Resolves with the full response text when streaming finishes.
      */
-    override fun askQuestion(question: String, context: String, historyJson: String, promise: Promise) {
+    override fun askQuestion(fullPrompt: String, promise: Promise) {
         activeInferenceJob = moduleScope.launch {
             try {
-                val prompt = buildPrompt(question, context, historyJson)
+                val prompt = fullPrompt
                 val fullResponse = StringBuilder()
                 sentenceBuffer.clear()
 
@@ -295,35 +295,7 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
         abandonAudioFocus()
     }
 
-    private fun buildPrompt(question: String, context: String, historyJson: String): String = buildString {
-        // System prompt (role, constraints, rulebook context) is pre-built by the JS layer.
-        if (context.isNotBlank()) {
-            append(context)
-            append("\n\n")
-        }
-
-        // Conversation history so follow-up questions have full context.
-        if (historyJson.isNotBlank() && historyJson != "[]") {
-            try {
-                val arr = JSONArray(historyJson)
-                if (arr.length() > 0) {
-                    append("The following is the full chat history of the current conversation:\n\n")
-                    for (i in 0 until arr.length()) {
-                        val msg = arr.getJSONObject(i)
-                        val role = if (msg.getString("role") == "user") "User" else "Assistant"
-                        append("$role: ${msg.getString("text")}\n")
-                    }
-                    append("\n")
-                }
-            } catch (e: Exception) {
-                // Malformed history — skip gracefully.
-            }
-        }
-
-        // The current question.
-        append("The user's current question:\n\n")
-        append(question)
-    }
+    // Prompt is fully assembled by the JS layer (see buildGameAssistantPrompt in constants.js).
 
     // ───────────────────────────────────────────────────────────── TTS ──
 
