@@ -336,7 +336,11 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
                 obj.put("id", voice.name)
                 obj.put("name", finalNameMap[voice.name] ?: voice.name)
                 obj.put("language", voice.locale.toLanguageTag())
-                obj.put("localeDisplay", voice.locale.getDisplayName(Locale.ENGLISH))
+                val country = voice.locale.country
+                val flag = countryCodeToFlag(country)
+                val countryName = voice.locale.getDisplayCountry(Locale.ENGLISH)
+                    .ifBlank { voice.locale.getDisplayName(Locale.ENGLISH) }
+                obj.put("localeDisplay", if (flag.isNotEmpty()) "$flag $countryName" else countryName)
                 jsonArray.put(obj)
             }
 
@@ -367,6 +371,13 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
      * "male"/"female" after a '#' separator: `en-us-x-sfg#male_1-local`).
      * Quality tier is always included so voices within the same locale are distinguishable.
      */
+    private fun countryCodeToFlag(countryCode: String): String {
+        if (countryCode.length != 2) return ""
+        val base = 0x1F1E6 - 'A'.code
+        return String(Character.toChars(countryCode[0].uppercaseChar().code + base)) +
+               String(Character.toChars(countryCode[1].uppercaseChar().code + base))
+    }
+
     private fun buildRawVoiceDisplayName(voice: Voice): String {
         val nameLower = voice.name.lowercase()
 

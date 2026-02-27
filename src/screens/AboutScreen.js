@@ -515,7 +515,7 @@ export default function AboutScreen({
                                 </View>
                               )}
                             </View>
-                            <Animated.View style={{ transform: [{ rotate: localeRotation || '0deg' }] }}>
+                            <Animated.View style={{ transform: [{ rotate: localeRotation || '0deg' }], marginLeft: 12 }}>
                               <Text style={styles.versionArrow}>▶</Text>
                             </Animated.View>
                           </View>
