@@ -108,16 +108,25 @@ export default function VoiceAssistantModal({ messages, isOpen, fabBottom = 96 }
   }, [isOpen, mountOpacity]);
 
   // Auto-scroll to bottom whenever messages change or the panel opens.
-  // Two-phase: immediate smooth scroll + a delayed follow-up to catch any
-  // Markdown content that re-measures its height after the first render.
+  // Uses requestAnimationFrame for the first pass (runs after paint, so the
+  // list knows its rendered height), then two staggered retries to catch
+  // Markdown blocks that re-measure themselves asynchronously.
   useEffect(() => {
     if (!isOpen) return;
-    listRef.current?.scrollToEnd({ animated: true });
-    const delayed = setTimeout(
-      () => listRef.current?.scrollToEnd({ animated: false }),
-      150,
-    );
-    return () => clearTimeout(delayed);
+    const scroll = () => listRef.current?.scrollToEnd({ animated: false });
+
+    // First pass: after the current paint cycle.
+    const raf = requestAnimationFrame(scroll);
+    // Second pass: catch Markdown that measures on a second layout pass.
+    const t1 = setTimeout(scroll, 200);
+    // Third pass: safety net for large Markdown blocks on slower devices.
+    const t2 = setTimeout(scroll, 500);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
   }, [isOpen, messages]);
 
   if (!isOpen && mountOpacity._value === 0) return null;
