@@ -538,7 +538,7 @@ export default function AboutScreen({
                           >
                             <View style={styles.versionContent}>
                               {[
-                                { key: 'male',    label: 'Male',   voices: group.male,    icon: <MaleIcon width={18} height={18} fill="#4FC3F7" /> },
+                                { key: 'male',    label: 'Male',   voices: group.male,    icon: <MaleIcon width={18} height={18} fill="#5C7CFA" stroke="#5C7CFA" /> },
                                 { key: 'female',  label: 'Female', voices: group.female,  icon: <FemaleIcon width={18} height={18} fill="#F48FB1" /> },
                                 { key: 'unknown', label: 'Other',  voices: group.unknown, icon: null },
                               ].map(section => {
@@ -548,7 +548,7 @@ export default function AboutScreen({
                                     <View style={styles.voiceGenderHeader}>
                                       {section.key === 'unknown' ? (
                                         <>
-                                          <MaleIcon width={18} height={18} fill="#4FC3F7" style={{ marginRight: 2 }} />
+                                          <MaleIcon width={18} height={18} fill="#5C7CFA" stroke="#5C7CFA" style={{ marginRight: 2 }} />
                                           <FemaleIcon width={18} height={18} fill="#F48FB1" style={{ marginRight: 8 }} />
                                         </>
                                       ) : (

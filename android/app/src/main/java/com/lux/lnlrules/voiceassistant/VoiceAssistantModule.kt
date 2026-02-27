@@ -331,7 +331,7 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
 
             val jsonArray = JSONArray()
             voices.forEach { voice ->
-                Log.d(NAME, "VOICE id=${voice.name} | quality=${voice.quality} | locale=${voice.locale} | features=${voice.features}")
+                Log.w(NAME, "VOICE id=${voice.name} | quality=${voice.quality} | locale=${voice.locale} | features=${voice.features}")
                 val obj = JSONObject()
                 obj.put("id", voice.name)
                 obj.put("name", finalNameMap[voice.name] ?: voice.name)
@@ -368,21 +368,48 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
      * Derives a display name for a voice scoped within its locale group.
      * Region is omitted — callers group by locale so the section header provides that context.
      *
-     * Detects gender from the voice identifier where possible (Google TTS embeds
-     * "male"/"female" after a '#' separator: `en-us-x-sfg#male_1-local`).
-     * Quality tier is always included so voices within the same locale are distinguishable.
+     * Detects gender from the voice identifier using:
+     *   1. A named-voice lookup table for known Gemini/modern voice names.
+     *   2. A heuristic on the segment between -x- and the next hyphen:
+     *      segment contains "f" → female (e.g. sfg, tpf)
+     *      segment contains "m" → male   (e.g. iom, msm00013)
+     *   3. Full-ID substring fallback for explicit "female"/"male" text.
      */
     private fun detectGender(voice: Voice): String {
-        val nameLower = voice.name.lowercase()
-        val afterHash = nameLower.substringAfter('#', "")
-        val genderSegment = if (afterHash.isNotEmpty()) afterHash.substringBefore('-') else ""
-        return when {
-            genderSegment.startsWith("female") -> "female"
-            genderSegment.startsWith("male")   -> "male"
-            nameLower.contains("female")        -> "female"
-            nameLower.contains("male")          -> "male"
-            else                                -> "unknown"
+        val id = voice.name.lowercase()
+
+        // Segment between -x- and the following hyphen (e.g. "sfg", "iom", "orbit").
+        val xSegment = id.substringAfter("-x-", "").substringBefore("-")
+
+        // 1. Named-voice lookup (Gemini Live voices + known legacy codes).
+        val namedVoices = mapOf(
+            // Gemini Live voices (user-confirmed and pitch/descriptor-based)
+            "orbit"   to "male",
+            "orion"   to "male",
+            "pegasus" to "male",
+            "dipper"  to "male",
+            "eclipse" to "male",
+            "lyra"    to "female",
+            "ursa"    to "female",
+            "nova"    to "female",
+            "vega"    to "female",
+            "capella" to "female",
+            // Known legacy named code
+            "rjs"     to "male",
+        )
+        namedVoices[xSegment]?.let { return it }
+
+        // 2. Heuristic: letter indicator in the -x- segment.
+        if (xSegment.isNotEmpty()) {
+            if (xSegment.contains("f")) return "female"
+            if (xSegment.contains("m")) return "male"
         }
+
+        // 3. Explicit substring fallback (covers "#female_1" style IDs).
+        if (id.contains("female")) return "female"
+        if (id.contains("male"))   return "male"
+
+        return "unknown"
     }
 
     private fun countryCodeToFlag(countryCode: String): String {
