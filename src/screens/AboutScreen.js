@@ -380,7 +380,15 @@ export default function AboutScreen({
       }
       map[v.language].voices.push(v);
     });
-    return Object.values(map).sort((a, b) => a.display.localeCompare(b.display));
+    const COUNTRY_ORDER = ['en-US', 'en-GB', 'en-AU', 'en-IN', 'en-NG'];
+    return Object.values(map).sort((a, b) => {
+      const ai = COUNTRY_ORDER.indexOf(a.key);
+      const bi = COUNTRY_ORDER.indexOf(b.key);
+      if (ai !== -1 && bi !== -1) return ai - bi;
+      if (ai !== -1) return -1;
+      if (bi !== -1) return 1;
+      return a.display.localeCompare(b.display);
+    });
   }, [availableVoices]);
 
   const renderVersionBlock = (version, showLatestBadge = false) => (

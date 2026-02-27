@@ -289,6 +289,10 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
         tts?.speak(text, TextToSpeech.QUEUE_ADD, null, UTTERANCE_ID)
     }
 
+    override fun stopSpeaking() {
+        tts?.stop()
+    }
+
     // ────────────────────────────────────────────────── Voice selection ──
 
     /**

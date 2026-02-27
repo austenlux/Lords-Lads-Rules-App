@@ -163,6 +163,7 @@ export function useGameAssistant() {
    */
   const previewVoice = useCallback(async (voiceId) => {
     if (Platform.OS !== 'android') return;
+    NativeVoiceAssistant.stopSpeaking();
     NativeVoiceAssistant.setVoice(voiceId);
     setSelectedVoiceId(voiceId);
     NativeVoiceAssistant.speak(VOICE_PREVIEW_TEXT);

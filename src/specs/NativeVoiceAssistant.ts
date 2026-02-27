@@ -59,6 +59,9 @@ export interface Spec extends TurboModule {
    */
   speak(text: string): void;
 
+  /** Immediately stops any in-progress TTS playback. */
+  stopSpeaking(): void;
+
   // ── Voice selection ───────────────────────────────────────────────────────
 
   /**
