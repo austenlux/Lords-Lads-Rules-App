@@ -254,6 +254,9 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
                 val fullResponse = StringBuilder()
                 sentenceBuffer.clear()
 
+                // Pre-warm audio focus so the first speak() call has no focus-request latency.
+                requestAudioFocus()
+
                 generativeModel.generateContentStream(prompt).collect { chunk ->
                     val text = chunk.candidates.firstOrNull()?.text ?: return@collect
                     fullResponse.append(text)
@@ -528,12 +531,27 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
     private fun accumulateAndSpeak(chunk: String) {
         sentenceBuffer.append(chunk)
         val text = sentenceBuffer.toString()
-        val boundary = text.indexOfFirst { it == '.' || it == '!' || it == '?' }
-        if (boundary >= 0) {
-            val sentence = text.substring(0, boundary + 1).trim()
-            sentenceBuffer.delete(0, boundary + 1)
+
+        // 1. Sentence boundary — speak immediately.
+        val sentenceEnd = text.indexOfFirst { it == '.' || it == '!' || it == '?' }
+        if (sentenceEnd >= 0) {
+            val sentence = text.substring(0, sentenceEnd + 1).trim()
+            sentenceBuffer.delete(0, sentenceEnd + 1)
             val cleaned = sanitizeTextForSpeech(sentence)
             if (cleaned.isNotEmpty()) speak(cleaned)
+            return
+        }
+
+        // 2. Phrase boundary — speak once enough text has built up, so TTS starts
+        //    without waiting for the first period. Avoids the visible-text / silent-audio gap.
+        if (text.length >= PHRASE_SPEAK_THRESHOLD) {
+            val phraseEnd = text.indexOfFirst { it == ',' || it == ';' || it == ':' }
+            if (phraseEnd >= 0) {
+                val phrase = text.substring(0, phraseEnd + 1).trim()
+                sentenceBuffer.delete(0, phraseEnd + 1)
+                val cleaned = sanitizeTextForSpeech(phrase)
+                if (cleaned.isNotEmpty()) speak(cleaned)
+            }
         }
     }
 
@@ -559,25 +577,25 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
         var s = text
 
         // 1. Abbreviation expansion (must run before punctuation is stripped).
-        s = s.replace(Regex("\\be\\.g\\."), "for example")
-        s = s.replace(Regex("\\bi\\.e\\."), "that is")
-        s = s.replace(Regex("\\betc\\."), "etcetera")
-        s = s.replace(Regex("\\bvs\\."), "versus")
-        s = s.replace(Regex("\\bapprox\\."), "approximately")
-        s = s.replace(Regex("\\bmax\\."), "maximum")
-        s = s.replace(Regex("\\bmin\\."), "minimum")
-        s = s.replace(Regex("\\bfig\\."), "figure")
-        s = s.replace(Regex("\\bw/o\\b"), "without")
-        s = s.replace(Regex("\\bw/\\b"), "with")
+        s = RE_EG.replace(s, "for example")
+        s = RE_IE.replace(s, "that is")
+        s = RE_ETC.replace(s, "etcetera")
+        s = RE_VS.replace(s, "versus")
+        s = RE_APPROX.replace(s, "approximately")
+        s = RE_MAX.replace(s, "maximum")
+        s = RE_MIN.replace(s, "minimum")
+        s = RE_FIG.replace(s, "figure")
+        s = RE_WITHOUT.replace(s, "without")
+        s = RE_WITH.replace(s, "with")
 
-        // 2. List-item prefixes → brief pause (comma + space) so items are separated naturally.
-        s = s.replace(Regex("(?m)^[*\\-]\\s+"), ", ")
+        // 2. List-item prefixes → brief pause so items are separated naturally.
+        s = RE_LIST_PREFIX.replace(s, ", ")
 
         // 3. Strip Markdown symbols.
-        s = s.replace(Regex("[*_`#~]"), "")
+        s = RE_MD_SYMBOLS.replace(s, "")
 
         // 4. Collapse excess whitespace.
-        s = s.replace(Regex("[ \\t]{2,}"), " ").trim()
+        s = RE_WHITESPACE.replace(s, " ").trim()
 
         return s
     }
@@ -632,5 +650,24 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
     companion object {
         const val NAME = "VoiceAssistant"
         private const val UTTERANCE_ID = "va_utterance"
+
+        // Precompiled regexes for sanitizeTextForSpeech — avoids re-compiling on every call.
+        private val RE_EG          = Regex("\\be\\.g\\.")
+        private val RE_IE          = Regex("\\bi\\.e\\.")
+        private val RE_ETC         = Regex("\\betc\\.")
+        private val RE_VS          = Regex("\\bvs\\.")
+        private val RE_APPROX      = Regex("\\bapprox\\.")
+        private val RE_MAX         = Regex("\\bmax\\.")
+        private val RE_MIN         = Regex("\\bmin\\.")
+        private val RE_FIG         = Regex("\\bfig\\.")
+        private val RE_WITHOUT     = Regex("\\bw/o\\b")
+        private val RE_WITH        = Regex("\\bw/\\b")
+        private val RE_LIST_PREFIX = Regex("(?m)^[*\\-]\\s+")
+        private val RE_MD_SYMBOLS  = Regex("[*_`#~]")
+        private val RE_WHITESPACE  = Regex("[ \\t]{2,}")
+
+        // Minimum buffer length before we consider speaking at a phrase boundary (, ; :).
+        // Keeps TTS chunks long enough to sound natural.
+        private const val PHRASE_SPEAK_THRESHOLD = 40
     }
 }
