@@ -20,6 +20,7 @@ import SearchIcon from './assets/images/search.svg';
 import { styles, markdownStyles } from './src/styles';
 import { useContent } from './src/hooks/useContent';
 import { useGameAssistant } from './src/hooks/useGameAssistant';
+import { useRAG } from './src/hooks/useRAG';
 import { ContentScreen, AboutScreen, ToolsScreen } from './src/screens';
 import { VoiceAssistantFAB, VoiceAssistantModal } from './src/components';
 import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
@@ -125,6 +126,19 @@ export default function App() {
     renderSection,
   } = useContent(styles, markdownStyles);
 
+  // ── RAG ──────────────────────────────────────────────────────────────────
+  const { isIndexing, isReady: ragReady, warmUp, ingest, retrieve } = useRAG();
+
+  // Warm up the embedder model as soon as the app mounts.
+  useEffect(() => { warmUp(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Re-ingest whenever content changes (hash check prevents redundant work).
+  useEffect(() => {
+    if (content || expansionsContent) {
+      ingest(content, expansionsContent);
+    }
+  }, [content, expansionsContent, ingest]);
+
   // Keep the latest content in a ref so the auto-continue effect can read it
   // without needing content/expansionsContent as effect dependencies.
   useEffect(() => {
@@ -138,7 +152,11 @@ export default function App() {
     prevIsThinkingRef.current = isThinking;
     if (wasThinking && !isThinking && isConvoOpen && !isListening) {
       const timer = setTimeout(() => {
-        askTheRules(convoContextRef.current.rules, convoContextRef.current.expansions);
+        askTheRules(
+          convoContextRef.current.rules,
+          convoContextRef.current.expansions,
+          retrieve,
+        );
       }, 600);
       return () => clearTimeout(timer);
     }
@@ -460,7 +478,7 @@ export default function App() {
               hasConversation={isConvoOpen}
               onPress={() => {
                 setIsConvoOpen(true);
-                askTheRules(content, expansionsContent);
+                askTheRules(content, expansionsContent, retrieve);
               }}
               onStop={() => {
                 stopAssistant();
