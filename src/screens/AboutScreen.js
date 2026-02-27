@@ -33,9 +33,10 @@ import RulesIcon from '../../assets/images/rules.svg';
 import ExpansionsIcon from '../../assets/images/expansions.svg';
 import MaleIcon from '../../assets/images/male.svg';
 import FemaleIcon from '../../assets/images/female.svg';
+import DebugIcon from '../../assets/images/debug.svg';
 
 const PAST_RELEASES_KEY = 'pastReleases';
-const SECTION_KEYS = { RULES_SYNCED: 'rulesSynced', BUY_NAILS: 'buyNails', CHANGELOG: 'changelog', SETTINGS: 'settings', INFO: 'info' };
+const SECTION_KEYS = { RULES_SYNCED: 'rulesSynced', BUY_NAILS: 'buyNails', CHANGELOG: 'changelog', SETTINGS: 'settings', INFO: 'info', DEBUG: 'debug' };
 
 const RULEBOOK_REPO_URL = 'https://github.com/seanKenkeremath/lords-and-lads';
 const APP_REPO_URL = 'https://github.com/austenlux/Lords-Lads-Rules-App';
@@ -68,7 +69,9 @@ export default function AboutScreen({
     [SECTION_KEYS.CHANGELOG]: DEFAULT_SECTION_EXPANDED,
     [SECTION_KEYS.SETTINGS]: false,
     [SECTION_KEYS.INFO]: false,
+    [SECTION_KEYS.DEBUG]: false,
   });
+  const [debugVisible, setDebugVisible] = useState(false);
   const [expandRulesDefault, setExpandRulesDefault] = useState(false);
   const [expandExpansionsDefault, setExpandExpansionsDefault] = useState(false);
   const animations = useRef({}).current;
@@ -406,7 +409,9 @@ export default function AboutScreen({
     >
       <View style={[styles.contentContainer, { paddingTop: contentPaddingTop ?? HEADER_HEIGHT }]}>
         <View style={styles.aboutContainer}>
-          <Text style={styles.aboutTitle}>About</Text>
+          <Pressable onLongPress={() => setDebugVisible(v => !v)} delayLongPress={800}>
+            <Text style={styles.aboutTitle}>About</Text>
+          </Pressable>
 
           <CollapsibleSection
             title="Info"
@@ -705,6 +710,21 @@ export default function AboutScreen({
             </View>
             </View>
           </CollapsibleSection>
+
+          {debugVisible && (
+            <CollapsibleSection
+              title="Debug"
+              icon={<DebugIcon width={24} height={24} fill="#FF7043" />}
+              isExpanded={sectionsExpanded[SECTION_KEYS.DEBUG]}
+              onToggle={() => toggleAboutSection(SECTION_KEYS.DEBUG)}
+              styles={styles}
+              style={styles.aboutSectionWrapper}
+            >
+              <View style={styles.versionContainer}>
+                <Text style={styles.comingSoonText}>Coming soon</Text>
+              </View>
+            </CollapsibleSection>
+          )}
         </View>
       </View>
     </ScrollView>

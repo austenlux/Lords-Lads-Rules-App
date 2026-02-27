@@ -330,6 +330,13 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#E1E1E1',
   },
+  comingSoonText: {
+    fontSize: 15,
+    color: '#888888',
+    fontStyle: 'italic',
+    textAlign: 'center',
+    paddingVertical: 8,
+  },
   paymentSection: {
     marginBottom: 0,
   },
