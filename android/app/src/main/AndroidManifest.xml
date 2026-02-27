@@ -1,6 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
   <uses-permission android:name="android.permission.INTERNET"/>
+  <!-- Voice Assistant: microphone access for on-device speech recognition -->
+  <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+  <!-- Voice Assistant: duck/pause other audio during TTS playback -->
+  <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
   <!-- OPTIONAL PERMISSIONS, REMOVE WHATEVER YOU DO NOT NEED -->
   <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
   <uses-permission android:name="android.permission.VIBRATE"/>
