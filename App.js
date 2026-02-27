@@ -384,16 +384,19 @@ export default function App() {
           {mainContent}
         </View>
       </Animated.View>
-      {/* Voice Assistant FAB — only shown when Gemini Nano is supported on this device */}
-      {aiSupported && (
+      {/* Voice Assistant FAB — only when Gemini Nano supported, splash gone, and on content tabs */}
+      {aiSupported && splashDismissed && (
         <View
-          style={{
-            position: 'absolute',
-            right: 20,
-            bottom: TAB_BAR_HEIGHT + tabBarBottomInset + 16,
-            zIndex: 10,
-          }}
-          pointerEvents="box-none"
+          pointerEvents={(activeTab === 'rules' || activeTab === 'expansions') ? 'box-none' : 'none'}
+          style={[
+            {
+              position: 'absolute',
+              right: 20,
+              bottom: TAB_BAR_HEIGHT + tabBarBottomInset + 16,
+              zIndex: 10,
+            },
+            (activeTab !== 'rules' && activeTab !== 'expansions') && { opacity: 0 },
+          ]}
         >
           <VoiceAssistantFAB
             isListening={isListening}
