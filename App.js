@@ -23,6 +23,7 @@ import { useGameAssistant } from './src/hooks/useGameAssistant';
 import { ContentScreen, AboutScreen, ToolsScreen } from './src/screens';
 import { VoiceAssistantFAB, VoiceAssistantModal } from './src/components';
 import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
+import { buildGameAssistantPrompt } from './src/constants';
 
 const SPLASH_MIN_MS = 1000;
 const SPLASH_FADE_MS = 400;
@@ -125,23 +126,11 @@ export default function App() {
     renderSection,
   } = useContent(styles, markdownStyles);
 
-  // Builds a fully-labeled context string for the LLM prompt.
-  const buildLabeledContext = useCallback((rules, expansions) => {
-    const parts = [];
-    if (rules?.trim()) {
-      parts.push(`The following are the rules to the game:\n\n${rules}`);
-    }
-    if (expansions?.trim()) {
-      parts.push(`The following are the expansions to the game:\n\n${expansions}`);
-    }
-    return parts.join('\n\n');
-  }, []);
-
   // Keep the latest rules context in a ref so the auto-continue effect can read it
   // without needing content/expansionsContent as effect dependencies.
   useEffect(() => {
-    convoContextRef.current = buildLabeledContext(content, expansionsContent);
-  }, [content, expansionsContent, buildLabeledContext]);
+    convoContextRef.current = buildGameAssistantPrompt(content, expansionsContent);
+  }, [content, expansionsContent]);
 
   // Auto-start the next listening turn after the assistant finishes speaking.
   // Triggers only when isThinking transitions true→false while the convo is open.
@@ -472,7 +461,7 @@ export default function App() {
               hasConversation={isConvoOpen}
               onPress={() => {
                 setIsConvoOpen(true);
-                askTheRules(buildLabeledContext(content, expansionsContent));
+                askTheRules(buildGameAssistantPrompt(content, expansionsContent));
               }}
               onStop={() => {
                 stopAssistant();

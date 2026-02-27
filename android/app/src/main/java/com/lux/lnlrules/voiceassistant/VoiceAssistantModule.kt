@@ -296,11 +296,7 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
     }
 
     private fun buildPrompt(question: String, context: String, historyJson: String): String = buildString {
-        // System framing.
-        append("You are a helpful game rules assistant. Answer questions accurately and")
-        append(" concisely using only the rules and expansion content provided below.\n\n")
-
-        // Labeled game content (rules, expansions — already separated and labeled by the caller).
+        // System prompt (role, constraints, rulebook context) is pre-built by the JS layer.
         if (context.isNotBlank()) {
             append(context)
             append("\n\n")
