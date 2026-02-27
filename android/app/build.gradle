@@ -87,12 +87,15 @@ dependencies {
         implementation jscFlavor
     }
 
-    // Gemini Nano on-device inference via Android AICore
-    // Verify latest version at: https://developers.google.com/ml-kit/guides
-    implementation("com.google.mlkit:genai-prompt:16.0.0")
+    // Gemini Nano on-device inference via Android AICore (ML Kit GenAI Prompt API)
+    implementation("com.google.mlkit:genai-prompt:1.0.0-beta1")
 
     // ML Kit on-device speech recognition
+    // Verify latest version at: https://developers.google.com/ml-kit/release-notes
     implementation("com.google.mlkit:speech-recognition:16.0.0")
+
+    // Kotlin Coroutines — required for suspend functions and Flow in VoiceAssistantModule
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
 
     // Android TTS is part of the Android SDK — no dependency needed
 }

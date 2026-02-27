@@ -3,7 +3,7 @@ import {TurboModuleRegistry} from 'react-native';
 
 /**
  * TurboModule spec for the on-device Voice Assistant.
- * Codegen will generate the Android (NativeVoiceAssistantSpec) and iOS
+ * Codegen generates the Android (NativeVoiceAssistantSpec) and iOS
  * counterparts from this interface at build time.
  *
  * All AI logic is Android-only for now; iOS stubs will be added in a later phase.
@@ -11,9 +11,16 @@ import {TurboModuleRegistry} from 'react-native';
 export interface Spec extends TurboModule {
   /**
    * Checks whether Gemini Nano is available and downloaded on the device.
-   * Resolves with a status string: 'available' | 'downloading' | 'unavailable' | 'not_implemented'
+   * Resolves with: 'available' | 'downloadable' | 'downloading' | 'unavailable'
    */
   checkModelStatus(): Promise<string>;
+
+  /**
+   * Triggers a Gemini Nano model download (only call when checkModelStatus returns 'downloadable').
+   * Resolves with 'completed' when the download finishes, rejects on failure.
+   * Download progress events will be emitted via DeviceEventEmitter in a later phase.
+   */
+  downloadModel(): Promise<string>;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('VoiceAssistant');
