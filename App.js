@@ -442,8 +442,12 @@ export default function App() {
           {mainContent}
         </View>
       </Animated.View>
-      {/* Voice Assistant — FAB + conversation modal (visible on all tabs) */}
-      {aiSupported && splashDismissed && (
+      {/* Voice Assistant — FAB + conversation modal.
+          Held hidden until the RAG index is ready so the assistant has
+          its full context before the user can start a conversation.
+          ragReady becomes true after indexing completes OR on error
+          (fallback to full-content still works), so it never blocks forever. */}
+      {aiSupported && splashDismissed && ragReady && (
         <View
           pointerEvents="box-none"
           style={{
