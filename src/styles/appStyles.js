@@ -672,6 +672,22 @@ const styles = StyleSheet.create({
   settingsRowLast: {
     borderBottomWidth: 0,
   },
+  voiceGenderHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingTop: 14,
+    paddingBottom: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(187, 134, 252, 0.2)',
+    marginBottom: 4,
+  },
+  voiceGenderLabel: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#AAAAAA',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
   voiceSubsectionTitle: {
     fontSize: 15,
     fontWeight: '600',

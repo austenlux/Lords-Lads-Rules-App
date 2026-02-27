@@ -335,6 +335,7 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
                 val obj = JSONObject()
                 obj.put("id", voice.name)
                 obj.put("name", finalNameMap[voice.name] ?: voice.name)
+                obj.put("gender", detectGender(voice))
                 obj.put("language", voice.locale.toLanguageTag())
                 val country = voice.locale.country
                 val flag = countryCodeToFlag(country)
@@ -371,6 +372,19 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
      * "male"/"female" after a '#' separator: `en-us-x-sfg#male_1-local`).
      * Quality tier is always included so voices within the same locale are distinguishable.
      */
+    private fun detectGender(voice: Voice): String {
+        val nameLower = voice.name.lowercase()
+        val afterHash = nameLower.substringAfter('#', "")
+        val genderSegment = if (afterHash.isNotEmpty()) afterHash.substringBefore('-') else ""
+        return when {
+            genderSegment.startsWith("female") -> "female"
+            genderSegment.startsWith("male")   -> "male"
+            nameLower.contains("female")        -> "female"
+            nameLower.contains("male")          -> "male"
+            else                                -> "unknown"
+        }
+    }
+
     private fun countryCodeToFlag(countryCode: String): String {
         if (countryCode.length != 2) return ""
         val base = 0x1F1E6 - 'A'.code

@@ -31,6 +31,8 @@ import SettingsIcon from '../../assets/images/settings.svg';
 import InfoIcon from '../../assets/images/info.svg';
 import RulesIcon from '../../assets/images/rules.svg';
 import ExpansionsIcon from '../../assets/images/expansions.svg';
+import MaleIcon from '../../assets/images/male.svg';
+import FemaleIcon from '../../assets/images/female.svg';
 
 const PAST_RELEASES_KEY = 'pastReleases';
 const SECTION_KEYS = { RULES_SYNCED: 'rulesSynced', BUY_NAILS: 'buyNails', CHANGELOG: 'changelog', SETTINGS: 'settings', INFO: 'info' };
@@ -317,8 +319,11 @@ export default function AboutScreen({
     if (!availableVoices.length) return [];
     const map = {};
     availableVoices.forEach(v => {
-      if (!map[v.language]) map[v.language] = { key: v.language, display: v.localeDisplay, voices: [] };
-      map[v.language].voices.push(v);
+      if (!map[v.language]) {
+        map[v.language] = { key: v.language, display: v.localeDisplay, male: [], female: [], unknown: [] };
+      }
+      const gender = v.gender ?? 'unknown';
+      map[v.language][gender]?.push(v) ?? map[v.language].unknown.push(v);
     });
     return Object.values(map).sort((a, b) => a.display.localeCompare(b.display));
   }, [availableVoices]);
@@ -524,27 +529,49 @@ export default function AboutScreen({
                             pointerEvents={expandedLocales[group.key] ? 'auto' : 'none'}
                           >
                             <View style={styles.versionContent}>
-                              {group.voices.map((voice, index) => {
-                                const isSelected = voice.id === selectedVoiceId;
-                                const isLast = index === group.voices.length - 1;
+                              {[
+                                { key: 'male',    label: 'Male',   voices: group.male,    icon: <MaleIcon width={18} height={18} fill="#4FC3F7" /> },
+                                { key: 'female',  label: 'Female', voices: group.female,  icon: <FemaleIcon width={18} height={18} fill="#F48FB1" /> },
+                                { key: 'unknown', label: 'Other',  voices: group.unknown, icon: null },
+                              ].map(section => {
+                                if (!section.voices?.length) return null;
                                 return (
-                                  <Pressable
-                                    key={voice.id}
-                                    onPress={() => onVoiceSelect?.(voice.id)}
-                                    style={({ pressed }) => [
-                                      styles.voiceRadioItem,
-                                      isLast && styles.voiceRadioItemLast,
-                                      pressed && styles.voiceRadioItemPressed,
-                                    ]}
-                                    android_ripple={{ color: 'rgba(187, 134, 252, 0.2)', borderless: false }}
-                                  >
-                                    <View style={[styles.voiceRadioOuter, isSelected && styles.voiceRadioOuterSelected]}>
-                                      {isSelected && <View style={styles.voiceRadioInner} />}
+                                  <View key={section.key}>
+                                    <View style={styles.voiceGenderHeader}>
+                                      {section.key === 'unknown' ? (
+                                        <>
+                                          <MaleIcon width={18} height={18} fill="#4FC3F7" style={{ marginRight: 2 }} />
+                                          <FemaleIcon width={18} height={18} fill="#F48FB1" style={{ marginRight: 8 }} />
+                                        </>
+                                      ) : (
+                                        <View style={{ marginRight: 8 }}>{section.icon}</View>
+                                      )}
+                                      <Text style={styles.voiceGenderLabel}>{section.label}</Text>
                                     </View>
-                                    <Text style={[styles.voiceRadioText, isSelected && styles.voiceRadioTextSelected]}>
-                                      {voice.name}
-                                    </Text>
-                                  </Pressable>
+                                    {section.voices.map((voice, index) => {
+                                      const isSelected = voice.id === selectedVoiceId;
+                                      const isLast = index === section.voices.length - 1;
+                                      return (
+                                        <Pressable
+                                          key={voice.id}
+                                          onPress={() => onVoiceSelect?.(voice.id)}
+                                          style={({ pressed }) => [
+                                            styles.voiceRadioItem,
+                                            isLast && styles.voiceRadioItemLast,
+                                            pressed && styles.voiceRadioItemPressed,
+                                          ]}
+                                          android_ripple={{ color: 'rgba(187, 134, 252, 0.2)', borderless: false }}
+                                        >
+                                          <View style={[styles.voiceRadioOuter, isSelected && styles.voiceRadioOuterSelected]}>
+                                            {isSelected && <View style={styles.voiceRadioInner} />}
+                                          </View>
+                                          <Text style={[styles.voiceRadioText, isSelected && styles.voiceRadioTextSelected]}>
+                                            {voice.name}
+                                          </Text>
+                                        </Pressable>
+                                      );
+                                    })}
+                                  </View>
                                 );
                               })}
                             </View>
