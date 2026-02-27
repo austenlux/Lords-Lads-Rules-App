@@ -43,7 +43,7 @@ const COLORS = {
 
 // ─────────────────────────────────────────────── Component ──
 
-export default function VoiceAssistantFAB({ isListening, isThinking, isActive, onPress, onStop }) {
+export default function VoiceAssistantFAB({ isListening, isThinking, isActive, hasConversation, onPress, onStop }) {
   // ── Fade-in on mount ──────────────────────────────────────────────────
   const mountOpacity = useRef(new Animated.Value(0)).current;
 
@@ -99,8 +99,8 @@ export default function VoiceAssistantFAB({ isListening, isThinking, isActive, o
   }, [isListening, pulseScale, pulseOpacity]);
 
   // ── Derived visuals ───────────────────────────────────────────────────
-  // The kill switch is available as soon as the loop is active — listening OR thinking.
-  const isStoppable = isListening || isThinking;
+  // Show X whenever the conversation modal is open OR the AI loop is active.
+  const isStoppable = isListening || isThinking || hasConversation;
 
   const fabColor = isStoppable
     ? COLORS.stop

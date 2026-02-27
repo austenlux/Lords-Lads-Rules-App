@@ -90,30 +90,27 @@ const FAB_GAP     = 10;
 const TOP_MARGIN  = 8;
 const STATUS_BAR  = Platform.OS === 'android' ? (StatusBar.currentHeight ?? 24) : 44;
 
-export default function VoiceAssistantModal({ messages, isThinking, fabBottom = 96 }) {
+export default function VoiceAssistantModal({ messages, isThinking, isOpen, fabBottom = 96 }) {
   const listRef = useRef(null);
   const mountOpacity = useRef(new Animated.Value(0)).current;
 
-  // Fade in when first message appears, fade out when messages clear.
-  const visible = messages.length > 0;
-
+  // Fade in/out driven by isOpen, not by message count.
   useEffect(() => {
     Animated.timing(mountOpacity, {
-      toValue: visible ? 1 : 0,
+      toValue: isOpen ? 1 : 0,
       duration: 200,
       useNativeDriver: true,
     }).start();
-  }, [visible, mountOpacity]);
+  }, [isOpen, mountOpacity]);
 
-  // Auto-scroll to bottom whenever messages or their text updates.
+  // Auto-scroll to bottom whenever messages update.
   useEffect(() => {
-    if (messages.length > 0) {
-      // Small delay lets the layout settle before scrolling.
+    if (isOpen && messages.length > 0) {
       setTimeout(() => listRef.current?.scrollToEnd({ animated: true }), 50);
     }
-  }, [messages]);
+  }, [isOpen, messages]);
 
-  if (!visible && mountOpacity._value === 0) return null;
+  if (!isOpen && mountOpacity._value === 0) return null;
 
   const lastMsg = messages[messages.length - 1];
   const isLastStreaming = isThinking && lastMsg?.role === 'assistant';
@@ -125,7 +122,7 @@ export default function VoiceAssistantModal({ messages, isThinking, fabBottom = 
   return (
     <Animated.View
       style={[styles.container, { opacity: mountOpacity, top: panelTop, bottom: panelBottom }]}
-      pointerEvents={visible ? 'box-none' : 'none'}
+      pointerEvents={isOpen ? 'box-none' : 'none'}
     >
       <View style={styles.panel}>
         <FlatList
@@ -172,6 +169,8 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   listContent: {
+    flexGrow: 1,
+    justifyContent: 'flex-end',
     paddingHorizontal: 12,
     paddingVertical: 12,
     gap: 10,

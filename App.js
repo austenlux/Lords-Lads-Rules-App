@@ -62,6 +62,7 @@ function getLogoLayout() {
 export default function App() {
   const [splashMinTimeElapsed, setSplashMinTimeElapsed] = useState(false);
   const [splashDismissed, setSplashDismissed] = useState(false);
+  const [isConvoOpen, setIsConvoOpen] = useState(false);
   const isIOS = Platform.OS === 'ios';
   const splashOpacity = useRef(new Animated.Value(isIOS ? 1 : 0)).current;
   const mainAppOpacity = useRef(new Animated.Value(0)).current;
@@ -421,6 +422,7 @@ export default function App() {
           <VoiceAssistantModal
             messages={messages}
             isThinking={isThinking}
+            isOpen={isConvoOpen}
             fabBottom={TAB_BAR_HEIGHT + tabBarBottomInset + 16}
           />
 
@@ -437,8 +439,15 @@ export default function App() {
               isListening={isListening}
               isThinking={isThinking}
               isActive={aiActive}
-              onPress={() => askTheRules([content, expansionsContent].filter(Boolean).join('\n\n'))}
-              onStop={stopAssistant}
+              hasConversation={isConvoOpen}
+              onPress={() => {
+                setIsConvoOpen(true);
+                askTheRules([content, expansionsContent].filter(Boolean).join('\n\n'));
+              }}
+              onStop={() => {
+                stopAssistant();
+                setIsConvoOpen(false);
+              }}
             />
           </View>
         </View>

@@ -204,7 +204,9 @@ export function useGameAssistant() {
     isBusy.current = false;
     activeUserMsgId.current = null;
     activeAssistantMsgId.current = null;
-    setMessages([]);
+    // Messages are intentionally NOT cleared here — conversation history is
+    // preserved for the app lifecycle so the user can re-open the modal and
+    // continue where they left off.
   }, []);
 
   // ── Voice preview ────────────────────────────────────────────────────────
