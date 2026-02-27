@@ -13,6 +13,7 @@
 import React, { useRef, useEffect } from 'react';
 import {
   Animated,
+  Dimensions,
   FlatList,
   Platform,
   StatusBar,
@@ -65,7 +66,7 @@ function UserBubble({ text }) {
   );
 }
 
-function AssistantBubble({ text, isStreaming }) {
+function AssistantBubble({ text }) {
   return (
     <View style={[styles.bubbleRow, styles.bubbleRowAssistant]}>
       <View style={[styles.bubble, styles.assistantBubble]}>
@@ -75,7 +76,6 @@ function AssistantBubble({ text, isStreaming }) {
         ) : (
           <Text style={styles.thinkingText}>Thinking…</Text>
         )}
-        {isStreaming && <Text style={styles.streamCursor}>▌</Text>}
       </View>
     </View>
   );
@@ -90,7 +90,7 @@ const FAB_GAP     = 10;
 const TOP_MARGIN  = 8;
 const STATUS_BAR  = Platform.OS === 'android' ? (StatusBar.currentHeight ?? 24) : 44;
 
-export default function VoiceAssistantModal({ messages, isThinking, isOpen, fabBottom = 96 }) {
+export default function VoiceAssistantModal({ messages, isOpen, fabBottom = 96 }) {
   const listRef = useRef(null);
   const mountOpacity = useRef(new Animated.Value(0)).current;
 
@@ -112,19 +112,18 @@ export default function VoiceAssistantModal({ messages, isThinking, isOpen, fabB
 
   if (!isOpen && mountOpacity._value === 0) return null;
 
-  const lastMsg = messages[messages.length - 1];
-  const isLastStreaming = isThinking && lastMsg?.role === 'assistant';
-
-  // Panel sits between status bar and the top of the FAB.
+  // Panel bottom anchored just above the FAB.
+  // maxHeight caps growth so it never overflows above the status bar.
   const panelBottom = fabBottom + FAB_SIZE + FAB_GAP;
-  const panelTop    = STATUS_BAR + TOP_MARGIN;
+  const screenHeight = Dimensions.get('window').height;
+  const maxPanelHeight = screenHeight - panelBottom - STATUS_BAR - TOP_MARGIN;
 
   return (
     <Animated.View
-      style={[styles.container, { opacity: mountOpacity, top: panelTop, bottom: panelBottom }]}
+      style={[styles.container, { opacity: mountOpacity, bottom: panelBottom }]}
       pointerEvents={isOpen ? 'box-none' : 'none'}
     >
-      <View style={styles.panel}>
+      <View style={[styles.panel, { maxHeight: maxPanelHeight }]}>
         <FlatList
           ref={listRef}
           data={messages}
@@ -135,10 +134,7 @@ export default function VoiceAssistantModal({ messages, isThinking, isOpen, fabB
             item.role === 'user' ? (
               <UserBubble text={item.text} />
             ) : (
-              <AssistantBubble
-                text={item.text}
-                isStreaming={isLastStreaming && item.id === lastMsg?.id}
-              />
+              <AssistantBubble text={item.text} />
             )
           }
           onContentSizeChange={() =>
@@ -157,10 +153,9 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     right: 0,
-    // top and bottom set dynamically from fabBottom prop
+    // bottom set dynamically; grows upward to maxHeight
   },
   panel: {
-    flex: 1,
     marginHorizontal: 12,
     backgroundColor: COLORS.backdrop,
     borderRadius: 20,
@@ -224,10 +219,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666666',
     fontStyle: 'italic',
-  },
-  streamCursor: {
-    color: COLORS.cursor,
-    fontSize: 14,
-    marginTop: 2,
   },
 });

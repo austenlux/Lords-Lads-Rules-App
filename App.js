@@ -63,6 +63,8 @@ export default function App() {
   const [splashMinTimeElapsed, setSplashMinTimeElapsed] = useState(false);
   const [splashDismissed, setSplashDismissed] = useState(false);
   const [isConvoOpen, setIsConvoOpen] = useState(false);
+  const prevIsThinkingRef = useRef(false);
+  const convoContextRef = useRef('');
   const isIOS = Platform.OS === 'ios';
   const splashOpacity = useRef(new Animated.Value(isIOS ? 1 : 0)).current;
   const mainAppOpacity = useRef(new Animated.Value(0)).current;
@@ -121,6 +123,25 @@ export default function App() {
     toggleSearchBar,
     renderSection,
   } = useContent(styles, markdownStyles);
+
+  // Keep the latest rules context in a ref so the auto-continue effect can read it
+  // without needing content/expansionsContent as effect dependencies.
+  useEffect(() => {
+    convoContextRef.current = [content, expansionsContent].filter(Boolean).join('\n\n');
+  }, [content, expansionsContent]);
+
+  // Auto-start the next listening turn after the assistant finishes speaking.
+  // Triggers only when isThinking transitions true→false while the convo is open.
+  useEffect(() => {
+    const wasThinking = prevIsThinkingRef.current;
+    prevIsThinkingRef.current = isThinking;
+    if (wasThinking && !isThinking && isConvoOpen && !isListening) {
+      const timer = setTimeout(() => {
+        askTheRules(convoContextRef.current);
+      }, 600);
+      return () => clearTimeout(timer);
+    }
+  }, [isThinking]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!splashMinTimeElapsed || loading || fadeOutStarted.current) return;
@@ -421,7 +442,6 @@ export default function App() {
           {/* Conversation modal — floats above the FAB */}
           <VoiceAssistantModal
             messages={messages}
-            isThinking={isThinking}
             isOpen={isConvoOpen}
             fabBottom={TAB_BAR_HEIGHT + tabBarBottomInset + 16}
           />
