@@ -76,21 +76,29 @@ export default function AboutScreen({
   const [expandExpansionsDefault, setExpandExpansionsDefault] = useState(false);
   const animations = useRef({}).current;
   const voiceLocaleAnims = useRef({}).current;
+  const debugVoiceAnims = useRef({}).current;
   const [expandedLocales, setExpandedLocales] = useState({});
   const [expandDefaultsExpanded, setExpandDefaultsExpanded] = useState(false);
   const [voiceParentExpanded, setVoiceParentExpanded] = useState(false);
+  const [voiceMetaExpanded, setVoiceMetaExpanded] = useState(false);
+  const [expandedDebugVoices, setExpandedDebugVoices] = useState({});
 
   const VOICE_SECTION_MAX_HEIGHT = 1500;
   const EXPAND_DEFAULTS_MAX_HEIGHT = 300;
   const VOICE_PARENT_MAX_HEIGHT = 8000;
+  const VOICE_META_MAX_HEIGHT = 12000;
+  const DEBUG_VOICE_MAX_HEIGHT = 400;
 
-  // Initialise animation pairs for the two inner settings cards.
+  // Initialise animation pairs for settings cards and debug sections.
   useEffect(() => {
     if (!animations['expandDefaults']) {
       animations['expandDefaults'] = { rotation: new Animated.Value(0), maxHeight: new Animated.Value(0) };
     }
     if (!animations['voiceParent']) {
       animations['voiceParent'] = { rotation: new Animated.Value(0), maxHeight: new Animated.Value(0) };
+    }
+    if (!animations['voiceMeta']) {
+      animations['voiceMeta'] = { rotation: new Animated.Value(0), maxHeight: new Animated.Value(0) };
     }
   }, []);
 
@@ -120,9 +128,15 @@ export default function AboutScreen({
 
   useEffect(() => {
     if (!availableVoices.length) return;
-    availableVoices.forEach(({ language }) => {
+    availableVoices.forEach(({ language, id }) => {
       if (!voiceLocaleAnims[language]) {
         voiceLocaleAnims[language] = {
+          rotation: new Animated.Value(0),
+          maxHeight: new Animated.Value(0),
+        };
+      }
+      if (!debugVoiceAnims[id]) {
+        debugVoiceAnims[id] = {
           rotation: new Animated.Value(0),
           maxHeight: new Animated.Value(0),
         };
@@ -132,6 +146,13 @@ export default function AboutScreen({
       const next = { ...prev };
       availableVoices.forEach(({ language }) => {
         if (!(language in next)) next[language] = false;
+      });
+      return next;
+    });
+    setExpandedDebugVoices(prev => {
+      const next = { ...prev };
+      availableVoices.forEach(({ id }) => {
+        if (!(id in next)) next[id] = false;
       });
       return next;
     });
@@ -172,6 +193,33 @@ export default function AboutScreen({
       setExpandedLocales({});
     }
     setVoiceParentExpanded(isExpanded);
+  };
+
+  const toggleVoiceMeta = () => {
+    const isExpanded = !voiceMetaExpanded;
+    const anim = animations['voiceMeta'];
+    if (anim) {
+      Animated.timing(anim.rotation, { toValue: isExpanded ? 1 : 0, duration: 200, useNativeDriver: true }).start();
+      Animated.timing(anim.maxHeight, { toValue: isExpanded ? VOICE_META_MAX_HEIGHT : 0, duration: 200, useNativeDriver: false }).start();
+    }
+    if (!isExpanded) {
+      Object.entries(debugVoiceAnims).forEach(([, a]) => {
+        Animated.timing(a.rotation, { toValue: 0, duration: 150, useNativeDriver: true }).start();
+        Animated.timing(a.maxHeight, { toValue: 0, duration: 150, useNativeDriver: false }).start();
+      });
+      setExpandedDebugVoices({});
+    }
+    setVoiceMetaExpanded(isExpanded);
+  };
+
+  const toggleDebugVoice = (voiceId) => {
+    const isExpanded = !expandedDebugVoices[voiceId];
+    const anim = debugVoiceAnims[voiceId];
+    if (anim) {
+      Animated.timing(anim.rotation, { toValue: isExpanded ? 1 : 0, duration: 200, useNativeDriver: true }).start();
+      Animated.timing(anim.maxHeight, { toValue: isExpanded ? DEBUG_VOICE_MAX_HEIGHT : 0, duration: 200, useNativeDriver: false }).start();
+    }
+    setExpandedDebugVoices(prev => ({ ...prev, [voiceId]: isExpanded }));
   };
 
   /** Max height for expanded section so content can wrap; avoids static height cut-off. */
@@ -720,9 +768,73 @@ export default function AboutScreen({
               styles={styles}
               style={styles.aboutSectionWrapper}
             >
-              <View style={styles.versionContainer}>
-                <Text style={styles.comingSoonText}>Coming soon</Text>
-              </View>
+              {/* ── Voice Assistant Metadata ── */}
+              <TouchableOpacity
+                style={styles.versionContainer}
+                onPress={toggleVoiceMeta}
+                activeOpacity={0.7}
+              >
+                <View style={styles.versionHeader}>
+                  <View style={styles.versionRow}>
+                    <Text style={styles.versionText}>Voice Assistant Metadata</Text>
+                  </View>
+                  <Animated.View style={{ transform: [{ rotate: animations['voiceMeta']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
+                    <Text style={styles.versionArrow}>▶</Text>
+                  </Animated.View>
+                </View>
+                <Animated.View
+                  style={{ maxHeight: animations['voiceMeta']?.maxHeight || 0, overflow: 'hidden' }}
+                  pointerEvents={voiceMetaExpanded ? 'auto' : 'none'}
+                >
+                  <View style={styles.versionContent}>
+                    {availableVoices.map(voice => {
+                      const voiceAnim = debugVoiceAnims[voice.id];
+                      const isOpen = expandedDebugVoices[voice.id];
+                      const metaRows = [
+                        { label: 'ID',               value: voice.id },
+                        { label: 'Display Name',     value: voice.name },
+                        { label: 'Gender',           value: voice.gender ?? '—' },
+                        { label: 'Language Tag',     value: voice.language },
+                        { label: 'Locale',           value: voice.localeDisplay },
+                        { label: 'Quality',          value: voice.qualityLabel ?? String(voice.quality ?? '—') },
+                        { label: 'Latency',          value: voice.latencyLabel ?? String(voice.latency ?? '—') },
+                        { label: 'Network Required', value: voice.networkRequired ? 'Yes' : 'No' },
+                        { label: 'Features',         value: Array.isArray(voice.features) ? voice.features.join(', ') || '—' : '—' },
+                      ];
+                      return (
+                        <TouchableOpacity
+                          key={voice.id}
+                          style={styles.versionContainer}
+                          onPress={() => toggleDebugVoice(voice.id)}
+                          activeOpacity={0.7}
+                        >
+                          <View style={styles.versionHeader}>
+                            <View style={styles.versionRow}>
+                              <Text style={[styles.versionText, { flexShrink: 1, fontSize: 14 }]} numberOfLines={1}>{voice.id}</Text>
+                            </View>
+                            <Animated.View style={{ transform: [{ rotate: voiceAnim?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }], marginLeft: 12 }}>
+                              <Text style={styles.versionArrow}>▶</Text>
+                            </Animated.View>
+                          </View>
+                          <Animated.View
+                            style={{ maxHeight: voiceAnim?.maxHeight || 0, overflow: 'hidden' }}
+                            pointerEvents={isOpen ? 'auto' : 'none'}
+                          >
+                            <View style={[styles.versionContent, { paddingTop: 4 }]}>
+                              {metaRows.map(row => (
+                                <View key={row.label} style={styles.debugMetaRow}>
+                                  <Text style={styles.debugMetaLabel}>{row.label}</Text>
+                                  <Text style={styles.debugMetaValue}>{row.value}</Text>
+                                </View>
+                              ))}
+                            </View>
+                          </Animated.View>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+                </Animated.View>
+              </TouchableOpacity>
             </CollapsibleSection>
           )}
         </View>

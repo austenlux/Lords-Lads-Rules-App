@@ -342,6 +342,14 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
                 val countryName = voice.locale.getDisplayCountry(Locale.ENGLISH)
                     .ifBlank { voice.locale.getDisplayName(Locale.ENGLISH) }
                 obj.put("localeDisplay", if (flag.isNotEmpty()) "$flag $countryName" else countryName)
+                obj.put("quality", voice.quality)
+                obj.put("qualityLabel", qualityLabel(voice.quality))
+                obj.put("latency", voice.latency)
+                obj.put("latencyLabel", latencyLabel(voice.latency))
+                obj.put("networkRequired", voice.isNetworkConnectionRequired)
+                val featuresArray = JSONArray()
+                voice.features.forEach { featuresArray.put(it) }
+                obj.put("features", featuresArray)
                 jsonArray.put(obj)
             }
 
@@ -410,6 +418,22 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
         if (id.contains("male"))   return "male"
 
         return "unknown"
+    }
+
+    private fun qualityLabel(quality: Int): String = when {
+        quality >= Voice.QUALITY_VERY_HIGH -> "Very High ($quality)"
+        quality >= Voice.QUALITY_HIGH      -> "High ($quality)"
+        quality >= Voice.QUALITY_NORMAL    -> "Normal ($quality)"
+        quality >= Voice.QUALITY_LOW       -> "Low ($quality)"
+        else                               -> "Very Low ($quality)"
+    }
+
+    private fun latencyLabel(latency: Int): String = when {
+        latency <= Voice.LATENCY_VERY_LOW  -> "Very Low ($latency)"
+        latency <= Voice.LATENCY_LOW       -> "Low ($latency)"
+        latency <= Voice.LATENCY_NORMAL    -> "Normal ($latency)"
+        latency <= Voice.LATENCY_HIGH      -> "High ($latency)"
+        else                               -> "Very High ($latency)"
     }
 
     private fun countryCodeToFlag(countryCode: String): String {

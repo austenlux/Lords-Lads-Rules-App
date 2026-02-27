@@ -337,6 +337,25 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     paddingVertical: 8,
   },
+  debugMetaRow: {
+    flexDirection: 'row',
+    paddingVertical: 5,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(187, 134, 252, 0.1)',
+  },
+  debugMetaLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#BB86FC',
+    width: 130,
+    flexShrink: 0,
+  },
+  debugMetaValue: {
+    fontSize: 12,
+    color: '#CCCCCC',
+    flex: 1,
+    flexWrap: 'wrap',
+  },
   paymentSection: {
     marginBottom: 0,
   },
