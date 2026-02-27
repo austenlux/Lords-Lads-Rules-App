@@ -55,11 +55,15 @@ const markdownStyles = {
 // ──────────────────────────────────────────────────── Helpers ──
 
 function UserBubble({ text }) {
+  const isEmpty = !text?.trim();
   return (
     <View style={styles.bubbleRow}>
       <View style={[styles.bubble, styles.userBubble]}>
         <Text style={styles.roleLabel}>You</Text>
-        <Text style={styles.userText}>{text}</Text>
+        {isEmpty
+          ? <Text style={styles.listeningText}>Listening…</Text>
+          : <Text style={styles.userText}>{text}</Text>
+        }
       </View>
     </View>
   );
@@ -218,6 +222,11 @@ const styles = StyleSheet.create({
   thinkingText: {
     fontSize: 14,
     color: '#666666',
+    fontStyle: 'italic',
+  },
+  listeningText: {
+    fontSize: 14,
+    color: '#888888',
     fontStyle: 'italic',
   },
 });

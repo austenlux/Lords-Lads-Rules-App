@@ -202,7 +202,12 @@ export function useGameAssistant() {
     setIsThinking(false);
     setIsListening(false);
     isBusy.current = false;
-    activeUserMsgId.current = null;
+    // If STT was still in progress the user bubble has no confirmed text — remove it.
+    if (activeUserMsgId.current) {
+      const staleId = activeUserMsgId.current;
+      setMessages((prev) => prev.filter((m) => m.id !== staleId));
+      activeUserMsgId.current = null;
+    }
     activeAssistantMsgId.current = null;
     // Messages are intentionally NOT cleared here — conversation history is
     // preserved for the app lifecycle so the user can re-open the modal and
