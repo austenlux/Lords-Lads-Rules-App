@@ -98,31 +98,6 @@ export default function VoiceAssistantFAB({ isListening, isThinking, isActive, o
     return () => loop.stop();
   }, [isListening, pulseScale, pulseOpacity]);
 
-  // ── Thinking spin ────────────────────────────────────────────────────
-  const spinValue = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    if (!isThinking) {
-      spinValue.setValue(0);
-      return;
-    }
-
-    const loop = Animated.loop(
-      Animated.timing(spinValue, {
-        toValue: 1,
-        duration: 1200,
-        useNativeDriver: true,
-      }),
-    );
-    loop.start();
-    return () => loop.stop();
-  }, [isThinking, spinValue]);
-
-  const spin = spinValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '360deg'],
-  });
-
   // ── Derived visuals ───────────────────────────────────────────────────
   // The kill switch is available as soon as the loop is active — listening OR thinking.
   const isStoppable = isListening || isThinking;
@@ -163,14 +138,12 @@ export default function VoiceAssistantFAB({ isListening, isThinking, isActive, o
           /* Stop icon — X */
           <Text style={styles.stopIcon}>✕</Text>
         ) : (
-          <Animated.View style={{ transform: [{ rotate: spin }] }}>
-            <MicIcon
-              width={28}
-              height={28}
-              fill={COLORS.icon}
-              color={COLORS.icon}
-            />
-          </Animated.View>
+          <MicIcon
+            width={28}
+            height={28}
+            fill={COLORS.icon}
+            color={COLORS.icon}
+          />
         )}
       </Pressable>
     </Animated.View>
