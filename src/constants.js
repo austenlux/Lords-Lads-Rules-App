@@ -74,8 +74,13 @@ const sanitizeRulebookContent = (text) => {
   return text
     // Remove the ToC block: from its header line to (not including) the next header.
     .replace(/^#{1,6}\s+(?:table\s+of\s+contents|contents)\s*\n[\s\S]*?(?=^#{1,6}\s)/gim, '')
+    // Remove the top-level title heading (# Title) — not useful context for the LLM.
+    .replace(/^#\s+.+$/m, '')
+    // Remove image tags — the model can't process images and they waste tokens.
+    .replace(/!\[.*?\]\(.*?\)/g, '')
+    // Strip HTML entities (e.g. &amp; → &).
+    .replace(/&amp;/g, '&')
     // Strip characters that conflict with XML-style prompt section tags.
-    // Heading hashes are intentionally preserved for RAG context.
     .replace(/[<>]/g, '')
     .trim();
 };
