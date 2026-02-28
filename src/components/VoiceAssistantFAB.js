@@ -143,8 +143,8 @@ export default function VoiceAssistantFAB({ isListening, isThinking, isActive, h
       >
         {isStoppable ? (
           <CloseIcon
-            width={28}
-            height={28}
+            width={36}
+            height={36}
             fill={COLORS.stopIcon}
             color={COLORS.stopIcon}
           />

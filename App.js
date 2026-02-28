@@ -489,8 +489,8 @@ export default function App() {
                 askTheRules(content, expansionsContent, retrieve);
               }}
               onStop={() => {
-                stopAssistant();
                 setIsConvoOpen(false);
+                stopAssistant();
               }}
             />
           </View>

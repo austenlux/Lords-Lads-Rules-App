@@ -118,8 +118,10 @@ export function buildFTSQuery(question) {
 
   if (words.length === 0) return null;
 
-  // FTS5 implicit AND: all keywords must be present.
-  return words.join(' ');
+  // FTS5 OR: any keyword match qualifies; BM25 ranks by relevance.
+  // OR is essential for natural-language questions where not every
+  // extracted word appears in every relevant chunk.
+  return words.join(' OR ');
 }
 
 // ── Deduplication & source cap ────────────────────────────────────────────────
