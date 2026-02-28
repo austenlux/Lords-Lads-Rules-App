@@ -79,6 +79,9 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
     // Active Gemini Nano inference job — cancelled by stopAssistant().
     private var activeInferenceJob: Job? = null
 
+    // Plays a pulsing tone while Gemini Nano is processing; stopped on first TTS word.
+    private val thinkingSound = ThinkingSoundPlayer()
+
     // Buffer that accumulates streaming chunks until a sentence boundary is found.
     private val sentenceBuffer = StringBuilder()
 
@@ -266,6 +269,9 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
                 // Pre-warm audio focus so the first speak() call has no focus-request latency.
                 requestAudioFocus()
 
+                // Audible processing indicator — stopped the moment the first TTS word plays.
+                thinkingSound.start()
+
                 generativeModel.generateContentStream(prompt).collect { chunk ->
                     val text = chunk.candidates.firstOrNull()?.text ?: return@collect
                     fullResponse.append(text)
@@ -303,6 +309,7 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
         sentenceBuffer.clear()
         pendingTtsCount.set(0)
         generationComplete = false
+        thinkingSound.stop()
         // Cancel any in-flight STT session and reject its promise.
         mainHandler.post {
             speechRecognizer?.cancel()
@@ -324,6 +331,8 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
      */
     override fun speak(text: String) {
         if (!ttsReady || text.isBlank()) return
+        // Stop the thinking tone the moment the first word of the response starts playing.
+        thinkingSound.stop()
         requestAudioFocus()
         pendingTtsCount.incrementAndGet()
         tts?.speak(text, TextToSpeech.QUEUE_ADD, null, UTTERANCE_ID)
