@@ -22,6 +22,7 @@ import {
   embedText,
   scoreAllChunks,
   retrieveTopK,
+  applyDedupAndCap,
   MIN_SIMILARITY,
   SOURCE,
 } from '../services/RAGService';
@@ -173,20 +174,23 @@ export function useRAG() {
           .filter((c) => c.score >= MIN_SIMILARITY)
           .slice(0, 5);
       } else {
-        // Slow path: query SQLite-vec.  sqlite-vec returns `distance` (lower
-        // is better); normalise to `score` (1 − distance) so the debug panel
-        // and threshold check use a consistent 0-1 scale.
-        const dbRows = await queryTopK(queryVector, 5);
-        const normalised = (dbRows ?? []).map((r) => ({
-          ...r,
-          score: r.score ?? (1 - (r.distance ?? 1)),
-        }));
+        // Slow path: query SQLite-vec.  Fetch more rows than needed so that
+        // dedup + source-cap have enough candidates to fill k slots after
+        // eliminating near-duplicate chunks.
+        // sqlite-vec returns `distance` (lower = more similar); normalise to
+        // `score` = 1 − distance for a consistent 0-1 scale.
+        const dbRows = await queryTopK(queryVector, 30);
+        const normalised = (dbRows ?? [])
+          .map((r) => ({ ...r, score: r.score ?? (1 - (r.distance ?? 1)) }))
+          .sort((a, b) => b.score - a.score);
+
         rawTopScores = normalised.slice(0, 5).map((c) => ({
           source:  c.source,
           score:   c.score,
           preview: c.text?.slice(0, 80) ?? '',
         }));
-        topChunks = normalised.filter((r) => r.score >= MIN_SIMILARITY);
+        // Apply the same dedup + source-cap as the in-memory path.
+        topChunks = applyDedupAndCap(normalised);
       }
 
       const elapsedMs = Date.now() - t0;

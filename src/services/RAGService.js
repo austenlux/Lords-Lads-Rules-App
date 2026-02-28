@@ -181,50 +181,67 @@ export function scoreAllChunks(queryVector, embeddedChunks) {
 }
 
 /**
+ * Normalises text for duplicate detection: lowercase, replace all
+ * punctuation/special characters with spaces, collapse whitespace.
+ * This makes the comparison robust to quote styles, markdown symbols,
+ * and minor formatting differences between overlapping chunks.
+ */
+function normaliseForDedup(text) {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/**
  * Returns true if [candidate] shares a distinctive phrase with any already-
- * selected chunk.  Uses sliding 8-word windows: if any 8-word sequence from
- * the candidate appears verbatim in a selected chunk (or vice versa), the
- * two pieces of text are considered content-duplicates.
+ * selected chunk.
  *
- * This catches both adjacent overlap chunks AND the same rule sentence
- * repeated in multiple non-adjacent sections of the document.
+ * Uses sliding 5-word windows on normalised text (step of 2 words).
+ * 5-word windows are short enough to survive the slight boundary-snapping
+ * offsets that chunking produces, while still being specific enough to avoid
+ * false positives on common short phrases.
+ *
+ * Catches both adjacent overlap chunks AND the same sentence repeated in
+ * multiple non-adjacent sections of the document.
  */
 function isDuplicateContent(candidate, selected) {
-  const words = candidate.text.split(/\s+/);
+  const normCandidate = normaliseForDedup(candidate.text);
+  const words = normCandidate.split(' ');
+
   for (const existing of selected) {
-    // Check 8-word windows from the candidate against the existing chunk text.
-    for (let i = 0; i <= words.length - 8; i += 4) {
-      const phrase = words.slice(i, i + 8).join(' ');
-      if (existing.text.includes(phrase)) return true;
+    const normExisting = normaliseForDedup(existing.text);
+    for (let i = 0; i <= words.length - 5; i += 2) {
+      const phrase = words.slice(i, i + 5).join(' ');
+      if (normExisting.includes(phrase)) return true;
     }
   }
   return false;
 }
 
 /**
- * Retrieves top-k relevant chunks with two quality guards:
+ * Applies content deduplication and source capping to a pre-scored,
+ * pre-sorted list of chunks.  Shared by both the in-memory and DB retrieval
+ * paths so dedup is always applied regardless of which path is taken.
  *
- *  1. Content deduplication — skip a chunk if it shares an 8-word phrase
- *     with an already-selected chunk.  This handles both adjacent overlap
- *     chunks and the same rule sentence appearing in multiple sections.
+ *  1. Source cap — at most MAX_PER_SOURCE chunks from any single source.
+ *  2. Content dedup — skip if a 5-word normalised phrase already appears in
+ *     a selected chunk (catches repeated sentences and overlapping windows).
  *
- *  2. Source cap — at most MAX_PER_SOURCE chunks from any single source so
- *     that rules and expansions both get representation.
+ * @param {Array<{id, source, text, score}>} scoredChunks  Pre-sorted high→low.
+ * @param {number} [k]
  */
-export function retrieveTopK(queryVector, embeddedChunks, k = TOP_K) {
-  const allScored     = scoreAllChunks(queryVector, embeddedChunks);
+export function applyDedupAndCap(scoredChunks, k = TOP_K) {
   const selected      = [];
   const countBySource = {};
 
-  for (const chunk of allScored) {
+  for (const chunk of scoredChunks) {
     if (selected.length >= k) break;
     if (chunk.score < MIN_SIMILARITY) break;
 
-    // 1. Source cap.
     const sourceCount = countBySource[chunk.source] ?? 0;
     if (sourceCount >= MAX_PER_SOURCE) continue;
-
-    // 2. Content dedup.
     if (isDuplicateContent(chunk, selected)) continue;
 
     selected.push(chunk);
@@ -232,4 +249,8 @@ export function retrieveTopK(queryVector, embeddedChunks, k = TOP_K) {
   }
 
   return selected;
+}
+
+export function retrieveTopK(queryVector, embeddedChunks, k = TOP_K) {
+  return applyDedupAndCap(scoreAllChunks(queryVector, embeddedChunks), k);
 }
