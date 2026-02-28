@@ -19,6 +19,17 @@ react {
 
 def jscFlavor = 'org.webkit:android-jsc:+'
 
+// Sync thinking sound MP3s from the shared project assets folder into the
+// Android assets folder so they are accessible via AssetManager in Kotlin.
+// This runs automatically before every build, so adding/removing files in
+// assets/audio/thinking_sounds/ requires no manual steps.
+task syncThinkingSounds(type: Copy) {
+    from("${rootProject.projectDir}/../assets/audio/thinking_sounds")
+    into("${projectDir}/src/main/assets/audio/thinking_sounds")
+    include("*.mp3")
+}
+preBuild.dependsOn syncThinkingSounds
+
 def keystorePropertiesFile = rootProject.file("keystore.properties")
 def keystoreProperties = new Properties()
 if (keystorePropertiesFile.exists()) {
