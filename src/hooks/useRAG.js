@@ -99,23 +99,34 @@ export function useRAG() {
         return null;
       }
 
-      // Fetch candidates from FTS5, then apply dedup + source cap.
-      const dbRows  = await queryFTS(ftsQuery, 15);
-      const topChunks = applyDedupAndCap(dbRows);
+      // AND search: all keywords must appear in the chunk. High precision.
+      // If AND returns nothing, fall back to full-content prompting — full
+      // content gives reliable answers and is better than low-quality OR hits.
+      const dbRows = await queryFTS(ftsQuery, 15);
 
       const elapsedMs = Date.now() - t0;
 
-      // Raw scores for debug panel (pre-dedup top 5).
       const rawTopScores = dbRows.slice(0, 5).map((r) => ({
         source:  r.source,
         score:   r.score,
         preview: r.text?.slice(0, 80) ?? '',
       }));
 
+      if (!dbRows.length) {
+        setLastRAGResult({
+          query, chunks: [], rawTopScores: [], usedRAG: false,
+          status: 'no_and_match', promptSnippet: fullPromptForDebug.slice(0, 800),
+          elapsedMs,
+        });
+        return null;
+      }
+
+      const topChunks = applyDedupAndCap(dbRows);
+
       if (!topChunks?.length) {
         setLastRAGResult({
           query, chunks: [], rawTopScores, usedRAG: false,
-          status: 'no_results', promptSnippet: fullPromptForDebug.slice(0, 800),
+          status: 'dedup_filtered', promptSnippet: fullPromptForDebug.slice(0, 800),
           elapsedMs,
         });
         return null;

@@ -204,10 +204,14 @@ export function useGameAssistant() {
     setIsListening(false);
     isBusy.current = false;
     // If STT was still in progress the user bubble has no confirmed text — remove it.
+    // Delay by 250ms so the modal's 200ms fade-out animation completes first,
+    // preventing the bubble from visibly disappearing before the modal is hidden.
     if (activeUserMsgId.current) {
       const staleId = activeUserMsgId.current;
-      setMessages((prev) => prev.filter((m) => m.id !== staleId));
       activeUserMsgId.current = null;
+      setTimeout(() => {
+        setMessages((prev) => prev.filter((m) => m.id !== staleId));
+      }, 250);
     }
     activeAssistantMsgId.current = null;
     // Messages are intentionally NOT cleared here — conversation history is

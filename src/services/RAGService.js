@@ -118,10 +118,12 @@ export function buildFTSQuery(question) {
 
   if (words.length === 0) return null;
 
-  // FTS5 OR: any keyword match qualifies; BM25 ranks by relevance.
-  // OR is essential for natural-language questions where not every
-  // extracted word appears in every relevant chunk.
-  return words.join(' OR ');
+  // FTS5 implicit AND: all keywords must appear in the chunk.
+  // This is intentionally strict — precise co-occurrence is a strong
+  // relevance signal for game rule queries (e.g. "drop hammer").
+  // When AND yields no results, useRAG falls back to full-content
+  // prompting which reliably gives correct answers.
+  return words.join(' ');
 }
 
 // ── Deduplication & source cap ────────────────────────────────────────────────
