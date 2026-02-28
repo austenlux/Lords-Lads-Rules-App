@@ -21,7 +21,7 @@ import kotlin.math.sin
  */
 class ThinkingSoundPlayer(
     private val frequencyHz: Float = 440f,
-    private val amplitude:   Float = 0.12f,
+    private val amplitude:   Float = 0.25f,
     private val pulseRateHz: Float = 1.0f,
 ) {
     companion object {
@@ -50,8 +50,12 @@ class ThinkingSoundPlayer(
             val track = AudioTrack.Builder()
                 .setAudioAttributes(
                     AudioAttributes.Builder()
-                        .setUsage(AudioAttributes.USAGE_ASSISTANCE_SONIFICATION)
-                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        // USAGE_MEDIA routes through STREAM_MUSIC — the same stream as
+                        // TTS and media playback, guaranteed audible at media volume.
+                        // USAGE_ASSISTANCE_SONIFICATION uses STREAM_SYSTEM which may be
+                        // silent if the user has system sounds muted.
+                        .setUsage(AudioAttributes.USAGE_MEDIA)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
                         .build()
                 )
                 .setAudioFormat(
