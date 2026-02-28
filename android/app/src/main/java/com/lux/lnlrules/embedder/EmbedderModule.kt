@@ -8,6 +8,8 @@ import com.google.mediapipe.tasks.core.BaseOptions
 import com.google.mediapipe.tasks.text.textembedder.TextEmbedder
 import com.google.mediapipe.tasks.text.textembedder.TextEmbedder.TextEmbedderOptions
 import com.lux.lnlrules.NativeEmbedderSpec
+import java.io.File
+import java.nio.ByteBuffer
 
 /**
  * TurboModule that wraps MediaPipe TextEmbedder for on-device semantic
@@ -16,6 +18,11 @@ import com.lux.lnlrules.NativeEmbedderSpec
  *
  * The Universal Sentence Encoder model (~5.8 MB) is bundled in assets as
  * universal_sentence_encoder.tflite.
+ *
+ * Loading strategy: copy the model from assets to the app cache directory
+ * on first use, then pass an absolute file path to MediaPipe.  This is
+ * more reliable than setModelAssetPath() in release builds because the
+ * file system path bypasses any APK-level asset compression checks.
  */
 class EmbedderModule(reactContext: ReactApplicationContext) :
     NativeEmbedderSpec(reactContext) {
@@ -49,14 +56,13 @@ class EmbedderModule(reactContext: ReactApplicationContext) :
             ensureEmbedder()
             promise.resolve(null)
         } catch (e: Exception) {
-            Log.e(TAG, "warmUp failed", e)
-            promise.reject("EMBEDDER_WARMUP_ERROR", e.message, e)
+            Log.e(TAG, "warmUp failed: ${e.javaClass.simpleName} — ${e.message}", e)
+            promise.reject("EMBEDDER_WARMUP_ERROR", "${e.javaClass.simpleName}: ${e.message}", e)
         }
     }
 
     /**
      * Embeds [text] and resolves with a JS number array (float32 values).
-     * Returns an empty array if the embedder is unavailable.
      */
     override fun embedText(text: String, promise: Promise) {
         try {
@@ -73,24 +79,64 @@ class EmbedderModule(reactContext: ReactApplicationContext) :
             floats.forEach { arr.pushDouble(it.toDouble()) }
             promise.resolve(arr)
         } catch (e: Exception) {
-            Log.e(TAG, "embedText failed", e)
-            promise.reject("EMBEDDER_ERROR", e.message, e)
+            Log.e(TAG, "embedText failed: ${e.javaClass.simpleName} — ${e.message}", e)
+            promise.reject("EMBEDDER_ERROR", "${e.javaClass.simpleName}: ${e.message}", e)
         }
     }
 
     // ── Private helpers ──────────────────────────────────────────────────────
 
+    /**
+     * Ensures the TextEmbedder is initialised, creating it if needed.
+     *
+     * Uses an absolute file path rather than an asset path so that MediaPipe
+     * can open the model with normal file I/O — no memory-mapping of APK
+     * assets required.  The model is copied from assets to the cache dir on
+     * first use and reused on subsequent calls.
+     */
     private fun ensureEmbedder(): TextEmbedder {
         embedder?.let { return it }
+
+        val modelBuffer = loadModelBuffer()
+        Log.d(TAG, "Loaded model buffer: ${modelBuffer.capacity()} bytes")
+
         val options = TextEmbedderOptions.builder()
             .setBaseOptions(
                 BaseOptions.builder()
-                    .setModelAssetPath(MODEL_ASSET)
+                    .setModelAssetBuffer(modelBuffer)
                     .build()
             )
-            .setL2Normalize(true)  // Normalise so cosine similarity = dot product.
+            .setL2Normalize(true)
             .build()
+
         return TextEmbedder.createFromOptions(reactApplicationContext, options)
             .also { embedder = it }
+    }
+
+    /**
+     * Reads [MODEL_ASSET] from the APK assets into a direct ByteBuffer.
+     * Using a ByteBuffer (setModelAssetBuffer) bypasses APK asset compression
+     * entirely — we read the bytes ourselves and hand them to MediaPipe.
+     *
+     * The buffer is cached on disk (app cache dir) after first extraction so
+     * subsequent launches avoid re-reading from the APK.
+     */
+    private fun loadModelBuffer(): ByteBuffer {
+        val dest = File(reactApplicationContext.cacheDir, MODEL_ASSET)
+
+        // Copy from assets to cache if not already done.
+        if (!dest.exists() || dest.length() == 0L) {
+            reactApplicationContext.assets.open(MODEL_ASSET).use { input ->
+                dest.outputStream().use { output -> input.copyTo(output) }
+            }
+            Log.d(TAG, "Extracted model to: ${dest.absolutePath} (${dest.length()} bytes)")
+        }
+
+        // Read the cached file into a direct ByteBuffer for MediaPipe.
+        val bytes = dest.readBytes()
+        val buffer = ByteBuffer.allocateDirect(bytes.size)
+        buffer.put(bytes)
+        buffer.rewind()
+        return buffer
     }
 }

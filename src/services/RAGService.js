@@ -91,14 +91,20 @@ export function chunkText(text, source) {
  * @param {string} text
  * @returns {Promise<number[] | null>}
  */
+/**
+ * Embeds a single text string.
+ * Throws on failure so the caller can capture the real error message.
+ * Returns null on iOS (NativeEmbedder not yet implemented).
+ *
+ * @param {string} text
+ * @returns {Promise<number[] | null>}
+ */
 export async function embedText(text) {
   if (Platform.OS !== 'android') return null;
-  try {
-    const vec = await NativeEmbedder.embedText(text);
-    return vec?.length ? vec : null;
-  } catch {
-    return null;
-  }
+  // Intentionally NOT catching here — callers that need per-item resilience
+  // (embedChunks) wrap each call individually; retrieve() captures the message.
+  const vec = await NativeEmbedder.embedText(text);
+  return vec?.length ? vec : null;
 }
 
 /**
@@ -111,8 +117,12 @@ export async function embedText(text) {
 export async function embedChunks(chunks) {
   const results = await Promise.all(
     chunks.map(async (chunk) => {
-      const vector = await embedText(chunk.text);
-      return vector ? { ...chunk, vector } : null;
+      try {
+        const vector = await embedText(chunk.text);
+        return vector ? { ...chunk, vector } : null;
+      } catch {
+        return null;
+      }
     }),
   );
   return results.filter(Boolean);
