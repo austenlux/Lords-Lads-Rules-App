@@ -162,9 +162,16 @@ export async function getAllChunks() {
 // ── Binary helpers ────────────────────────────────────────────────────────────
 
 /**
- * Packs a Float32Array into a Uint8Array blob that sqlite-vec expects.
- * sqlite-vec treats the blob as raw IEEE-754 float32 little-endian bytes.
+ * Returns the underlying ArrayBuffer of a Float32Array for use as a SQLite
+ * blob parameter.  op-sqlite requires a raw ArrayBuffer — not a typed-array
+ * view — when binding binary values to query parameters.
+ * sqlite-vec reads the blob as packed IEEE-754 float32 little-endian bytes.
  */
 function float32ArrayToBlob(float32Array) {
-  return new Uint8Array(float32Array.buffer);
+  // Slice to get an owned copy of just the relevant bytes (handles the case
+  // where float32Array is a view into a larger shared buffer).
+  return float32Array.buffer.slice(
+    float32Array.byteOffset,
+    float32Array.byteOffset + float32Array.byteLength,
+  );
 }
