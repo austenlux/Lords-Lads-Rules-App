@@ -18,9 +18,11 @@ import NativeEmbedder from '../specs/NativeEmbedder';
 
 // ── Chunking parameters ───────────────────────────────────────────────────────
 
-const CHUNK_SIZE           = 500;   // target characters per chunk
-const CHUNK_OVERLAP        = 100;   // overlap between consecutive chunks
-const TOP_K                = 5;     // number of chunks returned per query
+const CHUNK_SIZE            = 800;  // larger chunks = more context per snippet
+const CHUNK_OVERLAP         = 100;  // overlap between consecutive chunks
+const TOP_K                 = 5;    // total chunks returned per query
+const MAX_PER_SOURCE        = 3;    // cap per source so rules + expansions both get slots
+const DEDUP_INDEX_DISTANCE  = 2;    // skip a chunk if a same-source chunk within ±N is already selected
 export const MIN_SIMILARITY = 0.25; // chunks scoring below this are discarded
 
 // ── Source identifiers ────────────────────────────────────────────────────────
@@ -179,8 +181,51 @@ export function scoreAllChunks(queryVector, embeddedChunks) {
     .sort((a, b) => b.score - a.score);
 }
 
+/**
+ * Extracts the sequential index from a chunk ID like "expansions_42" → 42.
+ * Used for proximity deduplication of overlapping chunks.
+ */
+function parseChunkIndex(id) {
+  const n = parseInt(id?.split('_').pop(), 10);
+  return isNaN(n) ? -1 : n;
+}
+
+/**
+ * Retrieves top-k relevant chunks with two quality guards:
+ *
+ *  1. Deduplication — if a same-source chunk within ±DEDUP_INDEX_DISTANCE is
+ *     already selected, skip it.  Adjacent chunks heavily overlap in text, so
+ *     selecting them adds zero new information and just repeats one sentence.
+ *
+ *  2. Source cap — at most MAX_PER_SOURCE chunks from any single source so
+ *     that rules and expansions can both contribute even when one source
+ *     dominates the similarity scores.
+ */
 export function retrieveTopK(queryVector, embeddedChunks, k = TOP_K) {
-  return scoreAllChunks(queryVector, embeddedChunks)
-    .filter((chunk) => chunk.score >= MIN_SIMILARITY)
-    .slice(0, k);
+  const allScored = scoreAllChunks(queryVector, embeddedChunks);
+  const selected  = [];
+  const countBySource = {};
+
+  for (const chunk of allScored) {
+    if (selected.length >= k) break;
+    if (chunk.score < MIN_SIMILARITY) break;
+
+    // 1. Source cap.
+    const sourceCount = countBySource[chunk.source] ?? 0;
+    if (sourceCount >= MAX_PER_SOURCE) continue;
+
+    // 2. Dedup: skip if an already-selected chunk from the same source is
+    //    within DEDUP_INDEX_DISTANCE positions (i.e. overlapping text window).
+    const chunkIdx   = parseChunkIndex(chunk.id);
+    const isDuplicate = selected.some((s) => {
+      if (s.source !== chunk.source) return false;
+      return Math.abs(parseChunkIndex(s.id) - chunkIdx) <= DEDUP_INDEX_DISTANCE;
+    });
+    if (isDuplicate) continue;
+
+    selected.push(chunk);
+    countBySource[chunk.source] = sourceCount + 1;
+  }
+
+  return selected;
 }
