@@ -34,6 +34,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import java.util.Locale
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Full Voice-to-AI-to-Voice loop over Gemini Nano.
@@ -68,6 +69,12 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
     // ── TTS
     private var tts: TextToSpeech? = null
     private var ttsReady = false
+    // Tracks how many utterances are currently queued/playing.
+    // Incremented in speak(), decremented in onDone().
+    // onTTSFinished is only emitted when this reaches 0 AND generation is complete,
+    // preventing the premature fire caused by isSpeaking briefly being false between queued sentences.
+    private val pendingTtsCount = AtomicInteger(0)
+    private @Volatile var generationComplete = false
 
     // Active Gemini Nano inference job — cancelled by stopAssistant().
     private var activeInferenceJob: Job? = null
@@ -253,6 +260,8 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
                 val prompt = fullPrompt
                 val fullResponse = StringBuilder()
                 sentenceBuffer.clear()
+                pendingTtsCount.set(0)
+                generationComplete = false
 
                 // Pre-warm audio focus so the first speak() call has no focus-request latency.
                 requestAudioFocus()
@@ -267,6 +276,13 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
                 }
 
                 flushRemainingBuffer()
+                // Mark generation done. If no TTS was queued (e.g. empty response),
+                // fire onTTSFinished immediately so the JS layer isn't left waiting.
+                generationComplete = true
+                if (pendingTtsCount.get() <= 0) {
+                    abandonAudioFocus()
+                    emitOnTTSFinished(Arguments.createMap().apply { putString("status", "done") })
+                }
                 promise.resolve(fullResponse.toString())
             } catch (e: Exception) {
                 promise.reject("ASK_QUESTION_ERROR", e.message ?: "Unknown error", e)
@@ -285,6 +301,8 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
         activeInferenceJob?.cancel()
         activeInferenceJob = null
         sentenceBuffer.clear()
+        pendingTtsCount.set(0)
+        generationComplete = false
         // Cancel any in-flight STT session and reject its promise.
         mainHandler.post {
             speechRecognizer?.cancel()
@@ -307,6 +325,7 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
     override fun speak(text: String) {
         if (!ttsReady || text.isBlank()) return
         requestAudioFocus()
+        pendingTtsCount.incrementAndGet()
         tts?.speak(text, TextToSpeech.QUEUE_ADD, null, UTTERANCE_ID)
     }
 
@@ -504,8 +523,11 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
     private val utteranceProgressListener = object : UtteranceProgressListener() {
         override fun onStart(utteranceId: String) = Unit
         override fun onDone(utteranceId: String) {
-            // When the queue is fully drained, release audio focus and notify JS.
-            if (tts?.isSpeaking == false) {
+            // Decrement the counter. Only fire onTTSFinished when the queue is
+            // fully drained AND Gemini Nano has finished generating — this prevents
+            // the premature signal caused by isSpeaking briefly being false between
+            // back-to-back queued sentences.
+            if (pendingTtsCount.decrementAndGet() <= 0 && generationComplete) {
                 abandonAudioFocus()
                 emitOnTTSFinished(Arguments.createMap().apply { putString("status", "done") })
             }

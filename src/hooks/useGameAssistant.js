@@ -341,14 +341,26 @@ export function useGameAssistant() {
         // Do NOT clear isThinking here — onTTSFinished handles that once TTS is done.
 
       } catch (err) {
-        // Ignore user-initiated cancellations — stopAssistant already resets state.
-        if (err?.message !== 'Assistant stopped by user') {
-          setError(err?.message ?? ERRORS.UNEXPECTED);
+        const msg = err?.message ?? '';
+        if (msg === 'Assistant stopped by user') {
+          // User pressed X — stopAssistant already reset state, nothing to do.
+        } else if (msg === 'speech_timeout' || msg === 'no_match') {
+          // Android STT timed out waiting for speech (user was silent).
+          // Treat as "nothing said" — remove the empty bubble, stay quiet.
+          if (activeUserMsgId.current) {
+            const staleId = activeUserMsgId.current;
+            activeUserMsgId.current = null;
+            setMessages((prev) => prev.filter((m) => m.id !== staleId));
+          }
+          setIsListening(false);
+          setIsThinking(false);
+          isBusy.current = false;
+        } else {
+          setError(msg || ERRORS.UNEXPECTED);
+          setIsListening(false);
+          setIsThinking(false);
+          isBusy.current = false;
         }
-        // On error, reset everything immediately (no TTS will fire).
-        setIsListening(false);
-        setIsThinking(false);
-        isBusy.current = false;
       }
     },
     [requestMicPermission, messages],

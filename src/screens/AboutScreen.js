@@ -205,7 +205,6 @@ export default function AboutScreen({
     animateSection(animations['voiceMeta'], false, 0, 150);
     setVoiceMetaExpanded(false);
     collapseAllDebugVoices();
-    setRagDebugExpanded(false);
   };
 
   // ── Toggle functions ─────────────────────────────────────────────────────
