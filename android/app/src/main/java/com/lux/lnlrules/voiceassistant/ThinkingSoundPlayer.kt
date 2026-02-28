@@ -1,105 +1,68 @@
 package com.lux.lnlrules.voiceassistant
 
+import android.content.Context
 import android.media.AudioAttributes
-import android.media.AudioFormat
-import android.media.AudioTrack
-import kotlin.math.PI
-import kotlin.math.sin
+import android.media.MediaPlayer
 
 /**
- * Generates and streams a pulsing sine-wave tone via [AudioTrack] to give
- * the user audible feedback while the AI is processing their question.
+ * Plays a randomly selected one-shot thinking sound from the bundled
+ * assets/audio/thinking_sounds/ folder while the AI is processing.
  *
- * The sound is a carrier sine wave whose amplitude is modulated by a second
- * slower sine wave (the "pulse"), producing a soft, rhythmic breathing effect.
+ * A different file is chosen on every call to [play], keeping the
+ * experience fresh across repeated interactions.
  *
- * All public methods are thread-safe.
- *
- * @param frequencyHz    Pitch of the tone in Hz (default 440 = A4).
- * @param amplitude      Peak amplitude as a fraction of full scale (0..1).
- * @param pulseRateHz    How many pulse cycles per second (1.0 = one breath/sec).
+ * All public methods are safe to call from any thread.
  */
-class ThinkingSoundPlayer(
-    private val frequencyHz: Float = 440f,
-    private val amplitude:   Float = 0.25f,
-    private val pulseRateHz: Float = 1.0f,
-) {
+class ThinkingSoundPlayer(private val context: Context) {
+
     companion object {
-        private const val SAMPLE_RATE = 44_100
+        private const val SOUNDS_DIR = "audio/thinking_sounds"
     }
 
-    @Volatile private var isPlaying = false
-    private var playThread: Thread? = null
+    @Volatile private var mediaPlayer: MediaPlayer? = null
 
-    /** Start streaming the thinking tone. No-op if already playing. */
-    fun start() {
-        if (isPlaying) return
-        isPlaying = true
+    /** Play a randomly chosen thinking sound. No-op if already playing. */
+    fun play() {
+        if (mediaPlayer != null) return
 
-        playThread = Thread({
-            val bufferSize = maxOf(
-                AudioTrack.getMinBufferSize(
-                    SAMPLE_RATE,
-                    AudioFormat.CHANNEL_OUT_MONO,
-                    AudioFormat.ENCODING_PCM_16BIT,
-                ),
-                // Keep the buffer small so stop() is responsive.
-                SAMPLE_RATE / 20,
-            )
+        val files = try {
+            context.assets.list(SOUNDS_DIR)?.filter { it.endsWith(".mp3") } ?: emptyList()
+        } catch (_: Exception) {
+            emptyList()
+        }
 
-            val track = AudioTrack.Builder()
-                .setAudioAttributes(
+        if (files.isEmpty()) return
+
+        val chosen = files.random()
+
+        try {
+            val afd = context.assets.openFd("$SOUNDS_DIR/$chosen")
+            val player = MediaPlayer().apply {
+                setAudioAttributes(
                     AudioAttributes.Builder()
-                        // USAGE_MEDIA routes through STREAM_MUSIC — the same stream as
-                        // TTS and media playback, guaranteed audible at media volume.
-                        // USAGE_ASSISTANCE_SONIFICATION uses STREAM_SYSTEM which may be
-                        // silent if the user has system sounds muted.
                         .setUsage(AudioAttributes.USAGE_MEDIA)
                         .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
                         .build()
                 )
-                .setAudioFormat(
-                    AudioFormat.Builder()
-                        .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
-                        .setSampleRate(SAMPLE_RATE)
-                        .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
-                        .build()
-                )
-                .setBufferSizeInBytes(bufferSize * 2)
-                .setTransferMode(AudioTrack.MODE_STREAM)
-                .build()
-
-            track.play()
-
-            val buffer = ShortArray(bufferSize)
-            var carrierPhase = 0.0
-            var pulsePhase   = 0.0
-            val carrierInc   = 2.0 * PI * frequencyHz / SAMPLE_RATE
-            val pulseInc     = 2.0 * PI * pulseRateHz / SAMPLE_RATE
-
-            while (isPlaying) {
-                for (i in buffer.indices) {
-                    // Pulse envelope: (sin + 1) / 2 maps to 0..1
-                    val envelope = (sin(pulsePhase) + 1.0) / 2.0
-                    val sample   = sin(carrierPhase) * amplitude * envelope
-                    buffer[i]    = (sample * Short.MAX_VALUE).toInt().toShort()
-                    carrierPhase += carrierInc
-                    pulsePhase   += pulseInc
-                }
-                if (isPlaying) track.write(buffer, 0, buffer.size)
+                setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
+                afd.close()
+                setOnCompletionListener { release(); mediaPlayer = null }
+                setOnErrorListener { mp, _, _ -> mp.release(); mediaPlayer = null; false }
+                prepare()
+                start()
             }
-
-            track.stop()
-            track.release()
-        }, "ThinkingSoundPlayer")
-
-        playThread?.isDaemon = true
-        playThread?.start()
+            mediaPlayer = player
+        } catch (_: Exception) {
+            mediaPlayer = null
+        }
     }
 
-    /** Stop the tone. Returns immediately; the audio thread drains within one buffer. */
+    /** Stop playback immediately (e.g. when TTS begins or user cancels). */
     fun stop() {
-        isPlaying = false
-        // Do not join — caller may be on the main thread; let the thread exit naturally.
+        mediaPlayer?.let {
+            try { if (it.isPlaying) it.stop() } catch (_: Exception) {}
+            try { it.release() } catch (_: Exception) {}
+        }
+        mediaPlayer = null
     }
 }

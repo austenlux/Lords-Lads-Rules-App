@@ -36,6 +36,7 @@ import kotlinx.coroutines.launch
 import java.util.Locale
 import java.util.concurrent.atomic.AtomicInteger
 
+
 /**
  * Full Voice-to-AI-to-Voice loop over Gemini Nano.
  *
@@ -79,8 +80,8 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
     // Active Gemini Nano inference job — cancelled by stopAssistant().
     private var activeInferenceJob: Job? = null
 
-    // Plays a pulsing tone while Gemini Nano is processing; stopped on first TTS word.
-    private val thinkingSound = ThinkingSoundPlayer()
+    // Plays a random MP3 from assets/audio/thinking_sounds/ while Gemini Nano is processing.
+    private val thinkingSound = ThinkingSoundPlayer(reactApplicationContext)
 
     // Buffer that accumulates streaming chunks until a sentence boundary is found.
     private val sentenceBuffer = StringBuilder()
@@ -270,7 +271,7 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
                 requestAudioFocus()
 
                 // Audible processing indicator — stopped the moment the first TTS word plays.
-                thinkingSound.start()
+                thinkingSound.play()
 
                 generativeModel.generateContentStream(prompt).collect { chunk ->
                     val text = chunk.candidates.firstOrNull()?.text ?: return@collect
