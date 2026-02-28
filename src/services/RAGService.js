@@ -1,38 +1,52 @@
 /**
  * RAGService
  *
- * Cross-platform Retrieval-Augmented Generation pipeline.
+ * Cross-platform Retrieval-Augmented Generation pipeline using SQLite FTS5
+ * (BM25 keyword search) instead of vector embeddings.
+ *
+ * FTS5 with porter stemming is more reliable than 100-dim semantic embeddings
+ * for game rule lookup: users ask about specific game terms ("hammer", "spark",
+ * "lord") that are better matched by exact/stemmed keyword search than by
+ * cosine similarity on a general-purpose embedding model.
  *
  * Responsibilities:
  *  1. Chunk raw Markdown text into overlapping segments.
- *  2. Embed each chunk via NativeEmbedder (Android: MediaPipe USE; iOS: TBD).
- *  3. Store / retrieve chunk embeddings through VectorStore.
- *  4. Given a user query, return the top-k most relevant text chunks.
- *
- * This module is pure JS except for the NativeEmbedder call, keeping all
- * retrieval logic reusable when iOS is added.
+ *  2. Build a keyword query from the user's spoken question.
+ *  3. Search the FTS5 index and return the top-k most relevant chunks.
  */
 
-import { Platform } from 'react-native';
-import NativeEmbedder from '../specs/NativeEmbedder';
+// ── Constants ─────────────────────────────────────────────────────────────────
 
-// ── Chunking parameters ───────────────────────────────────────────────────────
+const CHUNK_SIZE     = 800;
+const CHUNK_OVERLAP  = 100;
+const TOP_K          = 5;
+const MAX_PER_SOURCE = 3;
 
-const CHUNK_SIZE            = 800;  // larger chunks = more context per snippet
-const CHUNK_OVERLAP         = 100;  // overlap between consecutive chunks
-const TOP_K                 = 5;    // total chunks returned per query
-const MAX_PER_SOURCE        = 3;    // cap per source so rules + expansions both get slots
-// Scores below this are treated as noise from the 100-dim USE Lite model.
-// At 0.60 the model must be clearly pointing at a relevant chunk; anything
-// lower (~0.57-0.59) is near-random similarity and falls back to full content.
-export const MIN_SIMILARITY = 0.60;
-
-// ── Source identifiers ────────────────────────────────────────────────────────
+// Minimum BM25 score to include a chunk. BM25 relevance is open-ended so we
+// use a low floor just to exclude truly zero-match results.
+export const MIN_SIMILARITY = 0.01;
 
 export const SOURCE = {
   RULES:      'rules',
   EXPANSIONS: 'expansions',
 };
+
+// Stop words filtered out when building the FTS keyword query.
+// Keeping question words in ensures only game-relevant terms drive the search.
+const STOP_WORDS = new Set([
+  'a', 'an', 'the', 'is', 'it', 'in', 'on', 'at', 'to', 'for', 'of',
+  'and', 'or', 'but', 'not', 'no', 'so', 'yet', 'if', 'as', 'by',
+  'i', 'me', 'my', 'we', 'us', 'our', 'you', 'your',
+  'he', 'she', 'they', 'them', 'their', 'its',
+  'this', 'that', 'these', 'those',
+  'what', 'when', 'where', 'who', 'which', 'why', 'how',
+  'does', 'do', 'did', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
+  'have', 'has', 'had', 'will', 'would', 'could', 'should', 'can', 'may',
+  'get', 'got', 'go', 'goes', 'went',
+  'tell', 'say', 'says', 'said', 'mean', 'means',
+  'happen', 'happens', 'happening', 'happened',
+  'know', 'need', 'want',
+]);
 
 // ── Chunking ──────────────────────────────────────────────────────────────────
 
@@ -55,8 +69,6 @@ export function chunkText(text, source) {
   while (start < text.length) {
     let end = Math.min(start + CHUNK_SIZE, text.length);
 
-    // Try to snap to a paragraph break (\n\n) or sentence end (. ! ?) within
-    // a 100-char look-back window to avoid mid-sentence cuts.
     if (end < text.length) {
       const searchFrom = Math.max(end - 100, start + 1);
       const paraBreak  = text.lastIndexOf('\n\n', end);
@@ -71,13 +83,9 @@ export function chunkText(text, source) {
       end = snap;
     }
 
-    const chunkText = text.slice(start, end).trim();
-    if (chunkText.length > 0) {
-      chunks.push({
-        id: `${source}_${index++}`,
-        source,
-        text: chunkText,
-      });
+    const chunk = text.slice(start, end).trim();
+    if (chunk.length > 0) {
+      chunks.push({ id: `${source}_${index++}`, source, text: chunk });
     }
 
     start = Math.max(start + 1, end - CHUNK_OVERLAP);
@@ -86,109 +94,36 @@ export function chunkText(text, source) {
   return chunks;
 }
 
-// ── Embedding ─────────────────────────────────────────────────────────────────
+// ── Query builder ─────────────────────────────────────────────────────────────
 
 /**
- * Embeds a single text string.
- * On iOS (NativeEmbedder not yet implemented) returns null.
+ * Converts a natural-language question into an FTS5 keyword query.
+ * Removes stop words and short tokens; remaining words are joined with
+ * implicit AND so all keywords must appear (FTS5 default).
  *
- * @param {string} text
- * @returns {Promise<number[] | null>}
- */
-/**
- * Embeds a single text string.
- * Throws on failure so the caller can capture the real error message.
- * Returns null on iOS (NativeEmbedder not yet implemented).
+ * Falls back to an OR query (any keyword) if AND returns nothing.
+ * Returns null if no usable keywords can be extracted.
  *
- * @param {string} text
- * @returns {Promise<number[] | null>}
+ * @param {string} question
+ * @returns {string | null}
  */
-export async function embedText(text) {
-  if (Platform.OS !== 'android') return null;
-  // Intentionally NOT catching here — callers that need per-item resilience
-  // (embedChunks) wrap each call individually; retrieve() captures the message.
-  const vec = await NativeEmbedder.embedText(text);
-  return vec?.length ? vec : null;
+export function buildFTSQuery(question) {
+  if (!question?.trim()) return null;
+
+  const words = question
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, '')
+    .split(/\s+/)
+    .filter((w) => w.length > 2 && !STOP_WORDS.has(w));
+
+  if (words.length === 0) return null;
+
+  // FTS5 implicit AND: all keywords must be present.
+  return words.join(' ');
 }
 
-/**
- * Embeds an array of chunks, attaching a `vector` field to each.
- * Chunks that fail to embed are filtered out.
- *
- * @param {Array<{id, source, text}>} chunks
- * @returns {Promise<Array<{id, source, text, vector: number[]}>>}
- */
-export async function embedChunks(chunks) {
-  const results = await Promise.all(
-    chunks.map(async (chunk) => {
-      try {
-        const vector = await embedText(chunk.text);
-        return vector ? { ...chunk, vector } : null;
-      } catch {
-        return null;
-      }
-    }),
-  );
-  return results.filter(Boolean);
-}
+// ── Deduplication & source cap ────────────────────────────────────────────────
 
-// ── Cosine similarity ─────────────────────────────────────────────────────────
-
-/**
- * Dot product of two normalised vectors (equivalent to cosine similarity when
- * both are L2-normalised, which the MediaPipe embedder guarantees).
- */
-function dotProduct(a, b) {
-  let sum = 0;
-  const len = Math.min(a.length, b.length);
-  for (let i = 0; i < len; i++) sum += a[i] * b[i];
-  return sum;
-}
-
-// ── Retrieval ─────────────────────────────────────────────────────────────────
-
-/**
- * Given a query embedding and an array of embedded chunks, returns the top-k
- * chunks ranked by cosine similarity (highest first).
- *
- * @param {number[]}  queryVector
- * @param {Array<{id, source, text, vector}>} embeddedChunks
- * @param {number}    [k]  defaults to TOP_K
- * @returns {Array<{id, source, text, score: number}>}
- */
-/**
- * Given a query embedding and an array of embedded chunks, returns the top-k
- * chunks ranked by cosine similarity (highest first), filtered to those that
- * score at or above MIN_SIMILARITY. Returns an empty array if nothing is
- * relevant enough — the caller should fall back to full-content prompting.
- *
- * @param {number[]}  queryVector
- * @param {Array<{id, source, text, vector}>} embeddedChunks
- * @param {number}    [k]  defaults to TOP_K
- * @returns {Array<{id, source, text, score: number}>}
- */
-/**
- * Scores all chunks against the query vector and returns them sorted
- * highest-first. No threshold filtering — use this for diagnostics or
- * when you want to inspect raw scores before deciding what to keep.
- */
-export function scoreAllChunks(queryVector, embeddedChunks) {
-  return embeddedChunks
-    .map((chunk) => ({
-      id:     chunk.id,
-      source: chunk.source,
-      text:   chunk.text,
-      score:  dotProduct(queryVector, chunk.vector),
-    }))
-    .sort((a, b) => b.score - a.score);
-}
-
-/**
- * Normalises text for duplicate detection: lowercase, replace all
- * punctuation/special characters with spaces, collapse whitespace.
- * This makes the comparison robust to quote styles, markdown symbols,
- * and minor formatting differences between overlapping chunks.
- */
 function normaliseForDedup(text) {
   return text
     .toLowerCase()
@@ -197,18 +132,6 @@ function normaliseForDedup(text) {
     .trim();
 }
 
-/**
- * Returns true if [candidate] shares a distinctive phrase with any already-
- * selected chunk.
- *
- * Uses sliding 5-word windows on normalised text (step of 2 words).
- * 5-word windows are short enough to survive the slight boundary-snapping
- * offsets that chunking produces, while still being specific enough to avoid
- * false positives on common short phrases.
- *
- * Catches both adjacent overlap chunks AND the same sentence repeated in
- * multiple non-adjacent sections of the document.
- */
 function isDuplicateContent(candidate, selected) {
   const normCandidate = normaliseForDedup(candidate.text);
   const words = normCandidate.split(' ');
@@ -224,15 +147,10 @@ function isDuplicateContent(candidate, selected) {
 }
 
 /**
- * Applies content deduplication and source capping to a pre-scored,
- * pre-sorted list of chunks.  Shared by both the in-memory and DB retrieval
- * paths so dedup is always applied regardless of which path is taken.
+ * Applies content deduplication and per-source capping to a pre-scored,
+ * pre-sorted list of chunks.
  *
- *  1. Source cap — at most MAX_PER_SOURCE chunks from any single source.
- *  2. Content dedup — skip if a 5-word normalised phrase already appears in
- *     a selected chunk (catches repeated sentences and overlapping windows).
- *
- * @param {Array<{id, source, text, score}>} scoredChunks  Pre-sorted high→low.
+ * @param {Array<{id, source, text, score}>} scoredChunks  Sorted high→low.
  * @param {number} [k]
  */
 export function applyDedupAndCap(scoredChunks, k = TOP_K) {
@@ -252,8 +170,4 @@ export function applyDedupAndCap(scoredChunks, k = TOP_K) {
   }
 
   return selected;
-}
-
-export function retrieveTopK(queryVector, embeddedChunks, k = TOP_K) {
-  return applyDedupAndCap(scoreAllChunks(queryVector, embeddedChunks), k);
 }

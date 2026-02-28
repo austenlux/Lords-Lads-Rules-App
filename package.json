@@ -3,7 +3,8 @@
   "version": "1.6.0",
   "private": true,
   "op-sqlite": {
-    "sqliteVec": true
+    "sqliteVec": true,
+    "fts5": true
   },
   "scripts": {
     "android": "react-native run-android",

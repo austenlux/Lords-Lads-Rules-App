@@ -878,17 +878,7 @@ export default function AboutScreen({
                       </Text>
                     )}
                   </View>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-                    {ragDebugResult && (
-                      <TouchableOpacity
-                        onPress={(e) => { e.stopPropagation(); shareRAGDebugLog(); }}
-                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                      >
-                        <Text style={{ fontSize: 12, color: '#BB86FC', fontWeight: '600' }}>Export</Text>
-                      </TouchableOpacity>
-                    )}
-                    <Text style={styles.versionArrow}>{ragDebugExpanded ? '▼' : '▶'}</Text>
-                  </View>
+                  <Text style={styles.versionArrow}>{ragDebugExpanded ? '▼' : '▶'}</Text>
                 </View>
                 {ragDebugExpanded && (
                   <View style={[styles.versionContent, { paddingTop: 8 }]}>
@@ -896,6 +886,15 @@ export default function AboutScreen({
                       <Text style={[styles.versionText, { color: '#888', fontStyle: 'italic', fontSize: 13 }]}>No query yet this session.</Text>
                     ) : (
                       <>
+                        {/* Export button */}
+                        <TouchableOpacity
+                          onPress={shareRAGDebugLog}
+                          style={{ backgroundColor: '#BB86FC22', borderWidth: 1, borderColor: '#BB86FC', borderRadius: 8, paddingVertical: 8, paddingHorizontal: 14, alignSelf: 'flex-start', marginBottom: 12 }}
+                          activeOpacity={0.7}
+                        >
+                          <Text style={{ color: '#BB86FC', fontSize: 13, fontWeight: '600' }}>⬆ Export Log</Text>
+                        </TouchableOpacity>
+
                         {/* Header stats */}
                         <View style={styles.debugMetaRow}>
                           <Text style={styles.debugMetaLabel}>Query</Text>
@@ -924,7 +923,7 @@ export default function AboutScreen({
                               <View key={chunk.id} style={{ marginBottom: 10, borderLeftWidth: 2, borderLeftColor: '#BB86FC', paddingLeft: 8 }}>
                                 <View style={styles.debugMetaRow}>
                                   <Text style={styles.debugMetaLabel}>#{i + 1} score</Text>
-                                  <Text style={[styles.debugMetaValue, { color: chunk.score >= 0.5 ? '#81C784' : chunk.score >= 0.25 ? '#FFD54F' : '#FF7043' }]}>
+                                  <Text style={[styles.debugMetaValue, { color: chunk.score > 0 ? '#81C784' : '#FF7043' }]}>
                                     {chunk.score.toFixed(3)}
                                   </Text>
                                 </View>
@@ -944,13 +943,13 @@ export default function AboutScreen({
                         {ragDebugResult.rawTopScores?.length > 0 && (
                           <>
                             <Text style={[styles.debugMetaLabel, { marginTop: 10, marginBottom: 4, color: '#FFD54F' }]}>
-                              Top Raw Scores (pre-filter, threshold={MIN_SIMILARITY ?? 0.25})
+                              Top Raw Scores (BM25, pre-dedup)
                             </Text>
                             {ragDebugResult.rawTopScores.map((r, i) => (
                               <View key={i} style={{ marginBottom: 6, borderLeftWidth: 2, borderLeftColor: '#FFD54F', paddingLeft: 8 }}>
                                 <View style={styles.debugMetaRow}>
                                   <Text style={styles.debugMetaLabel}>#{i + 1} {r.source}</Text>
-                                  <Text style={[styles.debugMetaValue, { color: r.score >= 0.25 ? '#81C784' : '#FF7043' }]}>
+                                  <Text style={[styles.debugMetaValue, { color: r.score > 0 ? '#81C784' : '#FF7043' }]}>
                                     {typeof r.score === 'number' ? r.score.toFixed(4) : '—'}
                                   </Text>
                                 </View>

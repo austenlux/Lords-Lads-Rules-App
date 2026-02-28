@@ -1,13 +1,13 @@
 /**
- * VectorStore
+ * SearchIndex
  *
- * Persistent on-device vector index backed by op-sqlite + sqlite-vec.
- * Works identically on Android and iOS (fully cross-platform).
+ * Persistent on-device full-text search index backed by op-sqlite + FTS5.
+ * Works identically on Android and iOS (fully cross-platform, no ML model).
  *
  * Schema:
- *   chunks(id TEXT PK, source TEXT, text TEXT)          — human-readable chunks
- *   chunk_vectors(chunk_id TEXT PK, vector BLOB)        — raw float32 embedding
- *   meta(key TEXT PK, value TEXT)                       — content hash tracking
+ *   chunks(id TEXT PK, source TEXT, text TEXT)   — human-readable chunks
+ *   chunks_fts  VIRTUAL (FTS5)                   — full-text search index
+ *   meta(key TEXT PK, value TEXT)                — content hash + version
  *
  * The index is rebuilt only when the content hash changes, so subsequent
  * app launches skip ingestion if the rulebook hasn't been updated.
@@ -15,198 +15,93 @@
 
 import { open } from '@op-engineering/op-sqlite';
 
-const DB_NAME = 'rag_index.db';
-
-// The bundled universal_sentence_encoder.tflite (USE Lite / Small) outputs
-// 100-dimensional embeddings.  IMPORTANT: changing this value bumps
-// SCHEMA_VERSION, which drops and recreates all tables so the stored
-// vectors always match the model's actual output dimension.
-const EMBEDDING_DIM   = 100;
-const SCHEMA_VERSION  = `v1_dim${EMBEDDING_DIM}`;
+const DB_NAME       = 'rag_index.db';
+const SCHEMA_VERSION = 'v3_fts5';
 
 let db = null;
+let dbInitPromise = null;
 
 // ── Initialisation ────────────────────────────────────────────────────────────
 
 /**
  * Opens (or returns the cached) database connection.
- *
- * Includes a lightweight schema-version migration: if the stored schema
- * version doesn't match SCHEMA_VERSION (e.g. EMBEDDING_DIM changed), all
- * tables are dropped and recreated so vectors always have the right dimension.
+ * Uses a promise guard so concurrent callers wait for a single init.
  */
-async function getDB() {
-  if (db) return db;
+function getDB() {
+  if (db) return Promise.resolve(db);
+  if (dbInitPromise) return dbInitPromise;
 
-  db = open({ name: DB_NAME });
-  await db.executeAsync('PRAGMA journal_mode = WAL;');
+  dbInitPromise = (async () => {
+    const conn = open({ name: DB_NAME });
 
-  // Ensure the meta table exists before we try to read from it.
-  await db.executeAsync(`
-    CREATE TABLE IF NOT EXISTS meta (
-      key   TEXT PRIMARY KEY,
-      value TEXT NOT NULL
-    );
-  `);
+    await conn.executeAsync('PRAGMA journal_mode = WAL;');
 
-  // Schema migration: if dimension changed, wipe everything and start fresh.
-  const storedVersion = await getRawMeta('schema_version');
-  if (storedVersion !== SCHEMA_VERSION) {
-    await db.executeAsync('DROP TABLE IF EXISTS chunks;');
-    await db.executeAsync('DROP TABLE IF EXISTS chunk_vectors;');
-    // Also clear content_hash so ingest runs again with the correct dimension.
-    await db.executeAsync("DELETE FROM meta WHERE key != 'schema_version';");
-    await db.executeAsync(
-      "INSERT OR REPLACE INTO meta (key, value) VALUES ('schema_version', ?);",
-      [SCHEMA_VERSION],
-    );
-  }
+    await conn.executeAsync(`
+      CREATE TABLE IF NOT EXISTS meta (
+        key   TEXT PRIMARY KEY,
+        value TEXT NOT NULL
+      );
+    `);
 
-  await db.executeAsync(`
-    CREATE TABLE IF NOT EXISTS chunks (
-      id     TEXT PRIMARY KEY,
-      source TEXT NOT NULL,
-      text   TEXT NOT NULL
-    );
-  `);
-  await db.executeAsync(`
-    CREATE VIRTUAL TABLE IF NOT EXISTS chunk_vectors USING vec0(
-      chunk_id TEXT PRIMARY KEY,
-      vector   FLOAT[${EMBEDDING_DIM}]
-    );
-  `);
-
-  return db;
-}
-
-/** Raw meta read used during initialisation (before public API is ready). */
-async function getRawMeta(key) {
-  try {
-    const result = await db.executeAsync(
+    // Schema migration: wipe everything on version change.
+    const versionResult = await conn.executeAsync(
       'SELECT value FROM meta WHERE key = ?;',
-      [key],
+      ['schema_version'],
     );
-    return result.rows?.[0]?.value ?? null;
-  } catch {
-    return null;
-  }
-}
+    const storedVersion = versionResult.rows?.[0]?.value ?? null;
 
-// ── Hash ──────────────────────────────────────────────────────────────────────
+    if (storedVersion !== SCHEMA_VERSION) {
+      await conn.executeAsync('DROP TABLE IF EXISTS chunks;');
+      await conn.executeAsync('DROP TABLE IF EXISTS chunks_fts;');
+      await conn.executeAsync("DELETE FROM meta WHERE key != 'schema_version';");
+      await conn.executeAsync(
+        "INSERT OR REPLACE INTO meta (key, value) VALUES ('schema_version', ?);",
+        [SCHEMA_VERSION],
+      );
+    }
 
-/**
- * Cheap djb2 string hash — used to detect when content has changed so we
- * can skip re-ingestion on subsequent launches.
- */
-function hashString(str) {
-  let hash = 5381;
-  for (let i = 0; i < str.length; i++) {
-    hash = ((hash << 5) + hash) ^ str.charCodeAt(i);
-    hash = hash >>> 0; // keep unsigned 32-bit
-  }
-  return String(hash);
-}
+    await conn.executeAsync(`
+      CREATE TABLE IF NOT EXISTS chunks (
+        id     TEXT PRIMARY KEY,
+        source TEXT NOT NULL,
+        text   TEXT NOT NULL
+      );
+    `);
 
-// ── Read / write helpers ──────────────────────────────────────────────────────
+    // FTS5 virtual table with porter stemming for word-variant matching
+    // (drop/dropping, hammer/hammers, lord/lords, etc.)
+    await conn.executeAsync(`
+      CREATE VIRTUAL TABLE IF NOT EXISTS chunks_fts USING fts5(
+        id    UNINDEXED,
+        source UNINDEXED,
+        text,
+        tokenize='porter unicode61'
+      );
+    `);
 
-async function getMeta(key) {
-  const conn = await getDB();
-  const result = await conn.executeAsync(
-    'SELECT value FROM meta WHERE key = ?;',
-    [key],
-  );
-  return result.rows?.[0]?.value ?? null;
-}
+    db = conn;
+    return db;
+  })();
 
-async function setMeta(key, value) {
-  const conn = await getDB();
-  await conn.executeAsync(
-    'INSERT OR REPLACE INTO meta (key, value) VALUES (?, ?);',
-    [key, value],
-  );
+  return dbInitPromise;
 }
 
 // ── Public API ────────────────────────────────────────────────────────────────
 
 /**
- * Returns true if the stored content hash matches [contentHash], meaning
- * the index is up-to-date and ingestion can be skipped.
+ * Returns true if the stored content hash matches [contentHash].
  */
 export async function isIndexCurrent(contentHash) {
-  const stored = await getMeta('content_hash');
-  return stored === contentHash;
-}
-
-/**
- * Clears all existing chunks and vectors, then inserts [embeddedChunks].
- * Records [contentHash] so subsequent launches can skip re-ingestion.
- *
- * @param {Array<{id, source, text, vector: number[]}>} embeddedChunks
- * @param {string} contentHash
- */
-export async function saveIndex(embeddedChunks, contentHash) {
   const conn = await getDB();
-
-  // Wipe stale data.
-  await conn.executeAsync('DELETE FROM chunks;');
-  await conn.executeAsync('DELETE FROM chunk_vectors;');
-
-  for (const chunk of embeddedChunks) {
-    await conn.executeAsync(
-      'INSERT INTO chunks (id, source, text) VALUES (?, ?, ?);',
-      [chunk.id, chunk.source, chunk.text],
-    );
-
-    // sqlite-vec stores float32 vectors as packed binary blobs.
-    const blob = float32ArrayToBlob(new Float32Array(chunk.vector));
-    await conn.executeAsync(
-      'INSERT INTO chunk_vectors (chunk_id, vector) VALUES (?, ?);',
-      [chunk.id, blob],
-    );
-  }
-
-  await setMeta('content_hash', contentHash);
-}
-
-/**
- * Queries the vector index for the top-k chunks most similar to
- * [queryVector].  Returns lightweight objects: {id, source, text, distance}.
- *
- * @param {number[]} queryVector
- * @param {number}   [k=3]
- * @returns {Promise<Array<{id, source, text, distance: number}>>}
- */
-export async function queryTopK(queryVector, k = 3) {
-  const conn = await getDB();
-  const blob = float32ArrayToBlob(new Float32Array(queryVector));
-
   const result = await conn.executeAsync(
-    `SELECT c.id, c.source, c.text, v.distance
-     FROM chunk_vectors v
-     JOIN chunks c ON c.id = v.chunk_id
-     WHERE v.vector MATCH ?
-       AND k = ?
-     ORDER BY v.distance;`,
-    [blob, k],
+    'SELECT value FROM meta WHERE key = ?;',
+    ['content_hash'],
   );
-
-  return result.rows ?? [];
+  return (result.rows?.[0]?.value ?? null) === contentHash;
 }
 
 /**
- * Returns all stored chunks (used for in-memory fallback retrieval).
- * @returns {Promise<Array<{id, source, text}>>}
- */
-export async function getAllChunks() {
-  const conn = await getDB();
-  const result = await conn.executeAsync('SELECT id, source, text FROM chunks;');
-  return result.rows ?? [];
-}
-
-/**
- * Returns the number of chunks currently stored in the index.
- * Used to detect a "hash matches but index is empty" state that occurs
- * when a previous ingestion run failed after saving the hash.
+ * Returns the number of chunks currently in the index.
  */
 export async function getChunkCount() {
   const conn = await getDB();
@@ -214,19 +109,54 @@ export async function getChunkCount() {
   return result.rows?.[0]?.cnt ?? 0;
 }
 
-// ── Binary helpers ────────────────────────────────────────────────────────────
+/**
+ * Clears the existing index and inserts new chunks.
+ * @param {Array<{id, source, text}>} chunks  Plain text chunks (no vectors).
+ * @param {string} contentHash
+ */
+export async function saveIndex(chunks, contentHash) {
+  const conn = await getDB();
+
+  await conn.executeAsync('DELETE FROM chunks;');
+  await conn.executeAsync('DELETE FROM chunks_fts;');
+
+  for (const chunk of chunks) {
+    await conn.executeAsync(
+      'INSERT INTO chunks (id, source, text) VALUES (?, ?, ?);',
+      [chunk.id, chunk.source, chunk.text],
+    );
+    await conn.executeAsync(
+      'INSERT INTO chunks_fts (id, source, text) VALUES (?, ?, ?);',
+      [chunk.id, chunk.source, chunk.text],
+    );
+  }
+
+  await conn.executeAsync(
+    "INSERT OR REPLACE INTO meta (key, value) VALUES ('content_hash', ?);",
+    [contentHash],
+  );
+}
 
 /**
- * Returns the underlying ArrayBuffer of a Float32Array for use as a SQLite
- * blob parameter.  op-sqlite requires a raw ArrayBuffer — not a typed-array
- * view — when binding binary values to query parameters.
- * sqlite-vec reads the blob as packed IEEE-754 float32 little-endian bytes.
+ * Full-text searches the index for [ftsQuery] using BM25 ranking.
+ * Returns up to [k] results ordered by relevance (most relevant first).
+ *
+ * @param {string} ftsQuery  Space-separated keywords (FTS5 implicit AND).
+ * @param {number} [k=15]    Number of candidates to fetch before dedup.
+ * @returns {Promise<Array<{id, source, text, score: number}>>}
  */
-function float32ArrayToBlob(float32Array) {
-  // Slice to get an owned copy of just the relevant bytes (handles the case
-  // where float32Array is a view into a larger shared buffer).
-  return float32Array.buffer.slice(
-    float32Array.byteOffset,
-    float32Array.byteOffset + float32Array.byteLength,
+export async function queryFTS(ftsQuery, k = 15) {
+  const conn = await getDB();
+
+  // bm25() returns negative values — negate so higher = more relevant.
+  const result = await conn.executeAsync(
+    `SELECT id, source, text, -bm25(chunks_fts) AS score
+     FROM chunks_fts
+     WHERE text MATCH ?
+     ORDER BY bm25(chunks_fts)
+     LIMIT ?;`,
+    [ftsQuery, k],
   );
+
+  return result.rows ?? [];
 }
