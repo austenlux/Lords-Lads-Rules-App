@@ -16,16 +16,51 @@
 import { open } from '@op-engineering/op-sqlite';
 
 const DB_NAME = 'rag_index.db';
-const EMBEDDING_DIM = 100; // Universal Sentence Encoder output dimension
+
+// Universal Sentence Encoder Lite outputs 512-dimensional embeddings.
+// IMPORTANT: changing this value bumps SCHEMA_VERSION, which drops and
+// recreates all tables so the stored vectors match the new dimension.
+const EMBEDDING_DIM   = 512;
+const SCHEMA_VERSION  = `v1_dim${EMBEDDING_DIM}`;
 
 let db = null;
 
 // ── Initialisation ────────────────────────────────────────────────────────────
 
+/**
+ * Opens (or returns the cached) database connection.
+ *
+ * Includes a lightweight schema-version migration: if the stored schema
+ * version doesn't match SCHEMA_VERSION (e.g. EMBEDDING_DIM changed), all
+ * tables are dropped and recreated so vectors always have the right dimension.
+ */
 async function getDB() {
   if (db) return db;
+
   db = open({ name: DB_NAME });
   await db.executeAsync('PRAGMA journal_mode = WAL;');
+
+  // Ensure the meta table exists before we try to read from it.
+  await db.executeAsync(`
+    CREATE TABLE IF NOT EXISTS meta (
+      key   TEXT PRIMARY KEY,
+      value TEXT NOT NULL
+    );
+  `);
+
+  // Schema migration: if dimension changed, wipe everything and start fresh.
+  const storedVersion = await getRawMeta('schema_version');
+  if (storedVersion !== SCHEMA_VERSION) {
+    await db.executeAsync('DROP TABLE IF EXISTS chunks;');
+    await db.executeAsync('DROP TABLE IF EXISTS chunk_vectors;');
+    // Also clear content_hash so ingest runs again with the correct dimension.
+    await db.executeAsync("DELETE FROM meta WHERE key != 'schema_version';");
+    await db.executeAsync(
+      "INSERT OR REPLACE INTO meta (key, value) VALUES ('schema_version', ?);",
+      [SCHEMA_VERSION],
+    );
+  }
+
   await db.executeAsync(`
     CREATE TABLE IF NOT EXISTS chunks (
       id     TEXT PRIMARY KEY,
@@ -39,13 +74,21 @@ async function getDB() {
       vector   FLOAT[${EMBEDDING_DIM}]
     );
   `);
-  await db.executeAsync(`
-    CREATE TABLE IF NOT EXISTS meta (
-      key   TEXT PRIMARY KEY,
-      value TEXT NOT NULL
-    );
-  `);
+
   return db;
+}
+
+/** Raw meta read used during initialisation (before public API is ready). */
+async function getRawMeta(key) {
+  try {
+    const result = await db.executeAsync(
+      'SELECT value FROM meta WHERE key = ?;',
+      [key],
+    );
+    return result.rows?.[0]?.value ?? null;
+  } catch {
+    return null;
+  }
 }
 
 // ── Hash ──────────────────────────────────────────────────────────────────────

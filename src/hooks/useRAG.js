@@ -195,8 +195,10 @@ export function useRAG() {
 
       const elapsedMs = Date.now() - t0;
 
-      // No chunks scored above the similarity threshold — fall back.
-      if (!topChunks?.length) {
+      // Fall back if fewer than 2 unique chunks survived dedup+threshold.
+      // A single chunk gives the model almost no context; full content is
+      // more useful than one isolated snippet.
+      if (!topChunks?.length || topChunks.length < 2) {
         setLastRAGResult({
           query,
           chunks: [],
