@@ -26,4 +26,14 @@
 -dontwarn com.google.mediapipe.proto.CalculatorProfileProto$CalculatorProfile
 -dontwarn com.google.mediapipe.proto.GraphTemplateProto$CalculatorGraphTemplate
 
+# MediaPipe uses protobuf-lite internally and resolves message types by class
+# name at runtime. R8 obfuscates protobuf classes (e.g. renames them to "e"),
+# which breaks that reflection lookup with:
+#   RuntimeException: Unable to get message info for com.google.protobuf.X
+# Keep all protobuf generated message classes and the protobuf runtime intact.
+-keep class com.google.protobuf.** { *; }
+-keep class * extends com.google.protobuf.GeneratedMessageLite { *; }
+-keep class * extends com.google.protobuf.GeneratedMessage { *; }
+-dontwarn com.google.protobuf.**
+
 # Add any project specific keep options here:
