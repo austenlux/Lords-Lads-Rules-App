@@ -24,6 +24,19 @@ let _listeners  = [];
 export function setLastRAGResult(result) {
   _lastResult = { ...result, timestamp: Date.now() };
   _listeners.forEach((fn) => fn(_lastResult));
+
+  // Log to console so ADB logcat can capture results without needing a screenshot.
+  const { query, status, usedRAG, elapsedMs, chunks = [], rawTopScores = [] } = _lastResult;
+  console.log(
+    '[RAGDebug]',
+    JSON.stringify({
+      query,
+      mode: usedRAG ? 'RAG' : `Fallback(${status})`,
+      elapsedMs,
+      chunks: chunks.length,
+      topScores: rawTopScores.map((s) => `${s.source}:${s.score?.toFixed(4)}`),
+    }),
+  );
 }
 
 /** Returns the most recent RAG debug snapshot (or null). */

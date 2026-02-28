@@ -22,7 +22,10 @@ const CHUNK_SIZE            = 800;  // larger chunks = more context per snippet
 const CHUNK_OVERLAP         = 100;  // overlap between consecutive chunks
 const TOP_K                 = 5;    // total chunks returned per query
 const MAX_PER_SOURCE        = 3;    // cap per source so rules + expansions both get slots
-export const MIN_SIMILARITY = 0.25; // chunks scoring below this are discarded
+// Scores below this are treated as noise from the 100-dim USE Lite model.
+// At 0.60 the model must be clearly pointing at a relevant chunk; anything
+// lower (~0.57-0.59) is near-random similarity and falls back to full content.
+export const MIN_SIMILARITY = 0.60;
 
 // ── Source identifiers ────────────────────────────────────────────────────────
 

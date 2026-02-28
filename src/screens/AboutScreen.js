@@ -12,6 +12,7 @@ import {
   Linking,
   Image,
   Switch,
+  Share,
   Platform,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -79,6 +80,33 @@ export default function AboutScreen({
   useEffect(() => {
     return subscribeToRAGDebug((result) => setRagDebugResult(result));
   }, []);
+
+  const shareRAGDebugLog = async () => {
+    if (!ragDebugResult) return;
+    const r = ragDebugResult;
+    const lines = [
+      `RAG Debug Log`,
+      `─────────────────────────────`,
+      `Query:   ${r.query}`,
+      `Mode:    ${r.usedRAG ? 'RAG (chunks)' : `Fallback — ${r.status ?? 'unknown'}`}`,
+      `Elapsed: ${r.elapsedMs}ms`,
+      `Chunks:  ${r.chunks?.length ?? 0}`,
+    ];
+    if (r.chunks?.length > 0) {
+      lines.push('', 'Retrieved Chunks:');
+      r.chunks.forEach((c, i) => {
+        lines.push(`  #${i + 1} score=${c.score?.toFixed(4)} source=${c.source}`);
+        lines.push(`     ${c.text?.slice(0, 120)}`);
+      });
+    }
+    if (r.rawTopScores?.length > 0) {
+      lines.push('', `Top Raw Scores (threshold=${MIN_SIMILARITY}):`);
+      r.rawTopScores.forEach((s, i) => {
+        lines.push(`  #${i + 1} ${s.source}: ${s.score?.toFixed(4)}  — ${s.preview?.slice(0, 80)}`);
+      });
+    }
+    await Share.share({ message: lines.join('\n') });
+  };
 
   const [expandRulesDefault, setExpandRulesDefault] = useState(false);
   const [expandExpansionsDefault, setExpandExpansionsDefault] = useState(false);
@@ -850,7 +878,17 @@ export default function AboutScreen({
                       </Text>
                     )}
                   </View>
-                  <Text style={styles.versionArrow}>{ragDebugExpanded ? '▼' : '▶'}</Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                    {ragDebugResult && (
+                      <TouchableOpacity
+                        onPress={(e) => { e.stopPropagation(); shareRAGDebugLog(); }}
+                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                      >
+                        <Text style={{ fontSize: 12, color: '#BB86FC', fontWeight: '600' }}>Export</Text>
+                      </TouchableOpacity>
+                    )}
+                    <Text style={styles.versionArrow}>{ragDebugExpanded ? '▼' : '▶'}</Text>
+                  </View>
                 </View>
                 {ragDebugExpanded && (
                   <View style={[styles.versionContent, { paddingTop: 8 }]}>
