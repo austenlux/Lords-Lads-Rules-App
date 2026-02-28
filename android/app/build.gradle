@@ -31,6 +31,13 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
+    // Prevent the release packager from compressing .tflite model files.
+    // MediaPipe loads them via memory-mapping; compressed assets cannot be
+    // mapped and cause a silent load failure at runtime.
+    aaptOptions {
+        noCompress "tflite"
+    }
+
     namespace "com.lux.lnlrules"
     defaultConfig {
         applicationId "com.lux.lnlrules"
