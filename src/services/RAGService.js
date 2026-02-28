@@ -22,7 +22,6 @@ const CHUNK_SIZE            = 800;  // larger chunks = more context per snippet
 const CHUNK_OVERLAP         = 100;  // overlap between consecutive chunks
 const TOP_K                 = 5;    // total chunks returned per query
 const MAX_PER_SOURCE        = 3;    // cap per source so rules + expansions both get slots
-const DEDUP_INDEX_DISTANCE  = 2;    // skip a chunk if a same-source chunk within ±N is already selected
 export const MIN_SIMILARITY = 0.25; // chunks scoring below this are discarded
 
 // ── Source identifiers ────────────────────────────────────────────────────────
@@ -182,28 +181,39 @@ export function scoreAllChunks(queryVector, embeddedChunks) {
 }
 
 /**
- * Extracts the sequential index from a chunk ID like "expansions_42" → 42.
- * Used for proximity deduplication of overlapping chunks.
+ * Returns true if [candidate] shares a distinctive phrase with any already-
+ * selected chunk.  Uses sliding 8-word windows: if any 8-word sequence from
+ * the candidate appears verbatim in a selected chunk (or vice versa), the
+ * two pieces of text are considered content-duplicates.
+ *
+ * This catches both adjacent overlap chunks AND the same rule sentence
+ * repeated in multiple non-adjacent sections of the document.
  */
-function parseChunkIndex(id) {
-  const n = parseInt(id?.split('_').pop(), 10);
-  return isNaN(n) ? -1 : n;
+function isDuplicateContent(candidate, selected) {
+  const words = candidate.text.split(/\s+/);
+  for (const existing of selected) {
+    // Check 8-word windows from the candidate against the existing chunk text.
+    for (let i = 0; i <= words.length - 8; i += 4) {
+      const phrase = words.slice(i, i + 8).join(' ');
+      if (existing.text.includes(phrase)) return true;
+    }
+  }
+  return false;
 }
 
 /**
  * Retrieves top-k relevant chunks with two quality guards:
  *
- *  1. Deduplication — if a same-source chunk within ±DEDUP_INDEX_DISTANCE is
- *     already selected, skip it.  Adjacent chunks heavily overlap in text, so
- *     selecting them adds zero new information and just repeats one sentence.
+ *  1. Content deduplication — skip a chunk if it shares an 8-word phrase
+ *     with an already-selected chunk.  This handles both adjacent overlap
+ *     chunks and the same rule sentence appearing in multiple sections.
  *
  *  2. Source cap — at most MAX_PER_SOURCE chunks from any single source so
- *     that rules and expansions can both contribute even when one source
- *     dominates the similarity scores.
+ *     that rules and expansions both get representation.
  */
 export function retrieveTopK(queryVector, embeddedChunks, k = TOP_K) {
-  const allScored = scoreAllChunks(queryVector, embeddedChunks);
-  const selected  = [];
+  const allScored     = scoreAllChunks(queryVector, embeddedChunks);
+  const selected      = [];
   const countBySource = {};
 
   for (const chunk of allScored) {
@@ -214,14 +224,8 @@ export function retrieveTopK(queryVector, embeddedChunks, k = TOP_K) {
     const sourceCount = countBySource[chunk.source] ?? 0;
     if (sourceCount >= MAX_PER_SOURCE) continue;
 
-    // 2. Dedup: skip if an already-selected chunk from the same source is
-    //    within DEDUP_INDEX_DISTANCE positions (i.e. overlapping text window).
-    const chunkIdx   = parseChunkIndex(chunk.id);
-    const isDuplicate = selected.some((s) => {
-      if (s.source !== chunk.source) return false;
-      return Math.abs(parseChunkIndex(s.id) - chunkIdx) <= DEDUP_INDEX_DISTANCE;
-    });
-    if (isDuplicate) continue;
+    // 2. Content dedup.
+    if (isDuplicateContent(chunk, selected)) continue;
 
     selected.push(chunk);
     countBySource[chunk.source] = sourceCount + 1;
