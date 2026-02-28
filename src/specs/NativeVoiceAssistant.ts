@@ -89,6 +89,12 @@ export interface Spec extends TurboModule {
    */
   setVoice(voiceId: string): void;
 
+  /**
+   * Enables or disables the thinking sound effect played while the AI processes.
+   * Persisted preference is managed by the JS layer; this just gates playback.
+   */
+  setThinkingSoundEnabled(enabled: boolean): void;
+
   // ── Events ───────────────────────────────────────────────────────────────
 
   /** Fired repeatedly with interim STT results while the user is still speaking. */

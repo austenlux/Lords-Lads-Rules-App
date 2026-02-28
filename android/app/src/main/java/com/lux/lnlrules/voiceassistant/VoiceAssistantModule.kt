@@ -82,6 +82,8 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
 
     // Plays a random MP3 from assets/audio/thinking_sounds/ while Gemini Nano is processing.
     private val thinkingSound = ThinkingSoundPlayer(reactApplicationContext)
+    // Toggled by setThinkingSoundEnabled(); default on.
+    @Volatile private var thinkingSoundEnabled = true
 
     // Buffer that accumulates streaming chunks until a sentence boundary is found.
     private val sentenceBuffer = StringBuilder()
@@ -271,7 +273,7 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
                 requestAudioFocus()
 
                 // Audible processing indicator — stopped the moment the first TTS word plays.
-                thinkingSound.play()
+                if (thinkingSoundEnabled) thinkingSound.play()
 
                 generativeModel.generateContentStream(prompt).collect { chunk ->
                     val text = chunk.candidates.firstOrNull()?.text ?: return@collect
@@ -424,6 +426,11 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
         if (!ttsReady) return
         val voice = tts?.voices?.find { it.name == voiceId } ?: return
         tts?.voice = voice
+    }
+
+    override fun setThinkingSoundEnabled(enabled: Boolean) {
+        thinkingSoundEnabled = enabled
+        if (!enabled) thinkingSound.stop()
     }
 
     /**

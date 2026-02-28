@@ -17,10 +17,12 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import RNFS from 'react-native-fs';
 import { HEADER_HEIGHT } from '../styles';
+import NativeVoiceAssistant from '../specs/NativeVoiceAssistant';
 
 const SETTINGS_KEYS = {
   EXPAND_RULES_DEFAULT: '@lnl_expand_rules_default',
   EXPAND_EXPANSIONS_DEFAULT: '@lnl_expand_expansions_default',
+  THINKING_SOUNDS_ENABLED: '@lnl_thinking_sounds_enabled',
 };
 import { getVenmoPayUrl } from '../constants';
 import CollapsibleSection, { DEFAULT_SECTION_EXPANDED } from '../components/CollapsibleSection';
@@ -77,6 +79,7 @@ export default function AboutScreen({
   const debugVoiceAnims = useRef({}).current;
   const [expandedLocales, setExpandedLocales] = useState({});
   const [expandDefaultsExpanded, setExpandDefaultsExpanded] = useState(false);
+  const [thinkingSoundsEnabled, setThinkingSoundsEnabled] = useState(true);
   const [voiceParentExpanded, setVoiceParentExpanded] = useState(false);
   const [voiceMetaExpanded, setVoiceMetaExpanded] = useState(false);
   const [expandedDebugVoices, setExpandedDebugVoices] = useState({});
@@ -102,12 +105,17 @@ export default function AboutScreen({
 
   useEffect(() => {
     const load = async () => {
-      const [rules, expansions] = await Promise.all([
+      const [rules, expansions, thinkingSounds] = await Promise.all([
         AsyncStorage.getItem(SETTINGS_KEYS.EXPAND_RULES_DEFAULT),
         AsyncStorage.getItem(SETTINGS_KEYS.EXPAND_EXPANSIONS_DEFAULT),
+        AsyncStorage.getItem(SETTINGS_KEYS.THINKING_SOUNDS_ENABLED),
       ]);
       setExpandRulesDefault(rules === 'true');
       setExpandExpansionsDefault(expansions === 'true');
+      // Default is true; only disable if explicitly saved as 'false'.
+      const soundsOn = thinkingSounds !== 'false';
+      setThinkingSoundsEnabled(soundsOn);
+      NativeVoiceAssistant.setThinkingSoundEnabled(soundsOn);
     };
     load();
   }, []);
@@ -120,6 +128,12 @@ export default function AboutScreen({
   const setExpandExpansionsDefaultAndSave = async (value) => {
     setExpandExpansionsDefault(value);
     await AsyncStorage.setItem(SETTINGS_KEYS.EXPAND_EXPANSIONS_DEFAULT, value ? 'true' : 'false');
+  };
+
+  const setThinkingSoundsEnabledAndSave = async (value) => {
+    setThinkingSoundsEnabled(value);
+    NativeVoiceAssistant.setThinkingSoundEnabled(value);
+    await AsyncStorage.setItem(SETTINGS_KEYS.THINKING_SOUNDS_ENABLED, value ? 'true' : 'false');
   };
 
   // ── Voice locale section animations ─────────────────────────────────────
@@ -572,6 +586,19 @@ export default function AboutScreen({
                   pointerEvents={voiceParentExpanded ? 'auto' : 'none'}
                 >
                   <View style={styles.versionContent}>
+                    {/* ── Thinking Sounds toggle ── */}
+                    <View style={[styles.settingsRow, styles.settingsRowLast, { marginBottom: 8 }]}>
+                      <View style={styles.settingsRowLabel}>
+                        <Text style={styles.settingsRowText}>Thinking Sounds</Text>
+                      </View>
+                      <Switch
+                        value={thinkingSoundsEnabled}
+                        onValueChange={setThinkingSoundsEnabledAndSave}
+                        trackColor={{ false: '#555', true: '#7B5CBF' }}
+                        thumbColor="#E1E1E1"
+                      />
+                    </View>
+
                     {voiceLocaleGroups.map(group => {
                       const groupHasSelection = group.voices.some(v => v.id === selectedVoiceId);
                       const localeAnim = voiceLocaleAnims[group.key];
