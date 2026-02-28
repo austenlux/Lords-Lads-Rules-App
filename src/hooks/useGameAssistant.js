@@ -243,14 +243,11 @@ export function useGameAssistant() {
   /**
    * Runs the full voice-to-AI-to-voice loop.
    *
-   * @param {string}        rules       Raw Markdown from the Rules tab (fallback).
-   * @param {string}        expansions  Raw Markdown from the Expansions tab (fallback).
-   * @param {Function|null} retrieve    Optional RAG retrieve(query) function. When
-   *                                    provided and returns chunks, only those chunks
-   *                                    are sent to the model instead of full content.
+   * @param {string} rules       Raw Markdown from the Rules tab.
+   * @param {string} expansions  Raw Markdown from the Expansions tab.
    */
   const askTheRules = useCallback(
-    async (rules = '', expansions = '', retrieve = null) => {
+    async (rules = '', expansions = '') => {
       if (isBusy.current) return;
       if (Platform.OS !== 'android') {
         setError(ERRORS.NOT_ANDROID);
@@ -330,22 +327,10 @@ export function useGameAssistant() {
 
         setMessages((prev) => [...prev, { id: assistantMsgId, role: 'assistant', text: '' }]);
 
-        // RAG: attempt to retrieve only the relevant chunks for this question.
-        // Falls back to full-content if RAG is unavailable or returns nothing.
-        let promptRules      = rules;
-        let promptExpansions = expansions;
-        if (typeof retrieve === 'function') {
-          const ragResult = await retrieve(spokenQuestion);
-          if (ragResult) {
-            promptRules      = ragResult.rulesContext;
-            promptExpansions = ragResult.expansionsContext;
-          }
-        }
-
         // Build the complete prompt on the JS side — Kotlin receives a finished string.
         const fullPrompt = buildGameAssistantPrompt(
-          promptRules,
-          promptExpansions,
+          rules,
+          expansions,
           historySnapshot,
           spokenQuestion,
         );
@@ -366,7 +351,7 @@ export function useGameAssistant() {
         isBusy.current = false;
       }
     },
-    [requestMicPermission, messages], // retrieve is passed per-call, not a dep
+    [requestMicPermission, messages],
   );
 
   // ── Public API ───────────────────────────────────────────────────────────

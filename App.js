@@ -20,7 +20,6 @@ import SearchIcon from './assets/icons/search.svg';
 import { styles, markdownStyles } from './src/styles';
 import { useContent } from './src/hooks/useContent';
 import { useGameAssistant } from './src/hooks/useGameAssistant';
-import { useRAG } from './src/hooks/useRAG';
 import { ContentScreen, AboutScreen, ToolsScreen } from './src/screens';
 import { VoiceAssistantFAB, VoiceAssistantModal } from './src/components';
 import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
@@ -126,23 +125,6 @@ export default function App() {
     renderSection,
   } = useContent(styles, markdownStyles);
 
-  // ── RAG ──────────────────────────────────────────────────────────────────
-  const { isIndexing, isReady: ragReady, warmUp, ingest, retrieve } = useRAG();
-
-  // Warm up the embedder only after the splash is gone so it doesn't compete
-  // with content loading during the splash phase.
-  useEffect(() => {
-    if (splashDismissed) warmUp();
-  }, [splashDismissed]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Ingest content into the RAG index only after the splash is dismissed.
-  // The hash check inside ingest() prevents redundant work on repeat renders.
-  useEffect(() => {
-    if (splashDismissed && (content || expansionsContent)) {
-      ingest(content, expansionsContent);
-    }
-  }, [splashDismissed, content, expansionsContent, ingest]);
-
   // Keep the latest content in a ref so the auto-continue effect can read it
   // without needing content/expansionsContent as effect dependencies.
   useEffect(() => {
@@ -159,7 +141,6 @@ export default function App() {
         askTheRules(
           convoContextRef.current.rules,
           convoContextRef.current.expansions,
-          retrieve,
         );
       }, 600);
       return () => clearTimeout(timer);
@@ -447,11 +428,8 @@ export default function App() {
         </View>
       </Animated.View>
       {/* Voice Assistant — FAB + conversation modal.
-          Held hidden until the RAG index is ready so the assistant has
-          its full context before the user can start a conversation.
-          ragReady becomes true after indexing completes OR on error
-          (fallback to full-content still works), so it never blocks forever. */}
-      {aiSupported && splashDismissed && ragReady && (
+          Shown once the splash is dismissed and Gemini Nano is confirmed available. */}
+      {aiSupported && splashDismissed && (
         <View
           pointerEvents="box-none"
           style={{
@@ -486,7 +464,7 @@ export default function App() {
               hasConversation={isConvoOpen}
               onPress={() => {
                 setIsConvoOpen(true);
-                askTheRules(content, expansionsContent, retrieve);
+                askTheRules(content, expansionsContent);
               }}
               onStop={() => {
                 setIsConvoOpen(false);
