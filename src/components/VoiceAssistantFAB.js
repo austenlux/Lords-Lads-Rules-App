@@ -19,10 +19,10 @@ import {
   Animated,
   Pressable,
   StyleSheet,
-  Text,
   View,
 } from 'react-native';
-import MicIcon from '../../assets/images/mic.svg';
+import MicIcon   from '../../assets/icons/mic.svg';
+import CloseIcon from '../../assets/icons/close.svg';
 
 // ─────────────────────────────────────────────── Constants ──
 
@@ -142,7 +142,12 @@ export default function VoiceAssistantFAB({ isListening, isThinking, isActive, h
         accessibilityLabel={isStoppable ? 'Stop assistant' : 'Ask the rules'}
       >
         {isStoppable ? (
-          <Text style={styles.stopIcon}>✕</Text>
+          <CloseIcon
+            width={26}
+            height={26}
+            fill={COLORS.stopIcon}
+            color={COLORS.stopIcon}
+          />
         ) : (
           <MicIcon
             width={28}
@@ -182,11 +187,5 @@ const styles = StyleSheet.create({
     width: PULSE_SIZE,
     height: PULSE_SIZE,
     borderRadius: PULSE_RADIUS,
-  },
-  stopIcon: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: COLORS.stopIcon,
-    lineHeight: 24,
   },
 });

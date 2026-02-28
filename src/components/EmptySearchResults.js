@@ -3,7 +3,7 @@
  */
 import React from 'react';
 import { View, Text } from 'react-native';
-import SearchIcon from '../../assets/images/search.svg';
+import SearchIcon from '../../assets/icons/search.svg';
 
 export default function EmptySearchResults({ query, styles }) {
   return (

@@ -12,11 +12,11 @@ import {
   ScrollView,
 } from 'react-native';
 import PagerView from 'react-native-pager-view';
-import RulesIcon from './assets/images/rules.svg';
-import ExpansionsIcon from './assets/images/expansions.svg';
-import ToolsIcon from './assets/images/tools.svg';
-import AboutIcon from './assets/images/about.svg';
-import SearchIcon from './assets/images/search.svg';
+import RulesIcon from './assets/icons/rules.svg';
+import ExpansionsIcon from './assets/icons/expansions.svg';
+import ToolsIcon from './assets/icons/tools.svg';
+import AboutIcon from './assets/icons/about.svg';
+import SearchIcon from './assets/icons/search.svg';
 import { styles, markdownStyles } from './src/styles';
 import { useContent } from './src/hooks/useContent';
 import { useGameAssistant } from './src/hooks/useGameAssistant';

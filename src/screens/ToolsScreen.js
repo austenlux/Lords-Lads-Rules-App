@@ -5,11 +5,11 @@ import React, { useState, useMemo } from 'react';
 import { View, Text, ScrollView, TextInput, Platform } from 'react-native';
 import { HEADER_HEIGHT } from '../styles';
 import CollapsibleSection, { DEFAULT_SECTION_EXPANDED } from '../components/CollapsibleSection';
-import CrownIcon from '../../assets/images/crown.svg';
-import PlayersIcon from '../../assets/images/players.svg';
-import NailsIcon from '../../assets/images/about.svg';
-import UprisingIcon from '../../assets/images/uprising.svg';
-import StatsIcon from '../../assets/images/stats.svg';
+import CrownIcon from '../../assets/icons/crown.svg';
+import PlayersIcon from '../../assets/icons/players.svg';
+import NailsIcon from '../../assets/icons/about.svg';
+import UprisingIcon from '../../assets/icons/uprising.svg';
+import StatsIcon from '../../assets/icons/stats.svg';
 
 const SECTION_KEYS = { NAIL_CALC: 'nailCalc', GAME_STAT_TRACKER: 'gameStatTracker' };
 

@@ -27,14 +27,14 @@ const SETTINGS_KEYS = {
 };
 import { getVenmoPayUrl } from '../constants';
 import CollapsibleSection, { DEFAULT_SECTION_EXPANDED } from '../components/CollapsibleSection';
-import SyncedIcon from '../../assets/images/synced.svg';
-import VenmoIcon from '../../assets/images/venmo.svg';
-import ChangelogIcon from '../../assets/images/changelog.svg';
-import SettingsIcon from '../../assets/images/settings.svg';
-import InfoIcon from '../../assets/images/info.svg';
-import RulesIcon from '../../assets/images/rules.svg';
-import ExpansionsIcon from '../../assets/images/expansions.svg';
-import DebugIcon from '../../assets/images/debug.svg';
+import SyncedIcon from '../../assets/icons/synced.svg';
+import VenmoIcon from '../../assets/icons/venmo.svg';
+import ChangelogIcon from '../../assets/icons/changelog.svg';
+import SettingsIcon from '../../assets/icons/settings.svg';
+import InfoIcon from '../../assets/icons/info.svg';
+import RulesIcon from '../../assets/icons/rules.svg';
+import ExpansionsIcon from '../../assets/icons/expansions.svg';
+import DebugIcon from '../../assets/icons/debug.svg';
 
 const PAST_RELEASES_KEY = 'pastReleases';
 const SECTION_KEYS = { RULES_SYNCED: 'rulesSynced', BUY_NAILS: 'buyNails', CHANGELOG: 'changelog', SETTINGS: 'settings', INFO: 'info', DEBUG: 'debug' };
@@ -43,12 +43,12 @@ const RULEBOOK_REPO_URL = 'https://github.com/seanKenkeremath/lords-and-lads';
 const APP_REPO_URL = 'https://github.com/austenlux/Lords-Lads-Rules-App';
 
 const VENMO_OPTIONS = [
-  { amount: 1, label: '$1', image: require('../../assets/images/nail1.png') },
-  { amount: 5, label: '$5', image: require('../../assets/images/nail2.png') },
-  { amount: 20, label: '$20', image: require('../../assets/images/nail3.png') },
-  { amount: 50, label: '$50', image: require('../../assets/images/nail4.png') },
-  { amount: 100, label: '$100', image: require('../../assets/images/nail5.png') },
-  { amount: 250, label: '$250', image: require('../../assets/images/nail6.png') },
+  { amount: 1, label: '$1', image: require('../../assets/icons/nail1.png') },
+  { amount: 5, label: '$5', image: require('../../assets/icons/nail2.png') },
+  { amount: 20, label: '$20', image: require('../../assets/icons/nail3.png') },
+  { amount: 50, label: '$50', image: require('../../assets/icons/nail4.png') },
+  { amount: 100, label: '$100', image: require('../../assets/icons/nail5.png') },
+  { amount: 250, label: '$250', image: require('../../assets/icons/nail6.png') },
 ];
 
 export default function AboutScreen({
@@ -892,7 +892,7 @@ export default function AboutScreen({
                           style={{ backgroundColor: '#BB86FC22', borderWidth: 1, borderColor: '#BB86FC', borderRadius: 8, paddingVertical: 8, paddingHorizontal: 14, alignSelf: 'flex-start', marginBottom: 12 }}
                           activeOpacity={0.7}
                         >
-                          <Text style={{ color: '#BB86FC', fontSize: 13, fontWeight: '600' }}>⬆ Export Log</Text>
+                          <Text style={{ color: '#BB86FC', fontSize: 13, fontWeight: '600' }}>Export Log</Text>
                         </TouchableOpacity>
 
                         {/* Header stats */}

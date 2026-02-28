@@ -1,6 +1,6 @@
 /**
  * No-wifi icon with distinct colors: wifi bars (blue) and X (red).
- * Path data split from assets/images/no_wifi.svg for two-tone styling.
+ * Path data split from assets/icons/no_wifi.svg for two-tone styling.
  */
 import React from 'react';
 import Svg, { Path } from 'react-native-svg';
