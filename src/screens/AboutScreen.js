@@ -17,7 +17,7 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import RNFS from 'react-native-fs';
-import { getLastRAGResult, subscribeToRAGDebug } from '../services/RAGDebugStore';
+import { getAllRAGResults, subscribeToRAGDebug } from '../services/RAGDebugStore';
 import { MIN_SIMILARITY } from '../services/RAGService';
 import { HEADER_HEIGHT } from '../styles';
 
@@ -73,38 +73,39 @@ export default function AboutScreen({
     [SECTION_KEYS.DEBUG]: false,
   });
   const [debugVisible, setDebugVisible] = useState(false);
-  const [ragDebugResult, setRagDebugResult] = useState(() => getLastRAGResult());
+  const [ragDebugResults, setRagDebugResults] = useState(() => getAllRAGResults());
   const [ragDebugExpanded, setRagDebugExpanded] = useState(false);
 
   // Keep RAG debug panel live — updates whenever a new query completes.
   useEffect(() => {
-    return subscribeToRAGDebug((result) => setRagDebugResult(result));
+    return subscribeToRAGDebug((results) => setRagDebugResults(results));
   }, []);
 
   const shareRAGDebugLog = async () => {
-    if (!ragDebugResult) return;
-    const r = ragDebugResult;
-    const lines = [
-      `RAG Debug Log`,
-      `─────────────────────────────`,
-      `Query:   ${r.query}`,
-      `Mode:    ${r.usedRAG ? 'RAG (chunks)' : `Fallback — ${r.status ?? 'unknown'}`}`,
-      `Elapsed: ${r.elapsedMs}ms`,
-      `Chunks:  ${r.chunks?.length ?? 0}`,
-    ];
-    if (r.chunks?.length > 0) {
-      lines.push('', 'Retrieved Chunks:');
-      r.chunks.forEach((c, i) => {
-        lines.push(`  #${i + 1} score=${c.score?.toFixed(4)} source=${c.source}`);
-        lines.push(`     ${c.text?.slice(0, 120)}`);
-      });
-    }
-    if (r.rawTopScores?.length > 0) {
-      lines.push('', `Top Raw Scores (threshold=${MIN_SIMILARITY}):`);
-      r.rawTopScores.forEach((s, i) => {
-        lines.push(`  #${i + 1} ${s.source}: ${s.score?.toFixed(4)}  — ${s.preview?.slice(0, 80)}`);
-      });
-    }
+    if (!ragDebugResults?.length) return;
+    const lines = [`RAG Session Log  (${ragDebugResults.length} queries)`, ''];
+    ragDebugResults.forEach((r, idx) => {
+      const ts = new Date(r.timestamp).toLocaleTimeString();
+      lines.push(`── Query ${idx + 1}  [${ts}] ──────────────────`);
+      lines.push(`Query:   ${r.query}`);
+      lines.push(`Mode:    ${r.usedRAG ? 'RAG (chunks)' : `Fallback — ${r.status ?? 'unknown'}`}`);
+      lines.push(`Elapsed: ${r.elapsedMs}ms`);
+      lines.push(`Chunks:  ${r.chunks?.length ?? 0}`);
+      if (r.chunks?.length > 0) {
+        lines.push('Retrieved Chunks:');
+        r.chunks.forEach((c, i) => {
+          lines.push(`  #${i + 1} score=${c.score?.toFixed(4)} source=${c.source}`);
+          lines.push(`     ${c.text?.slice(0, 120)}`);
+        });
+      }
+      if (r.rawTopScores?.length > 0) {
+        lines.push('Top Raw Scores:');
+        r.rawTopScores.forEach((s, i) => {
+          lines.push(`  #${i + 1} ${s.source}: ${s.score?.toFixed(4)}  — ${s.preview?.slice(0, 80)}`);
+        });
+      }
+      lines.push('');
+    });
     await Share.share({ message: lines.join('\n') });
   };
 
@@ -871,10 +872,10 @@ export default function AboutScreen({
               >
                 <View style={styles.versionHeader}>
                   <View style={styles.versionRow}>
-                    <Text style={styles.versionText}>RAG Last Query</Text>
-                    {ragDebugResult && (
-                      <Text style={[styles.versionText, { fontSize: 11, color: ragDebugResult.usedRAG ? '#81C784' : '#FF7043', marginLeft: 8 }]}>
-                        {ragDebugResult.usedRAG ? '✓ RAG used' : '⚠ fallback'}
+                    <Text style={styles.versionText}>RAG Session Log</Text>
+                    {ragDebugResults.length > 0 && (
+                      <Text style={[styles.versionText, { fontSize: 11, color: '#888', marginLeft: 8 }]}>
+                        {ragDebugResults.length} {ragDebugResults.length === 1 ? 'query' : 'queries'}
                       </Text>
                     )}
                   </View>
@@ -882,84 +883,96 @@ export default function AboutScreen({
                 </View>
                 {ragDebugExpanded && (
                   <View style={[styles.versionContent, { paddingTop: 8 }]}>
-                    {!ragDebugResult ? (
-                      <Text style={[styles.versionText, { color: '#888', fontStyle: 'italic', fontSize: 13 }]}>No query yet this session.</Text>
+                    {ragDebugResults.length === 0 ? (
+                      <Text style={[styles.versionText, { color: '#888', fontStyle: 'italic', fontSize: 13 }]}>No queries yet this session.</Text>
                     ) : (
                       <>
                         {/* Export button */}
                         <TouchableOpacity
                           onPress={shareRAGDebugLog}
-                          style={{ backgroundColor: '#BB86FC22', borderWidth: 1, borderColor: '#BB86FC', borderRadius: 8, paddingVertical: 8, paddingHorizontal: 14, alignSelf: 'flex-start', marginBottom: 12 }}
+                          style={{ backgroundColor: '#BB86FC22', borderWidth: 1, borderColor: '#BB86FC', borderRadius: 8, paddingVertical: 8, paddingHorizontal: 14, alignSelf: 'flex-start', marginBottom: 16 }}
                           activeOpacity={0.7}
                         >
-                          <Text style={{ color: '#BB86FC', fontSize: 13, fontWeight: '600' }}>Export Log</Text>
+                          <Text style={{ color: '#BB86FC', fontSize: 13, fontWeight: '600' }}>Export Session Log</Text>
                         </TouchableOpacity>
 
-                        {/* Header stats */}
-                        <View style={styles.debugMetaRow}>
-                          <Text style={styles.debugMetaLabel}>Query</Text>
-                          <Text style={styles.debugMetaValue}>{ragDebugResult.query}</Text>
-                        </View>
-                        <View style={styles.debugMetaRow}>
-                          <Text style={styles.debugMetaLabel}>Mode</Text>
-                          <Text style={[styles.debugMetaValue, { color: ragDebugResult.usedRAG ? '#81C784' : '#FF7043' }]}>
-                            {ragDebugResult.usedRAG ? 'RAG (chunks)' : `Fallback — ${ragDebugResult.status ?? 'unknown'}`}
-                          </Text>
-                        </View>
-                        <View style={styles.debugMetaRow}>
-                          <Text style={styles.debugMetaLabel}>Elapsed</Text>
-                          <Text style={styles.debugMetaValue}>{ragDebugResult.elapsedMs}ms</Text>
-                        </View>
-                        <View style={styles.debugMetaRow}>
-                          <Text style={styles.debugMetaLabel}>Chunks</Text>
-                          <Text style={styles.debugMetaValue}>{ragDebugResult.chunks?.length ?? 0}</Text>
-                        </View>
+                        {/* Entries — newest first */}
+                        {[...ragDebugResults].reverse().map((r, idx) => {
+                          const entryNum = ragDebugResults.length - idx;
+                          const ts = new Date(r.timestamp).toLocaleTimeString();
+                          return (
+                            <View key={r.timestamp} style={{ marginBottom: 20, borderTopWidth: 1, borderTopColor: '#333', paddingTop: 12 }}>
+                              {/* Entry header */}
+                              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
+                                <Text style={[styles.debugMetaLabel, { color: '#BB86FC' }]}>Query {entryNum}</Text>
+                                <Text style={[styles.debugMetaLabel, { color: '#555' }]}>{ts}</Text>
+                              </View>
 
-                        {/* Per-chunk detail (retrieved chunks that passed threshold) */}
-                        {ragDebugResult.chunks?.length > 0 && (
-                          <>
-                            <Text style={[styles.debugMetaLabel, { marginTop: 10, marginBottom: 4 }]}>Retrieved Chunks</Text>
-                            {ragDebugResult.chunks.map((chunk, i) => (
-                              <View key={chunk.id} style={{ marginBottom: 10, borderLeftWidth: 2, borderLeftColor: '#BB86FC', paddingLeft: 8 }}>
-                                <View style={styles.debugMetaRow}>
-                                  <Text style={styles.debugMetaLabel}>#{i + 1} score</Text>
-                                  <Text style={[styles.debugMetaValue, { color: chunk.score > 0 ? '#81C784' : '#FF7043' }]}>
-                                    {chunk.score.toFixed(3)}
-                                  </Text>
-                                </View>
-                                <View style={styles.debugMetaRow}>
-                                  <Text style={styles.debugMetaLabel}>source</Text>
-                                  <Text style={styles.debugMetaValue}>{chunk.source}</Text>
-                                </View>
-                                <Text style={[styles.debugMetaValue, { fontSize: 12, color: '#999', marginTop: 4, lineHeight: 16 }]} numberOfLines={4}>
-                                  {chunk.text}
+                              <View style={styles.debugMetaRow}>
+                                <Text style={styles.debugMetaLabel}>Query</Text>
+                                <Text style={styles.debugMetaValue}>{r.query}</Text>
+                              </View>
+                              <View style={styles.debugMetaRow}>
+                                <Text style={styles.debugMetaLabel}>Mode</Text>
+                                <Text style={[styles.debugMetaValue, { color: r.usedRAG ? '#81C784' : '#FF7043' }]}>
+                                  {r.usedRAG ? 'RAG (chunks)' : `Fallback — ${r.status ?? 'unknown'}`}
                                 </Text>
                               </View>
-                            ))}
-                          </>
-                        )}
-
-                        {/* Raw top scores (shown even when all are below threshold) */}
-                        {ragDebugResult.rawTopScores?.length > 0 && (
-                          <>
-                            <Text style={[styles.debugMetaLabel, { marginTop: 10, marginBottom: 4, color: '#FFD54F' }]}>
-                              Top Raw Scores (BM25, pre-dedup)
-                            </Text>
-                            {ragDebugResult.rawTopScores.map((r, i) => (
-                              <View key={i} style={{ marginBottom: 6, borderLeftWidth: 2, borderLeftColor: '#FFD54F', paddingLeft: 8 }}>
-                                <View style={styles.debugMetaRow}>
-                                  <Text style={styles.debugMetaLabel}>#{i + 1} {r.source}</Text>
-                                  <Text style={[styles.debugMetaValue, { color: r.score > 0 ? '#81C784' : '#FF7043' }]}>
-                                    {typeof r.score === 'number' ? r.score.toFixed(4) : '—'}
-                                  </Text>
-                                </View>
-                                <Text style={[styles.debugMetaValue, { fontSize: 11, color: '#888', lineHeight: 15 }]} numberOfLines={2}>
-                                  {r.preview}
-                                </Text>
+                              <View style={styles.debugMetaRow}>
+                                <Text style={styles.debugMetaLabel}>Elapsed</Text>
+                                <Text style={styles.debugMetaValue}>{r.elapsedMs}ms</Text>
                               </View>
-                            ))}
-                          </>
-                        )}
+                              <View style={styles.debugMetaRow}>
+                                <Text style={styles.debugMetaLabel}>Chunks</Text>
+                                <Text style={styles.debugMetaValue}>{r.chunks?.length ?? 0}</Text>
+                              </View>
+
+                              {r.chunks?.length > 0 && (
+                                <>
+                                  <Text style={[styles.debugMetaLabel, { marginTop: 10, marginBottom: 4 }]}>Retrieved Chunks</Text>
+                                  {r.chunks.map((chunk, i) => (
+                                    <View key={chunk.id ?? i} style={{ marginBottom: 10, borderLeftWidth: 2, borderLeftColor: '#BB86FC', paddingLeft: 8 }}>
+                                      <View style={styles.debugMetaRow}>
+                                        <Text style={styles.debugMetaLabel}>#{i + 1} score</Text>
+                                        <Text style={[styles.debugMetaValue, { color: chunk.score > 0 ? '#81C784' : '#FF7043' }]}>
+                                          {chunk.score?.toFixed(3)}
+                                        </Text>
+                                      </View>
+                                      <View style={styles.debugMetaRow}>
+                                        <Text style={styles.debugMetaLabel}>source</Text>
+                                        <Text style={styles.debugMetaValue}>{chunk.source}</Text>
+                                      </View>
+                                      <Text style={[styles.debugMetaValue, { fontSize: 12, color: '#999', marginTop: 4, lineHeight: 16 }]} numberOfLines={4}>
+                                        {chunk.text}
+                                      </Text>
+                                    </View>
+                                  ))}
+                                </>
+                              )}
+
+                              {r.rawTopScores?.length > 0 && (
+                                <>
+                                  <Text style={[styles.debugMetaLabel, { marginTop: 10, marginBottom: 4, color: '#FFD54F' }]}>
+                                    Top Raw Scores (BM25, pre-dedup)
+                                  </Text>
+                                  {r.rawTopScores.map((s, i) => (
+                                    <View key={i} style={{ marginBottom: 6, borderLeftWidth: 2, borderLeftColor: '#FFD54F', paddingLeft: 8 }}>
+                                      <View style={styles.debugMetaRow}>
+                                        <Text style={styles.debugMetaLabel}>#{i + 1} {s.source}</Text>
+                                        <Text style={[styles.debugMetaValue, { color: s.score > 0 ? '#81C784' : '#FF7043' }]}>
+                                          {typeof s.score === 'number' ? s.score.toFixed(4) : '—'}
+                                        </Text>
+                                      </View>
+                                      <Text style={[styles.debugMetaValue, { fontSize: 11, color: '#888', lineHeight: 15 }]} numberOfLines={2}>
+                                        {s.preview}
+                                      </Text>
+                                    </View>
+                                  ))}
+                                </>
+                              )}
+                            </View>
+                          );
+                        })}
                       </>
                     )}
                   </View>

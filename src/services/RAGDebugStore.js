@@ -1,52 +1,39 @@
 /**
  * RAGDebugStore
  *
- * Module-level singleton that records the last RAG retrieval so the
- * Debug menu in the About tab can display it without prop-drilling.
+ * Module-level singleton that records every RAG retrieval for the current
+ * app lifecycle so the Debug menu can display and export the full session log.
  *
- * Not a React hook — just plain JS get/set so it can be written from
- * useRAG (deep in the hook tree) and read from AboutScreen (sibling tree).
+ * History resets when the JS runtime is killed (app killed), matching the
+ * conversation lifecycle — no persistence across app restarts.
  */
 
-let _lastResult = null;
-let _listeners  = [];
+let _results   = [];   // full session history, oldest first
+let _listeners = [];   // (results: Array) => void
 
 /**
- * Called by useRAG after every retrieve() call.
- * @param {{
- *   query:       string,
- *   chunks:      Array<{id, source, text, score}>,
- *   usedRAG:     boolean,   // false = fell back to full content
- *   promptSnippet: string,  // first 800 chars of the final prompt sent to LLM
- *   elapsedMs:   number,
- * }} result
+ * Records a new RAG retrieval result and notifies subscribers.
  */
 export function setLastRAGResult(result) {
-  _lastResult = { ...result, timestamp: Date.now() };
-  _listeners.forEach((fn) => fn(_lastResult));
-
-  // Log to console so ADB logcat can capture results without needing a screenshot.
-  const { query, status, usedRAG, elapsedMs, chunks = [], rawTopScores = [] } = _lastResult;
-  console.log(
-    '[RAGDebug]',
-    JSON.stringify({
-      query,
-      mode: usedRAG ? 'RAG' : `Fallback(${status})`,
-      elapsedMs,
-      chunks: chunks.length,
-      topScores: rawTopScores.map((s) => `${s.source}:${s.score?.toFixed(4)}`),
-    }),
-  );
+  const entry = { ...result, timestamp: Date.now() };
+  _results = [..._results, entry];
+  _listeners.forEach((fn) => fn(_results));
 }
 
-/** Returns the most recent RAG debug snapshot (or null). */
+/** Returns the full session history (oldest first). */
+export function getAllRAGResults() {
+  return _results;
+}
+
+/** Returns the most recent result, or null if none yet. */
 export function getLastRAGResult() {
-  return _lastResult;
+  return _results.length > 0 ? _results[_results.length - 1] : null;
 }
 
 /**
- * Subscribe to result updates. Returns an unsubscribe function.
- * @param {(result) => void} listener
+ * Subscribe to history updates.
+ * Listener receives the full results array on every new entry.
+ * Returns an unsubscribe function.
  */
 export function subscribeToRAGDebug(listener) {
   _listeners.push(listener);
