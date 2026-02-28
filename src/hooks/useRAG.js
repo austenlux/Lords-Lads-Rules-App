@@ -20,6 +20,7 @@ import {
   chunkText,
   embedChunks,
   embedText,
+  scoreAllChunks,
   retrieveTopK,
   MIN_SIMILARITY,
   SOURCE,
@@ -28,6 +29,7 @@ import {
   isIndexCurrent,
   saveIndex,
   queryTopK,
+  getChunkCount,
 } from '../services/VectorStore';
 import { setLastRAGResult } from '../services/RAGDebugStore';
 
@@ -83,8 +85,12 @@ export function useRAG() {
     const contentHash = hashString(combined);
 
     try {
-      // Skip if the persisted index is already up-to-date.
-      if (await isIndexCurrent(contentHash)) {
+      // Skip only if the hash matches AND the DB actually has chunks.
+      // A previous failed ingestion can save the hash but leave 0 chunks,
+      // which would cause every query to fall back forever.
+      const hashCurrent = await isIndexCurrent(contentHash);
+      const chunkCount  = hashCurrent ? await getChunkCount() : 0;
+      if (hashCurrent && chunkCount > 0) {
         setIsReady(true);
         return;
       }
@@ -152,18 +158,35 @@ export function useRAG() {
       }
 
       let topChunks;
+      let rawTopScores = []; // pre-filter scores for diagnostics
 
       // Fast path: use in-memory cache if available.
       if (embeddedChunksRef.current.length > 0) {
-        topChunks = retrieveTopK(queryVector, embeddedChunksRef.current);
+        const allScored = scoreAllChunks(queryVector, embeddedChunksRef.current);
+        // Capture top-5 raw scores for the debug panel (before threshold).
+        rawTopScores = allScored.slice(0, 5).map((c) => ({
+          source: c.source,
+          score:  c.score,
+          preview: c.text.slice(0, 80),
+        }));
+        topChunks = allScored
+          .filter((c) => c.score >= MIN_SIMILARITY)
+          .slice(0, 5);
       } else {
         // Slow path: query SQLite-vec.  sqlite-vec returns `distance` (lower
         // is better); normalise to `score` (1 − distance) so the debug panel
         // and threshold check use a consistent 0-1 scale.
         const dbRows = await queryTopK(queryVector, 5);
-        topChunks = (dbRows ?? [])
-          .map((r) => ({ ...r, score: r.score ?? (1 - (r.distance ?? 1)) }))
-          .filter((r) => r.score >= (MIN_SIMILARITY ?? 0.25));
+        const normalised = (dbRows ?? []).map((r) => ({
+          ...r,
+          score: r.score ?? (1 - (r.distance ?? 1)),
+        }));
+        rawTopScores = normalised.slice(0, 5).map((c) => ({
+          source:  c.source,
+          score:   c.score,
+          preview: c.text?.slice(0, 80) ?? '',
+        }));
+        topChunks = normalised.filter((r) => r.score >= MIN_SIMILARITY);
       }
 
       const elapsedMs = Date.now() - t0;
@@ -173,6 +196,7 @@ export function useRAG() {
         setLastRAGResult({
           query,
           chunks: [],
+          rawTopScores,
           usedRAG: false,
           status: 'below_threshold',
           promptSnippet: fullPromptForDebug.slice(0, 800),
@@ -187,6 +211,7 @@ export function useRAG() {
       setLastRAGResult({
         query,
         chunks: topChunks,
+        rawTopScores,
         usedRAG: true,
         status: 'ok',
         promptSnippet: fullPromptForDebug.slice(0, 800),

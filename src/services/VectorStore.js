@@ -159,6 +159,17 @@ export async function getAllChunks() {
   return result.rows ?? [];
 }
 
+/**
+ * Returns the number of chunks currently stored in the index.
+ * Used to detect a "hash matches but index is empty" state that occurs
+ * when a previous ingestion run failed after saving the hash.
+ */
+export async function getChunkCount() {
+  const conn = await getDB();
+  const result = await conn.executeAsync('SELECT COUNT(*) as cnt FROM chunks;');
+  return result.rows?.[0]?.cnt ?? 0;
+}
+
 // ── Binary helpers ────────────────────────────────────────────────────────────
 
 /**

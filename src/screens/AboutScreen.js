@@ -17,6 +17,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import RNFS from 'react-native-fs';
 import { getLastRAGResult, subscribeToRAGDebug } from '../services/RAGDebugStore';
+import { MIN_SIMILARITY } from '../services/RAGService';
 import { HEADER_HEIGHT } from '../styles';
 
 const SETTINGS_KEYS = {
@@ -877,7 +878,7 @@ export default function AboutScreen({
                           <Text style={styles.debugMetaValue}>{ragDebugResult.chunks?.length ?? 0}</Text>
                         </View>
 
-                        {/* Per-chunk detail */}
+                        {/* Per-chunk detail (retrieved chunks that passed threshold) */}
                         {ragDebugResult.chunks?.length > 0 && (
                           <>
                             <Text style={[styles.debugMetaLabel, { marginTop: 10, marginBottom: 4 }]}>Retrieved Chunks</Text>
@@ -895,6 +896,28 @@ export default function AboutScreen({
                                 </View>
                                 <Text style={[styles.debugMetaValue, { fontSize: 12, color: '#999', marginTop: 4, lineHeight: 16 }]} numberOfLines={4}>
                                   {chunk.text}
+                                </Text>
+                              </View>
+                            ))}
+                          </>
+                        )}
+
+                        {/* Raw top scores (shown even when all are below threshold) */}
+                        {ragDebugResult.rawTopScores?.length > 0 && (
+                          <>
+                            <Text style={[styles.debugMetaLabel, { marginTop: 10, marginBottom: 4, color: '#FFD54F' }]}>
+                              Top Raw Scores (pre-filter, threshold={MIN_SIMILARITY ?? 0.25})
+                            </Text>
+                            {ragDebugResult.rawTopScores.map((r, i) => (
+                              <View key={i} style={{ marginBottom: 6, borderLeftWidth: 2, borderLeftColor: '#FFD54F', paddingLeft: 8 }}>
+                                <View style={styles.debugMetaRow}>
+                                  <Text style={styles.debugMetaLabel}>#{i + 1} {r.source}</Text>
+                                  <Text style={[styles.debugMetaValue, { color: r.score >= 0.25 ? '#81C784' : '#FF7043' }]}>
+                                    {typeof r.score === 'number' ? r.score.toFixed(4) : '—'}
+                                  </Text>
+                                </View>
+                                <Text style={[styles.debugMetaValue, { fontSize: 11, color: '#888', lineHeight: 15 }]} numberOfLines={2}>
+                                  {r.preview}
                                 </Text>
                               </View>
                             ))}

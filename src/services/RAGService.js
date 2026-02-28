@@ -163,7 +163,12 @@ function dotProduct(a, b) {
  * @param {number}    [k]  defaults to TOP_K
  * @returns {Array<{id, source, text, score: number}>}
  */
-export function retrieveTopK(queryVector, embeddedChunks, k = TOP_K) {
+/**
+ * Scores all chunks against the query vector and returns them sorted
+ * highest-first. No threshold filtering — use this for diagnostics or
+ * when you want to inspect raw scores before deciding what to keep.
+ */
+export function scoreAllChunks(queryVector, embeddedChunks) {
   return embeddedChunks
     .map((chunk) => ({
       id:     chunk.id,
@@ -171,7 +176,11 @@ export function retrieveTopK(queryVector, embeddedChunks, k = TOP_K) {
       text:   chunk.text,
       score:  dotProduct(queryVector, chunk.vector),
     }))
+    .sort((a, b) => b.score - a.score);
+}
+
+export function retrieveTopK(queryVector, embeddedChunks, k = TOP_K) {
+  return scoreAllChunks(queryVector, embeddedChunks)
     .filter((chunk) => chunk.score >= MIN_SIMILARITY)
-    .sort((a, b) => b.score - a.score)
     .slice(0, k);
 }
