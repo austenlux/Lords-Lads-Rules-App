@@ -17,10 +17,11 @@ import { open } from '@op-engineering/op-sqlite';
 
 const DB_NAME = 'rag_index.db';
 
-// Universal Sentence Encoder Lite outputs 512-dimensional embeddings.
-// IMPORTANT: changing this value bumps SCHEMA_VERSION, which drops and
-// recreates all tables so the stored vectors match the new dimension.
-const EMBEDDING_DIM   = 512;
+// The bundled universal_sentence_encoder.tflite (USE Lite / Small) outputs
+// 100-dimensional embeddings.  IMPORTANT: changing this value bumps
+// SCHEMA_VERSION, which drops and recreates all tables so the stored
+// vectors always match the model's actual output dimension.
+const EMBEDDING_DIM   = 100;
 const SCHEMA_VERSION  = `v1_dim${EMBEDDING_DIM}`;
 
 let db = null;

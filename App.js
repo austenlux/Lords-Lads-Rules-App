@@ -26,7 +26,6 @@ import { VoiceAssistantFAB, VoiceAssistantModal } from './src/components';
 import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
 
 const SPLASH_MIN_MS = 1000;
-const SPLASH_MAX_MS = 5000;
 const SPLASH_FADE_MS = 400;
 const LOGO_SIZE_RATIO = 0.9;
 /** Slightly smaller than splash so the background logo never appears larger and avoids shift. */
@@ -63,7 +62,6 @@ function getLogoLayout() {
 
 export default function App() {
   const [splashMinTimeElapsed, setSplashMinTimeElapsed] = useState(false);
-  const [splashMaxTimeElapsed, setSplashMaxTimeElapsed] = useState(false);
   const [splashDismissed, setSplashDismissed] = useState(false);
   const [isConvoOpen, setIsConvoOpen] = useState(false);
   const prevIsThinkingRef = useRef(false);
@@ -79,11 +77,6 @@ export default function App() {
 
   useEffect(() => {
     const t = setTimeout(() => setSplashMinTimeElapsed(true), SPLASH_MIN_MS);
-    return () => clearTimeout(t);
-  }, []);
-
-  useEffect(() => {
-    const t = setTimeout(() => setSplashMaxTimeElapsed(true), SPLASH_MAX_MS);
     return () => clearTimeout(t);
   }, []);
 
@@ -170,8 +163,7 @@ export default function App() {
   }, [isThinking]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    const contentReady = !loading || splashMaxTimeElapsed;
-    if (!splashMinTimeElapsed || !contentReady || fadeOutStarted.current) return;
+    if (!splashMinTimeElapsed || loading || fadeOutStarted.current) return;
     fadeOutStarted.current = true;
     Animated.parallel([
       Animated.timing(splashOpacity, {
@@ -187,7 +179,7 @@ export default function App() {
     ]).start(({ finished }) => {
       if (finished) setSplashDismissed(true);
     });
-  }, [splashMinTimeElapsed, splashMaxTimeElapsed, loading, splashOpacity, mainAppOpacity]);
+  }, [splashMinTimeElapsed, loading, splashOpacity, mainAppOpacity]);
 
   const logoLayout = getLogoLayout();
   const { width: windowWidth, height: windowHeight } = Dimensions.get('window');
