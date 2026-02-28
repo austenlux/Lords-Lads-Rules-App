@@ -129,15 +129,19 @@ export default function App() {
   // ── RAG ──────────────────────────────────────────────────────────────────
   const { isIndexing, isReady: ragReady, warmUp, ingest, retrieve } = useRAG();
 
-  // Warm up the embedder model as soon as the app mounts.
-  useEffect(() => { warmUp(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Re-ingest whenever content changes (hash check prevents redundant work).
+  // Warm up the embedder only after the splash is gone so it doesn't compete
+  // with content loading during the splash phase.
   useEffect(() => {
-    if (content || expansionsContent) {
+    if (splashDismissed) warmUp();
+  }, [splashDismissed]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Ingest content into the RAG index only after the splash is dismissed.
+  // The hash check inside ingest() prevents redundant work on repeat renders.
+  useEffect(() => {
+    if (splashDismissed && (content || expansionsContent)) {
       ingest(content, expansionsContent);
     }
-  }, [content, expansionsContent, ingest]);
+  }, [splashDismissed, content, expansionsContent, ingest]);
 
   // Keep the latest content in a ref so the auto-continue effect can read it
   // without needing content/expansionsContent as effect dependencies.
