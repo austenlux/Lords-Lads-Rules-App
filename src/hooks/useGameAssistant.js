@@ -28,6 +28,7 @@ import { PermissionsAndroid, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NativeVoiceAssistant from '../specs/NativeVoiceAssistant';
 import { buildGameAssistantPrompt } from '../constants';
+import { sanitizeTextForSpeech } from '../utils/sanitizeTextForSpeech';
 
 // Any status other than 'unavailable' means hardware + AICore support exists.
 const SUPPORTED_STATUSES = new Set(['available', 'downloadable', 'downloading']);
@@ -36,6 +37,12 @@ const VOICE_STORAGE_KEY = '@lnl_voice_id';
 const VOICE_PREVIEW_TEXT = 'This is a preview of the selected voice.';
 
 // ─────────────────────────────────────────── Constants ──
+
+/**
+ * Minimum buffer size (chars) before we consider speaking at a phrase boundary
+ * (, ; :). Keeps TTS chunks long enough to sound natural.
+ */
+const PHRASE_SPEAK_THRESHOLD = 40;
 
 const MIC_PERMISSION_RATIONALE = {
   title: 'Microphone Permission',
@@ -73,6 +80,10 @@ export function useGameAssistant() {
   const activeUserMsgId = useRef(null);
   const activeAssistantMsgId = useRef(null);
   const msgCounter = useRef(0);
+  // Accumulates streaming chunks until a sentence/phrase boundary is detected,
+  // then speaks the segment sanitized. Mirrors the sentence-buffer logic that
+  // previously lived in Kotlin's accumulateAndSpeak().
+  const sentenceBufferRef = useRef('');
 
   const nextId = () => {
     msgCounter.current += 1;
@@ -145,14 +156,42 @@ export function useGameAssistant() {
       }
     });
 
-    // Build fullAnswer chunk-by-chunk; also stream into the assistant bubble.
+    // Build fullAnswer chunk-by-chunk; stream into the assistant bubble;
+    // and accumulate into the sentence buffer to drive TTS.
     const chunkSub = NativeVoiceAssistant.onAIChunkReceived(({ chunk }) => {
+      // UI update — raw Markdown is preserved for display.
       setFullAnswer((prev) => prev + chunk);
       const id = activeAssistantMsgId.current;
       if (id) {
         setMessages((prev) =>
           prev.map((m) => (m.id === id ? { ...m, text: m.text + chunk } : m)),
         );
+      }
+
+      // TTS accumulation — mirrors Kotlin's accumulateAndSpeak().
+      sentenceBufferRef.current += chunk;
+      const text = sentenceBufferRef.current;
+
+      // 1. Sentence boundary (. ! ?) — speak immediately.
+      const sentenceEnd = text.search(/[.!?]/);
+      if (sentenceEnd >= 0) {
+        const sentence = text.substring(0, sentenceEnd + 1).trim();
+        sentenceBufferRef.current = text.substring(sentenceEnd + 1);
+        const cleaned = sanitizeTextForSpeech(sentence);
+        if (cleaned) NativeVoiceAssistant.speak(cleaned);
+        return;
+      }
+
+      // 2. Phrase boundary (, ; :) once enough text has built up — keeps TTS
+      //    starting before the first full stop arrives.
+      if (text.length >= PHRASE_SPEAK_THRESHOLD) {
+        const phraseEnd = text.search(/[,;:]/);
+        if (phraseEnd >= 0) {
+          const phrase = text.substring(0, phraseEnd + 1).trim();
+          sentenceBufferRef.current = text.substring(phraseEnd + 1);
+          const cleaned = sanitizeTextForSpeech(phrase);
+          if (cleaned) NativeVoiceAssistant.speak(cleaned);
+        }
       }
     });
 
@@ -200,6 +239,7 @@ export function useGameAssistant() {
   const stopAssistant = useCallback(() => {
     if (Platform.OS !== 'android') return;
     NativeVoiceAssistant.stopAssistant();
+    sentenceBufferRef.current = '';
     setIsThinking(false);
     setIsListening(false);
     isBusy.current = false;
@@ -255,6 +295,7 @@ export function useGameAssistant() {
       }
 
       isBusy.current = true;
+      sentenceBufferRef.current = '';
       setError(null);
       setFullAnswer('');
       setPartialSpeech('');
@@ -338,6 +379,17 @@ export function useGameAssistant() {
         setIsThinking(true);
         await NativeVoiceAssistant.askQuestion(fullPrompt);
         activeAssistantMsgId.current = null; // Streaming done; stop updating assistant bubble.
+
+        // Flush any text remaining in the sentence buffer after the stream ends.
+        const remaining = sentenceBufferRef.current.trim();
+        sentenceBufferRef.current = '';
+        if (remaining) {
+          const cleaned = sanitizeTextForSpeech(remaining);
+          if (cleaned) NativeVoiceAssistant.speak(cleaned);
+        }
+        // Signal to native that no more speak() calls are coming for this turn,
+        // so it can fire onTTSFinished once the TTS queue fully drains.
+        NativeVoiceAssistant.markSpeechQueueComplete();
         // Do NOT clear isThinking here — onTTSFinished handles that once TTS is done.
 
       } catch (err) {

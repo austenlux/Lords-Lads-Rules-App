@@ -95,6 +95,13 @@ export interface Spec extends TurboModule {
    */
   setThinkingSoundEnabled(enabled: boolean): void;
 
+  /**
+   * Called by JS after it has queued the final speak() for a turn.
+   * Tells the native layer no more utterances are coming so it can fire
+   * onTTSFinished once the TTS queue drains completely.
+   */
+  markSpeechQueueComplete(): void;
+
   // ── Events ───────────────────────────────────────────────────────────────
 
   /** Fired repeatedly with interim STT results while the user is still speaking. */

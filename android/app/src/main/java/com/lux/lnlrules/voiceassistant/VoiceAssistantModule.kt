@@ -85,8 +85,6 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
     // Toggled by setThinkingSoundEnabled(); default on.
     @Volatile private var thinkingSoundEnabled = true
 
-    // Buffer that accumulates streaming chunks until a sentence boundary is found.
-    private val sentenceBuffer = StringBuilder()
 
     // ── Audio focus
     private val audioManager: AudioManager by lazy {
@@ -255,17 +253,15 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
      * Streams a prompt (question + context) through Gemini Nano.
      *
      * Context is prepended to the prompt so Nano treats it as background knowledge.
-     * Each streamed chunk is:
-     *   1. Emitted to JS via onAIChunkReceived for real-time UI updates.
-     *   2. Accumulated in sentenceBuffer; complete sentences are spoken immediately.
-     * Resolves with the full response text when streaming finishes.
+     * Each streamed chunk is emitted to JS via onAIChunkReceived for real-time UI updates.
+     * The JS layer (useGameAssistant.js) handles sentence accumulation, sanitization,
+     * and speak() calls. Resolves with the full response text when streaming finishes.
      */
     override fun askQuestion(fullPrompt: String, promise: Promise) {
         activeInferenceJob = moduleScope.launch {
             try {
                 val prompt = fullPrompt
                 val fullResponse = StringBuilder()
-                sentenceBuffer.clear()
                 pendingTtsCount.set(0)
                 generationComplete = false
 
@@ -281,17 +277,12 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
                     emitOnAIChunkReceived(
                         Arguments.createMap().apply { putString("chunk", text) }
                     )
-                    accumulateAndSpeak(text)
+                    // Sentence accumulation and TTS are now handled by the JS layer
+                    // (useGameAssistant.js → sanitizeTextForSpeech → speak()).
                 }
 
-                flushRemainingBuffer()
-                // Mark generation done. If no TTS was queued (e.g. empty response),
-                // fire onTTSFinished immediately so the JS layer isn't left waiting.
-                generationComplete = true
-                if (pendingTtsCount.get() <= 0) {
-                    abandonAudioFocus()
-                    emitOnTTSFinished(Arguments.createMap().apply { putString("status", "done") })
-                }
+                // JS flushes the sentence buffer and calls markSpeechQueueComplete()
+                // after this promise resolves; do not set generationComplete here.
                 promise.resolve(fullResponse.toString())
             } catch (e: Exception) {
                 promise.reject("ASK_QUESTION_ERROR", e.message ?: "Unknown error", e)
@@ -309,7 +300,6 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
     override fun stopAssistant() {
         activeInferenceJob?.cancel()
         activeInferenceJob = null
-        sentenceBuffer.clear()
         pendingTtsCount.set(0)
         generationComplete = false
         thinkingSound.stop()
@@ -434,6 +424,19 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
     }
 
     /**
+     * Called by JS after it has queued the final speak() for a turn.
+     * Sets generationComplete and fires onTTSFinished immediately if the
+     * TTS queue has already drained (e.g. very short or empty response).
+     */
+    override fun markSpeechQueueComplete() {
+        generationComplete = true
+        if (pendingTtsCount.get() <= 0) {
+            abandonAudioFocus()
+            emitOnTTSFinished(Arguments.createMap().apply { putString("status", "done") })
+        }
+    }
+
+    /**
      * Derives a display name for a voice scoped within its locale group.
      * Region is omitted — callers group by locale so the section header provides that context.
      *
@@ -553,86 +556,6 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
         override fun onError(utteranceId: String) = abandonAudioFocus()
     }
 
-    /**
-     * Appends [chunk] to the sentence buffer.
-     * When a sentence boundary (. ! ?) is detected, the complete sentence is spoken
-     * immediately so TTS starts before inference is fully complete.
-     * The raw chunk is already emitted to JS for UI display before this is called,
-     * so sanitization here only affects the audio output.
-     */
-    private fun accumulateAndSpeak(chunk: String) {
-        sentenceBuffer.append(chunk)
-        val text = sentenceBuffer.toString()
-
-        // 1. Sentence boundary — speak immediately.
-        val sentenceEnd = text.indexOfFirst { it == '.' || it == '!' || it == '?' }
-        if (sentenceEnd >= 0) {
-            val sentence = text.substring(0, sentenceEnd + 1).trim()
-            sentenceBuffer.delete(0, sentenceEnd + 1)
-            val cleaned = sanitizeTextForSpeech(sentence)
-            if (cleaned.isNotEmpty()) speak(cleaned)
-            return
-        }
-
-        // 2. Phrase boundary — speak once enough text has built up, so TTS starts
-        //    without waiting for the first period. Avoids the visible-text / silent-audio gap.
-        if (text.length >= PHRASE_SPEAK_THRESHOLD) {
-            val phraseEnd = text.indexOfFirst { it == ',' || it == ';' || it == ':' }
-            if (phraseEnd >= 0) {
-                val phrase = text.substring(0, phraseEnd + 1).trim()
-                sentenceBuffer.delete(0, phraseEnd + 1)
-                val cleaned = sanitizeTextForSpeech(phrase)
-                if (cleaned.isNotEmpty()) speak(cleaned)
-            }
-        }
-    }
-
-    /** Speaks any remaining partial sentence after streaming is complete. */
-    private fun flushRemainingBuffer() {
-        val remaining = sentenceBuffer.toString().trim()
-        if (remaining.isNotEmpty()) {
-            speak(sanitizeTextForSpeech(remaining))
-            sentenceBuffer.clear()
-        }
-    }
-
-    /**
-     * Strips Markdown and other noise from [text] so the TTS engine reads it naturally.
-     *
-     * Rules applied in order:
-     *  1. Expand common abbreviations before other transforms remove their punctuation.
-     *  2. Replace list-item prefixes (* / - at line start) with a brief pause marker.
-     *  3. Strip remaining Markdown symbols: **, *, _, #, `, ~~ (strikethrough).
-     *  4. Collapse consecutive whitespace.
-     */
-    private fun sanitizeTextForSpeech(text: String): String {
-        var s = text
-
-        // 1. Abbreviation expansion (must run before punctuation is stripped).
-        s = RE_EG.replace(s, "for example")
-        s = RE_IE.replace(s, "that is")
-        s = RE_ETC.replace(s, "etcetera")
-        s = RE_VS.replace(s, "versus")
-        s = RE_APPROX.replace(s, "approximately")
-        s = RE_MAX.replace(s, "maximum")
-        s = RE_MIN.replace(s, "minimum")
-        s = RE_FIG.replace(s, "figure")
-        s = RE_WITHOUT.replace(s, "without")
-        s = RE_WITH.replace(s, "with")
-
-        // 2. List-item prefixes → brief pause so items are separated naturally.
-        s = RE_LIST_PREFIX.replace(s, ", ")
-
-        // 3. Strip Markdown symbols and emoji.
-        s = RE_MD_SYMBOLS.replace(s, "")
-        s = RE_EMOJI.replace(s, "")
-
-        // 4. Collapse excess whitespace.
-        s = RE_WHITESPACE.replace(s, " ").trim()
-
-        return s
-    }
-
     // ──────────────────────────────────────────────────── Audio focus ──
 
     /**
@@ -683,35 +606,5 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
     companion object {
         const val NAME = "VoiceAssistant"
         private const val UTTERANCE_ID = "va_utterance"
-
-        // Precompiled regexes for sanitizeTextForSpeech — avoids re-compiling on every call.
-        private val RE_EG          = Regex("\\be\\.g\\.")
-        private val RE_IE          = Regex("\\bi\\.e\\.")
-        private val RE_ETC         = Regex("\\betc\\.")
-        private val RE_VS          = Regex("\\bvs\\.")
-        private val RE_APPROX      = Regex("\\bapprox\\.")
-        private val RE_MAX         = Regex("\\bmax\\.")
-        private val RE_MIN         = Regex("\\bmin\\.")
-        private val RE_FIG         = Regex("\\bfig\\.")
-        private val RE_WITHOUT     = Regex("\\bw/o\\b")
-        private val RE_WITH        = Regex("\\bw/\\b")
-        private val RE_LIST_PREFIX = Regex("(?m)^[*\\-]\\s+")
-        private val RE_MD_SYMBOLS  = Regex("[*_`#~]")
-        private val RE_WHITESPACE  = Regex("[ \\t]{2,}")
-        // Emoji: surrogate-pair ranges covering most Unicode emoji blocks,
-        // plus common BMP symbol/emoji ranges and variation selectors.
-        private val RE_EMOJI = Regex(
-            "[\uD83C-\uD83E][\uDC00-\uDFFF]|" +   // Supplementary emoji (surrogate pairs)
-            "[\uD83C][\uDDE0-\uDDFF]|" +            // Regional indicator / flag sequences
-            "[\u2600-\u27BF]\uFE0F?|" +             // Misc symbols & dingbats
-            "[\u2300-\u23FF]\uFE0F?|" +             // Misc technical
-            "[\u2B00-\u2BFF]\uFE0F?|" +             // Misc symbols & arrows
-            "[\u2000-\u206F]\uFE0F?|" +             // General punctuation extras
-            "\uFE0F|\u200D|\u20E3|\uFEFF"            // Variation selector, ZWJ, combining enclosing keycap, BOM
-        )
-
-        // Minimum buffer length before we consider speaking at a phrase boundary (, ; :).
-        // Keeps TTS chunks long enough to sound natural.
-        private const val PHRASE_SPEAK_THRESHOLD = 40
     }
 }
