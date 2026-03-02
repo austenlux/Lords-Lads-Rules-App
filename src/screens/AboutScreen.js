@@ -1062,8 +1062,8 @@ export default function AboutScreen({
                               { label: 'Quality',          value: voice.qualityLabel ?? String(voice.quality ?? '—') },
                               { label: 'Latency',          value: voice.latencyLabel ?? String(voice.latency ?? '—') },
                               { label: 'Network Required', value: voice.networkRequired ? 'Yes' : 'No' },
-                              { label: 'Features',         value: Array.isArray(voice.features) ? voice.features.join(', ') || '—' : '—' },
                             ];
+                            const featureItems = Array.isArray(voice.features) ? voice.features.filter(Boolean) : [];
                             return (
                               <TouchableOpacity
                                 key={voice.id}
@@ -1090,6 +1090,20 @@ export default function AboutScreen({
                                         <Text style={styles.debugMetaValue}>{row.value}</Text>
                                       </View>
                                     ))}
+                                    <View style={[styles.debugMetaRow, { borderBottomWidth: 0 }]}>
+                                      <Text style={styles.debugMetaLabel}>Features</Text>
+                                      <View style={{ flex: 1 }}>
+                                        {featureItems.length > 0
+                                          ? featureItems.map((f, i) => (
+                                              <View key={i} style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+                                                <Text style={[styles.debugMetaValue, { width: 14 }]}>{'\u2022'}</Text>
+                                                <Text style={[styles.debugMetaValue, { flex: 1 }]}>{f.trim()}</Text>
+                                              </View>
+                                            ))
+                                          : <Text style={styles.debugMetaValue}>{'—'}</Text>
+                                        }
+                                      </View>
+                                    </View>
                                   </View>
                                 </Animated.View>
                               </TouchableOpacity>
