@@ -1004,16 +1004,10 @@ export default function AboutScreen({
                         </Text>
                       </View>
                     )}
-                    <View style={styles.debugMetaRow}>
+                    <View style={[styles.debugMetaRow, { borderBottomWidth: 0 }]}>
                       <Text style={styles.debugMetaLabel}>Microphone</Text>
                       <Text style={[styles.debugMetaValue, { color: VA_STATUS_COLOR.mic[micPermissionStatus] ?? '#888' }]}>
                         {VA_STATUS_LABEL.mic[micPermissionStatus] ?? micPermissionStatus}
-                      </Text>
-                    </View>
-                    <View style={[styles.debugMetaRow, { marginBottom: 8, borderBottomWidth: 0 }]}>
-                      <Text style={styles.debugMetaLabel}>FAB Visible</Text>
-                      <Text style={[styles.debugMetaValue, { color: isVoiceAssistantSupported ? '#4CAF50' : '#CF6679' }]}>
-                        {isVoiceAssistantSupported ? 'Yes' : 'No'}
                       </Text>
                     </View>
                     {micPermissionStatus === 'not_granted' && (
@@ -1040,7 +1034,10 @@ export default function AboutScreen({
                       activeOpacity={0.7}
                     >
                       <View style={styles.versionHeader}>
-                        <CardIconTitle icon={<SpeakerIcon fill="#AB47BC" />} title="Models" styles={styles} />
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                          <CardIconTitle icon={<SpeakerIcon fill="#AB47BC" />} title="Models" styles={styles} />
+                          <Text style={styles.versionDate}>{availableVoices.length} Available</Text>
+                        </View>
                         <Animated.View style={{ transform: [{ rotate: animations['voiceMeta']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
                           <Text style={styles.versionArrow}>▶</Text>
                         </Animated.View>
