@@ -976,15 +976,17 @@ export default function AboutScreen({
                   style={{ maxHeight: animations['vaDebug']?.maxHeight || 0, overflow: 'hidden' }}
                   pointerEvents={vaDebugExpanded ? 'auto' : 'none'}
                 >
-                  <View style={[styles.versionContent, { paddingTop: 4, paddingHorizontal: 0 }]}>
+                  <View style={[styles.versionContent, { paddingTop: 4, paddingLeft: 0, paddingRight: 0 }]}>
                     {/* Status subsection */}
                     <View style={{ marginTop: 8, marginBottom: 8 }}>
-                      {modelStatus === 'available' && micPermissionStatus === 'granted'
-                        ? <CardIconTitle icon={<CheckIcon fill="#4CAF50" />} title="Status" styles={styles} />
-                        : (modelStatus === 'unavailable' || modelStatus === 'download_failed' || micPermissionStatus === 'not_granted')
-                          ? <CardIconTitle icon={<CloseIcon fill="#CF6679" />} title="Status" styles={styles} />
-                          : <Text style={styles.versionText}>Status</Text>
-                      }
+                      <CardIconTitle
+                        icon={modelStatus === 'available' && micPermissionStatus === 'granted'
+                          ? <CheckIcon fill="#4CAF50" />
+                          : <CloseIcon fill="#CF6679" />
+                        }
+                        title="Status"
+                        styles={styles}
+                      />
                     </View>
                     <View style={styles.debugMetaRow}>
                       <Text style={styles.debugMetaLabel}>Gemini Nano</Text>
@@ -1047,7 +1049,7 @@ export default function AboutScreen({
                         style={{ maxHeight: animations['voiceMeta']?.maxHeight || 0, overflow: 'hidden' }}
                         pointerEvents={voiceMetaExpanded ? 'auto' : 'none'}
                       >
-                        <View style={[styles.versionContent, { paddingHorizontal: 0 }]}>
+                        <View style={[styles.versionContent, { paddingLeft: 0, paddingRight: 0 }]}>
                           {availableVoices.map(voice => {
                             const voiceAnim = debugVoiceAnims[voice.id];
                             const isOpen = expandedDebugVoices[voice.id];
