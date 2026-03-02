@@ -66,7 +66,7 @@ const SECTION_KEYS = { BUY_NAILS: 'buyNails', CHANGELOG: 'changelog', SETTINGS: 
 
 const VA_STATUS_LABEL = {
   deviceSupport: {
-    unknown:         'Checking…',
+    unknown:         '—',
     unavailable:     'Not Supported',
     supported:       'Supported',
   },
