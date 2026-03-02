@@ -13,7 +13,6 @@ import {
   Linking,
   StyleSheet,
   Alert,
-  DeviceEventEmitter,
 } from 'react-native';
 import PagerView from 'react-native-pager-view';
 import RulesIcon from './assets/icons/rules.svg';
@@ -70,7 +69,6 @@ export default function App() {
   const prevIsThinkingRef = useRef(false);
   const convoContextRef = useRef({ rules: '', expansions: '' });
   const askTheRulesRef = useRef(null);
-  const pendingMicAlert = useRef(false);
   const isIOS = Platform.OS === 'ios';
   const splashOpacity = useRef(new Animated.Value(isIOS ? 1 : 0)).current;
   const mainAppOpacity = useRef(new Animated.Value(0)).current;
@@ -148,26 +146,6 @@ export default function App() {
   useEffect(() => {
     askTheRulesRef.current = askTheRules;
   }, [askTheRules]);
-
-  // Show the mic alert once the activity window has regained focus after the
-  // OS permission dialog closes. onWindowFocusChanged(hasFocus=true) is the
-  // correct signal — it fires after onResume once the window is interactive.
-  useEffect(() => {
-    const sub = DeviceEventEmitter.addListener('onWindowFocusGained', () => {
-      if (pendingMicAlert.current) {
-        pendingMicAlert.current = false;
-        Alert.alert(
-          'Microphone Access Required',
-          'The Voice Assistant needs microphone access. Please enable it in your device settings.',
-          [
-            { text: 'Dismiss', style: 'cancel' },
-            { text: 'Open Settings', onPress: () => Linking.openSettings() },
-          ],
-        );
-      }
-    });
-    return () => sub.remove();
-  }, []);
 
   // Auto-start the next listening turn after the assistant finishes speaking.
   // Triggers only when isThinking transitions true→false while the convo is open.
@@ -505,14 +483,16 @@ export default function App() {
               isThinking={isThinking}
               isActive={aiActive}
               hasConversation={isConvoOpen}
-              onPress={async () => {
-                const { granted } = await requestMicPermission();
-                if (!granted) {
-                  // Window focus is not yet restored when the permission promise
-                  // resolves — Android queues any UI (even native Alert) until
-                  // onWindowFocusChanged fires. Set a flag and show the alert
-                  // from the onWindowFocusGained listener instead.
-                  pendingMicAlert.current = true;
+              onPress={() => {
+                if (micPermissionStatus !== 'granted') {
+                  Alert.alert(
+                    'Microphone Access Required',
+                    'The Voice Assistant needs microphone access. Please enable it in your device settings.',
+                    [
+                      { text: 'Dismiss', style: 'cancel' },
+                      { text: 'Open Settings', onPress: () => Linking.openSettings() },
+                    ],
+                  );
                   return;
                 }
                 setIsConvoOpen(true);
