@@ -13,6 +13,7 @@ import {
   Modal,
   Linking,
   StyleSheet,
+  InteractionManager,
 } from 'react-native';
 import PagerView from 'react-native-pager-view';
 import RulesIcon from './assets/icons/rules.svg';
@@ -487,10 +488,7 @@ export default function App() {
               onPress={async () => {
                 const { granted } = await requestMicPermission();
                 if (!granted) {
-                  // Delay to let React Native fully resume after the Android
-                  // system permission dialog briefly pauses the app — without
-                  // this the state update is batched until the next foreground.
-                  setTimeout(() => setShowMicSettingsDialog(true), 350);
+                  InteractionManager.runAfterInteractions(() => setShowMicSettingsDialog(true));
                   return;
                 }
                 setIsConvoOpen(true);
