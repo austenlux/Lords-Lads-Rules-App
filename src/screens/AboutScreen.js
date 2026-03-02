@@ -13,12 +13,19 @@ import {
   Image,
   Switch,
   Platform,
+  Dimensions,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import RNFS from 'react-native-fs';
 import { HEADER_HEIGHT } from '../styles';
 import NativeVoiceAssistant from '../specs/NativeVoiceAssistant';
-import { BUILD_COMMIT } from '../buildInfo';
+import {
+  BUILD_COMMIT,
+  BUILD_COMMIT_FULL,
+  BUILD_VERSION_NAME,
+  BUILD_VERSION_CODE,
+  BUILD_TIMESTAMP,
+} from '../buildInfo';
 
 const SETTINGS_KEYS = {
   EXPAND_RULES_DEFAULT: '@lnl_expand_rules_default',
@@ -143,6 +150,7 @@ export default function AboutScreen({
   const [voiceMetaExpanded, setVoiceMetaExpanded] = useState(false);
   const [expandedDebugVoices, setExpandedDebugVoices] = useState({});
   const [vaReadinessExpanded, setVaReadinessExpanded] = useState(false);
+  const [buildInfoExpanded, setBuildInfoExpanded] = useState(false);
 
   const VOICE_SECTION_MAX_HEIGHT = 1500;
   const EXPAND_DEFAULTS_MAX_HEIGHT = 300;
@@ -151,6 +159,7 @@ export default function AboutScreen({
   const DEBUG_VOICE_MAX_HEIGHT = 400;
   const FEATURE_FLAGS_MAX_HEIGHT = 400;
   const VA_READINESS_MAX_HEIGHT = 500;
+  const BUILD_INFO_MAX_HEIGHT = 600;
 
   // Initialise animation pairs for settings cards and debug sections.
   useEffect(() => {
@@ -168,6 +177,9 @@ export default function AboutScreen({
     }
     if (!animations['vaReadiness']) {
       animations['vaReadiness'] = { rotation: new Animated.Value(0), maxHeight: new Animated.Value(0) };
+    }
+    if (!animations['buildInfo']) {
+      animations['buildInfo'] = { rotation: new Animated.Value(0), maxHeight: new Animated.Value(0) };
     }
   }, []);
 
@@ -291,6 +303,8 @@ export default function AboutScreen({
     setFeatureFlagsExpanded(false);
     animateSection(animations['vaReadiness'], false, 0, 150);
     setVaReadinessExpanded(false);
+    animateSection(animations['buildInfo'], false, 0, 150);
+    setBuildInfoExpanded(false);
   };
 
   // ── Toggle functions ─────────────────────────────────────────────────────
@@ -341,6 +355,12 @@ export default function AboutScreen({
     const isExpanded = !vaReadinessExpanded;
     animateSection(animations['vaReadiness'], isExpanded, VA_READINESS_MAX_HEIGHT);
     setVaReadinessExpanded(isExpanded);
+  };
+
+  const toggleBuildInfo = () => {
+    const isExpanded = !buildInfoExpanded;
+    animateSection(animations['buildInfo'], isExpanded, BUILD_INFO_MAX_HEIGHT);
+    setBuildInfoExpanded(isExpanded);
   };
 
   const toggleDebugVoice = (voiceId) => {
@@ -863,16 +883,6 @@ export default function AboutScreen({
               styles={styles}
               style={styles.aboutSectionWrapper}
             >
-              {/* ── Latest Commit ── */}
-              <View style={[styles.versionContainer, { paddingVertical: 14 }]}>
-                <View style={styles.debugMetaRow}>
-                  <Text style={styles.debugMetaLabel}>Latest Commit</Text>
-                  <Text style={[styles.debugMetaValue, { fontFamily: Platform.OS === 'android' ? 'monospace' : 'Menlo', color: '#BB86FC' }]}>
-                    {BUILD_COMMIT}
-                  </Text>
-                </View>
-              </View>
-
               {/* ── Feature Flags ── */}
               <TouchableOpacity
                 style={styles.versionContainer}
@@ -903,6 +913,46 @@ export default function AboutScreen({
                         thumbColor="#E1E1E1"
                       />
                     </View>
+                  </View>
+                </Animated.View>
+              </TouchableOpacity>
+
+              {/* ── Build & Device Info ── */}
+              <TouchableOpacity
+                style={styles.versionContainer}
+                onPress={toggleBuildInfo}
+                activeOpacity={0.7}
+              >
+                <View style={styles.versionHeader}>
+                  <View style={styles.versionRow}>
+                    <Text style={styles.versionText}>Build & Device Info</Text>
+                  </View>
+                  <Animated.View style={{ transform: [{ rotate: animations['buildInfo']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
+                    <Text style={styles.versionArrow}>▶</Text>
+                  </Animated.View>
+                </View>
+                <Animated.View
+                  style={{ maxHeight: animations['buildInfo']?.maxHeight || 0, overflow: 'hidden' }}
+                  pointerEvents={buildInfoExpanded ? 'auto' : 'none'}
+                >
+                  <View style={[styles.versionContent, { paddingTop: 4 }]}>
+                    {[
+                      { label: 'Commit',       value: BUILD_COMMIT },
+                      { label: 'Commit (full)', value: BUILD_COMMIT_FULL },
+                      { label: 'Version',      value: `${BUILD_VERSION_NAME} (${BUILD_VERSION_CODE})` },
+                      { label: 'Built',        value: new Date(BUILD_TIMESTAMP).toLocaleString() },
+                      { label: 'Device',       value: Platform.constants?.Model ?? 'unknown' },
+                      { label: 'Brand',        value: Platform.constants?.Brand ?? 'unknown' },
+                      { label: 'Android',      value: `${Platform.constants?.Release ?? '?'} (API ${Platform.Version})` },
+                      { label: 'Screen',       value: (() => { const { width, height } = Dimensions.get('window'); return `${Math.round(width)} × ${Math.round(height)}`; })() },
+                    ].map(({ label, value }) => (
+                      <View key={label} style={styles.debugMetaRow}>
+                        <Text style={styles.debugMetaLabel}>{label}</Text>
+                        <Text style={[styles.debugMetaValue, { fontFamily: Platform.OS === 'android' ? 'monospace' : 'Menlo', flexShrink: 1 }]} numberOfLines={2}>
+                          {value}
+                        </Text>
+                      </View>
+                    ))}
                   </View>
                 </Animated.View>
               </TouchableOpacity>
