@@ -15,7 +15,6 @@ import android.speech.SpeechRecognizer
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.speech.tts.Voice
-import android.util.Log
 import androidx.annotation.RequiresApi
 import org.json.JSONArray
 import org.json.JSONObject
@@ -377,7 +376,6 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
 
             val jsonArray = JSONArray()
             voices.forEach { voice ->
-                Log.w(NAME, "VOICE id=${voice.name} | quality=${voice.quality} | locale=${voice.locale} | features=${voice.features}")
                 val obj = JSONObject()
                 obj.put("id", voice.name)
                 obj.put("name", finalNameMap[voice.name] ?: voice.name)

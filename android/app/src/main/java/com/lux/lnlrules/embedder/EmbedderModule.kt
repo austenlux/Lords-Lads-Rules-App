@@ -98,7 +98,6 @@ class EmbedderModule(reactContext: ReactApplicationContext) :
         embedder?.let { return it }
 
         val modelBuffer = loadModelBuffer()
-        Log.d(TAG, "Loaded model buffer: ${modelBuffer.capacity()} bytes")
 
         val options = TextEmbedderOptions.builder()
             .setBaseOptions(
@@ -129,7 +128,6 @@ class EmbedderModule(reactContext: ReactApplicationContext) :
             reactApplicationContext.assets.open(MODEL_ASSET).use { input ->
                 dest.outputStream().use { output -> input.copyTo(output) }
             }
-            Log.d(TAG, "Extracted model to: ${dest.absolutePath} (${dest.length()} bytes)")
         }
 
         // Read the cached file into a direct ByteBuffer for MediaPipe.
