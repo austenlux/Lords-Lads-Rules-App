@@ -303,29 +303,6 @@ export function useGameAssistant() {
     };
   }, []);
 
-  // ── Permission ───────────────────────────────────────────────────────────
-
-  /**
-   * Requests RECORD_AUDIO at runtime.
-   * Returns true if granted, false if denied or permanently denied.
-   * Safe to call on every invocation — Android returns GRANTED immediately
-   * if the permission was already accepted.
-   */
-  const requestMicPermission = useCallback(async () => {
-    if (Platform.OS !== 'android') return { granted: true, permanentlyDenied: false };
-    try {
-      const result = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
-      );
-      return {
-        granted: result === PermissionsAndroid.RESULTS.GRANTED,
-        permanentlyDenied: result === PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN,
-      };
-    } catch {
-      return { granted: false, permanentlyDenied: false };
-    }
-  }, []);
-
   // ── Kill switch ──────────────────────────────────────────────────────────
 
   /**
@@ -489,7 +466,7 @@ export function useGameAssistant() {
         }
       }
     },
-    [requestMicPermission, messages],
+    [messages],
   );
 
   // ── Public API ───────────────────────────────────────────────────────────
@@ -511,8 +488,6 @@ export function useGameAssistant() {
     error,
     /** trigger the full voice loop with the rules markdown as context */
     askTheRules,
-    /** expose so the FAB handler can request mic before opening the modal */
-    requestMicPermission,
     /** list of available offline TTS voices; empty on unsupported devices */
     availableVoices,
     /** currently selected voice id, or null for system default */

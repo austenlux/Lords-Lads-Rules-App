@@ -100,7 +100,6 @@ export default function App() {
     partialSpeech,
     askTheRules,
     stopAssistant,
-    requestMicPermission,
     availableVoices,
     selectedVoiceId,
     previewVoice,
