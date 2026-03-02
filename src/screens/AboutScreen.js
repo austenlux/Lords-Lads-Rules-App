@@ -541,10 +541,10 @@ export default function AboutScreen({
     });
   }, [availableVoices]);
 
-  const renderVersionBlock = (version, showLatestBadge = false) => (
+  const renderVersionBlock = (version, showLatestBadge = false, containerStyle = {}) => (
     <TouchableOpacity
       key={version.version}
-      style={styles.versionContainer}
+      style={[styles.versionContainer, containerStyle]}
       onPress={() => toggleVersionExpansion(version.version)}
       activeOpacity={0.7}
     >
@@ -704,7 +704,7 @@ export default function AboutScreen({
             {/* ── Card: Voice Assistant ── */}
             {isVoiceAssistantSupported && voiceLocaleGroups.length > 0 && (
               <TouchableOpacity
-                style={styles.versionContainer}
+                style={[styles.versionContainer, { paddingHorizontal: 10 }]}
                 onPress={toggleVoiceParent}
                 activeOpacity={0.7}
               >
@@ -718,7 +718,7 @@ export default function AboutScreen({
                   style={{ maxHeight: animations['voiceParent']?.maxHeight || 0, overflow: 'hidden' }}
                   pointerEvents={voiceParentExpanded ? 'auto' : 'none'}
                 >
-                  <View style={styles.versionContent}>
+                  <View style={[styles.versionContent, { paddingLeft: 0, paddingRight: 0 }]}>
                     {voiceLocaleGroups.map(group => {
                       const groupHasSelection = group.voices.some(v => v.id === selectedVoiceId);
                       const localeAnim = voiceLocaleAnims[group.key];
@@ -726,7 +726,7 @@ export default function AboutScreen({
                       return (
                         <TouchableOpacity
                           key={group.key}
-                          style={styles.versionContainer}
+                          style={[styles.versionContainer, { paddingHorizontal: 10 }]}
                           onPress={() => toggleVoiceLocale(group.key)}
                           activeOpacity={0.7}
                         >
@@ -747,7 +747,7 @@ export default function AboutScreen({
                             style={{ maxHeight: localeAnim?.maxHeight || 0, overflow: 'hidden' }}
                             pointerEvents={expandedLocales[group.key] ? 'auto' : 'none'}
                           >
-                            <View style={styles.versionContent}>
+                            <View style={[styles.versionContent, { paddingLeft: 0, paddingRight: 0 }]}>
                               {group.voices.map((voice, index) => {
                                 const isSelected = voice.id === selectedVoiceId;
                                 const isLast = index === group.voices.length - 1;
@@ -794,7 +794,7 @@ export default function AboutScreen({
 
             {pastReleases.length > 0 && (
               <TouchableOpacity
-                style={styles.versionContainer}
+                style={[styles.versionContainer, { paddingHorizontal: 10 }]}
                 onPress={togglePastReleasesExpansion}
                 activeOpacity={0.7}
               >
@@ -826,8 +826,8 @@ export default function AboutScreen({
                   ]}
                   pointerEvents={pastReleasesExpanded ? 'auto' : 'none'}
                 >
-                  <View style={styles.versionContent}>
-                    {pastReleases.map((version) => renderVersionBlock(version, false))}
+                  <View style={[styles.versionContent, { paddingLeft: 0, paddingRight: 0 }]}>
+                    {pastReleases.map((version) => renderVersionBlock(version, false, { paddingHorizontal: 10 }))}
                   </View>
                 </Animated.View>
               </TouchableOpacity>
