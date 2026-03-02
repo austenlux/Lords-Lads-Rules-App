@@ -12,7 +12,6 @@ import {
   ScrollView,
   Linking,
   StyleSheet,
-  Alert,
 } from 'react-native';
 import PagerView from 'react-native-pager-view';
 import RulesIcon from './assets/icons/rules.svg';
@@ -66,6 +65,7 @@ export default function App() {
   const [splashMinTimeElapsed, setSplashMinTimeElapsed] = useState(false);
   const [splashDismissed, setSplashDismissed] = useState(false);
   const [isConvoOpen, setIsConvoOpen] = useState(false);
+  const [showMicDialog, setShowMicDialog] = useState(false);
   const prevIsThinkingRef = useRef(false);
   const convoContextRef = useRef({ rules: '', expansions: '' });
   const askTheRulesRef = useRef(null);
@@ -485,14 +485,7 @@ export default function App() {
               hasConversation={isConvoOpen}
               onPress={() => {
                 if (micPermissionStatus !== 'granted') {
-                  Alert.alert(
-                    'Microphone Access Required',
-                    'The Voice Assistant needs microphone access. Please enable it in your device settings.',
-                    [
-                      { text: 'Dismiss', style: 'cancel' },
-                      { text: 'Open Settings', onPress: () => Linking.openSettings() },
-                    ],
-                  );
+                  setShowMicDialog(true);
                   return;
                 }
                 setIsConvoOpen(true);
@@ -533,6 +526,86 @@ export default function App() {
         </Animated.View>
       )}
 
+      {showMicDialog && (
+        <View style={micDialogStyles.overlay}>
+          <View style={micDialogStyles.backdrop}>
+            <View style={micDialogStyles.card}>
+              <Text style={micDialogStyles.title}>Microphone Access Required</Text>
+              <Text style={micDialogStyles.body}>
+                The Voice Assistant needs microphone access to hear your questions.
+                Please enable it in your device settings.
+              </Text>
+              <TouchableOpacity
+                style={micDialogStyles.settingsButton}
+                onPress={() => { setShowMicDialog(false); Linking.openSettings(); }}
+              >
+                <Text style={micDialogStyles.settingsButtonText}>Open Settings</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={micDialogStyles.dismissButton}
+                onPress={() => setShowMicDialog(false)}
+              >
+                <Text style={micDialogStyles.dismissButtonText}>Dismiss</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      )}
     </View>
   );
 }
+
+const micDialogStyles = StyleSheet.create({
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 9999,
+    elevation: 9999,
+  },
+  backdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.75)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 32,
+  },
+  card: {
+    backgroundColor: '#1E1E1E',
+    borderRadius: 16,
+    padding: 24,
+    width: '100%',
+    borderWidth: 1,
+    borderColor: 'rgba(187,134,252,0.25)',
+  },
+  title: {
+    color: '#BB86FC',
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 12,
+  },
+  body: {
+    color: '#E0E0E0',
+    fontSize: 15,
+    lineHeight: 22,
+    marginBottom: 24,
+  },
+  settingsButton: {
+    backgroundColor: '#BB86FC',
+    borderRadius: 10,
+    paddingVertical: 13,
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  settingsButtonText: {
+    color: '#121212',
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  dismissButton: {
+    paddingVertical: 10,
+    alignItems: 'center',
+  },
+  dismissButtonText: {
+    color: '#888888',
+    fontSize: 14,
+  },
+});
