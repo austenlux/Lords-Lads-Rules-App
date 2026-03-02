@@ -79,7 +79,8 @@ export default function AboutScreen({
   const debugVoiceAnims = useRef({}).current;
   const [expandedLocales, setExpandedLocales] = useState({});
   const [expandDefaultsExpanded, setExpandDefaultsExpanded] = useState(false);
-  const [thinkingSoundsEnabled, setThinkingSoundsEnabled] = useState(true);
+  const [thinkingSoundsEnabled, setThinkingSoundsEnabled] = useState(false);
+  const [featureFlagsExpanded, setFeatureFlagsExpanded] = useState(false);
   const [voiceParentExpanded, setVoiceParentExpanded] = useState(false);
   const [voiceMetaExpanded, setVoiceMetaExpanded] = useState(false);
   const [expandedDebugVoices, setExpandedDebugVoices] = useState({});
@@ -89,6 +90,7 @@ export default function AboutScreen({
   const VOICE_PARENT_MAX_HEIGHT = 8000;
   const VOICE_META_MAX_HEIGHT = 12000;
   const DEBUG_VOICE_MAX_HEIGHT = 400;
+  const FEATURE_FLAGS_MAX_HEIGHT = 400;
 
   // Initialise animation pairs for settings cards and debug sections.
   useEffect(() => {
@@ -101,6 +103,9 @@ export default function AboutScreen({
     if (!animations['voiceMeta']) {
       animations['voiceMeta'] = { rotation: new Animated.Value(0), maxHeight: new Animated.Value(0) };
     }
+    if (!animations['featureFlags']) {
+      animations['featureFlags'] = { rotation: new Animated.Value(0), maxHeight: new Animated.Value(0) };
+    }
   }, []);
 
   useEffect(() => {
@@ -112,8 +117,8 @@ export default function AboutScreen({
       ]);
       setExpandRulesDefault(rules === 'true');
       setExpandExpansionsDefault(expansions === 'true');
-      // Default is true; only disable if explicitly saved as 'false'.
-      const soundsOn = thinkingSounds !== 'false';
+      // Default is false; only enable if explicitly saved as 'true'.
+      const soundsOn = thinkingSounds === 'true';
       setThinkingSoundsEnabled(soundsOn);
       NativeVoiceAssistant.setThinkingSoundEnabled(soundsOn);
     };
@@ -219,6 +224,8 @@ export default function AboutScreen({
     animateSection(animations['voiceMeta'], false, 0, 150);
     setVoiceMetaExpanded(false);
     collapseAllDebugVoices();
+    animateSection(animations['featureFlags'], false, 0, 150);
+    setFeatureFlagsExpanded(false);
   };
 
   // ── Toggle functions ─────────────────────────────────────────────────────
@@ -257,6 +264,12 @@ export default function AboutScreen({
     animateSection(animations['voiceMeta'], isExpanded, VOICE_META_MAX_HEIGHT);
     if (!isExpanded) collapseAllDebugVoices();
     setVoiceMetaExpanded(isExpanded);
+  };
+
+  const toggleFeatureFlags = () => {
+    const isExpanded = !featureFlagsExpanded;
+    animateSection(animations['featureFlags'], isExpanded, FEATURE_FLAGS_MAX_HEIGHT);
+    setFeatureFlagsExpanded(isExpanded);
   };
 
   const toggleDebugVoice = (voiceId) => {
@@ -586,19 +599,6 @@ export default function AboutScreen({
                   pointerEvents={voiceParentExpanded ? 'auto' : 'none'}
                 >
                   <View style={styles.versionContent}>
-                    {/* ── Thinking Sounds toggle ── */}
-                    <View style={[styles.settingsRow, styles.settingsRowLast, { marginBottom: 8 }]}>
-                      <View style={styles.settingsRowLabel}>
-                        <Text style={styles.settingsRowText}>Thinking Sounds</Text>
-                      </View>
-                      <Switch
-                        value={thinkingSoundsEnabled}
-                        onValueChange={setThinkingSoundsEnabledAndSave}
-                        trackColor={{ false: '#555', true: '#7B5CBF' }}
-                        thumbColor="#E1E1E1"
-                      />
-                    </View>
-
                     {voiceLocaleGroups.map(group => {
                       const groupHasSelection = group.voices.some(v => v.id === selectedVoiceId);
                       const localeAnim = voiceLocaleAnims[group.key];
@@ -784,6 +784,40 @@ export default function AboutScreen({
               styles={styles}
               style={styles.aboutSectionWrapper}
             >
+              {/* ── Feature Flags ── */}
+              <TouchableOpacity
+                style={styles.versionContainer}
+                onPress={toggleFeatureFlags}
+                activeOpacity={0.7}
+              >
+                <View style={styles.versionHeader}>
+                  <View style={styles.versionRow}>
+                    <Text style={styles.versionText}>Feature Flags</Text>
+                  </View>
+                  <Animated.View style={{ transform: [{ rotate: animations['featureFlags']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
+                    <Text style={styles.versionArrow}>▶</Text>
+                  </Animated.View>
+                </View>
+                <Animated.View
+                  style={{ maxHeight: animations['featureFlags']?.maxHeight || 0, overflow: 'hidden' }}
+                  pointerEvents={featureFlagsExpanded ? 'auto' : 'none'}
+                >
+                  <View style={styles.versionContent}>
+                    <View style={[styles.settingsRow, styles.settingsRowLast, { marginBottom: 8 }]}>
+                      <View style={styles.settingsRowLabel}>
+                        <Text style={styles.settingsRowText}>Thinking Sounds</Text>
+                      </View>
+                      <Switch
+                        value={thinkingSoundsEnabled}
+                        onValueChange={setThinkingSoundsEnabledAndSave}
+                        trackColor={{ false: '#555', true: '#7B5CBF' }}
+                        thumbColor="#E1E1E1"
+                      />
+                    </View>
+                  </View>
+                </Animated.View>
+              </TouchableOpacity>
+
               {/* ── Voice Assistant Metadata ── */}
               <TouchableOpacity
                 style={styles.versionContainer}
