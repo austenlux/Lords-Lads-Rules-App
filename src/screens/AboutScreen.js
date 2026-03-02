@@ -618,7 +618,7 @@ export default function AboutScreen({
             {/* ── Official Rulebook card (includes Rules last synced) ── */}
             <View style={styles.versionContainer}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-                <GithubIcon width={18} height={18} fill="#BB86FC" />
+                <GithubIcon width={18} height={18} fill="#E1E1E1" />
                 <Text style={styles.versionText}>Official Rulebook</Text>
               </View>
               <Pressable onPress={() => Linking.openURL(RULEBOOK_REPO_URL)} style={{ marginBottom: 12 }}>
@@ -634,7 +634,7 @@ export default function AboutScreen({
             {/* ── App Repository card ── */}
             <View style={styles.versionContainer}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-                <GithubIcon width={18} height={18} fill="#BB86FC" />
+                <GithubIcon width={18} height={18} fill="#E1E1E1" />
                 <Text style={styles.versionText}>App Repository</Text>
               </View>
               <Pressable onPress={() => Linking.openURL(APP_REPO_URL)}>
@@ -707,7 +707,7 @@ export default function AboutScreen({
               >
                 <View style={styles.versionHeader}>
                   <View style={styles.versionRow}>
-                    <MicIcon width={20} height={20} fill="#BB86FC" />
+                    <MicIcon width={20} height={20} fill="#26C6DA" />
                     <Text style={styles.versionText}>Voice Assistant</Text>
                   </View>
                   <Animated.View style={{ transform: [{ rotate: animations['voiceParent']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
@@ -970,13 +970,13 @@ export default function AboutScreen({
 
               {/* ── Voice Assistant ── */}
               <TouchableOpacity
-                style={styles.versionContainer}
+                style={[styles.versionContainer, { paddingHorizontal: 8 }]}
                 onPress={toggleVaDebug}
                 activeOpacity={0.7}
               >
                 <View style={styles.versionHeader}>
                   <View style={styles.versionRow}>
-                    <MicIcon width={20} height={20} fill="#BB86FC" />
+                    <MicIcon width={20} height={20} fill="#26C6DA" />
                     <Text style={styles.versionText}>Voice Assistant</Text>
                   </View>
                   <Animated.View style={{ transform: [{ rotate: animations['vaDebug']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
