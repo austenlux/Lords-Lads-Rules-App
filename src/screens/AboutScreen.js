@@ -55,7 +55,7 @@ import CheckIcon from '../../assets/icons/check.svg';
 import CloseIcon from '../../assets/icons/close.svg';
 
 const CardIconTitle = ({ icon, title, styles }) => (
-  <View style={styles.versionRow}>
+  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
     {React.cloneElement(icon, { width: 20, height: 20 })}
     <Text style={styles.versionText}>{title}</Text>
   </View>
