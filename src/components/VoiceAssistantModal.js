@@ -115,13 +115,12 @@ export default function VoiceAssistantModal({ messages, isOpen, fabBottom = 96 }
         useNativeDriver: true,
       }).start();
     } else {
+      isMounted.current = false;
       Animated.timing(mountOpacity, {
         toValue: 0,
         duration: 200,
         useNativeDriver: true,
-      }).start(({ finished }) => {
-        if (finished) isMounted.current = false;
-      });
+      }).start();
     }
   }, [isOpen, mountOpacity]);
 
@@ -155,8 +154,6 @@ export default function VoiceAssistantModal({ messages, isOpen, fabBottom = 96 }
     };
   }, [isOpen, messages]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (!isOpen && !isMounted.current) return null;
-
   // Panel bottom anchored just above the FAB.
   // maxHeight caps growth so it never overflows above the status bar.
   const panelBottom = fabBottom + FAB_SIZE + FAB_GAP;
@@ -166,7 +163,7 @@ export default function VoiceAssistantModal({ messages, isOpen, fabBottom = 96 }
   return (
     <Animated.View
       style={[styles.container, { opacity: mountOpacity, bottom: panelBottom }]}
-      pointerEvents={isOpen ? 'box-none' : 'none'}
+      pointerEvents={isOpen || isMounted.current ? 'box-none' : 'none'}
     >
       <View style={[styles.panel, { maxHeight: maxPanelHeight }]}>
         <FlatList
