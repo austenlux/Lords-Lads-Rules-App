@@ -55,7 +55,7 @@ import CheckIcon from '../../assets/icons/check.svg';
 import CloseIcon from '../../assets/icons/close.svg';
 
 const CardIconTitle = ({ icon, title, styles }) => (
-  <View style={[styles.versionRow, { paddingLeft: 4 }]}>
+  <View style={styles.versionRow}>
     {React.cloneElement(icon, { width: 20, height: 20 })}
     <Text style={styles.versionText}>{title}</Text>
   </View>
@@ -976,25 +976,16 @@ export default function AboutScreen({
                   style={{ maxHeight: animations['vaDebug']?.maxHeight || 0, overflow: 'hidden' }}
                   pointerEvents={vaDebugExpanded ? 'auto' : 'none'}
                 >
-                  <View style={[styles.versionContent, { paddingTop: 4, paddingHorizontal: 6 }]}>
+                  <View style={[styles.versionContent, { paddingTop: 4, paddingHorizontal: 0 }]}>
                     {/* Status subsection */}
-                    {(() => {
-                      const isAllHealthy = modelStatus === 'available' && micPermissionStatus === 'granted';
-                      const isAnyFailed = ['unavailable', 'download_failed'].includes(modelStatus) || micPermissionStatus === 'not_granted';
-                      const statusIcon = isAllHealthy
-                        ? <CheckIcon fill="#4CAF50" />
-                        : isAnyFailed
-                          ? <CloseIcon fill="#CF6679" />
-                          : null;
-                      return (
-                        <View style={{ marginTop: 8, marginBottom: 8 }}>
-                          {statusIcon
-                            ? <CardIconTitle icon={statusIcon} title="Status" styles={styles} />
-                            : <Text style={[styles.versionText, { paddingLeft: 4 }]}>Status</Text>
-                          }
-                        </View>
-                      );
-                    })()}
+                    <View style={{ marginTop: 8, marginBottom: 8 }}>
+                      {modelStatus === 'available' && micPermissionStatus === 'granted'
+                        ? <CardIconTitle icon={<CheckIcon fill="#4CAF50" />} title="Status" styles={styles} />
+                        : (modelStatus === 'unavailable' || modelStatus === 'download_failed' || micPermissionStatus === 'not_granted')
+                          ? <CardIconTitle icon={<CloseIcon fill="#CF6679" />} title="Status" styles={styles} />
+                          : <Text style={styles.versionText}>Status</Text>
+                      }
+                    </View>
                     <View style={styles.debugMetaRow}>
                       <Text style={styles.debugMetaLabel}>Gemini Nano</Text>
                       <Text style={[styles.debugMetaValue, { color: VA_STATUS_COLOR.model[modelStatus] ?? '#888' }]}>
@@ -1042,7 +1033,7 @@ export default function AboutScreen({
 
                     {/* Models subsection */}
                     <TouchableOpacity
-                      style={[styles.versionContainer, { marginTop: 8, marginHorizontal: -2, paddingHorizontal: 10 }]}
+                      style={[styles.versionContainer, { marginTop: 8, paddingHorizontal: 10 }]}
                       onPress={toggleVoiceMeta}
                       activeOpacity={0.7}
                     >
@@ -1056,7 +1047,7 @@ export default function AboutScreen({
                         style={{ maxHeight: animations['voiceMeta']?.maxHeight || 0, overflow: 'hidden' }}
                         pointerEvents={voiceMetaExpanded ? 'auto' : 'none'}
                       >
-                        <View style={[styles.versionContent, { paddingHorizontal: 2 }]}>
+                        <View style={[styles.versionContent, { paddingHorizontal: 0 }]}>
                           {availableVoices.map(voice => {
                             const voiceAnim = debugVoiceAnims[voice.id];
                             const isOpen = expandedDebugVoices[voice.id];
@@ -1074,12 +1065,12 @@ export default function AboutScreen({
                             return (
                               <TouchableOpacity
                                 key={voice.id}
-                                style={[styles.versionContainer, { marginHorizontal: -1, paddingHorizontal: 10 }]}
+                                style={[styles.versionContainer, { paddingHorizontal: 10 }]}
                                 onPress={() => toggleDebugVoice(voice.id)}
                                 activeOpacity={0.7}
                               >
                                 <View style={styles.versionHeader}>
-                                  <View style={[styles.versionRow, { paddingLeft: 4 }]}>
+                                  <View style={styles.versionRow}>
                                     <Text style={[styles.versionText, { flexShrink: 1, fontSize: 14 }]} numberOfLines={1}>{voice.id}</Text>
                                   </View>
                                   <Animated.View style={{ transform: [{ rotate: voiceAnim?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }], marginLeft: 12 }}>
