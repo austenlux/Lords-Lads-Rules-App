@@ -13,7 +13,7 @@ import {
   Modal,
   Linking,
   StyleSheet,
-  InteractionManager,
+  AppState,
 } from 'react-native';
 import PagerView from 'react-native-pager-view';
 import RulesIcon from './assets/icons/rules.svg';
@@ -71,6 +71,7 @@ export default function App() {
   const prevIsThinkingRef = useRef(false);
   const convoContextRef = useRef({ rules: '', expansions: '' });
   const askTheRulesRef = useRef(null);
+  const pendingMicDialog = useRef(false);
   const isIOS = Platform.OS === 'ios';
   const splashOpacity = useRef(new Animated.Value(isIOS ? 1 : 0)).current;
   const mainAppOpacity = useRef(new Animated.Value(0)).current;
@@ -148,6 +149,20 @@ export default function App() {
   useEffect(() => {
     askTheRulesRef.current = askTheRules;
   }, [askTheRules]);
+
+  // Show the mic settings dialog once the app is fully active after the
+  // Android system permission dialog closes. The permission callback fires
+  // during the PAUSED→RESUMED transition; Fabric defers layout commits until
+  // 'active', so we set a ref flag and flush the state update here instead.
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (nextState) => {
+      if (nextState === 'active' && pendingMicDialog.current) {
+        pendingMicDialog.current = false;
+        setShowMicSettingsDialog(true);
+      }
+    });
+    return () => sub.remove();
+  }, []);
 
   // Auto-start the next listening turn after the assistant finishes speaking.
   // Triggers only when isThinking transitions true→false while the convo is open.
@@ -488,7 +503,14 @@ export default function App() {
               onPress={async () => {
                 const { granted } = await requestMicPermission();
                 if (!granted) {
-                  InteractionManager.runAfterInteractions(() => setShowMicSettingsDialog(true));
+                  // If app is already active (e.g. permission was permanently
+                  // denied with no dialog shown), update state immediately.
+                  // Otherwise set a flag for the AppState 'active' listener.
+                  if (AppState.currentState === 'active') {
+                    setShowMicSettingsDialog(true);
+                  } else {
+                    pendingMicDialog.current = true;
+                  }
                   return;
                 }
                 setIsConvoOpen(true);
