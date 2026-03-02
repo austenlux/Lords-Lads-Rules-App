@@ -47,6 +47,9 @@ import MicIcon from '../../assets/icons/mic.svg';
 import DeviceIcon from '../../assets/icons/device.svg';
 import FlagIcon from '../../assets/icons/flag.svg';
 import GithubIcon from '../../assets/icons/github.svg';
+import ShipIcon from '../../assets/icons/ship.svg';
+import CalendarIcon from '../../assets/icons/calendar.svg';
+import ExpandIcon from '../../assets/icons/expand.svg';
 
 const PAST_RELEASES_KEY = 'pastReleases';
 const SECTION_KEYS = { BUY_NAILS: 'buyNails', CHANGELOG: 'changelog', SETTINGS: 'settings', INFO: 'info', DEBUG: 'debug' };
@@ -537,6 +540,7 @@ export default function AboutScreen({
     >
       <View style={styles.versionHeader}>
         <View style={styles.versionRow}>
+          {showLatestBadge && <ShipIcon width={20} height={20} fill="#29B6F6" />}
           <Text style={styles.versionText}>{version.version}</Text>
           <Text style={styles.versionDate}>{version.date}</Text>
           {showLatestBadge && (
@@ -659,6 +663,7 @@ export default function AboutScreen({
             >
               <View style={styles.versionHeader}>
                 <View style={styles.versionRow}>
+                  <ExpandIcon width={20} height={20} fill="#66BB6A" />
                   <Text style={styles.versionText}>Expand all sections by default</Text>
                 </View>
                 <Animated.View style={{ transform: [{ rotate: animations['expandDefaults']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
@@ -707,7 +712,7 @@ export default function AboutScreen({
               >
                 <View style={styles.versionHeader}>
                   <View style={styles.versionRow}>
-                    <MicIcon width={20} height={20} fill="#26C6DA" />
+                    <MicIcon width={20} height={20} fill="#FF7043" />
                     <Text style={styles.versionText}>Voice Assistant</Text>
                   </View>
                   <Animated.View style={{ transform: [{ rotate: animations['voiceParent']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
@@ -800,6 +805,7 @@ export default function AboutScreen({
               >
                 <View style={styles.versionHeader}>
                   <View style={styles.versionRow}>
+                    <CalendarIcon width={20} height={20} fill="#EC407A" />
                     <Text style={styles.versionText}>Past releases</Text>
                   </View>
                   <Animated.View
@@ -893,7 +899,7 @@ export default function AboutScreen({
             >
               {/* ── Feature Flags ── */}
               <TouchableOpacity
-                style={styles.versionContainer}
+                style={[styles.versionContainer, { paddingHorizontal: 10 }]}
                 onPress={toggleFeatureFlags}
                 activeOpacity={0.7}
               >
@@ -928,7 +934,7 @@ export default function AboutScreen({
 
               {/* ── Build & Device Info ── */}
               <TouchableOpacity
-                style={styles.versionContainer}
+                style={[styles.versionContainer, { paddingHorizontal: 10 }]}
                 onPress={toggleBuildInfo}
                 activeOpacity={0.7}
               >
@@ -970,13 +976,13 @@ export default function AboutScreen({
 
               {/* ── Voice Assistant ── */}
               <TouchableOpacity
-                style={[styles.versionContainer, { paddingHorizontal: 8 }]}
+                style={[styles.versionContainer, { paddingHorizontal: 10 }]}
                 onPress={toggleVaDebug}
                 activeOpacity={0.7}
               >
                 <View style={styles.versionHeader}>
                   <View style={styles.versionRow}>
-                    <MicIcon width={20} height={20} fill="#26C6DA" />
+                    <MicIcon width={20} height={20} fill="#FF7043" />
                     <Text style={styles.versionText}>Voice Assistant</Text>
                   </View>
                   <Animated.View style={{ transform: [{ rotate: animations['vaDebug']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
