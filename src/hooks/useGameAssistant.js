@@ -44,19 +44,10 @@ const VOICE_PREVIEW_TEXT = 'This is a preview of the selected voice.';
  */
 const PHRASE_SPEAK_THRESHOLD = 40;
 
-const MIC_PERMISSION_RATIONALE = {
-  title: 'Microphone Permission',
-  message:
-    'The Game Assistant needs microphone access to hear your questions about the rules.',
-  buttonPositive: 'Allow',
-  buttonNegative: 'Deny',
-};
-
 const ERRORS = {
   NOT_ANDROID:       'Voice assistant is Android-only for now.',
   MODEL_UNAVAILABLE: 'Gemini AI is not supported on this device.',
   MODEL_DOWNLOADING: 'AI model is still downloading. Please try again shortly.',
-  MIC_DENIED:        'Microphone permission is required. Please allow it in Settings.',
   NO_SPEECH:         'No speech detected. Please try again.',
   UNEXPECTED:        'An unexpected error occurred. Please try again.',
 };
@@ -218,15 +209,17 @@ export function useGameAssistant() {
    * if the permission was already accepted.
    */
   const requestMicPermission = useCallback(async () => {
-    if (Platform.OS !== 'android') return true;
+    if (Platform.OS !== 'android') return { granted: true, permanentlyDenied: false };
     try {
       const result = await PermissionsAndroid.request(
         PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
-        MIC_PERMISSION_RATIONALE,
       );
-      return result === PermissionsAndroid.RESULTS.GRANTED;
+      return {
+        granted: result === PermissionsAndroid.RESULTS.GRANTED,
+        permanentlyDenied: result === PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN,
+      };
     } catch {
-      return false;
+      return { granted: false, permanentlyDenied: false };
     }
   }, []);
 
@@ -300,22 +293,19 @@ export function useGameAssistant() {
       setFullAnswer('');
       setPartialSpeech('');
 
-      // Add a user bubble immediately — it updates live with partials as the user speaks.
-      const userMsgId = nextId();
-      activeUserMsgId.current = userMsgId;
-      setMessages((prev) => [...prev, { id: userMsgId, role: 'user', text: '' }]);
-
       try {
         // 1. Verify Gemini Nano is ready ──────────────────────────────────
         const modelStatus = await NativeVoiceAssistant.checkModelStatus();
 
         if (modelStatus === 'unavailable') {
           setError(ERRORS.MODEL_UNAVAILABLE);
+          isBusy.current = false;
           return;
         }
 
         if (modelStatus === 'downloading') {
           setError(ERRORS.MODEL_DOWNLOADING);
+          isBusy.current = false;
           return;
         }
 
@@ -326,14 +316,14 @@ export function useGameAssistant() {
           setError(null);
         }
 
-        // 2. Mic permission ───────────────────────────────────────────────
-        const hasMic = await requestMicPermission();
-        if (!hasMic) {
-          setError(ERRORS.MIC_DENIED);
-          return;
-        }
-
-        // 3. Listen ───────────────────────────────────────────────────────
+        // 2. Listen ───────────────────────────────────────────────────────
+        // Permission is pre-checked by the FAB handler before askTheRules is
+        // called, so by this point mic access is guaranteed.
+        // Add the user bubble here — after all pre-checks pass — so it never
+        // appears before the user is actually about to speak.
+        const userMsgId = nextId();
+        activeUserMsgId.current = userMsgId;
+        setMessages((prev) => [...prev, { id: userMsgId, role: 'user', text: '' }]);
         // partialSpeech state updates live via onSpeechPartialResults events.
         setIsListening(true);
         const spokenQuestion = await NativeVoiceAssistant.startListening();
@@ -345,6 +335,7 @@ export function useGameAssistant() {
           // No speech — remove the empty bubble from history.
           setMessages((prev) => prev.filter((m) => m.id !== userMsgId));
           setError(ERRORS.NO_SPEECH);
+          isBusy.current = false;
           return;
         }
 
