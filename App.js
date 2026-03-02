@@ -10,10 +10,8 @@ import {
   Animated,
   Platform,
   ScrollView,
-  Modal,
   Linking,
   StyleSheet,
-  AppState,
 } from 'react-native';
 import PagerView from 'react-native-pager-view';
 import RulesIcon from './assets/icons/rules.svg';
@@ -71,7 +69,6 @@ export default function App() {
   const prevIsThinkingRef = useRef(false);
   const convoContextRef = useRef({ rules: '', expansions: '' });
   const askTheRulesRef = useRef(null);
-  const pendingMicDialog = useRef(false);
   const isIOS = Platform.OS === 'ios';
   const splashOpacity = useRef(new Animated.Value(isIOS ? 1 : 0)).current;
   const mainAppOpacity = useRef(new Animated.Value(0)).current;
@@ -150,19 +147,6 @@ export default function App() {
     askTheRulesRef.current = askTheRules;
   }, [askTheRules]);
 
-  // Show the mic settings dialog once the app is fully active after the
-  // Android system permission dialog closes. The permission callback fires
-  // during the PAUSED→RESUMED transition; Fabric defers layout commits until
-  // 'active', so we set a ref flag and flush the state update here instead.
-  useEffect(() => {
-    const sub = AppState.addEventListener('change', (nextState) => {
-      if (nextState === 'active' && pendingMicDialog.current) {
-        pendingMicDialog.current = false;
-        setShowMicSettingsDialog(true);
-      }
-    });
-    return () => sub.remove();
-  }, []);
 
   // Auto-start the next listening turn after the assistant finishes speaking.
   // Triggers only when isThinking transitions true→false while the convo is open.
@@ -503,14 +487,7 @@ export default function App() {
               onPress={async () => {
                 const { granted } = await requestMicPermission();
                 if (!granted) {
-                  // If app is already active (e.g. permission was permanently
-                  // denied with no dialog shown), update state immediately.
-                  // Otherwise set a flag for the AppState 'active' listener.
-                  if (AppState.currentState === 'active') {
-                    setShowMicSettingsDialog(true);
-                  } else {
-                    pendingMicDialog.current = true;
-                  }
+                  setShowMicSettingsDialog(true);
                   return;
                 }
                 setIsConvoOpen(true);
@@ -551,42 +528,44 @@ export default function App() {
         </Animated.View>
       )}
 
-      <Modal
-        visible={showMicSettingsDialog}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowMicSettingsDialog(false)}
-      >
-        <View style={micDialogStyles.backdrop}>
-          <View style={micDialogStyles.card}>
-            <Text style={micDialogStyles.title}>Microphone Access Required</Text>
-            <Text style={micDialogStyles.body}>
-              The Voice Assistant needs microphone access to hear your questions.
-              Please enable it in your device settings.
-            </Text>
-            <TouchableOpacity
-              style={micDialogStyles.settingsButton}
-              onPress={() => {
-                setShowMicSettingsDialog(false);
-                Linking.openSettings();
-              }}
-            >
-              <Text style={micDialogStyles.settingsButtonText}>Open Settings</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={micDialogStyles.dismissButton}
-              onPress={() => setShowMicSettingsDialog(false)}
-            >
-              <Text style={micDialogStyles.dismissButtonText}>Dismiss</Text>
-            </TouchableOpacity>
+      {showMicSettingsDialog && (
+        <View style={micDialogStyles.overlay}>
+          <View style={micDialogStyles.backdrop}>
+            <View style={micDialogStyles.card}>
+              <Text style={micDialogStyles.title}>Microphone Access Required</Text>
+              <Text style={micDialogStyles.body}>
+                The Voice Assistant needs microphone access to hear your questions.
+                Please enable it in your device settings.
+              </Text>
+              <TouchableOpacity
+                style={micDialogStyles.settingsButton}
+                onPress={() => {
+                  setShowMicSettingsDialog(false);
+                  Linking.openSettings();
+                }}
+              >
+                <Text style={micDialogStyles.settingsButtonText}>Open Settings</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={micDialogStyles.dismissButton}
+                onPress={() => setShowMicSettingsDialog(false)}
+              >
+                <Text style={micDialogStyles.dismissButtonText}>Dismiss</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
-      </Modal>
+      )}
     </View>
   );
 }
 
 const micDialogStyles = StyleSheet.create({
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 9999,
+    elevation: 9999,
+  },
   backdrop: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.75)',
