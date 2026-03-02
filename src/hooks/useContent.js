@@ -48,7 +48,6 @@ export function useContent(styles, markdownStyles) {
   const [lastFetchDate, setLastFetchDate] = useState(null);
   const [expansionsRateLimited, setExpansionsRateLimited] = useState(false);
 
-  const scrollViewRef = useRef(null);
   const rulesScrollViewRef = useRef(null);
   const expansionsScrollViewRef = useRef(null);
   const scrollYByTab = useRef({ rules: 0, expansions: 0 });
