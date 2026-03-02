@@ -485,9 +485,12 @@ export default function App() {
               isActive={aiActive}
               hasConversation={isConvoOpen}
               onPress={async () => {
-                const { granted, permanentlyDenied } = await requestMicPermission();
+                const { granted } = await requestMicPermission();
                 if (!granted) {
-                  setShowMicSettingsDialog(true);
+                  // Delay to let React Native fully resume after the Android
+                  // system permission dialog briefly pauses the app — without
+                  // this the state update is batched until the next foreground.
+                  setTimeout(() => setShowMicSettingsDialog(true), 350);
                   return;
                 }
                 setIsConvoOpen(true);
