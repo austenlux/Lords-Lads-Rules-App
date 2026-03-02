@@ -948,8 +948,8 @@ export default function AboutScreen({
                       { label: 'Brand',        value: (Platform.constants?.Brand ?? 'unknown').replace(/\b\w/g, c => c.toUpperCase()) },
                       { label: 'Android',      value: `${Platform.constants?.Release ?? '?'} (API ${Platform.Version})` },
                       { label: 'Screen',       value: (() => { const { width, height } = Dimensions.get('window'); return `${Math.round(width)} × ${Math.round(height)}`; })() },
-                    ].map(({ label, value }) => (
-                      <View key={label} style={styles.debugMetaRow}>
+                    ].map(({ label, value }, idx, arr) => (
+                      <View key={label} style={[styles.debugMetaRow, idx === arr.length - 1 && { borderBottomWidth: 0 }]}>
                         <Text style={styles.debugMetaLabel}>{label}</Text>
                         <Text style={[styles.debugMetaValue, { fontFamily: Platform.OS === 'android' ? 'monospace' : 'Menlo', flexShrink: 1 }]} numberOfLines={2}>
                           {value}
@@ -1010,7 +1010,7 @@ export default function AboutScreen({
                         {VA_STATUS_LABEL.mic[micPermissionStatus] ?? micPermissionStatus}
                       </Text>
                     </View>
-                    <View style={[styles.debugMetaRow, { marginBottom: 8 }]}>
+                    <View style={[styles.debugMetaRow, { marginBottom: 8, borderBottomWidth: 0 }]}>
                       <Text style={styles.debugMetaLabel}>FAB Visible</Text>
                       <Text style={[styles.debugMetaValue, { color: isVoiceAssistantSupported ? '#4CAF50' : '#CF6679' }]}>
                         {isVoiceAssistantSupported ? 'Yes' : 'No'}
