@@ -65,6 +65,7 @@ export default function App() {
   const [isConvoOpen, setIsConvoOpen] = useState(false);
   const prevIsThinkingRef = useRef(false);
   const convoContextRef = useRef({ rules: '', expansions: '' });
+  const askTheRulesRef = useRef(null);
   const isIOS = Platform.OS === 'ios';
   const splashOpacity = useRef(new Animated.Value(isIOS ? 1 : 0)).current;
   const mainAppOpacity = useRef(new Animated.Value(0)).current;
@@ -131,6 +132,12 @@ export default function App() {
     convoContextRef.current = { rules: content, expansions: expansionsContent };
   }, [content, expansionsContent]);
 
+  // Keep askTheRulesRef current so the auto-continue timeout always calls
+  // the latest version regardless of when the 600ms delay resolves.
+  useEffect(() => {
+    askTheRulesRef.current = askTheRules;
+  }, [askTheRules]);
+
   // Auto-start the next listening turn after the assistant finishes speaking.
   // Triggers only when isThinking transitions true→false while the convo is open.
   useEffect(() => {
@@ -138,14 +145,14 @@ export default function App() {
     prevIsThinkingRef.current = isThinking;
     if (wasThinking && !isThinking && isConvoOpen && !isListening) {
       const timer = setTimeout(() => {
-        askTheRules(
+        askTheRulesRef.current?.(
           convoContextRef.current.rules,
           convoContextRef.current.expansions,
         );
       }, 600);
       return () => clearTimeout(timer);
     }
-  }, [isThinking]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isThinking, isConvoOpen, isListening]);
 
   useEffect(() => {
     if (!splashMinTimeElapsed || loading || fadeOutStarted.current) return;
