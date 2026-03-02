@@ -97,17 +97,32 @@ const STATUS_BAR  = Platform.OS === 'android' ? (StatusBar.currentHeight ?? 24) 
 export default function VoiceAssistantModal({ messages, isOpen, fabBottom = 96 }) {
   const listRef           = useRef(null);
   const mountOpacity      = useRef(new Animated.Value(0)).current;
+  // Tracks whether the modal is mounted (visible or fading). Set to true
+  // immediately when opening, and only set to false after the fade-out
+  // animation fully completes — avoiding the _value internal API.
+  const isMounted         = useRef(false);
   // Tracks the true pixel height of all rendered content so we can scroll to
   // the absolute bottom (past bottom padding) rather than just to the last item.
   const contentHeightRef  = useRef(0);
 
   // Fade in/out driven by isOpen, not by message count.
   useEffect(() => {
-    Animated.timing(mountOpacity, {
-      toValue: isOpen ? 1 : 0,
-      duration: 200,
-      useNativeDriver: true,
-    }).start();
+    if (isOpen) {
+      isMounted.current = true;
+      Animated.timing(mountOpacity, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      Animated.timing(mountOpacity, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start(({ finished }) => {
+        if (finished) isMounted.current = false;
+      });
+    }
   }, [isOpen, mountOpacity]);
 
   // Scrolls to the absolute bottom of the content area, including any
@@ -140,7 +155,7 @@ export default function VoiceAssistantModal({ messages, isOpen, fabBottom = 96 }
     };
   }, [isOpen, messages]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (!isOpen && mountOpacity._value === 0) return null;
+  if (!isOpen && !isMounted.current) return null;
 
   // Panel bottom anchored just above the FAB.
   // maxHeight caps growth so it never overflows above the status bar.
