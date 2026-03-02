@@ -74,7 +74,8 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
     // onTTSFinished is only emitted when this reaches 0 AND generation is complete,
     // preventing the premature fire caused by isSpeaking briefly being false between queued sentences.
     private val pendingTtsCount = AtomicInteger(0)
-    private @Volatile var generationComplete = false
+    private var generationComplete = false
+    private val completionLock = Any()
 
     // Active Gemini Nano inference job — cancelled by stopAssistant().
     private var activeInferenceJob: Job? = null
@@ -427,8 +428,11 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
      * TTS queue has already drained (e.g. very short or empty response).
      */
     override fun markSpeechQueueComplete() {
-        generationComplete = true
-        if (pendingTtsCount.get() <= 0) {
+        val shouldFire = synchronized(completionLock) {
+            generationComplete = true
+            pendingTtsCount.get() <= 0
+        }
+        if (shouldFire) {
             abandonAudioFocus()
             emitOnTTSFinished(Arguments.createMap().apply { putString("status", "done") })
         }
@@ -545,7 +549,12 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
             // fully drained AND Gemini Nano has finished generating — this prevents
             // the premature signal caused by isSpeaking briefly being false between
             // back-to-back queued sentences.
-            if (pendingTtsCount.decrementAndGet() <= 0 && generationComplete) {
+            // Both the decrement and the generationComplete read are held under
+            // completionLock to prevent a race with markSpeechQueueComplete().
+            val shouldFire = synchronized(completionLock) {
+                pendingTtsCount.decrementAndGet() <= 0 && generationComplete
+            }
+            if (shouldFire) {
                 abandonAudioFocus()
                 emitOnTTSFinished(Arguments.createMap().apply { putString("status", "done") })
             }
