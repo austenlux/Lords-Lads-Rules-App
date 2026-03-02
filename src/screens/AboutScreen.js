@@ -862,7 +862,41 @@ export default function AboutScreen({
               styles={styles}
               style={styles.aboutSectionWrapper}
             >
-              {/* ── Voice Assistant Readiness ── */}
+              {/* ── Feature Flags ── */}
+              <TouchableOpacity
+                style={styles.versionContainer}
+                onPress={toggleFeatureFlags}
+                activeOpacity={0.7}
+              >
+                <View style={styles.versionHeader}>
+                  <View style={styles.versionRow}>
+                    <Text style={styles.versionText}>Feature Flags</Text>
+                  </View>
+                  <Animated.View style={{ transform: [{ rotate: animations['featureFlags']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
+                    <Text style={styles.versionArrow}>▶</Text>
+                  </Animated.View>
+                </View>
+                <Animated.View
+                  style={{ maxHeight: animations['featureFlags']?.maxHeight || 0, overflow: 'hidden' }}
+                  pointerEvents={featureFlagsExpanded ? 'auto' : 'none'}
+                >
+                  <View style={styles.versionContent}>
+                    <View style={[styles.settingsRow, styles.settingsRowLast, { marginBottom: 8 }]}>
+                      <View style={styles.settingsRowLabel}>
+                        <Text style={styles.settingsRowText}>Thinking Sounds</Text>
+                      </View>
+                      <Switch
+                        value={thinkingSoundsEnabled}
+                        onValueChange={setThinkingSoundsEnabledAndSave}
+                        trackColor={{ false: '#555', true: '#7B5CBF' }}
+                        thumbColor="#E1E1E1"
+                      />
+                    </View>
+                  </View>
+                </Animated.View>
+              </TouchableOpacity>
+
+              {/* ── Voice Assistant Status ── */}
               <TouchableOpacity
                 style={styles.versionContainer}
                 onPress={toggleVaReadiness}
@@ -870,7 +904,7 @@ export default function AboutScreen({
               >
                 <View style={styles.versionHeader}>
                   <View style={styles.versionRow}>
-                    <Text style={styles.versionText}>Voice Assistant Readiness</Text>
+                    <Text style={styles.versionText}>Voice Assistant Status</Text>
                   </View>
                   <Animated.View style={{ transform: [{ rotate: animations['vaReadiness']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
                     <Text style={styles.versionArrow}>▶</Text>
@@ -930,40 +964,6 @@ export default function AboutScreen({
                         <Text style={vaReadinessStyles.actionButtonText}>Retry Model Setup</Text>
                       </TouchableOpacity>
                     )}
-                  </View>
-                </Animated.View>
-              </TouchableOpacity>
-
-              {/* ── Feature Flags ── */}
-              <TouchableOpacity
-                style={styles.versionContainer}
-                onPress={toggleFeatureFlags}
-                activeOpacity={0.7}
-              >
-                <View style={styles.versionHeader}>
-                  <View style={styles.versionRow}>
-                    <Text style={styles.versionText}>Feature Flags</Text>
-                  </View>
-                  <Animated.View style={{ transform: [{ rotate: animations['featureFlags']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
-                    <Text style={styles.versionArrow}>▶</Text>
-                  </Animated.View>
-                </View>
-                <Animated.View
-                  style={{ maxHeight: animations['featureFlags']?.maxHeight || 0, overflow: 'hidden' }}
-                  pointerEvents={featureFlagsExpanded ? 'auto' : 'none'}
-                >
-                  <View style={styles.versionContent}>
-                    <View style={[styles.settingsRow, styles.settingsRowLast, { marginBottom: 8 }]}>
-                      <View style={styles.settingsRowLabel}>
-                        <Text style={styles.settingsRowText}>Thinking Sounds</Text>
-                      </View>
-                      <Switch
-                        value={thinkingSoundsEnabled}
-                        onValueChange={setThinkingSoundsEnabledAndSave}
-                        trackColor={{ false: '#555', true: '#7B5CBF' }}
-                        thumbColor="#E1E1E1"
-                      />
-                    </View>
                   </View>
                 </Animated.View>
               </TouchableOpacity>

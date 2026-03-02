@@ -486,11 +486,10 @@ export default function App() {
               hasConversation={isConvoOpen}
               onPress={async () => {
                 const { granted, permanentlyDenied } = await requestMicPermission();
-                if (permanentlyDenied) {
+                if (!granted) {
                   setShowMicSettingsDialog(true);
                   return;
                 }
-                if (!granted) return;
                 setIsConvoOpen(true);
                 askTheRules(content, expansionsContent);
               }}
