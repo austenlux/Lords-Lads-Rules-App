@@ -43,9 +43,13 @@ import InfoIcon from '../../assets/icons/info.svg';
 import RulesIcon from '../../assets/icons/rules.svg';
 import ExpansionsIcon from '../../assets/icons/expansions.svg';
 import DebugIcon from '../../assets/icons/debug.svg';
+import MicIcon from '../../assets/icons/mic.svg';
+import DeviceIcon from '../../assets/icons/device.svg';
+import FlagIcon from '../../assets/icons/flag.svg';
+import GithubIcon from '../../assets/icons/github.svg';
 
 const PAST_RELEASES_KEY = 'pastReleases';
-const SECTION_KEYS = { RULES_SYNCED: 'rulesSynced', BUY_NAILS: 'buyNails', CHANGELOG: 'changelog', SETTINGS: 'settings', INFO: 'info', DEBUG: 'debug' };
+const SECTION_KEYS = { BUY_NAILS: 'buyNails', CHANGELOG: 'changelog', SETTINGS: 'settings', INFO: 'info', DEBUG: 'debug' };
 
 const VA_STATUS_LABEL = {
   model: {
@@ -128,7 +132,6 @@ export default function AboutScreen({
   const [expandedVersions, setExpandedVersions] = useState({});
   const [pastReleasesExpanded, setPastReleasesExpanded] = useState(false);
   const [sectionsExpanded, setSectionsExpanded] = useState({
-    [SECTION_KEYS.RULES_SYNCED]: DEFAULT_SECTION_EXPANDED,
     [SECTION_KEYS.BUY_NAILS]: DEFAULT_SECTION_EXPANDED,
     [SECTION_KEYS.CHANGELOG]: DEFAULT_SECTION_EXPANDED,
     [SECTION_KEYS.SETTINGS]: false,
@@ -148,7 +151,7 @@ export default function AboutScreen({
   const [voiceParentExpanded, setVoiceParentExpanded] = useState(false);
   const [voiceMetaExpanded, setVoiceMetaExpanded] = useState(false);
   const [expandedDebugVoices, setExpandedDebugVoices] = useState({});
-  const [vaReadinessExpanded, setVaReadinessExpanded] = useState(false);
+  const [vaDebugExpanded, setVaDebugExpanded] = useState(false);
   const [buildInfoExpanded, setBuildInfoExpanded] = useState(false);
 
   const VOICE_SECTION_MAX_HEIGHT = 1500;
@@ -157,7 +160,7 @@ export default function AboutScreen({
   const VOICE_META_MAX_HEIGHT = 12000;
   const DEBUG_VOICE_MAX_HEIGHT = 400;
   const FEATURE_FLAGS_MAX_HEIGHT = 400;
-  const VA_READINESS_MAX_HEIGHT = 500;
+  const VA_DEBUG_MAX_HEIGHT = 13000;
   const BUILD_INFO_MAX_HEIGHT = 600;
 
   // Initialise animation pairs for settings cards and debug sections.
@@ -174,8 +177,8 @@ export default function AboutScreen({
     if (!animations['featureFlags']) {
       animations['featureFlags'] = { rotation: new Animated.Value(0), maxHeight: new Animated.Value(0) };
     }
-    if (!animations['vaReadiness']) {
-      animations['vaReadiness'] = { rotation: new Animated.Value(0), maxHeight: new Animated.Value(0) };
+    if (!animations['vaDebug']) {
+      animations['vaDebug'] = { rotation: new Animated.Value(0), maxHeight: new Animated.Value(0) };
     }
     if (!animations['buildInfo']) {
       animations['buildInfo'] = { rotation: new Animated.Value(0), maxHeight: new Animated.Value(0) };
@@ -300,8 +303,8 @@ export default function AboutScreen({
     collapseAllDebugVoices();
     animateSection(animations['featureFlags'], false, 0, 150);
     setFeatureFlagsExpanded(false);
-    animateSection(animations['vaReadiness'], false, 0, 150);
-    setVaReadinessExpanded(false);
+    animateSection(animations['vaDebug'], false, 0, 150);
+    setVaDebugExpanded(false);
     animateSection(animations['buildInfo'], false, 0, 150);
     setBuildInfoExpanded(false);
   };
@@ -350,10 +353,15 @@ export default function AboutScreen({
     setFeatureFlagsExpanded(isExpanded);
   };
 
-  const toggleVaReadiness = () => {
-    const isExpanded = !vaReadinessExpanded;
-    animateSection(animations['vaReadiness'], isExpanded, VA_READINESS_MAX_HEIGHT);
-    setVaReadinessExpanded(isExpanded);
+  const toggleVaDebug = () => {
+    const isExpanded = !vaDebugExpanded;
+    animateSection(animations['vaDebug'], isExpanded, VA_DEBUG_MAX_HEIGHT);
+    if (!isExpanded) {
+      animateSection(animations['voiceMeta'], false, 0, 150);
+      setVoiceMetaExpanded(false);
+      collapseAllDebugVoices();
+    }
+    setVaDebugExpanded(isExpanded);
   };
 
   const toggleBuildInfo = () => {
@@ -607,15 +615,31 @@ export default function AboutScreen({
             styles={styles}
             style={styles.aboutSectionWrapper}
           >
+            {/* ── Rules last synced card ── */}
+            <View style={styles.versionContainer}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                <SyncedIcon width={18} height={18} fill="#26C6DA" />
+                <Text style={styles.versionText}>Rules last synced</Text>
+              </View>
+              <Text style={styles.aboutTimestamp}>{lastFetchDate || 'Never'}</Text>
+            </View>
+
+            {/* ── GitHub links card ── */}
             <View style={styles.versionContainer}>
               <View style={styles.infoBlock}>
-                <Text style={styles.infoText}>Rules loaded from official rulebook:</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                  <GithubIcon width={16} height={16} fill="#E1E1E1" />
+                  <Text style={styles.infoText}>Official Rulebook</Text>
+                </View>
                 <Pressable onPress={() => Linking.openURL(RULEBOOK_REPO_URL)}>
                   <Text style={styles.infoLink}>{RULEBOOK_REPO_URL}</Text>
                 </Pressable>
               </View>
               <View style={[styles.infoBlock, styles.infoBlockLast]}>
-                <Text style={styles.infoText}>This app's repo:</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                  <GithubIcon width={16} height={16} fill="#E1E1E1" />
+                  <Text style={styles.infoText}>App Repository</Text>
+                </View>
                 <Pressable onPress={() => Linking.openURL(APP_REPO_URL)}>
                   <Text style={styles.infoLink}>{APP_REPO_URL}</Text>
                 </Pressable>
@@ -687,6 +711,7 @@ export default function AboutScreen({
               >
                 <View style={styles.versionHeader}>
                   <View style={styles.versionRow}>
+                    <MicIcon width={20} height={20} fill="#BB86FC" />
                     <Text style={styles.versionText}>Voice Assistant</Text>
                   </View>
                   <Animated.View style={{ transform: [{ rotate: animations['voiceParent']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
@@ -759,19 +784,6 @@ export default function AboutScreen({
                 </Animated.View>
               </TouchableOpacity>
             )}
-          </CollapsibleSection>
-
-          <CollapsibleSection
-            title="Rules last synced"
-            icon={<SyncedIcon width={24} height={24} fill="#26C6DA" />}
-            isExpanded={sectionsExpanded[SECTION_KEYS.RULES_SYNCED]}
-            onToggle={() => toggleAboutSection(SECTION_KEYS.RULES_SYNCED)}
-            styles={styles}
-            style={styles.aboutSectionWrapper}
-          >
-            <Pressable android_ripple={null} style={styles.versionContainer}>
-              <Text style={styles.aboutTimestamp}>{lastFetchDate || 'Never'}</Text>
-            </Pressable>
           </CollapsibleSection>
 
           <CollapsibleSection
@@ -891,6 +903,7 @@ export default function AboutScreen({
               >
                 <View style={styles.versionHeader}>
                   <View style={styles.versionRow}>
+                    <FlagIcon width={20} height={20} fill="#FF9800" />
                     <Text style={styles.versionText}>Feature Flags</Text>
                   </View>
                   <Animated.View style={{ transform: [{ rotate: animations['featureFlags']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
@@ -925,6 +938,7 @@ export default function AboutScreen({
               >
                 <View style={styles.versionHeader}>
                   <View style={styles.versionRow}>
+                    <DeviceIcon width={20} height={20} fill="#64B5F6" />
                     <Text style={styles.versionText}>Build & Device Info</Text>
                   </View>
                   <Animated.View style={{ transform: [{ rotate: animations['buildInfo']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
@@ -958,33 +972,36 @@ export default function AboutScreen({
                 </Animated.View>
               </TouchableOpacity>
 
-              {/* ── Voice Assistant Status ── */}
+              {/* ── Voice Assistant ── */}
               <TouchableOpacity
                 style={styles.versionContainer}
-                onPress={toggleVaReadiness}
+                onPress={toggleVaDebug}
                 activeOpacity={0.7}
               >
                 <View style={styles.versionHeader}>
                   <View style={styles.versionRow}>
-                    <Text style={styles.versionText}>Voice Assistant Status</Text>
+                    <MicIcon width={20} height={20} fill="#BB86FC" />
+                    <Text style={styles.versionText}>Voice Assistant</Text>
                   </View>
-                  <Animated.View style={{ transform: [{ rotate: animations['vaReadiness']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
+                  <Animated.View style={{ transform: [{ rotate: animations['vaDebug']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
                     <Text style={styles.versionArrow}>▶</Text>
                   </Animated.View>
                 </View>
                 <Animated.View
-                  style={{ maxHeight: animations['vaReadiness']?.maxHeight || 0, overflow: 'hidden' }}
-                  pointerEvents={vaReadinessExpanded ? 'auto' : 'none'}
+                  style={{ maxHeight: animations['vaDebug']?.maxHeight || 0, overflow: 'hidden' }}
+                  pointerEvents={vaDebugExpanded ? 'auto' : 'none'}
                 >
                   <View style={[styles.versionContent, { paddingTop: 4 }]}>
-                    {/* Model Status */}
+                    {/* Status subsection */}
+                    <Text style={[styles.debugMetaLabel, { color: '#BB86FC', fontSize: 13, fontWeight: '700', marginBottom: 8, letterSpacing: 0.8, textTransform: 'uppercase' }]}>
+                      Status
+                    </Text>
                     <View style={styles.debugMetaRow}>
                       <Text style={styles.debugMetaLabel}>Gemini Nano</Text>
                       <Text style={[styles.debugMetaValue, { color: VA_STATUS_COLOR.model[modelStatus] ?? '#888' }]}>
                         {VA_STATUS_LABEL.model[modelStatus] ?? modelStatus}
                       </Text>
                     </View>
-                    {/* Download progress — only show while downloading */}
                     {(modelStatus === 'downloading') && (
                       <View style={styles.debugMetaRow}>
                         <Text style={styles.debugMetaLabel}>Downloaded</Text>
@@ -995,21 +1012,18 @@ export default function AboutScreen({
                         </Text>
                       </View>
                     )}
-                    {/* Mic Permission */}
                     <View style={styles.debugMetaRow}>
                       <Text style={styles.debugMetaLabel}>Microphone</Text>
                       <Text style={[styles.debugMetaValue, { color: VA_STATUS_COLOR.mic[micPermissionStatus] ?? '#888' }]}>
                         {VA_STATUS_LABEL.mic[micPermissionStatus] ?? micPermissionStatus}
                       </Text>
                     </View>
-                    {/* FAB Visible */}
-                    <View style={[styles.debugMetaRow, { marginBottom: 12 }]}>
+                    <View style={[styles.debugMetaRow, { marginBottom: 8 }]}>
                       <Text style={styles.debugMetaLabel}>FAB Visible</Text>
                       <Text style={[styles.debugMetaValue, { color: isVoiceAssistantSupported ? '#4CAF50' : '#CF6679' }]}>
                         {isVoiceAssistantSupported ? 'Yes' : 'No'}
                       </Text>
                     </View>
-                    {/* Action buttons */}
                     {micPermissionStatus === 'not_granted' && (
                       <TouchableOpacity
                         style={vaReadinessStyles.actionButton}
@@ -1026,74 +1040,74 @@ export default function AboutScreen({
                         <Text style={vaReadinessStyles.actionButtonText}>Retry Model Setup</Text>
                       </TouchableOpacity>
                     )}
-                  </View>
-                </Animated.View>
-              </TouchableOpacity>
 
-              {/* ── Voice Assistant Models ── */}
-              <TouchableOpacity
-                style={styles.versionContainer}
-                onPress={toggleVoiceMeta}
-                activeOpacity={0.7}
-              >
-                <View style={styles.versionHeader}>
-                  <View style={styles.versionRow}>
-                    <Text style={styles.versionText}>Voice Assistant Models</Text>
-                  </View>
-                  <Animated.View style={{ transform: [{ rotate: animations['voiceMeta']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
-                    <Text style={styles.versionArrow}>▶</Text>
-                  </Animated.View>
-                </View>
-                <Animated.View
-                  style={{ maxHeight: animations['voiceMeta']?.maxHeight || 0, overflow: 'hidden' }}
-                  pointerEvents={voiceMetaExpanded ? 'auto' : 'none'}
-                >
-                  <View style={styles.versionContent}>
-                    {availableVoices.map(voice => {
-                      const voiceAnim = debugVoiceAnims[voice.id];
-                      const isOpen = expandedDebugVoices[voice.id];
-                      const metaRows = [
-                        { label: 'ID',               value: voice.id },
-                        { label: 'Display Name',     value: voice.name },
-                        { label: 'Gender',           value: voice.gender ?? '—' },
-                        { label: 'Language Tag',     value: voice.language },
-                        { label: 'Locale',           value: voice.localeDisplay },
-                        { label: 'Quality',          value: voice.qualityLabel ?? String(voice.quality ?? '—') },
-                        { label: 'Latency',          value: voice.latencyLabel ?? String(voice.latency ?? '—') },
-                        { label: 'Network Required', value: voice.networkRequired ? 'Yes' : 'No' },
-                        { label: 'Features',         value: Array.isArray(voice.features) ? voice.features.join(', ') || '—' : '—' },
-                      ];
-                      return (
-                        <TouchableOpacity
-                          key={voice.id}
-                          style={styles.versionContainer}
-                          onPress={() => toggleDebugVoice(voice.id)}
-                          activeOpacity={0.7}
-                        >
-                          <View style={styles.versionHeader}>
-                            <View style={styles.versionRow}>
-                              <Text style={[styles.versionText, { flexShrink: 1, fontSize: 14 }]} numberOfLines={1}>{voice.id}</Text>
-                            </View>
-                            <Animated.View style={{ transform: [{ rotate: voiceAnim?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }], marginLeft: 12 }}>
-                              <Text style={styles.versionArrow}>▶</Text>
-                            </Animated.View>
-                          </View>
-                          <Animated.View
-                            style={{ maxHeight: voiceAnim?.maxHeight || 0, overflow: 'hidden' }}
-                            pointerEvents={isOpen ? 'auto' : 'none'}
-                          >
-                            <View style={[styles.versionContent, { paddingTop: 4 }]}>
-                              {metaRows.map(row => (
-                                <View key={row.label} style={styles.debugMetaRow}>
-                                  <Text style={styles.debugMetaLabel}>{row.label}</Text>
-                                  <Text style={styles.debugMetaValue}>{row.value}</Text>
+                    {/* Models subsection */}
+                    <TouchableOpacity
+                      style={[styles.versionContainer, { marginTop: 8 }]}
+                      onPress={toggleVoiceMeta}
+                      activeOpacity={0.7}
+                    >
+                      <View style={styles.versionHeader}>
+                        <View style={styles.versionRow}>
+                          <Text style={styles.versionText}>Models</Text>
+                        </View>
+                        <Animated.View style={{ transform: [{ rotate: animations['voiceMeta']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
+                          <Text style={styles.versionArrow}>▶</Text>
+                        </Animated.View>
+                      </View>
+                      <Animated.View
+                        style={{ maxHeight: animations['voiceMeta']?.maxHeight || 0, overflow: 'hidden' }}
+                        pointerEvents={voiceMetaExpanded ? 'auto' : 'none'}
+                      >
+                        <View style={styles.versionContent}>
+                          {availableVoices.map(voice => {
+                            const voiceAnim = debugVoiceAnims[voice.id];
+                            const isOpen = expandedDebugVoices[voice.id];
+                            const metaRows = [
+                              { label: 'ID',               value: voice.id },
+                              { label: 'Display Name',     value: voice.name },
+                              { label: 'Gender',           value: voice.gender ?? '—' },
+                              { label: 'Language Tag',     value: voice.language },
+                              { label: 'Locale',           value: voice.localeDisplay },
+                              { label: 'Quality',          value: voice.qualityLabel ?? String(voice.quality ?? '—') },
+                              { label: 'Latency',          value: voice.latencyLabel ?? String(voice.latency ?? '—') },
+                              { label: 'Network Required', value: voice.networkRequired ? 'Yes' : 'No' },
+                              { label: 'Features',         value: Array.isArray(voice.features) ? voice.features.join(', ') || '—' : '—' },
+                            ];
+                            return (
+                              <TouchableOpacity
+                                key={voice.id}
+                                style={styles.versionContainer}
+                                onPress={() => toggleDebugVoice(voice.id)}
+                                activeOpacity={0.7}
+                              >
+                                <View style={styles.versionHeader}>
+                                  <View style={styles.versionRow}>
+                                    <Text style={[styles.versionText, { flexShrink: 1, fontSize: 14 }]} numberOfLines={1}>{voice.id}</Text>
+                                  </View>
+                                  <Animated.View style={{ transform: [{ rotate: voiceAnim?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }], marginLeft: 12 }}>
+                                    <Text style={styles.versionArrow}>▶</Text>
+                                  </Animated.View>
                                 </View>
-                              ))}
-                            </View>
-                          </Animated.View>
-                        </TouchableOpacity>
-                      );
-                    })}
+                                <Animated.View
+                                  style={{ maxHeight: voiceAnim?.maxHeight || 0, overflow: 'hidden' }}
+                                  pointerEvents={isOpen ? 'auto' : 'none'}
+                                >
+                                  <View style={[styles.versionContent, { paddingTop: 4 }]}>
+                                    {metaRows.map(row => (
+                                      <View key={row.label} style={styles.debugMetaRow}>
+                                        <Text style={styles.debugMetaLabel}>{row.label}</Text>
+                                        <Text style={styles.debugMetaValue}>{row.value}</Text>
+                                      </View>
+                                    ))}
+                                  </View>
+                                </Animated.View>
+                              </TouchableOpacity>
+                            );
+                          })}
+                        </View>
+                      </Animated.View>
+                    </TouchableOpacity>
                   </View>
                 </Animated.View>
               </TouchableOpacity>
