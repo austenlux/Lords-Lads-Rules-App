@@ -40,8 +40,10 @@ class EmbedderModule(reactContext: ReactApplicationContext) :
     override fun getName(): String = NAME
 
     override fun invalidate() {
-        embedder?.close()
-        embedder = null
+        synchronized(this) {
+            embedder?.close()
+            embedder = null
+        }
         super.invalidate()
     }
 
@@ -94,6 +96,7 @@ class EmbedderModule(reactContext: ReactApplicationContext) :
      * assets required.  The model is copied from assets to the cache dir on
      * first use and reused on subsequent calls.
      */
+    @Synchronized
     private fun ensureEmbedder(): TextEmbedder {
         embedder?.let { return it }
 
