@@ -72,6 +72,11 @@ export default function AboutScreen({
     [SECTION_KEYS.DEBUG]: false,
   });
   const [debugVisible, setDebugVisible] = useState(false);
+  const [snackbarVisible, setSnackbarVisible] = useState(false);
+  const snackbarOpacity = useRef(new Animated.Value(0)).current;
+  const snackbarTimer = useRef(null);
+  const debugTapCount = useRef(0);
+  const DEBUG_UNLOCK_TAPS = 10;
   const [expandRulesDefault, setExpandRulesDefault] = useState(false);
   const [expandExpansionsDefault, setExpandExpansionsDefault] = useState(false);
   const animations = useRef({}).current;
@@ -276,6 +281,27 @@ export default function AboutScreen({
     const isExpanded = !expandedDebugVoices[voiceId];
     animateSection(debugVoiceAnims[voiceId], isExpanded, DEBUG_VOICE_MAX_HEIGHT);
     setExpandedDebugVoices(prev => ({ ...prev, [voiceId]: isExpanded }));
+  };
+
+  const showSnackbar = (message) => {
+    if (snackbarTimer.current) clearTimeout(snackbarTimer.current);
+    setSnackbarVisible(true);
+    Animated.timing(snackbarOpacity, { toValue: 1, duration: 200, useNativeDriver: true }).start();
+    snackbarTimer.current = setTimeout(() => {
+      Animated.timing(snackbarOpacity, { toValue: 0, duration: 300, useNativeDriver: true }).start(() => {
+        setSnackbarVisible(false);
+      });
+    }, 2500);
+  };
+
+  const handleSyncCardTap = () => {
+    if (debugVisible) return;
+    debugTapCount.current += 1;
+    if (debugTapCount.current >= DEBUG_UNLOCK_TAPS) {
+      debugTapCount.current = 0;
+      setDebugVisible(true);
+      showSnackbar('Debug menu unlocked');
+    }
   };
 
   /** Max height for expanded section so content can wrap; avoids static height cut-off. */
@@ -490,15 +516,14 @@ export default function AboutScreen({
   );
 
   return (
+    <View style={{ flex: 1 }}>
     <ScrollView
       style={[styles.scrollView, contentHeight != null && (Platform.OS === 'ios' ? { minHeight: contentHeight } : { height: contentHeight, minHeight: contentHeight })]}
       contentInsetAdjustmentBehavior={Platform.OS === 'ios' ? 'never' : undefined}
     >
       <View style={[styles.contentContainer, { paddingTop: contentPaddingTop ?? HEADER_HEIGHT }]}>
         <View style={styles.aboutContainer}>
-          <Pressable onLongPress={() => setDebugVisible(v => !v)} delayLongPress={800}>
-            <Text style={styles.aboutTitle}>About</Text>
-          </Pressable>
+          <Text style={styles.aboutTitle}>About</Text>
 
           <CollapsibleSection
             title="Info"
@@ -670,9 +695,9 @@ export default function AboutScreen({
             styles={styles}
             style={styles.aboutSectionWrapper}
           >
-            <View style={styles.versionContainer}>
+            <Pressable onPress={handleSyncCardTap} android_ripple={null} style={styles.versionContainer}>
               <Text style={styles.aboutTimestamp}>{lastFetchDate || 'Never'}</Text>
-            </View>
+            </Pressable>
           </CollapsibleSection>
 
           <CollapsibleSection
@@ -890,5 +915,28 @@ export default function AboutScreen({
         </View>
       </View>
     </ScrollView>
+
+    {snackbarVisible && (
+      <Animated.View
+        style={{
+          position: 'absolute',
+          bottom: 24,
+          left: 24,
+          right: 24,
+          backgroundColor: 'rgba(40, 40, 40, 0.95)',
+          borderRadius: 8,
+          paddingVertical: 12,
+          paddingHorizontal: 16,
+          opacity: snackbarOpacity,
+          elevation: 6,
+        }}
+        pointerEvents="none"
+      >
+        <Text style={{ color: '#E1E1E1', fontSize: 14, textAlign: 'center' }}>
+          Debug menu unlocked
+        </Text>
+      </Animated.View>
+    )}
+    </View>
   );
 }
