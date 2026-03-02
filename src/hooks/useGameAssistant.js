@@ -24,14 +24,14 @@
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { PermissionsAndroid, Platform } from 'react-native';
+import { AppState, PermissionsAndroid, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NativeVoiceAssistant from '../specs/NativeVoiceAssistant';
 import { buildGameAssistantPrompt } from '../constants';
 import { sanitizeTextForSpeech } from '../utils/sanitizeTextForSpeech';
 
-// Any status other than 'unavailable' means hardware + AICore support exists.
-const SUPPORTED_STATUSES = new Set(['available', 'downloadable', 'downloading']);
+const MODEL_POLL_INTERVAL_MS = 5000;
+const MODEL_POLL_MAX_ATTEMPTS = 24; // 2 minutes total
 
 const VOICE_STORAGE_KEY = '@lnl_voice_id';
 const VOICE_PREVIEW_TEXT = 'This is a preview of the selected voice.';
@@ -64,6 +64,11 @@ export function useGameAssistant() {
   const [availableVoices, setAvailableVoices] = useState([]);
   const [selectedVoiceId, setSelectedVoiceId] = useState(null);
   const [messages, setMessages] = useState([]);
+  // 'unknown' | 'available' | 'downloadable' | 'downloading' | 'unavailable' | 'download_failed'
+  const [modelStatus, setModelStatus] = useState('unknown');
+  // 'unknown' | 'granted' | 'not_granted'
+  const [micPermissionStatus, setMicPermissionStatus] = useState('unknown');
+  const [downloadProgressBytes, setDownloadProgressBytes] = useState(0);
 
   // Prevents concurrent invocations of askTheRules.
   const isBusy = useRef(false);
@@ -81,13 +86,105 @@ export function useGameAssistant() {
     return `msg_${msgCounter.current}`;
   };
 
-  // ── Support check (runs once on mount) ──────────────────────────────────
+  // ── Background setup: model + mic permission (runs once on mount) ────────
+
+  const runSetup = useCallback(async () => {
+    if (Platform.OS !== 'android') return;
+
+    // Check mic permission without prompting.
+    try {
+      const granted = await PermissionsAndroid.check(
+        PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+      );
+      setMicPermissionStatus(granted ? 'granted' : 'not_granted');
+    } catch {
+      setMicPermissionStatus('not_granted');
+    }
+
+    // Check model status and prepare silently.
+    try {
+      const status = await NativeVoiceAssistant.checkModelStatus();
+      setModelStatus(status);
+
+      if (status === 'available') {
+        setIsSupported(true);
+        return;
+      }
+
+      if (status === 'unavailable') {
+        setIsSupported(false);
+        return;
+      }
+
+      if (status === 'downloadable') {
+        // Trigger download silently — FAB stays hidden until complete.
+        setModelStatus('downloading');
+        setDownloadProgressBytes(0);
+        try {
+          await NativeVoiceAssistant.downloadModel();
+          setModelStatus('available');
+          setIsSupported(true);
+        } catch {
+          setModelStatus('download_failed');
+          setIsSupported(false);
+        }
+        return;
+      }
+
+      if (status === 'downloading') {
+        // AICore is already downloading — poll until available.
+        let attempts = 0;
+        const poll = async () => {
+          if (attempts >= MODEL_POLL_MAX_ATTEMPTS) {
+            setModelStatus('download_failed');
+            setIsSupported(false);
+            return;
+          }
+          attempts += 1;
+          await new Promise((r) => setTimeout(r, MODEL_POLL_INTERVAL_MS));
+          try {
+            const latest = await NativeVoiceAssistant.checkModelStatus();
+            setModelStatus(latest);
+            if (latest === 'available') {
+              setIsSupported(true);
+            } else if (latest === 'unavailable') {
+              setIsSupported(false);
+            } else {
+              poll();
+            }
+          } catch {
+            setModelStatus('download_failed');
+            setIsSupported(false);
+          }
+        };
+        poll();
+      }
+    } catch {
+      setModelStatus('unavailable');
+      setIsSupported(false);
+    }
+  }, []);
 
   useEffect(() => {
+    runSetup();
+  }, [runSetup]);
+
+  // Re-check mic permission when the app returns to foreground (e.g. after
+  // the user grants it in Settings and switches back).
+  useEffect(() => {
     if (Platform.OS !== 'android') return;
-    NativeVoiceAssistant.checkModelStatus()
-      .then((status) => setIsSupported(SUPPORTED_STATUSES.has(status)))
-      .catch(() => setIsSupported(false));
+    const sub = AppState.addEventListener('change', async (state) => {
+      if (state !== 'active') return;
+      try {
+        const granted = await PermissionsAndroid.check(
+          PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+        );
+        setMicPermissionStatus(granted ? 'granted' : 'not_granted');
+      } catch {
+        setMicPermissionStatus('not_granted');
+      }
+    });
+    return () => sub.remove();
   }, []);
 
   // ── Voice list + persisted selection (loads once, after TTS is ready) ───
@@ -192,11 +289,17 @@ export function useGameAssistant() {
       isBusy.current = false;
     });
 
+    // Download progress — update bytes counter so the debug UI can reflect it.
+    const downloadProgressSub = NativeVoiceAssistant.onDownloadProgress(
+      ({ bytesDownloaded }) => setDownloadProgressBytes(bytesDownloaded),
+    );
+
     return () => {
       partialSub?.remove();
       finalSub?.remove();
       chunkSub?.remove();
       ttsDoneSub?.remove();
+      downloadProgressSub?.remove();
     };
   }, []);
 
@@ -294,29 +397,9 @@ export function useGameAssistant() {
       setPartialSpeech('');
 
       try {
-        // 1. Verify Gemini Nano is ready ──────────────────────────────────
-        const modelStatus = await NativeVoiceAssistant.checkModelStatus();
-
-        if (modelStatus === 'unavailable') {
-          setError(ERRORS.MODEL_UNAVAILABLE);
-          isBusy.current = false;
-          return;
-        }
-
-        if (modelStatus === 'downloading') {
-          setError(ERRORS.MODEL_DOWNLOADING);
-          isBusy.current = false;
-          return;
-        }
-
-        if (modelStatus === 'downloadable') {
-          // Trigger download and wait — this can take a while on first run.
-          setError('Downloading AI model for the first time…');
-          await NativeVoiceAssistant.downloadModel();
-          setError(null);
-        }
-
-        // 2. Listen ───────────────────────────────────────────────────────
+        // 1. Listen ───────────────────────────────────────────────────────
+        // Model is guaranteed available by the time the FAB is shown.
+        // Permission is pre-checked by the FAB handler before this is called.
         // Permission is pre-checked by the FAB handler before askTheRules is
         // called, so by this point mic access is guaranteed.
         // Add the user bubble here — after all pre-checks pass — so it never
@@ -428,7 +511,7 @@ export function useGameAssistant() {
     error,
     /** trigger the full voice loop with the rules markdown as context */
     askTheRules,
-    /** expose so the UI can pre-check permission (e.g. on first render) */
+    /** expose so the FAB handler can request mic before opening the modal */
     requestMicPermission,
     /** list of available offline TTS voices; empty on unsupported devices */
     availableVoices,
@@ -440,5 +523,13 @@ export function useGameAssistant() {
     stopAssistant,
     /** live conversation: [{id, role:'user'|'assistant', text}] */
     messages,
+    /** raw Gemini Nano model status for the debug panel */
+    modelStatus,
+    /** mic permission status for the debug panel: 'unknown'|'granted'|'not_granted' */
+    micPermissionStatus,
+    /** cumulative bytes downloaded during an active model download */
+    downloadProgressBytes,
+    /** re-runs the full model + mic setup flow; useful from the debug panel */
+    retryModelSetup: runSetup,
   };
 }
