@@ -72,9 +72,6 @@ export default function AboutScreen({
     [SECTION_KEYS.DEBUG]: false,
   });
   const [debugVisible, setDebugVisible] = useState(false);
-  const [snackbarVisible, setSnackbarVisible] = useState(false);
-  const snackbarOpacity = useRef(new Animated.Value(0)).current;
-  const snackbarTimer = useRef(null);
   const debugTapCount = useRef(0);
   const DEBUG_UNLOCK_TAPS = 10;
   const [expandRulesDefault, setExpandRulesDefault] = useState(false);
@@ -283,19 +280,6 @@ export default function AboutScreen({
     setExpandedDebugVoices(prev => ({ ...prev, [voiceId]: isExpanded }));
   };
 
-  useEffect(() => {
-    if (!snackbarVisible) return;
-    if (snackbarTimer.current) clearTimeout(snackbarTimer.current);
-    snackbarOpacity.setValue(0);
-    Animated.timing(snackbarOpacity, { toValue: 1, duration: 200, useNativeDriver: true }).start();
-    snackbarTimer.current = setTimeout(() => {
-      Animated.timing(snackbarOpacity, { toValue: 0, duration: 300, useNativeDriver: true }).start(() => {
-        setSnackbarVisible(false);
-      });
-    }, 2500);
-  }, [snackbarVisible]);
-
-  const showSnackbar = () => setSnackbarVisible(true);
 
   const handleSyncCardTap = () => {
     if (debugVisible) return;
@@ -303,7 +287,6 @@ export default function AboutScreen({
     if (debugTapCount.current >= DEBUG_UNLOCK_TAPS) {
       debugTapCount.current = 0;
       setDebugVisible(true);
-      showSnackbar();
     }
   };
 
@@ -519,7 +502,6 @@ export default function AboutScreen({
   );
 
   return (
-    <View style={{ flex: 1 }}>
     <ScrollView
       style={[styles.scrollView, contentHeight != null && (Platform.OS === 'ios' ? { minHeight: contentHeight } : { height: contentHeight, minHeight: contentHeight })]}
       contentInsetAdjustmentBehavior={Platform.OS === 'ios' ? 'never' : undefined}
@@ -918,28 +900,5 @@ export default function AboutScreen({
         </View>
       </View>
     </ScrollView>
-
-    {snackbarVisible && (
-      <Animated.View
-        style={{
-          position: 'absolute',
-          bottom: 24,
-          left: 24,
-          right: 24,
-          backgroundColor: 'rgba(40, 40, 40, 0.95)',
-          borderRadius: 8,
-          paddingVertical: 12,
-          paddingHorizontal: 16,
-          opacity: snackbarOpacity,
-          elevation: 6,
-        }}
-        pointerEvents="none"
-      >
-        <Text style={{ color: '#E1E1E1', fontSize: 14, textAlign: 'center' }}>
-          Debug menu unlocked
-        </Text>
-      </Animated.View>
-    )}
-    </View>
   );
 }
