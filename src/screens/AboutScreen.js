@@ -22,6 +22,7 @@ import NativeVoiceAssistant from '../specs/NativeVoiceAssistant';
 import {
   BUILD_COMMIT,
   BUILD_COMMIT_FULL,
+  BUILD_COMMIT_MESSAGE,
   BUILD_VERSION_NAME,
   BUILD_VERSION_CODE,
   BUILD_TIMESTAMP,
@@ -939,6 +940,7 @@ export default function AboutScreen({
                     {[
                       { label: 'Commit',       value: BUILD_COMMIT },
                       { label: 'Commit (full)', value: BUILD_COMMIT_FULL },
+                      { label: 'Message',      value: BUILD_COMMIT_MESSAGE },
                       { label: 'Version',      value: `${BUILD_VERSION_NAME} (${BUILD_VERSION_CODE})` },
                       { label: 'Built',        value: new Date(BUILD_TIMESTAMP).toLocaleString() },
                       { label: 'Device',       value: Platform.constants?.Model ?? 'unknown' },
