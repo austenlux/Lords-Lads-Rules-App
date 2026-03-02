@@ -46,6 +46,7 @@ export function useContent(styles, markdownStyles) {
   const [showSearch, setShowSearch] = useState(false);
   const [activeTab, setActiveTab] = useState('rules');
   const [lastFetchDate, setLastFetchDate] = useState(null);
+  const [expansionsRateLimited, setExpansionsRateLimited] = useState(false);
 
   const scrollViewRef = useRef(null);
   const rulesScrollViewRef = useRef(null);
@@ -102,7 +103,11 @@ export function useContent(styles, markdownStyles) {
 
   const fetchExpansions = async () => {
     const result = await fetchExpansionsFromService();
-    if (!result.success || result.sections == null) return false;
+    if (!result.success || result.sections == null) {
+      if (result.rateLimited) setExpansionsRateLimited(true);
+      return false;
+    }
+    setExpansionsRateLimited(false);
     setExpansionsContent(result.mainContent);
     const sectionsCopy = JSON.parse(JSON.stringify(result.sections));
     setOriginalExpansionSections(sectionsCopy);
@@ -449,6 +454,7 @@ export function useContent(styles, markdownStyles) {
     lastFetchDate,
     rulesEmpty: originalSections.length === 0,
     expansionsEmpty: originalExpansionSections.length === 0,
+    expansionsRateLimited,
     retryFetchContent,
     scrollViewRef: activeTab === 'rules' ? rulesScrollViewRef : expansionsScrollViewRef,
     rulesScrollViewRef,

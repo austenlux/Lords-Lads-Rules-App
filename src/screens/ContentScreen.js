@@ -17,6 +17,7 @@ export default function ContentScreen({
   contentHeight,
   contentPaddingTop,
   isEmptyState = false,
+  rateLimited = false,
   onRetry,
   emptyStateContentLabel = 'rules',
 }) {
@@ -25,9 +26,15 @@ export default function ContentScreen({
   const showFetchFailedEmpty = sections.length === 0 && isEmptyState && !showSearchEmpty;
   const isExpansions = emptyStateContentLabel === 'expansions';
   const emptyTitle = isExpansions ? 'Unable to load expansions' : 'Unable to load rules';
-  const emptyMessage = isExpansions
-    ? "We couldn't fetch the expansions. Check your internet connection and try again."
-    : "We couldn't fetch the rules. Check your internet connection and try again.";
+  const emptyMessage = (() => {
+    if (isExpansions && rateLimited) {
+      return "GitHub's API rate limit has been reached. Your cached expansions will load automatically — if this is your first launch, try again in a few minutes.";
+    }
+    if (isExpansions) {
+      return "We couldn't fetch the expansions. Check your internet connection and try again.";
+    }
+    return "We couldn't fetch the rules. Check your internet connection and try again.";
+  })();
 
   const handleRetry = async () => {
     if (!onRetry || retryInProgress) return;

@@ -116,6 +116,7 @@ export default function App() {
     lastFetchDate,
     rulesEmpty,
     expansionsEmpty,
+    expansionsRateLimited,
     retryFetchContent,
     rulesScrollViewRef,
     expansionsScrollViewRef,
@@ -242,6 +243,7 @@ export default function App() {
           contentHeight={contentHeight}
           contentPaddingTop={isIOS ? insets.top + IOS_HEADER_BAR_HEIGHT : undefined}
           isEmptyState={expansionsEmpty}
+          rateLimited={expansionsRateLimited}
           onRetry={retryFetchContent}
           emptyStateContentLabel="expansions"
         />

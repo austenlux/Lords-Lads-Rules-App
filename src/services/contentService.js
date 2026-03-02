@@ -262,6 +262,10 @@ export async function fetchExpansions() {
     const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
     try {
       const directoryResponse = await fetch(GITHUB_API_URL, { signal: controller.signal });
+      if (directoryResponse.status === 403 || directoryResponse.status === 429) {
+        clearTimeout(timeoutId);
+        return { success: false, rateLimited: true };
+      }
       if (!directoryResponse.ok) {
         throw new Error(`Failed to fetch expansions directory (Status: ${directoryResponse.status})`);
       }
