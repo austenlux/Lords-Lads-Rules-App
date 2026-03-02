@@ -1096,7 +1096,7 @@ export default function AboutScreen({
                                         {featureItems.length > 0
                                           ? featureItems.map((f, i) => (
                                               <View key={i} style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
-                                                <Text style={[styles.debugMetaValue, { width: 14 }]}>{'\u2022'}</Text>
+                                                <Text style={{ fontSize: 12, color: '#CCCCCC', width: 14 }}>{'\u2022'}</Text>
                                                 <Text style={[styles.debugMetaValue, { flex: 1 }]}>{f.trim()}</Text>
                                               </View>
                                             ))
