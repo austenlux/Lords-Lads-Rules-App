@@ -615,35 +615,31 @@ export default function AboutScreen({
             styles={styles}
             style={styles.aboutSectionWrapper}
           >
-            {/* ── Rules last synced card ── */}
+            {/* ── Official Rulebook card (includes Rules last synced) ── */}
             <View style={styles.versionContainer}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                <SyncedIcon width={18} height={18} fill="#26C6DA" />
-                <Text style={styles.versionText}>Rules last synced</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                <GithubIcon width={18} height={18} fill="#BB86FC" />
+                <Text style={styles.versionText}>Official Rulebook</Text>
+              </View>
+              <Pressable onPress={() => Linking.openURL(RULEBOOK_REPO_URL)} style={{ marginBottom: 12 }}>
+                <Text style={styles.infoLink}>{RULEBOOK_REPO_URL}</Text>
+              </Pressable>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                <SyncedIcon width={14} height={14} fill="#26C6DA" />
+                <Text style={[styles.infoText, { fontSize: 13, color: '#26C6DA', marginBottom: 0 }]}>Rules last synced</Text>
               </View>
               <Text style={styles.aboutTimestamp}>{lastFetchDate || 'Never'}</Text>
             </View>
 
-            {/* ── GitHub links card ── */}
+            {/* ── App Repository card ── */}
             <View style={styles.versionContainer}>
-              <View style={styles.infoBlock}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-                  <GithubIcon width={16} height={16} fill="#E1E1E1" />
-                  <Text style={styles.infoText}>Official Rulebook</Text>
-                </View>
-                <Pressable onPress={() => Linking.openURL(RULEBOOK_REPO_URL)}>
-                  <Text style={styles.infoLink}>{RULEBOOK_REPO_URL}</Text>
-                </Pressable>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                <GithubIcon width={18} height={18} fill="#BB86FC" />
+                <Text style={styles.versionText}>App Repository</Text>
               </View>
-              <View style={[styles.infoBlock, styles.infoBlockLast]}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-                  <GithubIcon width={16} height={16} fill="#E1E1E1" />
-                  <Text style={styles.infoText}>App Repository</Text>
-                </View>
-                <Pressable onPress={() => Linking.openURL(APP_REPO_URL)}>
-                  <Text style={styles.infoLink}>{APP_REPO_URL}</Text>
-                </Pressable>
-              </View>
+              <Pressable onPress={() => Linking.openURL(APP_REPO_URL)}>
+                <Text style={styles.infoLink}>{APP_REPO_URL}</Text>
+              </Pressable>
             </View>
           </CollapsibleSection>
 
@@ -949,7 +945,7 @@ export default function AboutScreen({
                   style={{ maxHeight: animations['buildInfo']?.maxHeight || 0, overflow: 'hidden' }}
                   pointerEvents={buildInfoExpanded ? 'auto' : 'none'}
                 >
-                  <View style={[styles.versionContent, { paddingTop: 4 }]}>
+                  <View style={[styles.versionContent, { paddingTop: 12 }]}>
                     {[
                       { label: 'Commit',       value: BUILD_COMMIT },
                       { label: 'Commit (full)', value: BUILD_COMMIT_FULL },
@@ -993,7 +989,7 @@ export default function AboutScreen({
                 >
                   <View style={[styles.versionContent, { paddingTop: 4 }]}>
                     {/* Status subsection */}
-                    <Text style={[styles.debugMetaLabel, { color: '#BB86FC', fontSize: 13, fontWeight: '700', marginBottom: 8, letterSpacing: 0.8, textTransform: 'uppercase' }]}>
+                    <Text style={[styles.debugMetaLabel, { color: '#BB86FC', fontSize: 13, fontWeight: '700', marginTop: 8, marginBottom: 8, letterSpacing: 0.8, textTransform: 'uppercase' }]}>
                       Status
                     </Text>
                     <View style={styles.debugMetaRow}>
@@ -1043,7 +1039,7 @@ export default function AboutScreen({
 
                     {/* Models subsection */}
                     <TouchableOpacity
-                      style={[styles.versionContainer, { marginTop: 8 }]}
+                      style={[styles.versionContainer, { marginTop: 8, paddingHorizontal: 6 }]}
                       onPress={toggleVoiceMeta}
                       activeOpacity={0.7}
                     >
@@ -1059,7 +1055,7 @@ export default function AboutScreen({
                         style={{ maxHeight: animations['voiceMeta']?.maxHeight || 0, overflow: 'hidden' }}
                         pointerEvents={voiceMetaExpanded ? 'auto' : 'none'}
                       >
-                        <View style={styles.versionContent}>
+                        <View style={[styles.versionContent, { paddingHorizontal: 4 }]}>
                           {availableVoices.map(voice => {
                             const voiceAnim = debugVoiceAnims[voice.id];
                             const isOpen = expandedDebugVoices[voice.id];
@@ -1077,7 +1073,7 @@ export default function AboutScreen({
                             return (
                               <TouchableOpacity
                                 key={voice.id}
-                                style={styles.versionContainer}
+                                style={[styles.versionContainer, { paddingHorizontal: 6 }]}
                                 onPress={() => toggleDebugVoice(voice.id)}
                                 activeOpacity={0.7}
                               >
@@ -1093,7 +1089,7 @@ export default function AboutScreen({
                                   style={{ maxHeight: voiceAnim?.maxHeight || 0, overflow: 'hidden' }}
                                   pointerEvents={isOpen ? 'auto' : 'none'}
                                 >
-                                  <View style={[styles.versionContent, { paddingTop: 4 }]}>
+                                  <View style={[styles.versionContent, { paddingTop: 4, paddingHorizontal: 4 }]}>
                                     {metaRows.map(row => (
                                       <View key={row.label} style={styles.debugMetaRow}>
                                         <Text style={styles.debugMetaLabel}>{row.label}</Text>
