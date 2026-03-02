@@ -5,8 +5,9 @@ import android.media.AudioAttributes
 import android.media.MediaPlayer
 
 /**
- * Plays a randomly selected one-shot thinking sound from the bundled
- * assets/audio/thinking_sounds/ folder while the AI is processing.
+ * Plays a randomly selected thinking sound from the bundled
+ * assets/audio/thinking_sounds/ folder while the AI is processing,
+ * looping it continuously until [stop] is called.
  *
  * A different file is chosen on every call to [play], keeping the
  * experience fresh across repeated interactions.
@@ -21,7 +22,7 @@ class ThinkingSoundPlayer(private val context: Context) {
 
     @Volatile private var mediaPlayer: MediaPlayer? = null
 
-    /** Play a randomly chosen thinking sound. No-op if already playing. */
+    /** Play a randomly chosen thinking sound, looping until [stop] is called. No-op if already playing. */
     fun play() {
         if (mediaPlayer != null) return
 
@@ -46,7 +47,7 @@ class ThinkingSoundPlayer(private val context: Context) {
                 )
                 setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
                 afd.close()
-                setOnCompletionListener { release(); mediaPlayer = null }
+                isLooping = true
                 setOnErrorListener { mp, _, _ -> mp.release(); mediaPlayer = null; false }
                 prepare()
                 start()
