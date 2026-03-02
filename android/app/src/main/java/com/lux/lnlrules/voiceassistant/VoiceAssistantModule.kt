@@ -140,7 +140,11 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
                     if (settled) return@collect
                     when (status) {
                         is DownloadStatus.DownloadStarted  -> Unit
-                        is DownloadStatus.DownloadProgress -> Unit
+                        is DownloadStatus.DownloadProgress -> emitOnDownloadProgress(
+                            Arguments.createMap().apply {
+                                putDouble("bytesDownloaded", status.totalBytesDownloaded.toDouble())
+                            }
+                        )
                         DownloadStatus.DownloadCompleted   -> {
                             settled = true
                             promise.resolve("completed")

@@ -15,6 +15,9 @@ export type AIChunk = {chunk: string};
 /** Fired when the TTS queue is fully drained (all spoken sentences complete). */
 export type TTSDone = {status: string};
 
+/** Fired periodically during a Gemini Nano model download with bytes downloaded so far. */
+export type DownloadProgress = {bytesDownloaded: number};
+
 // ─────────────────────────────────────────────────────── Spec ──
 
 /**
@@ -112,6 +115,9 @@ export interface Spec extends TurboModule {
 
   /** Fired for each streamed text chunk from Gemini Nano during askQuestion(). */
   readonly onAIChunkReceived: EventEmitter<AIChunk>;
+
+  /** Fired periodically during downloadModel() with cumulative bytes downloaded. */
+  readonly onDownloadProgress: EventEmitter<DownloadProgress>;
 
   /**
    * Fired once when the TTS queue is fully drained after an AI response.
