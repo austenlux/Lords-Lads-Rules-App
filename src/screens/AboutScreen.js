@@ -135,9 +135,7 @@ export default function AboutScreen({
     [SECTION_KEYS.INFO]: false,
     [SECTION_KEYS.DEBUG]: false,
   });
-  const [debugVisible, setDebugVisible] = useState(false);
-  const debugTapCount = useRef(0);
-  const DEBUG_UNLOCK_TAPS = 10;
+  const [debugVisible, setDebugVisible] = useState(__DEV__);
   const [expandRulesDefault, setExpandRulesDefault] = useState(false);
   const [expandExpansionsDefault, setExpandExpansionsDefault] = useState(false);
   const animations = useRef({}).current;
@@ -265,7 +263,7 @@ export default function AboutScreen({
     setExpandedLocales({});
   };
 
-  // Collapse every individual voice card inside Voice Assistant Metadata.
+  // Collapse every individual voice card inside Voice Assistant Models.
   const collapseAllDebugVoices = () => {
     Object.values(debugVoiceAnims).forEach(a => animateSection(a, false, 0, 150));
     setExpandedDebugVoices({});
@@ -371,13 +369,8 @@ export default function AboutScreen({
   };
 
 
-  const handleSyncCardTap = () => {
-    if (debugVisible) return;
-    debugTapCount.current += 1;
-    if (debugTapCount.current >= DEBUG_UNLOCK_TAPS) {
-      debugTapCount.current = 0;
-      setDebugVisible(true);
-    }
+  const handleAboutTitleLongPress = () => {
+    if (!debugVisible) setDebugVisible(true);
   };
 
   /** Max height for expanded section so content can wrap; avoids static height cut-off. */
@@ -598,7 +591,13 @@ export default function AboutScreen({
     >
       <View style={[styles.contentContainer, { paddingTop: contentPaddingTop ?? HEADER_HEIGHT }]}>
         <View style={styles.aboutContainer}>
-          <Text style={styles.aboutTitle}>About</Text>
+          <Text
+            style={styles.aboutTitle}
+            onLongPress={handleAboutTitleLongPress}
+            suppressHighlighting
+          >
+            About
+          </Text>
 
           <CollapsibleSection
             title="Info"
@@ -770,7 +769,7 @@ export default function AboutScreen({
             styles={styles}
             style={styles.aboutSectionWrapper}
           >
-            <Pressable onPress={handleSyncCardTap} android_ripple={null} style={styles.versionContainer}>
+            <Pressable android_ripple={null} style={styles.versionContainer}>
               <Text style={styles.aboutTimestamp}>{lastFetchDate || 'Never'}</Text>
             </Pressable>
           </CollapsibleSection>
@@ -944,7 +943,7 @@ export default function AboutScreen({
                       { label: 'Version',      value: `${BUILD_VERSION_NAME} (${BUILD_VERSION_CODE})` },
                       { label: 'Built',        value: new Date(BUILD_TIMESTAMP).toLocaleString() },
                       { label: 'Device',       value: Platform.constants?.Model ?? 'unknown' },
-                      { label: 'Brand',        value: Platform.constants?.Brand ?? 'unknown' },
+                      { label: 'Brand',        value: (Platform.constants?.Brand ?? 'unknown').replace(/\b\w/g, c => c.toUpperCase()) },
                       { label: 'Android',      value: `${Platform.constants?.Release ?? '?'} (API ${Platform.Version})` },
                       { label: 'Screen',       value: (() => { const { width, height } = Dimensions.get('window'); return `${Math.round(width)} × ${Math.round(height)}`; })() },
                     ].map(({ label, value }) => (
@@ -1031,7 +1030,7 @@ export default function AboutScreen({
                 </Animated.View>
               </TouchableOpacity>
 
-              {/* ── Voice Assistant Metadata ── */}
+              {/* ── Voice Assistant Models ── */}
               <TouchableOpacity
                 style={styles.versionContainer}
                 onPress={toggleVoiceMeta}
@@ -1039,7 +1038,7 @@ export default function AboutScreen({
               >
                 <View style={styles.versionHeader}>
                   <View style={styles.versionRow}>
-                    <Text style={styles.versionText}>Voice Assistant Metadata</Text>
+                    <Text style={styles.versionText}>Voice Assistant Models</Text>
                   </View>
                   <Animated.View style={{ transform: [{ rotate: animations['voiceMeta']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
                     <Text style={styles.versionArrow}>▶</Text>
