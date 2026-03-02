@@ -50,6 +50,14 @@ import GithubIcon from '../../assets/icons/github.svg';
 import ShipIcon from '../../assets/icons/ship.svg';
 import CalendarIcon from '../../assets/icons/calendar.svg';
 import ExpandIcon from '../../assets/icons/expand.svg';
+import SpeakerIcon from '../../assets/icons/speaker.svg';
+
+const CardIconTitle = ({ icon, title, styles }) => (
+  <View style={styles.versionRow}>
+    {React.cloneElement(icon, { width: 20, height: 20 })}
+    <Text style={styles.versionText}>{title}</Text>
+  </View>
+);
 
 const PAST_RELEASES_KEY = 'pastReleases';
 const SECTION_KEYS = { BUY_NAILS: 'buyNails', CHANGELOG: 'changelog', SETTINGS: 'settings', INFO: 'info', DEBUG: 'debug' };
@@ -621,27 +629,18 @@ export default function AboutScreen({
           >
             {/* ── Official Rulebook card (includes Rules last synced) ── */}
             <View style={styles.versionContainer}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-                <GithubIcon width={18} height={18} fill="#E1E1E1" />
-                <Text style={styles.versionText}>Official Rulebook</Text>
-              </View>
-              <Pressable onPress={() => Linking.openURL(RULEBOOK_REPO_URL)} style={{ marginBottom: 12 }}>
+              <CardIconTitle icon={<GithubIcon fill="#E1E1E1" />} title="Official Rulebook" styles={styles} />
+              <Pressable onPress={() => Linking.openURL(RULEBOOK_REPO_URL)} style={{ marginTop: 6, marginBottom: 12 }}>
                 <Text style={styles.infoLink}>{RULEBOOK_REPO_URL}</Text>
               </Pressable>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                <SyncedIcon width={14} height={14} fill="#26C6DA" />
-                <Text style={[styles.infoText, { fontSize: 13, color: '#26C6DA', marginBottom: 0 }]}>Rules last synced</Text>
-              </View>
-              <Text style={styles.aboutTimestamp}>{lastFetchDate || 'Never'}</Text>
+              <CardIconTitle icon={<SyncedIcon fill="#26C6DA" />} title="Rules last synced" styles={styles} />
+              <Text style={[styles.aboutTimestamp, { marginTop: 4 }]}>{lastFetchDate || 'Never'}</Text>
             </View>
 
             {/* ── App Repository card ── */}
             <View style={styles.versionContainer}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-                <GithubIcon width={18} height={18} fill="#E1E1E1" />
-                <Text style={styles.versionText}>App Repository</Text>
-              </View>
-              <Pressable onPress={() => Linking.openURL(APP_REPO_URL)}>
+              <CardIconTitle icon={<GithubIcon fill="#E1E1E1" />} title="App Repository" styles={styles} />
+              <Pressable onPress={() => Linking.openURL(APP_REPO_URL)} style={{ marginTop: 6 }}>
                 <Text style={styles.infoLink}>{APP_REPO_URL}</Text>
               </Pressable>
             </View>
@@ -662,10 +661,7 @@ export default function AboutScreen({
               activeOpacity={0.7}
             >
               <View style={styles.versionHeader}>
-                <View style={styles.versionRow}>
-                  <ExpandIcon width={20} height={20} fill="#66BB6A" />
-                  <Text style={styles.versionText}>Expand all sections by default</Text>
-                </View>
+                <CardIconTitle icon={<ExpandIcon fill="#66BB6A" />} title="Expand all sections by default" styles={styles} />
                 <Animated.View style={{ transform: [{ rotate: animations['expandDefaults']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
                   <Text style={styles.versionArrow}>▶</Text>
                 </Animated.View>
@@ -711,10 +707,7 @@ export default function AboutScreen({
                 activeOpacity={0.7}
               >
                 <View style={styles.versionHeader}>
-                  <View style={styles.versionRow}>
-                    <MicIcon width={20} height={20} fill="#FF7043" />
-                    <Text style={styles.versionText}>Voice Assistant</Text>
-                  </View>
+                  <CardIconTitle icon={<MicIcon fill="#FF7043" />} title="Voice Assistant" styles={styles} />
                   <Animated.View style={{ transform: [{ rotate: animations['voiceParent']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
                     <Text style={styles.versionArrow}>▶</Text>
                   </Animated.View>
@@ -804,10 +797,7 @@ export default function AboutScreen({
                 activeOpacity={0.7}
               >
                 <View style={styles.versionHeader}>
-                  <View style={styles.versionRow}>
-                    <CalendarIcon width={20} height={20} fill="#EC407A" />
-                    <Text style={styles.versionText}>Past releases</Text>
-                  </View>
+                  <CardIconTitle icon={<CalendarIcon fill="#EC407A" />} title="Past releases" styles={styles} />
                   <Animated.View
                     style={{
                       transform: [
@@ -904,10 +894,7 @@ export default function AboutScreen({
                 activeOpacity={0.7}
               >
                 <View style={styles.versionHeader}>
-                  <View style={styles.versionRow}>
-                    <FlagIcon width={20} height={20} fill="#FF9800" />
-                    <Text style={styles.versionText}>Feature Flags</Text>
-                  </View>
+                  <CardIconTitle icon={<FlagIcon fill="#FF9800" />} title="Feature Flags" styles={styles} />
                   <Animated.View style={{ transform: [{ rotate: animations['featureFlags']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
                     <Text style={styles.versionArrow}>▶</Text>
                   </Animated.View>
@@ -939,10 +926,7 @@ export default function AboutScreen({
                 activeOpacity={0.7}
               >
                 <View style={styles.versionHeader}>
-                  <View style={styles.versionRow}>
-                    <DeviceIcon width={20} height={20} fill="#64B5F6" />
-                    <Text style={styles.versionText}>Build & Device Info</Text>
-                  </View>
+                  <CardIconTitle icon={<DeviceIcon fill="#64B5F6" />} title="Build & Device Info" styles={styles} />
                   <Animated.View style={{ transform: [{ rotate: animations['buildInfo']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
                     <Text style={styles.versionArrow}>▶</Text>
                   </Animated.View>
@@ -981,10 +965,7 @@ export default function AboutScreen({
                 activeOpacity={0.7}
               >
                 <View style={styles.versionHeader}>
-                  <View style={styles.versionRow}>
-                    <MicIcon width={20} height={20} fill="#FF7043" />
-                    <Text style={styles.versionText}>Voice Assistant</Text>
-                  </View>
+                  <CardIconTitle icon={<MicIcon fill="#FF7043" />} title="Voice Assistant" styles={styles} />
                   <Animated.View style={{ transform: [{ rotate: animations['vaDebug']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
                     <Text style={styles.versionArrow}>▶</Text>
                   </Animated.View>
@@ -995,9 +976,7 @@ export default function AboutScreen({
                 >
                   <View style={[styles.versionContent, { paddingTop: 4 }]}>
                     {/* Status subsection */}
-                    <Text style={[styles.debugMetaLabel, { color: '#BB86FC', fontSize: 13, fontWeight: '700', marginTop: 8, marginBottom: 8, letterSpacing: 0.8, textTransform: 'uppercase' }]}>
-                      Status
-                    </Text>
+                    <Text style={[styles.versionText, { marginTop: 8, marginBottom: 8 }]}>Status</Text>
                     <View style={styles.debugMetaRow}>
                       <Text style={styles.debugMetaLabel}>Gemini Nano</Text>
                       <Text style={[styles.debugMetaValue, { color: VA_STATUS_COLOR.model[modelStatus] ?? '#888' }]}>
@@ -1050,9 +1029,7 @@ export default function AboutScreen({
                       activeOpacity={0.7}
                     >
                       <View style={styles.versionHeader}>
-                        <View style={styles.versionRow}>
-                          <Text style={styles.versionText}>Models</Text>
-                        </View>
+                        <CardIconTitle icon={<SpeakerIcon fill="#AB47BC" />} title="Models" styles={styles} />
                         <Animated.View style={{ transform: [{ rotate: animations['voiceMeta']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
                           <Text style={styles.versionArrow}>▶</Text>
                         </Animated.View>
@@ -1095,7 +1072,7 @@ export default function AboutScreen({
                                   style={{ maxHeight: voiceAnim?.maxHeight || 0, overflow: 'hidden' }}
                                   pointerEvents={isOpen ? 'auto' : 'none'}
                                 >
-                                  <View style={[styles.versionContent, { paddingTop: 4, paddingHorizontal: 4 }]}>
+                                  <View style={[styles.versionContent, { paddingTop: 4, paddingLeft: 8, paddingRight: 4 }]}>
                                     {metaRows.map(row => (
                                       <View key={row.label} style={styles.debugMetaRow}>
                                         <Text style={styles.debugMetaLabel}>{row.label}</Text>
