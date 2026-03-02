@@ -10,7 +10,7 @@
  * Dismissed via the FAB's X button, which calls stopAssistant() and clears messages.
  */
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import {
   Animated,
   Dimensions,
@@ -54,6 +54,18 @@ const markdownStyles = {
 
 // ──────────────────────────────────────────────────── Helpers ──
 
+const DOT_SEQUENCE = [1, 2, 3, 2]; // bounce: . .. ... .. . .. ...
+const DOT_INTERVAL_MS = 400;
+
+function ThinkingText({ style }) {
+  const [frame, setFrame] = useState(0);
+  useEffect(() => {
+    const timer = setInterval(() => setFrame(f => (f + 1) % DOT_SEQUENCE.length), DOT_INTERVAL_MS);
+    return () => clearInterval(timer);
+  }, []);
+  return <Text style={style}>{'Thinking' + '.'.repeat(DOT_SEQUENCE[frame])}</Text>;
+}
+
 function UserBubble({ text }) {
   const isEmpty = !text?.trim();
   return (
@@ -78,7 +90,7 @@ function AssistantBubble({ text }) {
         {text ? (
           <Markdown style={markdownStyles}>{text}</Markdown>
         ) : (
-          <Text style={styles.thinkingText}>Thinking…</Text>
+          <ThinkingText style={styles.thinkingText} />
         )}
       </View>
     </View>
