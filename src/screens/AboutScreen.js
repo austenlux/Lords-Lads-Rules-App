@@ -38,6 +38,57 @@ import DebugIcon from '../../assets/icons/debug.svg';
 const PAST_RELEASES_KEY = 'pastReleases';
 const SECTION_KEYS = { RULES_SYNCED: 'rulesSynced', BUY_NAILS: 'buyNails', CHANGELOG: 'changelog', SETTINGS: 'settings', INFO: 'info', DEBUG: 'debug' };
 
+const VA_STATUS_LABEL = {
+  model: {
+    unknown:         'Checking…',
+    available:       'Ready',
+    downloadable:    'Not Downloaded',
+    downloading:     'Downloading…',
+    unavailable:     'Not Supported',
+    download_failed: 'Download Failed',
+  },
+  mic: {
+    unknown:     'Checking…',
+    granted:     'Granted',
+    not_granted: 'Not Granted',
+  },
+};
+
+const VA_STATUS_COLOR = {
+  model: {
+    unknown:         '#888888',
+    available:       '#4CAF50',
+    downloadable:    '#FF9800',
+    downloading:     '#BB86FC',
+    unavailable:     '#CF6679',
+    download_failed: '#CF6679',
+  },
+  mic: {
+    unknown:     '#888888',
+    granted:     '#4CAF50',
+    not_granted: '#CF6679',
+  },
+};
+
+import { StyleSheet as RNStyleSheet } from 'react-native';
+const vaReadinessStyles = RNStyleSheet.create({
+  actionButton: {
+    backgroundColor: 'rgba(187,134,252,0.15)',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(187,134,252,0.4)',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    marginBottom: 8,
+    alignItems: 'center',
+  },
+  actionButtonText: {
+    color: '#BB86FC',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+});
+
 const RULEBOOK_REPO_URL = 'https://github.com/seanKenkeremath/lords-and-lads';
 const APP_REPO_URL = 'https://github.com/austenlux/Lords-Lads-Rules-App';
 
@@ -59,6 +110,10 @@ export default function AboutScreen({
   availableVoices = [],
   selectedVoiceId = null,
   onVoiceSelect,
+  modelStatus = 'unknown',
+  micPermissionStatus = 'unknown',
+  downloadProgressBytes = 0,
+  onRetryModelSetup,
 }) {
   const [releaseNotes, setReleaseNotes] = useState([]);
   const [expandedVersions, setExpandedVersions] = useState({});
@@ -86,6 +141,7 @@ export default function AboutScreen({
   const [voiceParentExpanded, setVoiceParentExpanded] = useState(false);
   const [voiceMetaExpanded, setVoiceMetaExpanded] = useState(false);
   const [expandedDebugVoices, setExpandedDebugVoices] = useState({});
+  const [vaReadinessExpanded, setVaReadinessExpanded] = useState(false);
 
   const VOICE_SECTION_MAX_HEIGHT = 1500;
   const EXPAND_DEFAULTS_MAX_HEIGHT = 300;
@@ -93,6 +149,7 @@ export default function AboutScreen({
   const VOICE_META_MAX_HEIGHT = 12000;
   const DEBUG_VOICE_MAX_HEIGHT = 400;
   const FEATURE_FLAGS_MAX_HEIGHT = 400;
+  const VA_READINESS_MAX_HEIGHT = 500;
 
   // Initialise animation pairs for settings cards and debug sections.
   useEffect(() => {
@@ -107,6 +164,9 @@ export default function AboutScreen({
     }
     if (!animations['featureFlags']) {
       animations['featureFlags'] = { rotation: new Animated.Value(0), maxHeight: new Animated.Value(0) };
+    }
+    if (!animations['vaReadiness']) {
+      animations['vaReadiness'] = { rotation: new Animated.Value(0), maxHeight: new Animated.Value(0) };
     }
   }, []);
 
@@ -228,6 +288,8 @@ export default function AboutScreen({
     collapseAllDebugVoices();
     animateSection(animations['featureFlags'], false, 0, 150);
     setFeatureFlagsExpanded(false);
+    animateSection(animations['vaReadiness'], false, 0, 150);
+    setVaReadinessExpanded(false);
   };
 
   // ── Toggle functions ─────────────────────────────────────────────────────
@@ -272,6 +334,12 @@ export default function AboutScreen({
     const isExpanded = !featureFlagsExpanded;
     animateSection(animations['featureFlags'], isExpanded, FEATURE_FLAGS_MAX_HEIGHT);
     setFeatureFlagsExpanded(isExpanded);
+  };
+
+  const toggleVaReadiness = () => {
+    const isExpanded = !vaReadinessExpanded;
+    animateSection(animations['vaReadiness'], isExpanded, VA_READINESS_MAX_HEIGHT);
+    setVaReadinessExpanded(isExpanded);
   };
 
   const toggleDebugVoice = (voiceId) => {
@@ -794,6 +862,78 @@ export default function AboutScreen({
               styles={styles}
               style={styles.aboutSectionWrapper}
             >
+              {/* ── Voice Assistant Readiness ── */}
+              <TouchableOpacity
+                style={styles.versionContainer}
+                onPress={toggleVaReadiness}
+                activeOpacity={0.7}
+              >
+                <View style={styles.versionHeader}>
+                  <View style={styles.versionRow}>
+                    <Text style={styles.versionText}>Voice Assistant Readiness</Text>
+                  </View>
+                  <Animated.View style={{ transform: [{ rotate: animations['vaReadiness']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
+                    <Text style={styles.versionArrow}>▶</Text>
+                  </Animated.View>
+                </View>
+                <Animated.View
+                  style={{ maxHeight: animations['vaReadiness']?.maxHeight || 0, overflow: 'hidden' }}
+                  pointerEvents={vaReadinessExpanded ? 'auto' : 'none'}
+                >
+                  <View style={[styles.versionContent, { paddingTop: 4 }]}>
+                    {/* Model Status */}
+                    <View style={styles.debugMetaRow}>
+                      <Text style={styles.debugMetaLabel}>Gemini Nano</Text>
+                      <Text style={[styles.debugMetaValue, { color: VA_STATUS_COLOR.model[modelStatus] ?? '#888' }]}>
+                        {VA_STATUS_LABEL.model[modelStatus] ?? modelStatus}
+                      </Text>
+                    </View>
+                    {/* Download progress — only show while downloading */}
+                    {(modelStatus === 'downloading') && (
+                      <View style={styles.debugMetaRow}>
+                        <Text style={styles.debugMetaLabel}>Downloaded</Text>
+                        <Text style={styles.debugMetaValue}>
+                          {downloadProgressBytes > 0
+                            ? `${(downloadProgressBytes / 1_048_576).toFixed(1)} MB`
+                            : 'Starting…'}
+                        </Text>
+                      </View>
+                    )}
+                    {/* Mic Permission */}
+                    <View style={styles.debugMetaRow}>
+                      <Text style={styles.debugMetaLabel}>Microphone</Text>
+                      <Text style={[styles.debugMetaValue, { color: VA_STATUS_COLOR.mic[micPermissionStatus] ?? '#888' }]}>
+                        {VA_STATUS_LABEL.mic[micPermissionStatus] ?? micPermissionStatus}
+                      </Text>
+                    </View>
+                    {/* FAB Visible */}
+                    <View style={[styles.debugMetaRow, { marginBottom: 12 }]}>
+                      <Text style={styles.debugMetaLabel}>FAB Visible</Text>
+                      <Text style={[styles.debugMetaValue, { color: isVoiceAssistantSupported ? '#4CAF50' : '#CF6679' }]}>
+                        {isVoiceAssistantSupported ? 'Yes' : 'No'}
+                      </Text>
+                    </View>
+                    {/* Action buttons */}
+                    {micPermissionStatus === 'not_granted' && (
+                      <TouchableOpacity
+                        style={vaReadinessStyles.actionButton}
+                        onPress={() => Linking.openSettings()}
+                      >
+                        <Text style={vaReadinessStyles.actionButtonText}>Open Mic Settings</Text>
+                      </TouchableOpacity>
+                    )}
+                    {(modelStatus === 'download_failed' || modelStatus === 'unavailable' || modelStatus === 'downloadable') && (
+                      <TouchableOpacity
+                        style={vaReadinessStyles.actionButton}
+                        onPress={onRetryModelSetup}
+                      >
+                        <Text style={vaReadinessStyles.actionButtonText}>Retry Model Setup</Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                </Animated.View>
+              </TouchableOpacity>
+
               {/* ── Feature Flags ── */}
               <TouchableOpacity
                 style={styles.versionContainer}
