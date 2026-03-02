@@ -65,12 +65,17 @@ const PAST_RELEASES_KEY = 'pastReleases';
 const SECTION_KEYS = { BUY_NAILS: 'buyNails', CHANGELOG: 'changelog', SETTINGS: 'settings', INFO: 'info', DEBUG: 'debug' };
 
 const VA_STATUS_LABEL = {
-  model: {
+  deviceSupport: {
+    unknown:         'Checking…',
+    unavailable:     'Not Supported',
+    supported:       'Supported',
+  },
+  modelDownload: {
     unknown:         'Checking…',
     available:       'Ready',
-    downloadable:    'Not Downloaded',
+    downloadable:    'Pending Download',
     downloading:     'Downloading…',
-    unavailable:     'Not Supported',
+    unavailable:     'N/A',
     download_failed: 'Download Failed',
   },
   mic: {
@@ -81,12 +86,17 @@ const VA_STATUS_LABEL = {
 };
 
 const VA_STATUS_COLOR = {
-  model: {
+  deviceSupport: {
+    unknown:     '#888888',
+    unavailable: '#CF6679',
+    supported:   '#4CAF50',
+  },
+  modelDownload: {
     unknown:         '#888888',
     available:       '#4CAF50',
     downloadable:    '#FF9800',
     downloading:     '#BB86FC',
-    unavailable:     '#CF6679',
+    unavailable:     '#888888',
     download_failed: '#CF6679',
   },
   mic: {
@@ -989,23 +999,21 @@ export default function AboutScreen({
                       />
                     </View>
                     <View style={styles.debugMetaRow}>
-                      <Text style={styles.debugMetaLabel}>Gemini Nano</Text>
-                      <Text style={[styles.debugMetaValue, { color: VA_STATUS_COLOR.model[modelStatus] ?? '#888' }]}>
-                        {VA_STATUS_LABEL.model[modelStatus] ?? modelStatus}
+                      <Text style={styles.debugMetaLabel}>Device Support</Text>
+                      <Text style={[styles.debugMetaValue, { color: VA_STATUS_COLOR.deviceSupport[modelStatus === 'unavailable' ? 'unavailable' : modelStatus === 'unknown' ? 'unknown' : 'supported'] }]}>
+                        {VA_STATUS_LABEL.deviceSupport[modelStatus === 'unavailable' ? 'unavailable' : modelStatus === 'unknown' ? 'unknown' : 'supported']}
                       </Text>
                     </View>
-                    {(modelStatus === 'downloading') && (
-                      <View style={styles.debugMetaRow}>
-                        <Text style={styles.debugMetaLabel}>Downloaded</Text>
-                        <Text style={styles.debugMetaValue}>
-                          {downloadProgressBytes > 0
-                            ? `${(downloadProgressBytes / 1_048_576).toFixed(1)} MB`
-                            : 'Starting…'}
-                        </Text>
-                      </View>
-                    )}
+                    <View style={styles.debugMetaRow}>
+                      <Text style={styles.debugMetaLabel}>Model</Text>
+                      <Text style={[styles.debugMetaValue, { color: VA_STATUS_COLOR.modelDownload[modelStatus] ?? '#888' }]}>
+                        {modelStatus === 'downloading' && downloadProgressBytes > 0
+                          ? `Downloading… ${(downloadProgressBytes / 1_048_576).toFixed(1)} MB`
+                          : VA_STATUS_LABEL.modelDownload[modelStatus] ?? modelStatus}
+                      </Text>
+                    </View>
                     <View style={[styles.debugMetaRow, { borderBottomWidth: 0 }]}>
-                      <Text style={styles.debugMetaLabel}>Microphone</Text>
+                      <Text style={styles.debugMetaLabel}>Mic Permission</Text>
                       <Text style={[styles.debugMetaValue, { color: VA_STATUS_COLOR.mic[micPermissionStatus] ?? '#888' }]}>
                         {VA_STATUS_LABEL.mic[micPermissionStatus] ?? micPermissionStatus}
                       </Text>
