@@ -51,9 +51,11 @@ import ShipIcon from '../../assets/icons/ship.svg';
 import CalendarIcon from '../../assets/icons/calendar.svg';
 import ExpandIcon from '../../assets/icons/expand.svg';
 import SpeakerIcon from '../../assets/icons/speaker.svg';
+import CheckIcon from '../../assets/icons/check.svg';
+import CloseIcon from '../../assets/icons/close.svg';
 
 const CardIconTitle = ({ icon, title, styles }) => (
-  <View style={styles.versionRow}>
+  <View style={[styles.versionRow, { paddingLeft: 4 }]}>
     {React.cloneElement(icon, { width: 20, height: 20 })}
     <Text style={styles.versionText}>{title}</Text>
   </View>
@@ -633,7 +635,7 @@ export default function AboutScreen({
               <Pressable onPress={() => Linking.openURL(RULEBOOK_REPO_URL)} style={{ marginTop: 6, marginBottom: 12 }}>
                 <Text style={styles.infoLink}>{RULEBOOK_REPO_URL}</Text>
               </Pressable>
-              <CardIconTitle icon={<SyncedIcon fill="#26C6DA" />} title="Rules last synced" styles={styles} />
+              <CardIconTitle icon={<SyncedIcon fill="#26C6DA" />} title="Rules Last Synced" styles={styles} />
               <Text style={[styles.aboutTimestamp, { marginTop: 4 }]}>{lastFetchDate || 'Never'}</Text>
             </View>
 
@@ -797,7 +799,7 @@ export default function AboutScreen({
                 activeOpacity={0.7}
               >
                 <View style={styles.versionHeader}>
-                  <CardIconTitle icon={<CalendarIcon fill="#EC407A" />} title="Past releases" styles={styles} />
+                  <CardIconTitle icon={<CalendarIcon fill="#EC407A" />} title="Past Releases" styles={styles} />
                   <Animated.View
                     style={{
                       transform: [
@@ -974,9 +976,25 @@ export default function AboutScreen({
                   style={{ maxHeight: animations['vaDebug']?.maxHeight || 0, overflow: 'hidden' }}
                   pointerEvents={vaDebugExpanded ? 'auto' : 'none'}
                 >
-                  <View style={[styles.versionContent, { paddingTop: 4 }]}>
+                  <View style={[styles.versionContent, { paddingTop: 4, paddingHorizontal: 6 }]}>
                     {/* Status subsection */}
-                    <Text style={[styles.versionText, { marginTop: 8, marginBottom: 8 }]}>Status</Text>
+                    {(() => {
+                      const isAllHealthy = modelStatus === 'available' && micPermissionStatus === 'granted';
+                      const isAnyFailed = ['unavailable', 'download_failed'].includes(modelStatus) || micPermissionStatus === 'not_granted';
+                      const statusIcon = isAllHealthy
+                        ? <CheckIcon fill="#4CAF50" />
+                        : isAnyFailed
+                          ? <CloseIcon fill="#CF6679" />
+                          : null;
+                      return (
+                        <View style={{ marginTop: 8, marginBottom: 8 }}>
+                          {statusIcon
+                            ? <CardIconTitle icon={statusIcon} title="Status" styles={styles} />
+                            : <Text style={[styles.versionText, { paddingLeft: 4 }]}>Status</Text>
+                          }
+                        </View>
+                      );
+                    })()}
                     <View style={styles.debugMetaRow}>
                       <Text style={styles.debugMetaLabel}>Gemini Nano</Text>
                       <Text style={[styles.debugMetaValue, { color: VA_STATUS_COLOR.model[modelStatus] ?? '#888' }]}>
@@ -1024,7 +1042,7 @@ export default function AboutScreen({
 
                     {/* Models subsection */}
                     <TouchableOpacity
-                      style={[styles.versionContainer, { marginTop: 8, paddingHorizontal: 6 }]}
+                      style={[styles.versionContainer, { marginTop: 8, marginHorizontal: -2, paddingHorizontal: 10 }]}
                       onPress={toggleVoiceMeta}
                       activeOpacity={0.7}
                     >
@@ -1038,7 +1056,7 @@ export default function AboutScreen({
                         style={{ maxHeight: animations['voiceMeta']?.maxHeight || 0, overflow: 'hidden' }}
                         pointerEvents={voiceMetaExpanded ? 'auto' : 'none'}
                       >
-                        <View style={[styles.versionContent, { paddingHorizontal: 4 }]}>
+                        <View style={[styles.versionContent, { paddingHorizontal: 2 }]}>
                           {availableVoices.map(voice => {
                             const voiceAnim = debugVoiceAnims[voice.id];
                             const isOpen = expandedDebugVoices[voice.id];
@@ -1056,12 +1074,12 @@ export default function AboutScreen({
                             return (
                               <TouchableOpacity
                                 key={voice.id}
-                                style={[styles.versionContainer, { paddingHorizontal: 6 }]}
+                                style={[styles.versionContainer, { marginHorizontal: -1, paddingHorizontal: 10 }]}
                                 onPress={() => toggleDebugVoice(voice.id)}
                                 activeOpacity={0.7}
                               >
                                 <View style={styles.versionHeader}>
-                                  <View style={styles.versionRow}>
+                                  <View style={[styles.versionRow, { paddingLeft: 4 }]}>
                                     <Text style={[styles.versionText, { flexShrink: 1, fontSize: 14 }]} numberOfLines={1}>{voice.id}</Text>
                                   </View>
                                   <Animated.View style={{ transform: [{ rotate: voiceAnim?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }], marginLeft: 12 }}>
