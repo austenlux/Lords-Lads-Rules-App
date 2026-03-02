@@ -42,13 +42,6 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    // Prevent the release packager from compressing .tflite model files.
-    // MediaPipe loads them via memory-mapping; compressed assets cannot be
-    // mapped and cause a silent load failure at runtime.
-    aaptOptions {
-        noCompress "tflite"
-    }
-
     namespace "com.lux.lnlrules"
     defaultConfig {
         applicationId "com.lux.lnlrules"
@@ -114,11 +107,6 @@ dependencies {
 
     // Gemini Nano on-device inference via Android AICore (ML Kit GenAI Prompt API)
     implementation("com.google.mlkit:genai-prompt:1.0.0-beta1")
-
-    // MediaPipe Text Embedder — on-device semantic text embeddings for RAG.
-    // Pinned to 0.10.14 — versions 0.10.26+ have a native SIGSEGV in release
-    // builds with minification enabled (github.com/google-ai-edge/mediapipe/issues/6116).
-    implementation("com.google.mediapipe:tasks-text:0.10.14")
 
     // On-device speech recognition uses android.speech.SpeechRecognizer (Android SDK, no dep needed).
     // SpeechRecognizer.createOnDeviceSpeechRecognizer() is available from API 31+ without any

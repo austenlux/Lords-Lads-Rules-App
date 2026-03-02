@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.res.Configuration
 import com.facebook.react.PackageList
 import com.facebook.react.ReactApplication
-import com.lux.lnlrules.embedder.EmbedderPackage
 import com.lux.lnlrules.voiceassistant.VoiceAssistantPackage
 import com.facebook.react.ReactHost
 import com.facebook.react.ReactNativeHost
@@ -28,7 +27,6 @@ class MainApplication : Application(), ReactApplication {
         override fun getPackages(): List<ReactPackage> {
             val packages = PackageList(this).packages
             packages.add(VoiceAssistantPackage())
-            packages.add(EmbedderPackage())
             return packages
         }
 
