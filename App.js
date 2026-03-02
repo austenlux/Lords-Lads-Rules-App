@@ -22,7 +22,7 @@ import SearchIcon from './assets/icons/search.svg';
 import { styles, markdownStyles } from './src/styles';
 import { useContent } from './src/hooks/useContent';
 import { useGameAssistant } from './src/hooks/useGameAssistant';
-import { ContentScreen, AboutScreen, ToolsScreen } from './src/screens';
+import { ContentScreen, MoreScreen, ToolsScreen } from './src/screens';
 import { VoiceAssistantFAB, VoiceAssistantModal } from './src/components';
 import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
 
@@ -32,7 +32,7 @@ const LOGO_SIZE_RATIO = 0.9;
 /** Slightly smaller than splash so the background logo never appears larger and avoids shift. */
 const BG_LOGO_SIZE_SCALE = 0.99;
 
-const TABS = ['rules', 'expansions', 'tools', 'about'];
+const TABS = ['rules', 'expansions', 'tools', 'more'];
 const tabToIndex = (tab) => TABS.indexOf(tab);
 
 /** Tab bar height; used for explicit PagerView height on iOS to fix child layout. */
@@ -260,8 +260,8 @@ export default function App() {
       return <ToolsScreen key="tools" styles={styles} contentHeight={contentHeight} contentPaddingTop={isIOS ? insets.top + IOS_HEADER_BAR_HEIGHT : undefined} />;
     }
     return (
-      <AboutScreen
-        key="about"
+      <MoreScreen
+        key="more"
         lastFetchDate={lastFetchDate}
         styles={styles}
         contentHeight={contentHeight}
@@ -285,7 +285,7 @@ export default function App() {
         <View
           style={[
             styles.globalSearchHeader,
-            (activeTab === 'tools' || activeTab === 'about' || (rulesEmpty && expansionsEmpty)) && { opacity: 0, pointerEvents: 'none' },
+            (activeTab === 'tools' || activeTab === 'more' || (rulesEmpty && expansionsEmpty)) && { opacity: 0, pointerEvents: 'none' },
             isIOS && { paddingTop: insets.top + 10, minHeight: insets.top + IOS_HEADER_BAR_HEIGHT, height: insets.top + IOS_HEADER_BAR_HEIGHT },
           ]}
         >
@@ -328,7 +328,7 @@ export default function App() {
             <View style={[effectivePageStyle, { width: windowWidth }]}>{renderPage('rules')}</View>
             <View style={[effectivePageStyle, { width: windowWidth }]}>{renderPage('expansions')}</View>
             <View style={[effectivePageStyle, { width: windowWidth }]}>{renderPage('tools')}</View>
-            <View style={[effectivePageStyle, { width: windowWidth }]}>{renderPage('about')}</View>
+            <View style={[effectivePageStyle, { width: windowWidth }]}>{renderPage('more')}</View>
           </ScrollView>
         ) : (
         <PagerView
@@ -347,7 +347,7 @@ export default function App() {
             {renderPage('tools')}
           </View>
           <View key="3" style={effectivePageStyle} collapsable={false}>
-            {renderPage('about')}
+            {renderPage('more')}
           </View>
         </PagerView>
         )}
@@ -387,14 +387,14 @@ export default function App() {
           </View>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.tabButton, activeTab === 'about' && styles.activeTabButton]}
-          onPress={() => goToTab('about')}
+          style={[styles.tabButton, activeTab === 'more' && styles.activeTabButton]}
+          onPress={() => goToTab('more')}
         >
-          <View style={[styles.tabButtonInner, activeTab === 'about' && styles.activeTabButtonInner]}>
-            <View style={[styles.tabIconContainer, activeTab === 'about' && styles.activeTabIconContainer]}>
-              <AboutIcon width={32} height={32} color={activeTab === 'about' ? '#121212' : '#E1E1E1'} fill={activeTab === 'about' ? '#121212' : '#E1E1E1'} style={styles.tabIcon} />
+          <View style={[styles.tabButtonInner, activeTab === 'more' && styles.activeTabButtonInner]}>
+            <View style={[styles.tabIconContainer, activeTab === 'more' && styles.activeTabIconContainer]}>
+              <AboutIcon width={32} height={32} color={activeTab === 'more' ? '#121212' : '#E1E1E1'} fill={activeTab === 'more' ? '#121212' : '#E1E1E1'} style={styles.tabIcon} />
             </View>
-            <Text style={[styles.tabButtonText, activeTab === 'about' && styles.activeTabButtonText]}>About</Text>
+            <Text style={[styles.tabButtonText, activeTab === 'more' && styles.activeTabButtonText]}>More</Text>
           </View>
         </TouchableOpacity>
       </View>

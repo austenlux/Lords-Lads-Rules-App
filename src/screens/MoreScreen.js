@@ -1,5 +1,5 @@
 /**
- * About screen: last sync date, support (Venmo), changelog from release_notes.md.
+ * More screen: last sync date, support (Venmo), changelog from release_notes.md.
  */
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import {
@@ -137,7 +137,7 @@ const VENMO_OPTIONS = [
   { amount: 250, label: '$250', image: require('../../assets/icons/nail6.png') },
 ];
 
-export default function AboutScreen({
+export default function MoreScreen({
   lastFetchDate,
   styles,
   contentHeight,
@@ -334,7 +334,7 @@ export default function AboutScreen({
 
   // ── Toggle functions ─────────────────────────────────────────────────────
 
-  const toggleAboutSection = (sectionKey) => {
+  const toggleMoreSection = (sectionKey) => {
     const willCollapse = sectionsExpanded[sectionKey];
     if (willCollapse) {
       if (sectionKey === SECTION_KEYS.SETTINGS)  collapseSettingsChildren();
@@ -400,7 +400,7 @@ export default function AboutScreen({
   };
 
 
-  const handleAboutTitleLongPress = () => {
+  const handleMoreTitleLongPress = () => {
     if (!debugVisible) setDebugVisible(true);
   };
 
@@ -622,22 +622,22 @@ export default function AboutScreen({
       contentInsetAdjustmentBehavior={Platform.OS === 'ios' ? 'never' : undefined}
     >
       <View style={[styles.contentContainer, { paddingTop: contentPaddingTop ?? HEADER_HEIGHT }]}>
-        <View style={styles.aboutContainer}>
+        <View style={styles.moreContainer}>
           <Text
-            style={styles.aboutTitle}
-            onLongPress={handleAboutTitleLongPress}
+            style={styles.moreTitle}
+            onLongPress={handleMoreTitleLongPress}
             suppressHighlighting
           >
-            About
+            More
           </Text>
 
           <CollapsibleSection
             title="Info"
             icon={<InfoIcon width={24} height={24} />}
             isExpanded={sectionsExpanded[SECTION_KEYS.INFO]}
-            onToggle={() => toggleAboutSection(SECTION_KEYS.INFO)}
+            onToggle={() => toggleMoreSection(SECTION_KEYS.INFO)}
             styles={styles}
-            style={styles.aboutSectionWrapper}
+            style={styles.moreSectionWrapper}
           >
             {/* ── Official Rulebook card (includes Rules last synced) ── */}
             <View style={styles.versionContainer}>
@@ -646,7 +646,7 @@ export default function AboutScreen({
                 <Text style={styles.infoLink}>{RULEBOOK_REPO_URL}</Text>
               </Pressable>
               <CardIconTitle icon={<SyncedIcon fill="#26C6DA" />} title="Rules Last Synced" styles={styles} />
-              <Text style={[styles.aboutTimestamp, { marginTop: 4 }]}>{lastFetchDate || 'Never'}</Text>
+              <Text style={[styles.moreTimestamp, { marginTop: 4 }]}>{lastFetchDate || 'Never'}</Text>
             </View>
 
             {/* ── App Repository card ── */}
@@ -662,9 +662,9 @@ export default function AboutScreen({
             title="Settings"
             icon={<SettingsIcon width={24} height={24} fill="#C45C26" />}
             isExpanded={sectionsExpanded[SECTION_KEYS.SETTINGS]}
-            onToggle={() => toggleAboutSection(SECTION_KEYS.SETTINGS)}
+            onToggle={() => toggleMoreSection(SECTION_KEYS.SETTINGS)}
             styles={styles}
-            style={styles.aboutSectionWrapper}
+            style={styles.moreSectionWrapper}
           >
             {/* ── Card: Expand all sections by default ── */}
             <TouchableOpacity
@@ -796,9 +796,9 @@ export default function AboutScreen({
             title="Changelog"
             icon={<ChangelogIcon width={24} height={24} fill="#2E7D32" />}
             isExpanded={sectionsExpanded[SECTION_KEYS.CHANGELOG]}
-            onToggle={() => toggleAboutSection(SECTION_KEYS.CHANGELOG)}
+            onToggle={() => toggleMoreSection(SECTION_KEYS.CHANGELOG)}
             styles={styles}
-            style={styles.aboutSectionWrapper}
+            style={styles.moreSectionWrapper}
           >
             {latestRelease && renderVersionBlock(latestRelease, true)}
 
@@ -848,9 +848,9 @@ export default function AboutScreen({
             title="Buy me some nails"
             icon={<VenmoIcon width={24} height={24} fill="#E8B923" />}
             isExpanded={sectionsExpanded[SECTION_KEYS.BUY_NAILS]}
-            onToggle={() => toggleAboutSection(SECTION_KEYS.BUY_NAILS)}
+            onToggle={() => toggleMoreSection(SECTION_KEYS.BUY_NAILS)}
             styles={styles}
-            style={styles.aboutSectionWrapper}
+            style={styles.moreSectionWrapper}
           >
             <View style={styles.versionContainer}>
               <View style={styles.paymentSection}>
@@ -895,9 +895,9 @@ export default function AboutScreen({
               title="Debug"
               icon={<DebugIcon width={24} height={24} fill="#FF7043" />}
               isExpanded={sectionsExpanded[SECTION_KEYS.DEBUG]}
-              onToggle={() => toggleAboutSection(SECTION_KEYS.DEBUG)}
+              onToggle={() => toggleMoreSection(SECTION_KEYS.DEBUG)}
               styles={styles}
-              style={styles.aboutSectionWrapper}
+              style={styles.moreSectionWrapper}
             >
               {/* ── Feature Flags ── */}
               <TouchableOpacity

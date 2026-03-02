@@ -1,6 +1,6 @@
 /**
  * Reusable expand/collapse section: header row (chevron + optional icon + title) and content when expanded.
- * Used by Section (Rules/Expansions) and AboutScreen so layout and behavior stay identical.
+ * Used by Section (Rules/Expansions) and MoreScreen so layout and behavior stay identical.
  * Sections default to collapsed (same as Rules/Expansions); pass isExpanded from parent state.
  */
 import React, { useRef, useEffect } from 'react';
