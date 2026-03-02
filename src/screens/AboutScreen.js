@@ -18,6 +18,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import RNFS from 'react-native-fs';
 import { HEADER_HEIGHT } from '../styles';
 import NativeVoiceAssistant from '../specs/NativeVoiceAssistant';
+import { BUILD_COMMIT } from '../buildInfo';
 
 const SETTINGS_KEYS = {
   EXPAND_RULES_DEFAULT: '@lnl_expand_rules_default',
@@ -862,6 +863,16 @@ export default function AboutScreen({
               styles={styles}
               style={styles.aboutSectionWrapper}
             >
+              {/* ── Latest Commit ── */}
+              <View style={[styles.versionContainer, { paddingVertical: 14 }]}>
+                <View style={styles.debugMetaRow}>
+                  <Text style={styles.debugMetaLabel}>Latest Commit</Text>
+                  <Text style={[styles.debugMetaValue, { fontFamily: Platform.OS === 'android' ? 'monospace' : 'Menlo', color: '#BB86FC' }]}>
+                    {BUILD_COMMIT}
+                  </Text>
+                </View>
+              </View>
+
               {/* ── Feature Flags ── */}
               <TouchableOpacity
                 style={styles.versionContainer}

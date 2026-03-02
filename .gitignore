@@ -93,3 +93,5 @@ releases/
 
 # Cursor (personal rules / local config, not for the repo)
 .cursor/
+# Auto-generated build info
+src/buildInfo.js
