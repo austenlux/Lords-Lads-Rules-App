@@ -62,6 +62,15 @@ Answer the <latest_user_prompt> based ONLY on the data in <rulebook_core> and <r
 </final_instruction>`;
 
 /**
+ * Strips characters that could break the XML-style prompt tag structure.
+ * Applied to all user-controlled input (question, history) before prompt insertion.
+ */
+const sanitizeUserInput = (text) => {
+  if (!text?.trim()) return '';
+  return text.replace(/[<>]/g, '').trim();
+};
+
+/**
  * Cleans rulebook Markdown before embedding it in the system prompt:
  *  1. Removes the Table of Contents section (noise, no value for the LLM).
  *  2. Keeps Markdown heading hashes (## / ###) — they are critical context
@@ -99,14 +108,14 @@ const HISTORY_TURNS = 3; // number of back-and-forth exchanges to keep (user+ass
 export const buildGameAssistantPrompt = (rules, expansions, history, question) => {
   const recentHistory = history?.slice(-(HISTORY_TURNS * 2)) ?? [];
   const historyText = recentHistory.length
-    ? recentHistory.map((m) => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.text}`).join('\n')
+    ? recentHistory.map((m) => `${m.role === 'user' ? 'User' : 'Assistant'}: ${sanitizeUserInput(m.text)}`).join('\n')
     : 'No previous conversation.';
 
   return GAME_ASSISTANT_SYSTEM_PROMPT
     .replace(P.RULES,      sanitizeRulebookContent(rules)      || 'Not available.')
     .replace(P.EXPANSIONS, sanitizeRulebookContent(expansions) || 'Not available.')
     .replace(P.HISTORY,    historyText)
-    .replace(P.QUESTION,   question);
+    .replace(P.QUESTION,   sanitizeUserInput(question));
 };
 
 /** Venmo username for "Buy me coffee" links (no @). */
