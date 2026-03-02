@@ -106,6 +106,10 @@ export default function App() {
     selectedVoiceId,
     previewVoice,
     messages,
+    modelStatus,
+    micPermissionStatus,
+    downloadProgressBytes,
+    retryModelSetup,
   } = useGameAssistant();
 
   const {
@@ -268,6 +272,10 @@ export default function App() {
         availableVoices={availableVoices}
         selectedVoiceId={selectedVoiceId}
         onVoiceSelect={previewVoice}
+        modelStatus={modelStatus}
+        micPermissionStatus={micPermissionStatus}
+        downloadProgressBytes={downloadProgressBytes}
+        onRetryModelSetup={retryModelSetup}
       />
     );
   };
