@@ -9,12 +9,18 @@ import {
   Pressable,
   ScrollView,
   Animated,
+  LayoutAnimation,
+  UIManager,
   Linking,
   Image,
   Switch,
   Platform,
   Dimensions,
 } from 'react-native';
+
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import RNFS from 'react-native-fs';
 import { HEADER_HEIGHT } from '../styles';
@@ -177,35 +183,14 @@ export default function MoreScreen({
   const [vaDebugExpanded, setVaDebugExpanded] = useState(false);
   const [buildInfoExpanded, setBuildInfoExpanded] = useState(false);
 
-  const VOICE_SECTION_MAX_HEIGHT = 1500;
-  const EXPAND_DEFAULTS_MAX_HEIGHT = 300;
-  const VOICE_PARENT_MAX_HEIGHT = 8000;
-  const VOICE_META_MAX_HEIGHT = 12000;
-  const DEBUG_VOICE_MAX_HEIGHT = 400;
-  const FEATURE_FLAGS_MAX_HEIGHT = 400;
-  const VA_DEBUG_MAX_HEIGHT = 13000;
-  const BUILD_INFO_MAX_HEIGHT = 600;
-
-  // Initialise animation pairs for settings cards and debug sections.
+  // Initialise rotation animations for settings cards and debug sections.
   useEffect(() => {
-    if (!animations['expandDefaults']) {
-      animations['expandDefaults'] = { rotation: new Animated.Value(0), maxHeight: new Animated.Value(0) };
-    }
-    if (!animations['voiceParent']) {
-      animations['voiceParent'] = { rotation: new Animated.Value(0), maxHeight: new Animated.Value(0) };
-    }
-    if (!animations['voiceMeta']) {
-      animations['voiceMeta'] = { rotation: new Animated.Value(0), maxHeight: new Animated.Value(0) };
-    }
-    if (!animations['featureFlags']) {
-      animations['featureFlags'] = { rotation: new Animated.Value(0), maxHeight: new Animated.Value(0) };
-    }
-    if (!animations['vaDebug']) {
-      animations['vaDebug'] = { rotation: new Animated.Value(0), maxHeight: new Animated.Value(0) };
-    }
-    if (!animations['buildInfo']) {
-      animations['buildInfo'] = { rotation: new Animated.Value(0), maxHeight: new Animated.Value(0) };
-    }
+    if (!animations['expandDefaults']) animations['expandDefaults'] = { rotation: new Animated.Value(0) };
+    if (!animations['voiceParent'])    animations['voiceParent']    = { rotation: new Animated.Value(0) };
+    if (!animations['voiceMeta'])      animations['voiceMeta']      = { rotation: new Animated.Value(0) };
+    if (!animations['featureFlags'])   animations['featureFlags']   = { rotation: new Animated.Value(0) };
+    if (!animations['vaDebug'])        animations['vaDebug']        = { rotation: new Animated.Value(0) };
+    if (!animations['buildInfo'])      animations['buildInfo']      = { rotation: new Animated.Value(0) };
   }, []);
 
   useEffect(() => {
@@ -247,16 +232,10 @@ export default function MoreScreen({
     if (!availableVoices.length) return;
     availableVoices.forEach(({ language, id }) => {
       if (!voiceLocaleAnims[language]) {
-        voiceLocaleAnims[language] = {
-          rotation: new Animated.Value(0),
-          maxHeight: new Animated.Value(0),
-        };
+        voiceLocaleAnims[language] = { rotation: new Animated.Value(0) };
       }
       if (!debugVoiceAnims[id]) {
-        debugVoiceAnims[id] = {
-          rotation: new Animated.Value(0),
-          maxHeight: new Animated.Value(0),
-        };
+        debugVoiceAnims[id] = { rotation: new Animated.Value(0) };
       }
     });
     setExpandedLocales(prev => {
@@ -277,64 +256,64 @@ export default function MoreScreen({
 
   // ── Animation helpers ────────────────────────────────────────────────────
   // Single helper so all collapse/expand calls are consistent.
-  const animateSection = (anim, toExpanded, expandedHeight, duration = 200) => {
+  const animateSection = (anim, toExpanded, duration = 200) => {
     if (!anim) return;
     Animated.timing(anim.rotation, { toValue: toExpanded ? 1 : 0, duration, useNativeDriver: true }).start();
-    Animated.timing(anim.maxHeight, { toValue: toExpanded ? expandedHeight : 0, duration, useNativeDriver: false }).start();
   };
 
   // Collapse every locale sub-section inside the Voice Assistant card.
   const collapseAllLocales = () => {
-    Object.values(voiceLocaleAnims).forEach(a => animateSection(a, false, 0, 150));
+    Object.values(voiceLocaleAnims).forEach(a => animateSection(a, false, 150));
     setExpandedLocales({});
   };
 
   // Collapse every individual voice card inside Voice Assistant Models.
   const collapseAllDebugVoices = () => {
-    Object.values(debugVoiceAnims).forEach(a => animateSection(a, false, 0, 150));
+    Object.values(debugVoiceAnims).forEach(a => animateSection(a, false, 150));
     setExpandedDebugVoices({});
   };
 
   // Collapse every version block inside Past Releases.
   const collapseAllVersions = () => {
     Object.keys(expandedVersions).forEach(v => {
-      if (animations[v]) animateSection(animations[v], false, 0, 150);
+      if (animations[v]) animateSection(animations[v], false, 150);
     });
     setExpandedVersions({});
   };
 
   // Collapse everything nested inside the Settings top-level section.
   const collapseSettingsChildren = () => {
-    animateSection(animations['expandDefaults'], false, 0, 150);
+    animateSection(animations['expandDefaults'], false, 150);
     setExpandDefaultsExpanded(false);
-    animateSection(animations['voiceParent'], false, 0, 150);
+    animateSection(animations['voiceParent'], false, 150);
     setVoiceParentExpanded(false);
     collapseAllLocales();
   };
 
   // Collapse everything nested inside the Changelog top-level section.
   const collapseChangelogChildren = () => {
-    animateSection(animations[PAST_RELEASES_KEY], false, 0, 150);
+    animateSection(animations[PAST_RELEASES_KEY], false, 150);
     setPastReleasesExpanded(false);
     collapseAllVersions();
   };
 
   // Collapse everything nested inside the Debug top-level section.
   const collapseDebugChildren = () => {
-    animateSection(animations['voiceMeta'], false, 0, 150);
+    animateSection(animations['voiceMeta'], false, 150);
     setVoiceMetaExpanded(false);
     collapseAllDebugVoices();
-    animateSection(animations['featureFlags'], false, 0, 150);
+    animateSection(animations['featureFlags'], false, 150);
     setFeatureFlagsExpanded(false);
-    animateSection(animations['vaDebug'], false, 0, 150);
+    animateSection(animations['vaDebug'], false, 150);
     setVaDebugExpanded(false);
-    animateSection(animations['buildInfo'], false, 0, 150);
+    animateSection(animations['buildInfo'], false, 150);
     setBuildInfoExpanded(false);
   };
 
   // ── Toggle functions ─────────────────────────────────────────────────────
 
   const toggleMoreSection = (sectionKey) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     const willCollapse = sectionsExpanded[sectionKey];
     if (willCollapse) {
       if (sectionKey === SECTION_KEYS.SETTINGS)  collapseSettingsChildren();
@@ -345,42 +324,48 @@ export default function MoreScreen({
   };
 
   const toggleVoiceLocale = (localeKey) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     const isExpanded = !expandedLocales[localeKey];
-    animateSection(voiceLocaleAnims[localeKey], isExpanded, VOICE_SECTION_MAX_HEIGHT);
+    animateSection(voiceLocaleAnims[localeKey], isExpanded);
     setExpandedLocales(prev => ({ ...prev, [localeKey]: isExpanded }));
   };
 
   const toggleExpandDefaults = () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     const isExpanded = !expandDefaultsExpanded;
-    animateSection(animations['expandDefaults'], isExpanded, EXPAND_DEFAULTS_MAX_HEIGHT);
+    animateSection(animations['expandDefaults'], isExpanded);
     setExpandDefaultsExpanded(isExpanded);
   };
 
   const toggleVoiceParent = () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     const isExpanded = !voiceParentExpanded;
-    animateSection(animations['voiceParent'], isExpanded, VOICE_PARENT_MAX_HEIGHT);
+    animateSection(animations['voiceParent'], isExpanded);
     if (!isExpanded) collapseAllLocales();
     setVoiceParentExpanded(isExpanded);
   };
 
   const toggleVoiceMeta = () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     const isExpanded = !voiceMetaExpanded;
-    animateSection(animations['voiceMeta'], isExpanded, VOICE_META_MAX_HEIGHT);
+    animateSection(animations['voiceMeta'], isExpanded);
     if (!isExpanded) collapseAllDebugVoices();
     setVoiceMetaExpanded(isExpanded);
   };
 
   const toggleFeatureFlags = () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     const isExpanded = !featureFlagsExpanded;
-    animateSection(animations['featureFlags'], isExpanded, FEATURE_FLAGS_MAX_HEIGHT);
+    animateSection(animations['featureFlags'], isExpanded);
     setFeatureFlagsExpanded(isExpanded);
   };
 
   const toggleVaDebug = () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     const isExpanded = !vaDebugExpanded;
-    animateSection(animations['vaDebug'], isExpanded, VA_DEBUG_MAX_HEIGHT);
+    animateSection(animations['vaDebug'], isExpanded);
     if (!isExpanded) {
-      animateSection(animations['voiceMeta'], false, 0, 150);
+      animateSection(animations['voiceMeta'], false, 150);
       setVoiceMetaExpanded(false);
       collapseAllDebugVoices();
     }
@@ -388,14 +373,16 @@ export default function MoreScreen({
   };
 
   const toggleBuildInfo = () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     const isExpanded = !buildInfoExpanded;
-    animateSection(animations['buildInfo'], isExpanded, BUILD_INFO_MAX_HEIGHT);
+    animateSection(animations['buildInfo'], isExpanded);
     setBuildInfoExpanded(isExpanded);
   };
 
   const toggleDebugVoice = (voiceId) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     const isExpanded = !expandedDebugVoices[voiceId];
-    animateSection(debugVoiceAnims[voiceId], isExpanded, DEBUG_VOICE_MAX_HEIGHT);
+    animateSection(debugVoiceAnims[voiceId], isExpanded);
     setExpandedDebugVoices(prev => ({ ...prev, [voiceId]: isExpanded }));
   };
 
@@ -469,15 +456,9 @@ export default function MoreScreen({
         const initialExpanded = {};
         versions.forEach((version) => {
           initialExpanded[version.version] = false;
-          animations[version.version] = {
-            rotation: new Animated.Value(0),
-            maxHeight: new Animated.Value(0),
-          };
+          animations[version.version] = { rotation: new Animated.Value(0) };
         });
-        animations[PAST_RELEASES_KEY] = {
-          rotation: new Animated.Value(0),
-          maxHeight: new Animated.Value(0),
-        };
+        animations[PAST_RELEASES_KEY] = { rotation: new Animated.Value(0) };
         setReleaseNotes(versions);
         setExpandedVersions(initialExpanded);
       } catch (error) {
@@ -502,28 +483,24 @@ export default function MoreScreen({
         ];
         setReleaseNotes(fallbackVersions);
         setExpandedVersions({ 'v1.3.0': false });
-        animations['v1.3.0'] = {
-          rotation: new Animated.Value(0),
-          maxHeight: new Animated.Value(0),
-        };
-        animations[PAST_RELEASES_KEY] = {
-          rotation: new Animated.Value(0),
-          maxHeight: new Animated.Value(0),
-        };
+        animations['v1.3.0'] = { rotation: new Animated.Value(0) };
+        animations[PAST_RELEASES_KEY] = { rotation: new Animated.Value(0) };
       }
     };
     loadReleaseNotes();
   }, []);
 
   const toggleVersionExpansion = (version) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     const isExpanded = !expandedVersions[version];
-    animateSection(animations[version], isExpanded, EXPANDED_MAX_HEIGHT);
+    animateSection(animations[version], isExpanded);
     setExpandedVersions(prev => ({ ...prev, [version]: isExpanded }));
   };
 
   const togglePastReleasesExpansion = () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     const isExpanded = !pastReleasesExpanded;
-    animateSection(animations[PAST_RELEASES_KEY], isExpanded, PAST_RELEASES_MAX_HEIGHT);
+    animateSection(animations[PAST_RELEASES_KEY], isExpanded);
     if (!isExpanded) collapseAllVersions();
     setPastReleasesExpanded(isExpanded);
   };
@@ -585,16 +562,7 @@ export default function MoreScreen({
           <Text style={styles.versionArrow}>▶</Text>
         </Animated.View>
       </View>
-      <Animated.View
-        style={[
-          styles.versionContentContainer,
-          {
-            maxHeight: animations[version.version]?.maxHeight || 0,
-            overflow: 'hidden',
-          },
-        ]}
-        pointerEvents={expandedVersions[version.version] ? 'auto' : 'none'}
-      >
+      {expandedVersions[version.version] && (
         <View style={styles.versionContent}>
           {version.sections.map((section, sectionIndex) => (
             <View key={sectionIndex}>
@@ -612,7 +580,7 @@ export default function MoreScreen({
             </Text>
           )}
         </View>
-      </Animated.View>
+      )}
     </TouchableOpacity>
   );
 
@@ -678,10 +646,7 @@ export default function MoreScreen({
                   <Text style={styles.versionArrow}>▶</Text>
                 </Animated.View>
               </View>
-              <Animated.View
-                style={{ maxHeight: animations['expandDefaults']?.maxHeight || 0, overflow: 'hidden' }}
-                pointerEvents={expandDefaultsExpanded ? 'auto' : 'none'}
-              >
+              {expandDefaultsExpanded && (
                 <View style={styles.versionContent}>
                   <View style={styles.settingsRow}>
                     <View style={styles.settingsRowLabel}>
@@ -708,7 +673,7 @@ export default function MoreScreen({
                     />
                   </View>
                 </View>
-              </Animated.View>
+              )}
             </TouchableOpacity>
 
             {/* ── Card: Voice Assistant ── */}
@@ -724,10 +689,7 @@ export default function MoreScreen({
                     <Text style={styles.versionArrow}>▶</Text>
                   </Animated.View>
                 </View>
-                <Animated.View
-                  style={{ maxHeight: animations['voiceParent']?.maxHeight || 0, overflow: 'hidden' }}
-                  pointerEvents={voiceParentExpanded ? 'auto' : 'none'}
-                >
+                {voiceParentExpanded && (
                   <View style={[styles.versionContent, { paddingLeft: 0, paddingRight: 0 }]}>
                     {voiceLocaleGroups.map(group => {
                       const groupHasSelection = group.voices.some(v => v.id === selectedVoiceId);
@@ -753,10 +715,7 @@ export default function MoreScreen({
                               <Text style={styles.versionArrow}>▶</Text>
                             </Animated.View>
                           </View>
-                          <Animated.View
-                            style={{ maxHeight: localeAnim?.maxHeight || 0, overflow: 'hidden' }}
-                            pointerEvents={expandedLocales[group.key] ? 'auto' : 'none'}
-                          >
+                          {expandedLocales[group.key] && (
                             <View style={[styles.versionContent, { paddingLeft: 0, paddingRight: 0 }]}>
                               {group.voices.map((voice, index) => {
                                 const isSelected = voice.id === selectedVoiceId;
@@ -782,12 +741,12 @@ export default function MoreScreen({
                                 );
                               })}
                             </View>
-                          </Animated.View>
+                          )}
                         </TouchableOpacity>
                       );
                     })}
                   </View>
-                </Animated.View>
+                )}
               </TouchableOpacity>
             )}
           </CollapsibleSection>
@@ -826,20 +785,11 @@ export default function MoreScreen({
                     <Text style={styles.versionArrow}>▶</Text>
                   </Animated.View>
                 </View>
-                <Animated.View
-                  style={[
-                    styles.versionContentContainer,
-                    {
-                      maxHeight: animations[PAST_RELEASES_KEY]?.maxHeight || 0,
-                      overflow: 'hidden',
-                    },
-                  ]}
-                  pointerEvents={pastReleasesExpanded ? 'auto' : 'none'}
-                >
+                {pastReleasesExpanded && (
                   <View style={[styles.versionContent, { paddingLeft: 0, paddingRight: 0 }]}>
                     {pastReleases.map((version) => renderVersionBlock(version, false, { paddingHorizontal: 10 }))}
                   </View>
-                </Animated.View>
+                )}
               </TouchableOpacity>
             )}
           </CollapsibleSection>
@@ -911,10 +861,7 @@ export default function MoreScreen({
                     <Text style={styles.versionArrow}>▶</Text>
                   </Animated.View>
                 </View>
-                <Animated.View
-                  style={{ maxHeight: animations['featureFlags']?.maxHeight || 0, overflow: 'hidden' }}
-                  pointerEvents={featureFlagsExpanded ? 'auto' : 'none'}
-                >
+                {featureFlagsExpanded && (
                   <View style={styles.versionContent}>
                     <View style={[styles.settingsRow, styles.settingsRowLast, { marginBottom: 8 }]}>
                       <View style={styles.settingsRowLabel}>
@@ -928,7 +875,7 @@ export default function MoreScreen({
                       />
                     </View>
                   </View>
-                </Animated.View>
+                )}
               </TouchableOpacity>
 
               {/* ── Build & Device Info ── */}
@@ -943,10 +890,7 @@ export default function MoreScreen({
                     <Text style={styles.versionArrow}>▶</Text>
                   </Animated.View>
                 </View>
-                <Animated.View
-                  style={{ maxHeight: animations['buildInfo']?.maxHeight || 0, overflow: 'hidden' }}
-                  pointerEvents={buildInfoExpanded ? 'auto' : 'none'}
-                >
+                {buildInfoExpanded && (
                   <View style={[styles.versionContent, { paddingTop: 12 }]}>
                     {[
                       { label: 'Commit',       value: BUILD_COMMIT },
@@ -967,7 +911,7 @@ export default function MoreScreen({
                       </View>
                     ))}
                   </View>
-                </Animated.View>
+                )}
               </TouchableOpacity>
 
               {/* ── Voice Assistant ── */}
@@ -982,10 +926,7 @@ export default function MoreScreen({
                     <Text style={styles.versionArrow}>▶</Text>
                   </Animated.View>
                 </View>
-                <Animated.View
-                  style={{ maxHeight: animations['vaDebug']?.maxHeight || 0, overflow: 'hidden' }}
-                  pointerEvents={vaDebugExpanded ? 'auto' : 'none'}
-                >
+                {vaDebugExpanded && (
                   <View style={[styles.versionContent, { paddingTop: 4, paddingLeft: 0, paddingRight: 0 }]}>
                     {/* Status subsection */}
                     <View style={{ marginTop: 8, marginBottom: 8 }}>
@@ -1050,10 +991,7 @@ export default function MoreScreen({
                           <Text style={styles.versionArrow}>▶</Text>
                         </Animated.View>
                       </View>
-                      <Animated.View
-                        style={{ maxHeight: animations['voiceMeta']?.maxHeight || 0, overflow: 'hidden' }}
-                        pointerEvents={voiceMetaExpanded ? 'auto' : 'none'}
-                      >
+                      {voiceMetaExpanded && (
                         <View style={[styles.versionContent, { paddingLeft: 0, paddingRight: 0 }]}>
                           {availableVoices.map(voice => {
                             const voiceAnim = debugVoiceAnims[voice.id];
@@ -1084,10 +1022,7 @@ export default function MoreScreen({
                                     <Text style={styles.versionArrow}>▶</Text>
                                   </Animated.View>
                                 </View>
-                                <Animated.View
-                                  style={{ maxHeight: voiceAnim?.maxHeight || 0, overflow: 'hidden' }}
-                                  pointerEvents={isOpen ? 'auto' : 'none'}
-                                >
+                                {isOpen && (
                                   <View style={[styles.versionContent, { paddingTop: 4, paddingLeft: 8, paddingRight: 4 }]}>
                                     {metaRows.map(row => (
                                       <View key={row.label} style={styles.debugMetaRow}>
@@ -1110,15 +1045,15 @@ export default function MoreScreen({
                                       </View>
                                     </View>
                                   </View>
-                                </Animated.View>
+                                )}
                               </TouchableOpacity>
                             );
                           })}
                         </View>
-                      </Animated.View>
+                      )}
                     </TouchableOpacity>
                   </View>
-                </Animated.View>
+                )}
               </TouchableOpacity>
             </CollapsibleSection>
           )}
