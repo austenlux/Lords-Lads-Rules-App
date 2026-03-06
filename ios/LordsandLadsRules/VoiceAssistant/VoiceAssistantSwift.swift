@@ -22,27 +22,37 @@ class VoiceAssistantSwift: NSObject {
 
     weak var eventDelegate: VoiceAssistantEventDelegate?
 
-    // MARK: STT
+    // MARK: STT (lazy to avoid init-time crashes)
 
-    private let speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: "en-US"))
+    private lazy var speechRecognizer: SFSpeechRecognizer? = {
+        SFSpeechRecognizer(locale: Locale(identifier: "en-US"))
+    }()
     private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
     private var recognitionTask: SFSpeechRecognitionTask?
-    private let audioEngine = AVAudioEngine()
+    private lazy var audioEngine: AVAudioEngine = {
+        AVAudioEngine()
+    }()
     private var listeningResolve: ((String) -> Void)?
     private var listeningReject: ((String, String) -> Void)?
 
-    // MARK: TTS
+    // MARK: TTS (lazy to avoid init-time crashes)
 
-    private let synthesizer = AVSpeechSynthesizer()
+    private lazy var synthesizer: AVSpeechSynthesizer = {
+        let synth = AVSpeechSynthesizer()
+        synth.delegate = self
+        return synth
+    }()
     private var selectedVoiceIdentifier: String?
 
     private var pendingTtsCount = 0
     private var generationComplete = false
     private let completionLock = NSLock()
 
-    // MARK: Thinking Sound
+    // MARK: Thinking Sound (lazy to avoid init-time crashes)
 
-    private let thinkingSound = ThinkingSoundPlayer()
+    private lazy var thinkingSound: ThinkingSoundPlayer = {
+        ThinkingSoundPlayer()
+    }()
     private var thinkingSoundEnabled = true
 
     // MARK: Inference
@@ -53,7 +63,6 @@ class VoiceAssistantSwift: NSObject {
 
     override init() {
         super.init()
-        synthesizer.delegate = self
     }
 
     // MARK: - Model Lifecycle
