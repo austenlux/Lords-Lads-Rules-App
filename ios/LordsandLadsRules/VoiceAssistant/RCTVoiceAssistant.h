@@ -1,5 +1,5 @@
-#import <React/RCTEventEmitter.h>
+#import <AppSpecs/AppSpecs.h>
 
-@interface RCTVoiceAssistant : RCTEventEmitter
+@interface RCTVoiceAssistant : NativeVoiceAssistantSpecBase <NativeVoiceAssistantSpec>
 
 @end

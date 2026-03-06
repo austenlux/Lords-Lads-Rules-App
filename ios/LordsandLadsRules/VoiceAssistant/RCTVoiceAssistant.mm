@@ -1,15 +1,13 @@
 #import "RCTVoiceAssistant.h"
 #import <React/RCTLog.h>
 #import <AVFoundation/AVFoundation.h>
-#import <AppSpecs/AppSpecs.h>
 #import "LordsandLadsRules-Swift.h"
 
-@interface RCTVoiceAssistant () <NativeVoiceAssistantSpec, VoiceAssistantEventDelegate>
+@interface RCTVoiceAssistant () <VoiceAssistantEventDelegate>
 @end
 
 @implementation RCTVoiceAssistant {
   VoiceAssistantSwift *_swiftModule;
-  BOOL _hasListeners;
 }
 
 RCT_EXPORT_MODULE(VoiceAssistant)
@@ -21,26 +19,6 @@ RCT_EXPORT_MODULE(VoiceAssistant)
     _swiftModule.eventDelegate = self;
   }
   return self;
-}
-
-// MARK: - RCTEventEmitter
-
-- (NSArray<NSString *> *)supportedEvents {
-  return @[
-    @"onSpeechPartialResults",
-    @"onSpeechFinalResults",
-    @"onAIChunkReceived",
-    @"onDownloadProgress",
-    @"onTTSFinished"
-  ];
-}
-
-- (void)startObserving {
-  _hasListeners = YES;
-}
-
-- (void)stopObserving {
-  _hasListeners = NO;
 }
 
 + (BOOL)requiresMainQueueSetup {
@@ -128,34 +106,23 @@ RCT_EXPORT_MODULE(VoiceAssistant)
 // MARK: - VoiceAssistantEventDelegate
 
 - (void)onSpeechPartialResults:(NSString *)value {
-  if (_hasListeners) {
-    [self sendEventWithName:@"onSpeechPartialResults" body:@{@"value": value}];
-  }
+  [self emitOnSpeechPartialResults:@{@"value": value ?: @""}];
 }
 
 - (void)onSpeechFinalResults:(NSString *)value {
-  if (_hasListeners) {
-    [self sendEventWithName:@"onSpeechFinalResults" body:@{@"value": value}];
-  }
+  [self emitOnSpeechFinalResults:@{@"value": value ?: @""}];
 }
 
 - (void)onAIChunkReceived:(NSString *)chunk {
-  if (_hasListeners) {
-    [self sendEventWithName:@"onAIChunkReceived" body:@{@"chunk": chunk}];
-  }
+  [self emitOnAIChunkReceived:@{@"chunk": chunk ?: @""}];
 }
 
 - (void)onDownloadProgress:(double)bytesDownloaded {
-  if (_hasListeners) {
-    [self sendEventWithName:@"onDownloadProgress"
-                       body:@{@"bytesDownloaded": @(bytesDownloaded)}];
-  }
+  [self emitOnDownloadProgress:@{@"bytesDownloaded": @(bytesDownloaded)}];
 }
 
 - (void)onTTSFinished {
-  if (_hasListeners) {
-    [self sendEventWithName:@"onTTSFinished" body:@{@"status": @"done"}];
-  }
+  [self emitOnTTSFinished:@{@"status": @"done"}];
 }
 
 // MARK: - TurboModule
