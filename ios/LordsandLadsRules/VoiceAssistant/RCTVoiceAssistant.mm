@@ -44,7 +44,7 @@ RCT_EXPORT_MODULE(VoiceAssistant)
 }
 
 + (BOOL)requiresMainQueueSetup {
-  return YES;  // AVFoundation/Speech used by VoiceAssistantSwift require main thread at init
+  return NO;
 }
 
 // MARK: - NativeVoiceAssistantSpec
