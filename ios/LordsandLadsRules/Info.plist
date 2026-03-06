@@ -55,6 +55,10 @@
 	<false/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>The Voice Assistant uses speech recognition to understand your questions about the game rules.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>The Voice Assistant needs microphone access to hear your questions.</string>
   <key>UIBackgroundColor</key>
 	<string>#121212</string>
 </dict>
