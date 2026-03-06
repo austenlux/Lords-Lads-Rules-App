@@ -76,6 +76,42 @@ class VoiceAssistantSwift: NSObject {
         return "unavailable"
     }
 
+    func getModelDebugInfo() -> String {
+        var info: [String: Any] = [:]
+
+        let osVersion = ProcessInfo.processInfo.operatingSystemVersion
+        info["iosVersion"] = "\(osVersion.majorVersion).\(osVersion.minorVersion).\(osVersion.patchVersion)"
+        info["iosVersionMajor"] = osVersion.majorVersion
+
+        #if canImport(FoundationModels)
+        info["foundationModelsCompiled"] = true
+        if #available(iOS 26, *) {
+            info["ios26RuntimeAvailable"] = true
+            let availability = SystemLanguageModel.default.availability
+            switch availability {
+            case .available:
+                info["modelAvailability"] = "available"
+            case .unavailable(let reason):
+                info["modelAvailability"] = "unavailable"
+                info["unavailableReason"] = String(describing: reason)
+            @unknown default:
+                info["modelAvailability"] = "unknown"
+            }
+        } else {
+            info["ios26RuntimeAvailable"] = false
+        }
+        #else
+        info["foundationModelsCompiled"] = false
+        info["ios26RuntimeAvailable"] = false
+        #endif
+
+        if let data = try? JSONSerialization.data(withJSONObject: info),
+           let json = String(data: data, encoding: .utf8) {
+            return json
+        }
+        return "{}"
+    }
+
     // MARK: - Mic Permission Status
 
     func getMicPermissionStatus() -> String {

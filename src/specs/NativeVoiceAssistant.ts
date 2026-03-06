@@ -35,6 +35,12 @@ export interface Spec extends TurboModule {
   /** Triggers Gemini Nano download. Resolves 'completed' or rejects on failure. */
   downloadModel(): Promise<string>;
 
+  /**
+   * Returns JSON debug info about model availability (iOS only, Android returns '{}').
+   * Includes: iosVersion, foundationModelsCompiled, ios26RuntimeAvailable, modelAvailability
+   */
+  getModelDebugInfo(): Promise<string>;
+
   // ── Permissions ─────────────────────────────────────────────────────────
 
   /**

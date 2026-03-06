@@ -165,6 +165,12 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
         }
     }
 
+    // ────────────────────────────────────────────── Model debug info ──
+
+    override fun getModelDebugInfo(promise: Promise) {
+        promise.resolve("{}")
+    }
+
     // ────────────────────────────────────────── Mic permission status ──
 
     override fun getMicPermissionStatus(promise: Promise) {

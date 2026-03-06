@@ -182,6 +182,21 @@ export default function MoreScreen({
   const [expandedDebugVoices, setExpandedDebugVoices] = useState({});
   const [vaDebugExpanded, setVaDebugExpanded] = useState(false);
   const [buildInfoExpanded, setBuildInfoExpanded] = useState(false);
+  const [modelDebugInfo, setModelDebugInfo] = useState(null);
+
+  // Fetch model debug info on iOS for debugging Foundation Models issues.
+  useEffect(() => {
+    if (Platform.OS !== 'ios') return;
+    const native = NativeVoiceAssistantOptional;
+    if (!native?.getModelDebugInfo) return;
+    native.getModelDebugInfo().then(json => {
+      try {
+        setModelDebugInfo(JSON.parse(json));
+      } catch {
+        setModelDebugInfo({ parseError: json });
+      }
+    }).catch(() => {});
+  }, []);
 
   // Initialise rotation animations for settings cards and debug sections.
   useEffect(() => {
@@ -974,6 +989,16 @@ export default function MoreScreen({
                       >
                         <Text style={vaReadinessStyles.actionButtonText}>Retry Model Setup</Text>
                       </TouchableOpacity>
+                    )}
+
+                    {/* iOS Model Debug Info */}
+                    {Platform.OS === 'ios' && modelDebugInfo && (
+                      <View style={{ marginTop: 12, padding: 8, backgroundColor: '#1a1a1a', borderRadius: 6 }}>
+                        <Text style={{ color: '#FF7043', fontWeight: '600', marginBottom: 4 }}>iOS Debug Info</Text>
+                        <Text style={{ color: '#aaa', fontFamily: 'Menlo', fontSize: 11 }}>
+                          {JSON.stringify(modelDebugInfo, null, 2)}
+                        </Text>
+                      </View>
                     )}
 
                     {/* Models subsection */}
