@@ -126,52 +126,36 @@ RCT_EXPORT_MODULE(VoiceAssistant)
 }
 
 // MARK: - VoiceAssistantEventDelegate
-// Swift may invoke these from background threads; RCTEventEmitter expects main queue.
 
 - (void)onSpeechPartialResults:(NSString *)value {
-  if (!_hasListeners) return;
-  dispatch_async(dispatch_get_main_queue(), ^{
-    if (self->_hasListeners) {
-      [self sendEventWithName:@"onSpeechPartialResults" body:@{@"value": value ?: @""}];
-    }
-  });
+  if (_hasListeners) {
+    [self sendEventWithName:@"onSpeechPartialResults" body:@{@"value": value}];
+  }
 }
 
 - (void)onSpeechFinalResults:(NSString *)value {
-  if (!_hasListeners) return;
-  dispatch_async(dispatch_get_main_queue(), ^{
-    if (self->_hasListeners) {
-      [self sendEventWithName:@"onSpeechFinalResults" body:@{@"value": value ?: @""}];
-    }
-  });
+  if (_hasListeners) {
+    [self sendEventWithName:@"onSpeechFinalResults" body:@{@"value": value}];
+  }
 }
 
 - (void)onAIChunkReceived:(NSString *)chunk {
-  if (!_hasListeners) return;
-  dispatch_async(dispatch_get_main_queue(), ^{
-    if (self->_hasListeners) {
-      [self sendEventWithName:@"onAIChunkReceived" body:@{@"chunk": chunk ?: @""}];
-    }
-  });
+  if (_hasListeners) {
+    [self sendEventWithName:@"onAIChunkReceived" body:@{@"chunk": chunk}];
+  }
 }
 
 - (void)onDownloadProgress:(double)bytesDownloaded {
-  if (!_hasListeners) return;
-  dispatch_async(dispatch_get_main_queue(), ^{
-    if (self->_hasListeners) {
-      [self sendEventWithName:@"onDownloadProgress"
-                         body:@{@"bytesDownloaded": @(bytesDownloaded)}];
-    }
-  });
+  if (_hasListeners) {
+    [self sendEventWithName:@"onDownloadProgress"
+                       body:@{@"bytesDownloaded": @(bytesDownloaded)}];
+  }
 }
 
 - (void)onTTSFinished {
-  if (!_hasListeners) return;
-  dispatch_async(dispatch_get_main_queue(), ^{
-    if (self->_hasListeners) {
-      [self sendEventWithName:@"onTTSFinished" body:@{@"status": @"done"}];
-    }
-  });
+  if (_hasListeners) {
+    [self sendEventWithName:@"onTTSFinished" body:@{@"status": @"done"}];
+  }
 }
 
 // MARK: - TurboModule
