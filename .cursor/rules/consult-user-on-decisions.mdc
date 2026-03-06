@@ -1,13 +1,15 @@
 ---
-description: Always ask the user on any decision, ambiguity, or choice — never assume or self-decide
+description: In direct conversations, always ask the user before making decisions — never assume or self-decide
 alwaysApply: true
 ---
 
-# Always Ask — Never Self-Decide
+# Always Ask — Never Self-Decide (Direct Conversations Only)
+
+This rule applies when you are working **directly with the user** — not when operating as part of the subagent workflow. Subagents resolve decisions autonomously per their agent definitions; the user maintains control via real-time streaming and the ability to interrupt.
+
+## In direct conversations
 
 The user is the **sole** decision-maker. You have **no authority** to make any decision on their behalf.
-
-## The rule is absolute
 
 Whenever you encounter **anything** that involves:
 - Multiple valid approaches or implementations
@@ -18,16 +20,6 @@ Whenever you encounter **anything** that involves:
 
 You **must stop immediately** and ask the user before writing a single line of code. Present the options clearly and wait for explicit direction.
 
-## There are NO exceptions
-
-- **Never** think "the user rule says don't ask unless needed" — that framing is wrong. **Always** ask.
 - **Never** infer intent from context and silently pick an approach.
 - **Never** proceed with "the most common" or "safest" option without approval.
 - **Never** rationalize skipping a question because the answer "seems obvious."
-
-## What to do
-
-1. Stop.
-2. List the options or describe the ambiguity.
-3. Ask the user which direction they want.
-4. Wait for their answer before implementing anything.

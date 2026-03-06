@@ -1,30 +1,24 @@
 ---
-description: "Install" means build release artifact and install app on device; not npm install
+description: "Install" means commit, build release, install on device, launch, and push — not npm install. Direct conversations only.
 alwaysApply: true
 ---
 
-# Build and Install
+# Build and Install (Direct Conversations Only)
 
-When the user says **"install it"** or asks to install after changes:
+This rule applies when you are working **directly with the user** — not when operating as part of the subagent workflow (agents handle their own build/test pipeline).
+
+When the user says **"install it"**, asks to install after changes, or you make **any code change** the user will need to test:
 
 ## Required order — NEVER deviate
 
-1. **Commit all changes first** (`git add -A && git commit`) before running any build command.
-   - The build script (`sync:build-info`) captures `git rev-parse --short HEAD` at build time.
-   - If you build before committing, the embedded commit hash will point to the previous commit, not the current changes.
-   - This is not optional. Always commit first, then build.
-
-2. **Build the release signed standalone artifact.**
-   - **Android:** `npm run build:android` (produces APK)
-   - **iOS:** Build a release/archive and install to device (e.g. via Xcode or `run-ios --configuration Release`)
-
-3. **Install on device.**
-   - **Android:** `npm run install:android:release`
-
-4. **Push** (`git push`) after a successful install.
+1. **Commit first** — `git add -A && git commit` before any build command. The build script (`sync:build-info`) captures `git rev-parse --short HEAD` at build time. Building before committing embeds the wrong commit hash.
+2. **Build** — `npm run build:android` (release-signed APK). For iOS: build a release archive via Xcode or `run-ios --configuration Release`.
+3. **Install** — `npm run install:android:release`
+4. **Launch** — `adb shell am start -n com.lordsandladsrulesapp/.MainActivity` to open the app on the device immediately.
+5. **Push** — `git push`
 
 ## Other rules
 
-- **Do not** run `npm install` as the default response to "install it." The user means **install the app** (the built artifact), not install npm packages.
-- Run `npm install` only when dependencies actually change (e.g. `package.json` or `package-lock.json` edits).
-- All builds delivered to the user must be **release, signed, standalone** installable artifacts — no Metro or JS server required at run time.
+- **Do not** run `npm install` as the default response to "install it." The user means **install the app**, not install npm packages. Run `npm install` only when `package.json` or `package-lock.json` actually change.
+- All builds delivered to the user must be **release, signed, standalone** artifacts — no Metro or JS server required at runtime.
+- Do not wait for the user to ask — if you changed code in a direct conversation, automatically run the full sequence above when you're done.
