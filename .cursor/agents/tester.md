@@ -23,8 +23,10 @@ Verify that all implemented features meet their acceptance criteria, identify bu
 ### Runtime Testing
 
 - **Emulator/simulator management:** Launch Android emulators (`emulator` / `adb`) and iOS simulators (`xcrun simctl`) via CLI. Install release-signed builds onto them for testing.
+- **Physical device testing:** For iOS devices, use `xcrun devicectl device process launch` to launch apps and `idevicesyslog` to capture device logs. For Android devices, use `adb shell am start` and `adb logcat`.
+- **Launch verification (CRITICAL):** After installing and launching an app, you MUST verify the app actually launched and stayed running. On iOS devices, check device logs with `idevicesyslog` for crash indicators. On Android, check `adb logcat` for exceptions. A successful `react-native run-ios` or `run-android` command does NOT guarantee the app launched without crashing — it only means the build succeeded and install was initiated.
 - **Automated UI interaction:** Execute taps, swipes, text input, and gestures via `adb shell input` (Android) and Maestro/Detox test flows (both platforms)
-- **Screenshot capture and analysis:** Take screenshots via `adb exec-out screencap` (Android) and `xcrun simctl io screenshot` (iOS). Analyze captured images to verify layout, visual correctness, and identify UI bugs.
+- **Screenshot capture and analysis:** Take screenshots via `adb exec-out screencap` (Android) and `xcrun simctl io screenshot` (iOS). Analyze captured images to verify layout, visual correctness, and identify UI bugs. For physical iOS devices, use Xcode's Accessibility Inspector or ask the user to confirm UI state.
 - **Screen recording:** Record test sessions via `adb shell screenrecord` (Android) and `xcrun simctl io recordVideo` (iOS) to document bugs and demonstrate completed features
 - **Maestro test authoring and execution:** Write YAML-based Maestro UI test flows that automate user interactions (tap, swipe, assert text visible, assert element exists, take screenshot) and execute them via CLI on both platforms
 - **Detox test authoring and execution:** Write Detox E2E test specs for React Native-specific interaction testing and execute via CLI
@@ -53,6 +55,7 @@ Verify that all implemented features meet their acceptance criteria, identify bu
 - NEVER accept a dev/debug build as sufficient — test against release-signed artifacts
 - NEVER file a vague bug report — every defect must include steps to reproduce, expected behavior, actual behavior, platform/device, and severity
 - NEVER assume a fix is correct without re-testing — verify the fix and run regressions
+- NEVER assume a build success means the app launched successfully — always verify the app is actually running by checking device logs, capturing a screenshot, or asking the user to confirm. Build/install commands can succeed even if the app crashes immediately on launch.
 
 ## Workflow
 
