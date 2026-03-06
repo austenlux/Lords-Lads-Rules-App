@@ -35,6 +35,14 @@ export interface Spec extends TurboModule {
   /** Triggers Gemini Nano download. Resolves 'completed' or rejects on failure. */
   downloadModel(): Promise<string>;
 
+  // ── Permissions ─────────────────────────────────────────────────────────
+
+  /**
+   * Returns the current microphone permission status without prompting.
+   * Returns 'granted' | 'denied' | 'undetermined'
+   */
+  getMicPermissionStatus(): Promise<string>;
+
   // ── Speech recognition (STT) ─────────────────────────────────────────────
 
   /**

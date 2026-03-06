@@ -93,12 +93,22 @@ export function useGameAssistant() {
     if (!native) {
       setModelStatus('unavailable');
       setIsSupported(false);
-      if (isIOS) setMicPermissionStatus('granted');
       return;
     }
 
     if (isIOS) {
-      setMicPermissionStatus('granted');
+      try {
+        const status = await native.getMicPermissionStatus();
+        if (status === 'granted') {
+          setMicPermissionStatus('granted');
+        } else if (status === 'denied') {
+          setMicPermissionStatus('not_granted');
+        } else {
+          setMicPermissionStatus('unknown');
+        }
+      } catch {
+        setMicPermissionStatus('unknown');
+      }
     }
 
     if (isAndroid) {
@@ -180,19 +190,37 @@ export function useGameAssistant() {
   }, [runSetup]);
 
   // Re-check mic permission when the app returns to foreground (e.g. after
-  // the user grants it in Settings and switches back). Android only —
-  // iOS handles permission prompting natively inside startListening().
+  // the user grants it in Settings and switches back).
   useEffect(() => {
-    if (!isAndroid) return;
     const sub = AppState.addEventListener('change', async (state) => {
       if (state !== 'active') return;
-      try {
-        const granted = await PermissionsAndroid.check(
-          PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
-        );
-        setMicPermissionStatus(granted ? 'granted' : 'not_granted');
-      } catch {
-        setMicPermissionStatus('not_granted');
+
+      if (isIOS) {
+        const native = NativeVoiceAssistantOptional;
+        if (!native) return;
+        try {
+          const status = await native.getMicPermissionStatus();
+          if (status === 'granted') {
+            setMicPermissionStatus('granted');
+          } else if (status === 'denied') {
+            setMicPermissionStatus('not_granted');
+          } else {
+            setMicPermissionStatus('unknown');
+          }
+        } catch {
+          setMicPermissionStatus('unknown');
+        }
+      }
+
+      if (isAndroid) {
+        try {
+          const granted = await PermissionsAndroid.check(
+            PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+          );
+          setMicPermissionStatus(granted ? 'granted' : 'not_granted');
+        } catch {
+          setMicPermissionStatus('not_granted');
+        }
       }
     });
     return () => sub.remove();

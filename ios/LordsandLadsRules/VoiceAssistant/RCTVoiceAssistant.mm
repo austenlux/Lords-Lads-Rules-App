@@ -33,6 +33,12 @@ RCT_EXPORT_MODULE(VoiceAssistant)
   resolve(status);
 }
 
+- (void)getMicPermissionStatus:(RCTPromiseResolveBlock)resolve
+                        reject:(RCTPromiseRejectBlock)reject {
+  NSString *status = [_swiftModule getMicPermissionStatus];
+  resolve(status);
+}
+
 - (void)downloadModel:(RCTPromiseResolveBlock)resolve
                reject:(RCTPromiseRejectBlock)reject {
   [_swiftModule downloadModelWithResolve:^(NSString *result) {

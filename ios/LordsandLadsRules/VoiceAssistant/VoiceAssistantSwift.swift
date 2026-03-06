@@ -76,6 +76,22 @@ class VoiceAssistantSwift: NSObject {
         return "unavailable"
     }
 
+    // MARK: - Mic Permission Status
+
+    func getMicPermissionStatus() -> String {
+        let status = AVAudioSession.sharedInstance().recordPermission
+        switch status {
+        case .granted:
+            return "granted"
+        case .denied:
+            return "denied"
+        case .undetermined:
+            return "undetermined"
+        @unknown default:
+            return "undetermined"
+        }
+    }
+
     func downloadModel(
         resolve: @escaping (String) -> Void,
         reject: @escaping (String, String) -> Void

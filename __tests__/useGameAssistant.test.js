@@ -5,6 +5,7 @@ import { Platform, PermissionsAndroid } from 'react-native';
 const mockNativeModule = {
   checkModelStatus: jest.fn(),
   downloadModel: jest.fn(),
+  getMicPermissionStatus: jest.fn(),
   startListening: jest.fn(),
   stopListening: jest.fn(),
   askQuestion: jest.fn(),
@@ -101,8 +102,9 @@ describe('useGameAssistant', () => {
     expect(result.current.modelStatus).toBe('unavailable');
   });
 
-  it('sets micPermissionStatus to granted on iOS', async () => {
+  it('sets micPermissionStatus correctly on iOS via native module', async () => {
     Platform.OS = 'ios';
+    mockNativeModule.getMicPermissionStatus.mockResolvedValue('granted');
 
     const { result } = renderHook(() => useGameAssistant());
 
@@ -110,7 +112,36 @@ describe('useGameAssistant', () => {
       await jest.runAllTimersAsync();
     });
 
+    expect(mockNativeModule.getMicPermissionStatus).toHaveBeenCalled();
     expect(result.current.micPermissionStatus).toBe('granted');
+  });
+
+  it('sets micPermissionStatus to not_granted when iOS permission denied', async () => {
+    Platform.OS = 'ios';
+    mockNativeModule.getMicPermissionStatus.mockResolvedValue('denied');
+
+    const { result } = renderHook(() => useGameAssistant());
+
+    await act(async () => {
+      await jest.runAllTimersAsync();
+    });
+
+    expect(mockNativeModule.getMicPermissionStatus).toHaveBeenCalled();
+    expect(result.current.micPermissionStatus).toBe('not_granted');
+  });
+
+  it('sets micPermissionStatus to unknown when iOS permission undetermined', async () => {
+    Platform.OS = 'ios';
+    mockNativeModule.getMicPermissionStatus.mockResolvedValue('undetermined');
+
+    const { result } = renderHook(() => useGameAssistant());
+
+    await act(async () => {
+      await jest.runAllTimersAsync();
+    });
+
+    expect(mockNativeModule.getMicPermissionStatus).toHaveBeenCalled();
+    expect(result.current.micPermissionStatus).toBe('unknown');
   });
 
   it('subscribes to all native events on mount', () => {

@@ -165,6 +165,20 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
         }
     }
 
+    // ────────────────────────────────────────── Mic permission status ──
+
+    override fun getMicPermissionStatus(promise: Promise) {
+        val result = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val hasPermission = reactApplicationContext.checkSelfPermission(
+                android.Manifest.permission.RECORD_AUDIO
+            ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+            if (hasPermission) "granted" else "denied"
+        } else {
+            "granted"
+        }
+        promise.resolve(result)
+    }
+
     // ─────────────────────────────────────────── Speech recognition ──
 
     /**
