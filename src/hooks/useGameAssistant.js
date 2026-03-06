@@ -2,12 +2,12 @@
  * useGameAssistant
  *
  * Single source of truth for the voice-to-AI-to-voice loop.
- * Orchestrates: permission → STT → Gemini Nano inference (streaming) → TTS.
+ * Orchestrates: permission → STT → on-device AI inference (streaming) → TTS.
  *
  * Returned state
  * ──────────────
  *  isListening    true while the microphone is active and recording
- *  isThinking     true while Gemini Nano is generating a response
+ *  isThinking     true while the AI model is generating a response
  *  partialSpeech  live interim text from the speech recogniser
  *  fullAnswer     AI response, built up token-by-token as chunks arrive
  *  error          human-readable error string, or null when all is well
@@ -19,8 +19,6 @@
  *
  *  // In a FAB press handler:
  *  askTheRules(rulesMarkdown, expansionsMarkdown);
- *
- * Android-only: returns a no-op on iOS until Phase 4 (iOS support).
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react';
@@ -36,6 +34,9 @@ const MODEL_POLL_MAX_ATTEMPTS = 24; // 2 minutes total
 const VOICE_STORAGE_KEY = '@lnl_voice_id';
 const VOICE_PREVIEW_TEXT = 'This is a preview of the selected voice.';
 
+const isAndroid = Platform.OS === 'android';
+const isIOS = Platform.OS === 'ios';
+
 // ─────────────────────────────────────────── Constants ──
 
 /**
@@ -45,8 +46,7 @@ const VOICE_PREVIEW_TEXT = 'This is a preview of the selected voice.';
 const PHRASE_SPEAK_THRESHOLD = 40;
 
 const ERRORS = {
-  NOT_ANDROID:       'Voice assistant is Android-only for now.',
-  MODEL_UNAVAILABLE: 'Gemini AI is not supported on this device.',
+  MODEL_UNAVAILABLE: 'The AI model is not supported on this device.',
   MODEL_DOWNLOADING: 'AI model is still downloading. Please try again shortly.',
   NO_SPEECH:         'No speech detected. Please try again.',
   UNEXPECTED:        'An unexpected error occurred. Please try again.',
@@ -89,16 +89,23 @@ export function useGameAssistant() {
   // ── Background setup: model + mic permission (runs once on mount) ────────
 
   const runSetup = useCallback(async () => {
-    if (Platform.OS !== 'android') return;
+    // iOS: native handles mic permission at point of use (startListening).
+    // Set granted optimistically; startListening rejects with
+    // 'insufficient_permissions' if the user declines.
+    if (isIOS) {
+      setMicPermissionStatus('granted');
+    }
 
-    // Check mic permission without prompting.
-    try {
-      const granted = await PermissionsAndroid.check(
-        PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
-      );
-      setMicPermissionStatus(granted ? 'granted' : 'not_granted');
-    } catch {
-      setMicPermissionStatus('not_granted');
+    // Android: check mic permission without prompting.
+    if (isAndroid) {
+      try {
+        const granted = await PermissionsAndroid.check(
+          PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+        );
+        setMicPermissionStatus(granted ? 'granted' : 'not_granted');
+      } catch {
+        setMicPermissionStatus('not_granted');
+      }
     }
 
     // Check model status and prepare silently.
@@ -132,7 +139,7 @@ export function useGameAssistant() {
       }
 
       if (status === 'downloading') {
-        // AICore is already downloading — poll until available.
+        // Model is already downloading — poll until available.
         let attempts = 0;
         const poll = async () => {
           if (attempts >= MODEL_POLL_MAX_ATTEMPTS) {
@@ -170,9 +177,10 @@ export function useGameAssistant() {
   }, [runSetup]);
 
   // Re-check mic permission when the app returns to foreground (e.g. after
-  // the user grants it in Settings and switches back).
+  // the user grants it in Settings and switches back). Android only —
+  // iOS handles permission prompting natively inside startListening().
   useEffect(() => {
-    if (Platform.OS !== 'android') return;
+    if (!isAndroid) return;
     const sub = AppState.addEventListener('change', async (state) => {
       if (state !== 'active') return;
       try {
@@ -190,7 +198,6 @@ export function useGameAssistant() {
   // ── Voice list + persisted selection (loads once, after TTS is ready) ───
 
   useEffect(() => {
-    if (Platform.OS !== 'android') return;
     const load = async () => {
       try {
         const json = await NativeVoiceAssistant.getAvailableVoices();
@@ -220,8 +227,6 @@ export function useGameAssistant() {
   // ── Event subscriptions ──────────────────────────────────────────────────
 
   useEffect(() => {
-    if (Platform.OS !== 'android') return;
-
     // Live interim text — update partialSpeech and the in-progress user bubble.
     const partialSub = NativeVoiceAssistant.onSpeechPartialResults(({ value }) => {
       setPartialSpeech(value);
@@ -306,11 +311,10 @@ export function useGameAssistant() {
   // ── Kill switch ──────────────────────────────────────────────────────────
 
   /**
-   * Immediately stops the assistant: cancels the Gemini Nano inference job,
+   * Immediately stops the assistant: cancels the active inference job,
    * kills TTS, and resets all active state so the FAB returns to idle.
    */
   const stopAssistant = useCallback(() => {
-    if (Platform.OS !== 'android') return;
     NativeVoiceAssistant.stopAssistant();
     sentenceBufferRef.current = '';
     setIsThinking(false);
@@ -327,9 +331,6 @@ export function useGameAssistant() {
       }, 250);
     }
     activeAssistantMsgId.current = null;
-    // Messages are intentionally NOT cleared here — conversation history is
-    // preserved for the app lifecycle so the user can re-open the modal and
-    // continue where they left off.
   }, []);
 
   // ── Voice preview ────────────────────────────────────────────────────────
@@ -339,7 +340,6 @@ export function useGameAssistant() {
    * so the user can hear the voice immediately after tapping.
    */
   const previewVoice = useCallback(async (voiceId) => {
-    if (Platform.OS !== 'android') return;
     NativeVoiceAssistant.stopSpeaking();
     NativeVoiceAssistant.setVoice(voiceId);
     setSelectedVoiceId(voiceId);
@@ -362,10 +362,6 @@ export function useGameAssistant() {
   const askTheRules = useCallback(
     async (rules = '', expansions = '') => {
       if (isBusy.current) return;
-      if (Platform.OS !== 'android') {
-        setError(ERRORS.NOT_ANDROID);
-        return;
-      }
 
       isBusy.current = true;
       sentenceBufferRef.current = '';
@@ -375,16 +371,9 @@ export function useGameAssistant() {
 
       try {
         // 1. Listen ───────────────────────────────────────────────────────
-        // Model is guaranteed available by the time the FAB is shown.
-        // Permission is pre-checked by the FAB handler before this is called.
-        // Permission is pre-checked by the FAB handler before askTheRules is
-        // called, so by this point mic access is guaranteed.
-        // Add the user bubble here — after all pre-checks pass — so it never
-        // appears before the user is actually about to speak.
         const userMsgId = nextId();
         activeUserMsgId.current = userMsgId;
         setMessages((prev) => [...prev, { id: userMsgId, role: 'user', text: '' }]);
-        // partialSpeech state updates live via onSpeechPartialResults events.
         setIsListening(true);
         const spokenQuestion = await NativeVoiceAssistant.startListening();
         setIsListening(false);
@@ -392,7 +381,6 @@ export function useGameAssistant() {
         activeUserMsgId.current = null;
 
         if (!spokenQuestion?.trim()) {
-          // No speech — remove the empty bubble from history.
           setMessages((prev) => prev.filter((m) => m.id !== userMsgId));
           setError(ERRORS.NO_SPEECH);
           isBusy.current = false;
@@ -404,22 +392,16 @@ export function useGameAssistant() {
           prev.map((m) => (m.id === userMsgId ? { ...m, text: spokenQuestion } : m)),
         );
 
-        // 4. Ask Gemini Nano ──────────────────────────────────────────────
-        // fullAnswer builds up live via onAIChunkReceived events.
-        // TTS starts sentence-by-sentence inside the native module.
-        // isThinking stays true until onTTSFinished fires (queue fully drained).
+        // 2. Ask the AI model ─────────────────────────────────────────────
         const assistantMsgId = nextId();
         activeAssistantMsgId.current = assistantMsgId;
 
-        // Snapshot all settled messages before this turn — buildGameAssistantPrompt
-        // applies the recency cap and sanitization internally.
         const historySnapshot = messages
           .filter((m) => m.text?.trim())
           .map((m) => ({ role: m.role, text: m.text }));
 
         setMessages((prev) => [...prev, { id: assistantMsgId, role: 'assistant', text: '' }]);
 
-        // Build the complete prompt on the JS side — Kotlin receives a finished string.
         const fullPrompt = buildGameAssistantPrompt(
           rules,
           expansions,
@@ -429,7 +411,7 @@ export function useGameAssistant() {
 
         setIsThinking(true);
         await NativeVoiceAssistant.askQuestion(fullPrompt);
-        activeAssistantMsgId.current = null; // Streaming done; stop updating assistant bubble.
+        activeAssistantMsgId.current = null;
 
         // Flush any text remaining in the sentence buffer after the stream ends.
         const remaining = sentenceBufferRef.current.trim();
@@ -438,18 +420,24 @@ export function useGameAssistant() {
           const cleaned = sanitizeTextForSpeech(remaining);
           if (cleaned) NativeVoiceAssistant.speak(cleaned);
         }
-        // Signal to native that no more speak() calls are coming for this turn,
-        // so it can fire onTTSFinished once the TTS queue fully drains.
         NativeVoiceAssistant.markSpeechQueueComplete();
-        // Do NOT clear isThinking here — onTTSFinished handles that once TTS is done.
 
       } catch (err) {
         const msg = err?.message ?? '';
         if (msg === 'Assistant stopped by user') {
           // User pressed X — stopAssistant already reset state, nothing to do.
+        } else if (msg === 'insufficient_permissions') {
+          // iOS native denied — surface the permission dialog.
+          setMicPermissionStatus('not_granted');
+          if (activeUserMsgId.current) {
+            const staleId = activeUserMsgId.current;
+            activeUserMsgId.current = null;
+            setMessages((prev) => prev.filter((m) => m.id !== staleId));
+          }
+          setIsListening(false);
+          setIsThinking(false);
+          isBusy.current = false;
         } else if (msg === 'speech_timeout' || msg === 'no_match') {
-          // Android STT timed out waiting for speech (user was silent).
-          // Treat as "nothing said" — remove the empty bubble, stay quiet.
           if (activeUserMsgId.current) {
             const staleId = activeUserMsgId.current;
             activeUserMsgId.current = null;
@@ -472,11 +460,11 @@ export function useGameAssistant() {
   // ── Public API ───────────────────────────────────────────────────────────
 
   return {
-    /** true only if device hardware + AICore supports Gemini Nano */
+    /** true only if device supports on-device AI */
     isSupported,
     /** true while the microphone is active */
     isListening,
-    /** true while Gemini Nano is generating a response */
+    /** true while the AI model is generating a response */
     isThinking,
     /** convenience: true when the assistant is doing anything */
     isActive: isListening || isThinking,
@@ -498,7 +486,7 @@ export function useGameAssistant() {
     stopAssistant,
     /** live conversation: [{id, role:'user'|'assistant', text}] */
     messages,
-    /** raw Gemini Nano model status for the debug panel */
+    /** raw model status for the debug panel */
     modelStatus,
     /** mic permission status for the debug panel: 'unknown'|'granted'|'not_granted' */
     micPermissionStatus,
