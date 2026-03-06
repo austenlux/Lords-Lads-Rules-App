@@ -22,7 +22,7 @@ const mockNativeModule = {
   onTTSFinished: jest.fn(() => ({ remove: jest.fn() })),
 };
 
-jest.mock('../src/specs/NativeVoiceAssistant', () => mockNativeModule);
+jest.mock('../src/specs/NativeVoiceAssistantOptional', () => ({ __esModule: true, default: mockNativeModule }));
 
 jest.mock('@react-native-async-storage/async-storage', () => ({
   getItem: jest.fn(() => Promise.resolve(null)),

@@ -24,7 +24,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { AppState, PermissionsAndroid, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import NativeVoiceAssistant from '../specs/NativeVoiceAssistant';
+import NativeVoiceAssistantOptional from '../specs/NativeVoiceAssistantOptional';
 import { buildGameAssistantPrompt } from '../constants';
 import { sanitizeTextForSpeech } from '../utils/sanitizeTextForSpeech';
 
@@ -89,14 +89,18 @@ export function useGameAssistant() {
   // ── Background setup: model + mic permission (runs once on mount) ────────
 
   const runSetup = useCallback(async () => {
-    // iOS: native handles mic permission at point of use (startListening).
-    // Set granted optimistically; startListening rejects with
-    // 'insufficient_permissions' if the user declines.
+    const native = NativeVoiceAssistantOptional;
+    if (!native) {
+      setModelStatus('unavailable');
+      setIsSupported(false);
+      if (isIOS) setMicPermissionStatus('granted');
+      return;
+    }
+
     if (isIOS) {
       setMicPermissionStatus('granted');
     }
 
-    // Android: check mic permission without prompting.
     if (isAndroid) {
       try {
         const granted = await PermissionsAndroid.check(
@@ -108,9 +112,8 @@ export function useGameAssistant() {
       }
     }
 
-    // Check model status and prepare silently.
     try {
-      const status = await NativeVoiceAssistant.checkModelStatus();
+      const status = await native.checkModelStatus();
       setModelStatus(status);
 
       if (status === 'available') {
@@ -128,7 +131,7 @@ export function useGameAssistant() {
         setModelStatus('downloading');
         setDownloadProgressBytes(0);
         try {
-          await NativeVoiceAssistant.downloadModel();
+          await native.downloadModel();
           setModelStatus('available');
           setIsSupported(true);
         } catch {
@@ -150,7 +153,7 @@ export function useGameAssistant() {
           attempts += 1;
           await new Promise((r) => setTimeout(r, MODEL_POLL_INTERVAL_MS));
           try {
-            const latest = await NativeVoiceAssistant.checkModelStatus();
+            const latest = await native.checkModelStatus();
             setModelStatus(latest);
             if (latest === 'available') {
               setIsSupported(true);
@@ -198,14 +201,15 @@ export function useGameAssistant() {
   // ── Voice list + persisted selection (loads once, after TTS is ready) ───
 
   useEffect(() => {
+    const native = NativeVoiceAssistantOptional;
+    if (!native) return;
     const load = async () => {
       try {
-        const json = await NativeVoiceAssistant.getAvailableVoices();
+        const json = await native.getAvailableVoices();
         const { voices, activeVoiceId } = JSON.parse(json);
         setAvailableVoices(voices);
 
         const savedId = await AsyncStorage.getItem(VOICE_STORAGE_KEY);
-        // Prefer the user's saved choice; fall back to the engine's current voice.
         const effectiveId =
           savedId && voices.some((v) => v.id === savedId)
             ? savedId
@@ -213,13 +217,12 @@ export function useGameAssistant() {
 
         if (effectiveId) {
           setSelectedVoiceId(effectiveId);
-          NativeVoiceAssistant.setVoice(effectiveId);
+          native.setVoice(effectiveId);
         }
       } catch {
         // Silently ignore — voice selection is non-critical.
       }
     };
-    // Give TTS a moment to initialize before enumerating voices.
     const t = setTimeout(load, 1000);
     return () => clearTimeout(t);
   }, []);
@@ -227,8 +230,9 @@ export function useGameAssistant() {
   // ── Event subscriptions ──────────────────────────────────────────────────
 
   useEffect(() => {
-    // Live interim text — update partialSpeech and the in-progress user bubble.
-    const partialSub = NativeVoiceAssistant.onSpeechPartialResults(({ value }) => {
+    const native = NativeVoiceAssistantOptional;
+    if (!native) return;
+    const partialSub = native.onSpeechPartialResults(({ value }) => {
       setPartialSpeech(value);
       const id = activeUserMsgId.current;
       if (id) {
@@ -238,8 +242,7 @@ export function useGameAssistant() {
       }
     });
 
-    // Final recognised text — update bubble and partialSpeech.
-    const finalSub = NativeVoiceAssistant.onSpeechFinalResults(({ value }) => {
+    const finalSub = native.onSpeechFinalResults(({ value }) => {
       setPartialSpeech(value);
       const id = activeUserMsgId.current;
       if (id) {
@@ -249,9 +252,7 @@ export function useGameAssistant() {
       }
     });
 
-    // Build fullAnswer chunk-by-chunk; stream into the assistant bubble;
-    // and accumulate into the sentence buffer to drive TTS.
-    const chunkSub = NativeVoiceAssistant.onAIChunkReceived(({ chunk }) => {
+    const chunkSub = native.onAIChunkReceived(({ chunk }) => {
       // UI update — raw Markdown is preserved for display.
       setFullAnswer((prev) => prev + chunk);
       const id = activeAssistantMsgId.current;
@@ -271,31 +272,27 @@ export function useGameAssistant() {
         const sentence = text.substring(0, sentenceEnd + 1).trim();
         sentenceBufferRef.current = text.substring(sentenceEnd + 1);
         const cleaned = sanitizeTextForSpeech(sentence);
-        if (cleaned) NativeVoiceAssistant.speak(cleaned);
+        if (cleaned) native.speak(cleaned);
         return;
       }
 
-      // 2. Phrase boundary (, ; :) once enough text has built up — keeps TTS
-      //    starting before the first full stop arrives.
       if (text.length >= PHRASE_SPEAK_THRESHOLD) {
         const phraseEnd = text.search(/[,;:]/);
         if (phraseEnd >= 0) {
           const phrase = text.substring(0, phraseEnd + 1).trim();
           sentenceBufferRef.current = text.substring(phraseEnd + 1);
           const cleaned = sanitizeTextForSpeech(phrase);
-          if (cleaned) NativeVoiceAssistant.speak(cleaned);
+          if (cleaned) native.speak(cleaned);
         }
       }
     });
 
-    // TTS queue fully drained — assistant has finished speaking, return to idle.
-    const ttsDoneSub = NativeVoiceAssistant.onTTSFinished(() => {
+    const ttsDoneSub = native.onTTSFinished(() => {
       setIsThinking(false);
       isBusy.current = false;
     });
 
-    // Download progress — update bytes counter so the debug UI can reflect it.
-    const downloadProgressSub = NativeVoiceAssistant.onDownloadProgress(
+    const downloadProgressSub = native.onDownloadProgress(
       ({ bytesDownloaded }) => setDownloadProgressBytes(bytesDownloaded),
     );
 
@@ -315,7 +312,9 @@ export function useGameAssistant() {
    * kills TTS, and resets all active state so the FAB returns to idle.
    */
   const stopAssistant = useCallback(() => {
-    NativeVoiceAssistant.stopAssistant();
+    const native = NativeVoiceAssistantOptional;
+    if (!native) return;
+    native.stopAssistant();
     sentenceBufferRef.current = '';
     setIsThinking(false);
     setIsListening(false);
@@ -340,10 +339,12 @@ export function useGameAssistant() {
    * so the user can hear the voice immediately after tapping.
    */
   const previewVoice = useCallback(async (voiceId) => {
-    NativeVoiceAssistant.stopSpeaking();
-    NativeVoiceAssistant.setVoice(voiceId);
+    const native = NativeVoiceAssistantOptional;
+    if (!native) return;
+    native.stopSpeaking();
+    native.setVoice(voiceId);
     setSelectedVoiceId(voiceId);
-    NativeVoiceAssistant.speak(VOICE_PREVIEW_TEXT);
+    native.speak(VOICE_PREVIEW_TEXT);
     try {
       await AsyncStorage.setItem(VOICE_STORAGE_KEY, voiceId);
     } catch {
@@ -361,6 +362,8 @@ export function useGameAssistant() {
    */
   const askTheRules = useCallback(
     async (rules = '', expansions = '') => {
+      const native = NativeVoiceAssistantOptional;
+      if (!native) return;
       if (isBusy.current) return;
 
       isBusy.current = true;
@@ -370,12 +373,11 @@ export function useGameAssistant() {
       setPartialSpeech('');
 
       try {
-        // 1. Listen ───────────────────────────────────────────────────────
         const userMsgId = nextId();
         activeUserMsgId.current = userMsgId;
         setMessages((prev) => [...prev, { id: userMsgId, role: 'user', text: '' }]);
         setIsListening(true);
-        const spokenQuestion = await NativeVoiceAssistant.startListening();
+        const spokenQuestion = await native.startListening();
         setIsListening(false);
 
         activeUserMsgId.current = null;
@@ -410,17 +412,16 @@ export function useGameAssistant() {
         );
 
         setIsThinking(true);
-        await NativeVoiceAssistant.askQuestion(fullPrompt);
+        await native.askQuestion(fullPrompt);
         activeAssistantMsgId.current = null;
 
-        // Flush any text remaining in the sentence buffer after the stream ends.
         const remaining = sentenceBufferRef.current.trim();
         sentenceBufferRef.current = '';
         if (remaining) {
           const cleaned = sanitizeTextForSpeech(remaining);
-          if (cleaned) NativeVoiceAssistant.speak(cleaned);
+          if (cleaned) native.speak(cleaned);
         }
-        NativeVoiceAssistant.markSpeechQueueComplete();
+        native.markSpeechQueueComplete();
 
       } catch (err) {
         const msg = err?.message ?? '';

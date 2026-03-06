@@ -24,7 +24,7 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import RNFS from 'react-native-fs';
 import { HEADER_HEIGHT } from '../styles';
-import NativeVoiceAssistant from '../specs/NativeVoiceAssistant';
+import NativeVoiceAssistantOptional from '../specs/NativeVoiceAssistantOptional';
 import {
   BUILD_COMMIT,
   BUILD_COMMIT_FULL,
@@ -205,7 +205,7 @@ export default function MoreScreen({
       // Default is false; only enable if explicitly saved as 'true'.
       const soundsOn = thinkingSounds === 'true';
       setThinkingSoundsEnabled(soundsOn);
-      NativeVoiceAssistant.setThinkingSoundEnabled(soundsOn);
+      NativeVoiceAssistantOptional?.setThinkingSoundEnabled(soundsOn);
     };
     load();
   }, []);
@@ -222,7 +222,7 @@ export default function MoreScreen({
 
   const setThinkingSoundsEnabledAndSave = async (value) => {
     setThinkingSoundsEnabled(value);
-    NativeVoiceAssistant.setThinkingSoundEnabled(value);
+    NativeVoiceAssistantOptional?.setThinkingSoundEnabled(value);
     await AsyncStorage.setItem(SETTINGS_KEYS.THINKING_SOUNDS_ENABLED, value ? 'true' : 'false');
   };
 

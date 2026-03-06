@@ -12,7 +12,7 @@
 		1DF4F06F11F719F3F0CC2F35 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
-		9A9B9C9D1E1F202122232426 /* release_notes.md in Resources */ = {isa = PBXBuildFile; fileRef = 9A9B9C9D1E1F202122232425 /* release_notes.md */; };
+		9A9B9C9D1E1F202122232426 /* ../release_notes.md in Resources */ = {isa = PBXBuildFile; fileRef = 9A9B9C9D1E1F202122232425 /* ../release_notes.md */; };
 		VA00080000000000VA000008 /* VoiceAssistantSwift.swift in Sources */ = {isa = PBXBuildFile; fileRef = VA00020000000000VA000002 /* VoiceAssistantSwift.swift */; };
 		VA00090000000000VA000009 /* ThinkingSoundPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = VA00030000000000VA000003 /* ThinkingSoundPlayer.swift */; };
 		VA000A0000000000VA00000A /* RCTVoiceAssistant.mm in Sources */ = {isa = PBXBuildFile; fileRef = VA00050000000000VA000005 /* RCTVoiceAssistant.mm */; };
@@ -29,7 +29,7 @@
 		5DCACB8F33CDC322A6C60F78 /* libPods-LordsandLadsRules.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-LordsandLadsRules.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = LordsandLadsRules/AppDelegate.swift; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = LordsandLadsRules/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		9A9B9C9D1E1F202122232425 /* release_notes.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = ../release_notes.md; sourceTree = SOURCE_ROOT; };
+		9A9B9C9D1E1F202122232425 /* ../release_notes.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = ../release_notes.md; sourceTree = SOURCE_ROOT; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		VA00020000000000VA000002 /* VoiceAssistantSwift.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceAssistantSwift.swift; sourceTree = "<group>"; };
 		VA00030000000000VA000003 /* ThinkingSoundPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThinkingSoundPlayer.swift; sourceTree = "<group>"; };
@@ -59,7 +59,7 @@
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
 				13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */,
-				9A9B9C9D1E1F202122232425 /* release_notes.md */,
+				9A9B9C9D1E1F202122232425 /* ../release_notes.md */,
 				VA00010000000000VA000001 /* VoiceAssistant */,
 				VA00060000000000VA000006 /* LordsandLadsRules-Bridging-Header.h */,
 				VA00070000000000VA000007 /* ThinkingSounds */,
@@ -188,7 +188,7 @@
 			files = (
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
-				9A9B9C9D1E1F202122232426 /* release_notes.md in Resources */,
+				9A9B9C9D1E1F202122232426 /* ../release_notes.md in Resources */,
 				1DF4F06F11F719F3F0CC2F35 /* PrivacyInfo.xcprivacy in Resources */,
 				VA000B0000000000VA00000B /* ThinkingSounds in Resources */,
 			);
@@ -221,9 +221,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-LordsandLadsRules/Pods-LordsandLadsRules-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-LordsandLadsRules/Pods-LordsandLadsRules-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -260,9 +264,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-LordsandLadsRules/Pods-LordsandLadsRules-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-LordsandLadsRules/Pods-LordsandLadsRules-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -295,7 +303,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = YOUR_TEAM_ID;
+				DEVELOPMENT_TEAM = F3DTX3Z275;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = LordsandLadsRules/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
@@ -327,7 +335,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = YOUR_TEAM_ID;
+				DEVELOPMENT_TEAM = F3DTX3Z275;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = LordsandLadsRules/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
@@ -414,10 +422,7 @@
 				);
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				OTHER_CFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_CFLAGS = "$(inherited)  ";
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
 					"-DFOLLY_NO_CONFIG",
@@ -425,12 +430,8 @@
 					"-DFOLLY_USE_LIBCPP=1",
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
-					" ",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
@@ -495,10 +496,7 @@
 					"\"$(inherited)\"",
 				);
 				MTL_ENABLE_DEBUG_INFO = NO;
-				OTHER_CFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_CFLAGS = "$(inherited)  ";
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
 					"-DFOLLY_NO_CONFIG",
@@ -506,12 +504,8 @@
 					"-DFOLLY_USE_LIBCPP=1",
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
-					" ",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				USE_HERMES = true;
