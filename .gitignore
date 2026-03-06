@@ -91,7 +91,10 @@ releases/
 *.gz
 *.zip
 
-# Cursor (personal rules / local config, not for the repo)
-.cursor/
+# Cursor — ignore IDE internals, track our project config
+.cursor/*
+!.cursor/agents/
+!.cursor/project-context.md
+!.cursor/rules/
 # Auto-generated build info
 src/buildInfo.js

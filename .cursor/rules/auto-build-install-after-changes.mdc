@@ -1,0 +1,17 @@
+---
+description: After any code change the user must test, automatically build release and install on device
+alwaysApply: true
+---
+
+# Auto Build and Install After Code Changes
+
+Whenever you make **any code change** in the app that the user will need to test, **automatically** build the release artifact and install it on their physical device when you finish. Do not wait for them to ask.
+
+## Mandatory order — always follow this sequence
+
+1. **Commit first** — `git add -A && git commit` before any build command. The build embeds the current HEAD commit hash; building before committing stamps the APK with the wrong (previous) commit.
+2. **Build** — `npm run build:android`
+3. **Install** — `npm run install:android:release`
+4. **Push** — `git push`
+
+Never build before committing. Never.
