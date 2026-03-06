@@ -100,7 +100,6 @@ RCT_EXPORT_MODULE(VoiceAssistant)
 
 - (void)invalidate {
   [_swiftModule invalidate];
-  [super invalidate];
 }
 
 // MARK: - VoiceAssistantEventDelegate
