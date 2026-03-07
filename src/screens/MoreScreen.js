@@ -188,14 +188,30 @@ export default function MoreScreen({
   useEffect(() => {
     if (Platform.OS !== 'ios') return;
     const native = NativeVoiceAssistantOptional;
-    if (!native?.getModelDebugInfo) return;
+
+    // Show debug info about module availability even if method is missing
+    if (!native) {
+      setModelDebugInfo({ error: 'NativeVoiceAssistantOptional is null', moduleFound: false });
+      return;
+    }
+    if (!native.getModelDebugInfo) {
+      setModelDebugInfo({
+        error: 'getModelDebugInfo method not found on module',
+        moduleFound: true,
+        availableMethods: Object.keys(native).filter(k => typeof native[k] === 'function'),
+      });
+      return;
+    }
+
     native.getModelDebugInfo().then(json => {
       try {
         setModelDebugInfo(JSON.parse(json));
       } catch {
         setModelDebugInfo({ parseError: json });
       }
-    }).catch(() => {});
+    }).catch(err => {
+      setModelDebugInfo({ error: 'getModelDebugInfo call failed', message: String(err) });
+    });
   }, []);
 
   // Initialise rotation animations for settings cards and debug sections.
@@ -992,12 +1008,15 @@ export default function MoreScreen({
                     )}
 
                     {/* iOS Model Debug Info */}
-                    {Platform.OS === 'ios' && modelDebugInfo && (
+                    {Platform.OS === 'ios' && (
                       <View style={{ marginTop: 12, padding: 8, backgroundColor: '#1a1a1a', borderRadius: 6 }}>
                         <Text style={{ color: '#FF7043', fontWeight: '600', marginBottom: 4 }}>iOS Debug Info</Text>
-                        <Text style={{ color: '#aaa', fontFamily: 'Menlo', fontSize: 11 }}>
-                          {JSON.stringify(modelDebugInfo, null, 2)}
-                        </Text>
+                        {!modelDebugInfo && <Text style={{ color: '#888', fontStyle: 'italic' }}>Loading...</Text>}
+                        {modelDebugInfo && (
+                          <Text style={{ color: '#aaa', fontFamily: 'Menlo', fontSize: 11 }}>
+                            {JSON.stringify(modelDebugInfo, null, 2)}
+                          </Text>
+                        )}
                       </View>
                     )}
 
