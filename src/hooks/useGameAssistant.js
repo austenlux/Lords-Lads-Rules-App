@@ -230,9 +230,7 @@ export function useGameAssistant() {
     }
   }, []);
 
-  const retryModelSetup = useCallback(() => {
-    runSetup(true);
-  }, [runSetup]);
+  const retryModelSetup = useCallback(() => runSetup(true), [runSetup]);
 
   useEffect(() => {
     runSetup();

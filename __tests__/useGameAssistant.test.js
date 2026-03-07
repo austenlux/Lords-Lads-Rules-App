@@ -6,6 +6,7 @@ const mockNativeModule = {
   checkModelStatus: jest.fn(),
   downloadModel: jest.fn(),
   getMicPermissionStatus: jest.fn(),
+  getModelDebugInfo: jest.fn(),
   startListening: jest.fn(),
   stopListening: jest.fn(),
   askQuestion: jest.fn(),
@@ -76,6 +77,9 @@ describe('useGameAssistant', () => {
     expect(result.current).toHaveProperty('previewVoice');
     expect(result.current).toHaveProperty('downloadProgressBytes');
     expect(result.current).toHaveProperty('retryModelSetup');
+    expect(result.current).toHaveProperty('modelDebugInfo');
+    expect(result.current).toHaveProperty('isRetryingModelSetup');
+    expect(result.current).toHaveProperty('retryModelSetupError');
   });
 
   it('sets isSupported=true when model is available (Android)', async () => {
@@ -164,5 +168,64 @@ describe('useGameAssistant', () => {
     expect(mockNativeModule.stopAssistant).toHaveBeenCalled();
     expect(result.current.isListening).toBe(false);
     expect(result.current.isThinking).toBe(false);
+  });
+
+  it('exposes modelDebugInfo null on Android', async () => {
+    Platform.OS = 'android';
+    const { result } = renderHook(() => useGameAssistant());
+
+    await act(async () => {
+      await jest.runAllTimersAsync();
+    });
+
+    expect(result.current.modelDebugInfo).toBeNull();
+  });
+
+  it('exposes modelDebugInfo on iOS when getModelDebugInfo returns valid JSON', async () => {
+    Platform.OS = 'ios';
+    const debugPayload = { iosVersion: '18.0', modelAvailability: 'available' };
+    mockNativeModule.getModelDebugInfo.mockResolvedValue(JSON.stringify(debugPayload));
+
+    const { result } = renderHook(() => useGameAssistant());
+
+    await act(async () => {
+      await jest.runAllTimersAsync();
+    });
+
+    expect(mockNativeModule.getModelDebugInfo).toHaveBeenCalled();
+    expect(result.current.modelDebugInfo).toEqual(debugPayload);
+  });
+
+  it('sets modelDebugInfo null on iOS when getModelDebugInfo rejects', async () => {
+    Platform.OS = 'ios';
+    mockNativeModule.getModelDebugInfo.mockRejectedValue(new Error('native error'));
+
+    const { result } = renderHook(() => useGameAssistant());
+
+    await act(async () => {
+      await jest.runAllTimersAsync();
+    });
+
+    expect(result.current.modelDebugInfo).toBeNull();
+  });
+
+  it('retryModelSetup sets retryModelSetupError on failure and clears loading state', async () => {
+    mockNativeModule.checkModelStatus.mockResolvedValue('unavailable');
+
+    const { result } = renderHook(() => useGameAssistant());
+
+    await act(async () => {
+      await jest.runAllTimersAsync();
+    });
+
+    expect(result.current.isRetryingModelSetup).toBe(false);
+    expect(result.current.retryModelSetupError).toBeNull();
+
+    await act(async () => {
+      await result.current.retryModelSetup();
+    });
+
+    expect(result.current.isRetryingModelSetup).toBe(false);
+    expect(result.current.retryModelSetupError).toBe('Model not supported on this device');
   });
 });
