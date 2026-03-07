@@ -69,9 +69,16 @@ class VoiceAssistantSwift: NSObject {
 
     func checkModelStatus() -> String {
         #if canImport(FoundationModels)
+        NSLog("[VoiceAssistant] FoundationModels compiled in - checking iOS 26 availability")
         if #available(iOS 26, *) {
-            return mapModelAvailability()
+            let status = mapModelAvailability()
+            NSLog("[VoiceAssistant] Model status: %@", status)
+            return status
+        } else {
+            NSLog("[VoiceAssistant] iOS 26 not available at runtime")
         }
+        #else
+        NSLog("[VoiceAssistant] FoundationModels NOT compiled - canImport failed")
         #endif
         return "unavailable"
     }
