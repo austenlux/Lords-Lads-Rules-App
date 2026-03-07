@@ -156,6 +156,7 @@ export default function MoreScreen({
   micPermissionStatus = 'unknown',
   downloadProgressBytes = 0,
   onRetryModelSetup,
+  modelDebugInfo = null,
 }) {
   const [releaseNotes, setReleaseNotes] = useState([]);
   const [expandedVersions, setExpandedVersions] = useState({});
@@ -180,39 +181,8 @@ export default function MoreScreen({
   const [voiceParentExpanded, setVoiceParentExpanded] = useState(false);
   const [voiceMetaExpanded, setVoiceMetaExpanded] = useState(false);
   const [expandedDebugVoices, setExpandedDebugVoices] = useState({});
-  const [vaDebugExpanded, setVaDebugExpanded] = useState(Platform.OS === 'ios'); // Expanded on iOS so iOS Debug Info is visible without extra tap
+  const [vaDebugExpanded, setVaDebugExpanded] = useState(Platform.OS === 'ios'); // Expanded on iOS so Status + iOS fields are visible without extra tap
   const [buildInfoExpanded, setBuildInfoExpanded] = useState(false);
-  const [modelDebugInfo, setModelDebugInfo] = useState(null);
-
-  // Fetch model debug info on iOS for debugging Foundation Models issues.
-  useEffect(() => {
-    if (Platform.OS !== 'ios') return;
-    const native = NativeVoiceAssistantOptional;
-
-    // Show debug info about module availability even if method is missing
-    if (!native) {
-      setModelDebugInfo({ error: 'NativeVoiceAssistantOptional is null', moduleFound: false });
-      return;
-    }
-    if (!native.getModelDebugInfo) {
-      setModelDebugInfo({
-        error: 'getModelDebugInfo method not found on module',
-        moduleFound: true,
-        availableMethods: Object.keys(native).filter(k => typeof native[k] === 'function'),
-      });
-      return;
-    }
-
-    native.getModelDebugInfo().then(json => {
-      try {
-        setModelDebugInfo(JSON.parse(json));
-      } catch {
-        setModelDebugInfo({ parseError: json });
-      }
-    }).catch(err => {
-      setModelDebugInfo({ error: 'getModelDebugInfo call failed', message: String(err) });
-    });
-  }, []);
 
   // Initialise rotation animations for settings cards and debug sections.
   useEffect(() => {
@@ -986,12 +956,36 @@ export default function MoreScreen({
                           : VA_STATUS_LABEL.modelDownload[modelStatus] ?? modelStatus}
                       </Text>
                     </View>
-                    <View style={[styles.debugMetaRow, { borderBottomWidth: 0 }]}>
+                    <View style={[styles.debugMetaRow, (Platform.OS !== 'ios' || !modelDebugInfo) && { borderBottomWidth: 0 }]}>
                       <Text style={styles.debugMetaLabel}>Mic Permission</Text>
                       <Text style={[styles.debugMetaValue, { color: VA_STATUS_COLOR.mic[micPermissionStatus] ?? '#888' }]}>
                         {VA_STATUS_LABEL.mic[micPermissionStatus] ?? micPermissionStatus}
                       </Text>
                     </View>
+                    {Platform.OS === 'ios' && modelDebugInfo != null && (
+                      <>
+                        {modelDebugInfo.iosVersion != null && (
+                          <View style={[styles.debugMetaRow, modelDebugInfo.modelAvailability == null && !(modelDebugInfo.unavailableReason != null && modelDebugInfo.unavailableReason !== '') && { borderBottomWidth: 0 }]}>
+                            <Text style={styles.debugMetaLabel}>iOS Version</Text>
+                            <Text style={[styles.debugMetaValue, { fontFamily: Platform.OS === 'android' ? 'monospace' : 'Menlo', flexShrink: 1 }]}>
+                              {String(modelDebugInfo.iosVersion)}
+                            </Text>
+                          </View>
+                        )}
+                        {modelDebugInfo.modelAvailability != null && (
+                          <View style={[styles.debugMetaRow, !(modelDebugInfo.unavailableReason != null && modelDebugInfo.unavailableReason !== '') && { borderBottomWidth: 0 }]}>
+                            <Text style={styles.debugMetaLabel}>Model Availability</Text>
+                            <Text style={styles.debugMetaValue}>{String(modelDebugInfo.modelAvailability)}</Text>
+                          </View>
+                        )}
+                        {modelDebugInfo.unavailableReason != null && modelDebugInfo.unavailableReason !== '' && (
+                          <View style={[styles.debugMetaRow, { borderBottomWidth: 0 }]}>
+                            <Text style={styles.debugMetaLabel}>Unavailable Reason</Text>
+                            <Text style={styles.debugMetaValue}>{String(modelDebugInfo.unavailableReason)}</Text>
+                          </View>
+                        )}
+                      </>
+                    )}
                     {micPermissionStatus === 'not_granted' && (
                       <TouchableOpacity
                         style={vaReadinessStyles.actionButton}
@@ -1007,19 +1001,6 @@ export default function MoreScreen({
                       >
                         <Text style={vaReadinessStyles.actionButtonText}>Retry Model Setup</Text>
                       </TouchableOpacity>
-                    )}
-
-                    {/* iOS Model Debug Info */}
-                    {Platform.OS === 'ios' && (
-                      <View style={{ marginTop: 12, padding: 8, backgroundColor: '#1a1a1a', borderRadius: 6 }}>
-                        <Text style={{ color: '#FF7043', fontWeight: '600', marginBottom: 4 }}>iOS Debug Info</Text>
-                        {!modelDebugInfo && <Text style={{ color: '#888', fontStyle: 'italic' }}>Loading...</Text>}
-                        {modelDebugInfo && (
-                          <Text style={{ color: '#aaa', fontFamily: 'Menlo', fontSize: 11 }}>
-                            {JSON.stringify(modelDebugInfo, null, 2)}
-                          </Text>
-                        )}
-                      </View>
                     )}
 
                     {/* Models subsection */}
