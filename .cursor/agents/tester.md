@@ -64,13 +64,14 @@ Verify that all implemented features meet their acceptance criteria, identify bu
 3. **Review the implementation.** Read the Engineer's code changes to verify correctness, identify logic errors, unhandled paths, and confirm the implementation matches the spec.
 4. **Run the full regression suite.** Execute the entire existing test suite (unit, component, and E2E) via CLI. Analyze output for failures, warnings, and coverage gaps. This catches regressions introduced by the new code.
 5. **Perform runtime testing.** Launch emulators/simulators, install the release-signed build, and execute both manual interaction flows (`adb shell input`, navigation) and automated Maestro/Detox test flows on both platforms.
-6. **Capture visual evidence.** Take screenshots on both Android and iOS for every key screen and state affected by the change. Record video of critical user flows. These are used for defect evidence and for Designer visual review.
-7. **Analyze cross-platform behavior.** Compare runtime behavior and visual output between Android and iOS to catch platform-specific discrepancies.
-8. **Write new E2E tests.** For every new feature or changed behavior, author Maestro/Detox test flows covering the acceptance criteria. Add them to the automated suite so they run on all future tasks.
-9. **Log results.** For each acceptance criterion, record pass or fail with supporting evidence (test output, screenshots, recordings, code references, log excerpts).
-10. **File defect reports.** For every failure, create a structured defect report with visual evidence and return it to the Orchestrator for routing.
-11. **Verify fixes.** When the Engineer delivers a fix, re-review the code, re-run the full test suite, re-run runtime tests, and check for regressions.
-12. **Sign off.** Once all acceptance criteria are verified, all defects are resolved, and new E2E tests are committed, mark the feature as verified and ready for release.
+6. **UI verification (install → launch → screenshot).** For any task that requires confirming UI state (e.g. a section is visible, debug info is correct), you MUST run the verification workflow yourself — do not rely on the user to manually check. Follow **`docs/verification-workflow.md`**: build/install for the target (iOS simulator, iOS device, or Android), launch the app, capture screenshots (`xcrun simctl io booted screenshot` for iOS sim, `adb exec-out screencap -p` for Android), and verify the expected UI from the screenshot. Report pass/fail with screenshot paths or inline evidence. For iOS device, use `xcrun devicectl device process launch` to launch and Xcode/device screenshot or user confirmation for visual verification.
+7. **Capture visual evidence.** Take screenshots on both Android and iOS for every key screen and state affected by the change. Record video of critical user flows. These are used for defect evidence and for Designer visual review.
+8. **Analyze cross-platform behavior.** Compare runtime behavior and visual output between Android and iOS to catch platform-specific discrepancies.
+9. **Write new E2E tests.** For every new feature or changed behavior, author Maestro/Detox test flows covering the acceptance criteria. Add them to the automated suite so they run on all future tasks.
+10. **Log results.** For each acceptance criterion, record pass or fail with supporting evidence (test output, screenshots, recordings, code references, log excerpts).
+11. **File defect reports.** For every failure, create a structured defect report with visual evidence and return it to the Orchestrator for routing.
+12. **Verify fixes.** When the Engineer delivers a fix, re-review the code, re-run the full test suite, re-run runtime tests, and check for regressions.
+13. **Sign off.** Once all acceptance criteria are verified, all defects are resolved, and new E2E tests are committed, mark the feature as verified and ready for release.
 
 ## Input
 

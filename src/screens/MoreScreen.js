@@ -165,7 +165,7 @@ export default function MoreScreen({
     [SECTION_KEYS.CHANGELOG]: DEFAULT_SECTION_EXPANDED,
     [SECTION_KEYS.SETTINGS]: false,
     [SECTION_KEYS.INFO]: false,
-    [SECTION_KEYS.DEBUG]: false,
+    [SECTION_KEYS.DEBUG]: Platform.OS === 'ios', // Expanded on iOS so Debug → Voice Assistant → iOS Debug Info is visible
   });
   const [debugVisible, setDebugVisible] = useState(true); // TEMP: Always show for debugging
   const [expandRulesDefault, setExpandRulesDefault] = useState(false);
@@ -180,7 +180,7 @@ export default function MoreScreen({
   const [voiceParentExpanded, setVoiceParentExpanded] = useState(false);
   const [voiceMetaExpanded, setVoiceMetaExpanded] = useState(false);
   const [expandedDebugVoices, setExpandedDebugVoices] = useState({});
-  const [vaDebugExpanded, setVaDebugExpanded] = useState(false);
+  const [vaDebugExpanded, setVaDebugExpanded] = useState(Platform.OS === 'ios'); // Expanded on iOS so iOS Debug Info is visible without extra tap
   const [buildInfoExpanded, setBuildInfoExpanded] = useState(false);
   const [modelDebugInfo, setModelDebugInfo] = useState(null);
 
@@ -931,7 +931,9 @@ export default function MoreScreen({
                       { label: 'Built',        value: new Date(BUILD_TIMESTAMP).toLocaleString() },
                       { label: 'Device',       value: Platform.constants?.Model ?? 'unknown' },
                       { label: 'Brand',        value: (Platform.constants?.Brand ?? 'unknown').replace(/\b\w/g, c => c.toUpperCase()) },
-                      { label: 'Android',      value: `${Platform.constants?.Release ?? '?'} (API ${Platform.Version})` },
+                      ...(Platform.OS === 'ios'
+                        ? [{ label: 'iOS', value: `${Platform.constants?.systemVersion ?? '?'}` }]
+                        : [{ label: 'Android', value: `${Platform.constants?.Release ?? '?'} (API ${Platform.Version})` }]),
                       { label: 'Screen',       value: (() => { const { width, height } = Dimensions.get('window'); return `${Math.round(width)} × ${Math.round(height)}`; })() },
                     ].map(({ label, value }, idx, arr) => (
                       <View key={label} style={[styles.debugMetaRow, idx === arr.length - 1 && { borderBottomWidth: 0 }]}>
