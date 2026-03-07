@@ -158,6 +158,8 @@ export default function MoreScreen({
   micPermissionStatus = 'unknown',
   downloadProgressBytes = 0,
   onRetryModelSetup,
+  isRetryingModelSetup = false,
+  retryModelSetupError = null,
   modelDebugInfo = null,
 }) {
   const [releaseNotes, setReleaseNotes] = useState([]);
@@ -997,12 +999,22 @@ export default function MoreScreen({
                       </TouchableOpacity>
                     )}
                     {(modelStatus === 'download_failed' || modelStatus === 'downloadable') && (
-                      <TouchableOpacity
-                        style={vaReadinessStyles.actionButton}
-                        onPress={onRetryModelSetup}
-                      >
-                        <Text style={vaReadinessStyles.actionButtonText}>Retry Model Setup</Text>
-                      </TouchableOpacity>
+                      <>
+                        <TouchableOpacity
+                          style={[vaReadinessStyles.actionButton, isRetryingModelSetup && { opacity: 0.7 }]}
+                          onPress={onRetryModelSetup}
+                          disabled={isRetryingModelSetup}
+                        >
+                          <Text style={vaReadinessStyles.actionButtonText}>
+                            {isRetryingModelSetup ? 'Retrying…' : 'Retry Model Setup'}
+                          </Text>
+                        </TouchableOpacity>
+                        {retryModelSetupError != null && retryModelSetupError !== '' && (
+                          <Text style={[styles.debugMetaValue, { color: '#CF6679', marginTop: 4, marginBottom: 8 }]}>
+                            {retryModelSetupError}
+                          </Text>
+                        )}
+                      </>
                     )}
 
                     {/* Models subsection */}

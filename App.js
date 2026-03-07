@@ -108,6 +108,8 @@ export default function App() {
     micPermissionStatus,
     downloadProgressBytes,
     retryModelSetup,
+    isRetryingModelSetup,
+    retryModelSetupError,
     modelDebugInfo,
   } = useGameAssistant();
 
@@ -275,6 +277,8 @@ export default function App() {
         micPermissionStatus={micPermissionStatus}
         downloadProgressBytes={downloadProgressBytes}
         onRetryModelSetup={retryModelSetup}
+        isRetryingModelSetup={isRetryingModelSetup}
+        retryModelSetupError={retryModelSetupError}
         modelDebugInfo={modelDebugInfo}
       />
     );
