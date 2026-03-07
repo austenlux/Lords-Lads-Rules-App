@@ -105,6 +105,8 @@ export function useGameAssistant() {
           setMicPermissionStatus('granted');
         } else if (status === 'denied') {
           setMicPermissionStatus('not_granted');
+        } else if (status === 'undetermined') {
+          setMicPermissionStatus('undetermined');
         } else {
           setMicPermissionStatus('unknown');
         }
@@ -225,6 +227,8 @@ export function useGameAssistant() {
             setMicPermissionStatus('granted');
           } else if (status === 'denied') {
             setMicPermissionStatus('not_granted');
+          } else if (status === 'undetermined') {
+            setMicPermissionStatus('undetermined');
           } else {
             setMicPermissionStatus('unknown');
           }

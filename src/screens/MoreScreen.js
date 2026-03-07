@@ -85,9 +85,10 @@ const VA_STATUS_LABEL = {
     download_failed: 'Download Failed',
   },
   mic: {
-    unknown:     'Checking…',
-    granted:     'Granted',
-    not_granted: 'Not Granted',
+    unknown:       'Checking…',
+    undetermined:  'Not determined',
+    granted:       'Granted',
+    not_granted:   'Not Granted',
   },
 };
 
@@ -106,9 +107,10 @@ const VA_STATUS_COLOR = {
     download_failed: '#CF6679',
   },
   mic: {
-    unknown:     '#888888',
-    granted:     '#4CAF50',
-    not_granted: '#CF6679',
+    unknown:      '#888888',
+    undetermined: '#FF9800',
+    granted:      '#4CAF50',
+    not_granted:  '#CF6679',
   },
 };
 

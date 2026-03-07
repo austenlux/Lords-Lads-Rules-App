@@ -130,7 +130,7 @@ describe('useGameAssistant', () => {
     expect(result.current.micPermissionStatus).toBe('not_granted');
   });
 
-  it('sets micPermissionStatus to unknown when iOS permission undetermined', async () => {
+  it('sets micPermissionStatus to undetermined when iOS permission undetermined', async () => {
     Platform.OS = 'ios';
     mockNativeModule.getMicPermissionStatus.mockResolvedValue('undetermined');
 
@@ -141,7 +141,7 @@ describe('useGameAssistant', () => {
     });
 
     expect(mockNativeModule.getMicPermissionStatus).toHaveBeenCalled();
-    expect(result.current.micPermissionStatus).toBe('unknown');
+    expect(result.current.micPermissionStatus).toBe('undetermined');
   });
 
   it('subscribes to all native events on mount', () => {
