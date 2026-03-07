@@ -1,9 +1,12 @@
 import AVFoundation
 import Speech
+import os.log
 
 #if canImport(FoundationModels)
 import FoundationModels
 #endif
+
+private let vaLog = OSLog(subsystem: "com.lux.lnlrules", category: "VoiceAssistant")
 
 // MARK: - Event Delegate
 
@@ -69,16 +72,16 @@ class VoiceAssistantSwift: NSObject {
 
     func checkModelStatus() -> String {
         #if canImport(FoundationModels)
-        NSLog("[VoiceAssistant] FoundationModels compiled in - checking iOS 26 availability")
+        os_log(.info, log: vaLog, "FoundationModels compiled in - checking iOS 26 availability")
         if #available(iOS 26, *) {
             let status = mapModelAvailability()
-            NSLog("[VoiceAssistant] Model status: %@", status)
+            os_log(.info, log: vaLog, "Model status: %{public}@", status)
             return status
         } else {
-            NSLog("[VoiceAssistant] iOS 26 not available at runtime")
+            os_log(.error, log: vaLog, "iOS 26 not available at runtime")
         }
         #else
-        NSLog("[VoiceAssistant] FoundationModels NOT compiled - canImport failed")
+        os_log(.error, log: vaLog, "FoundationModels NOT compiled - canImport failed")
         #endif
         return "unavailable"
     }

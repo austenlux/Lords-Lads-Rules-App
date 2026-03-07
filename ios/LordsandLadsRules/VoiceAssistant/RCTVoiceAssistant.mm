@@ -15,8 +15,10 @@ RCT_EXPORT_MODULE(VoiceAssistant)
 - (instancetype)init {
   self = [super init];
   if (self) {
+    NSLog(@"[VoiceAssistant] RCTVoiceAssistant init called");
     _swiftModule = [[VoiceAssistantSwift alloc] init];
     _swiftModule.eventDelegate = self;
+    NSLog(@"[VoiceAssistant] Swift module initialized");
   }
   return self;
 }
