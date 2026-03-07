@@ -124,7 +124,18 @@ export function useGameAssistant() {
 
     try {
       const status = await native.checkModelStatus();
+      console.log('[VoiceAssistant JS] checkModelStatus returned:', status);
       setModelStatus(status);
+
+      // Also get debug info on iOS
+      if (isIOS && native.getModelDebugInfo) {
+        try {
+          const debugInfo = await native.getModelDebugInfo();
+          console.log('[VoiceAssistant JS] getModelDebugInfo returned:', debugInfo);
+        } catch (e) {
+          console.log('[VoiceAssistant JS] getModelDebugInfo error:', e);
+        }
+      }
 
       if (status === 'available') {
         setIsSupported(true);

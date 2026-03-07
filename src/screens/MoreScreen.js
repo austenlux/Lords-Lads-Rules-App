@@ -167,7 +167,7 @@ export default function MoreScreen({
     [SECTION_KEYS.INFO]: false,
     [SECTION_KEYS.DEBUG]: false,
   });
-  const [debugVisible, setDebugVisible] = useState(__DEV__);
+  const [debugVisible, setDebugVisible] = useState(true); // TEMP: Always show for debugging
   const [expandRulesDefault, setExpandRulesDefault] = useState(false);
   const [expandExpansionsDefault, setExpandExpansionsDefault] = useState(false);
   const animations = useRef({}).current;
