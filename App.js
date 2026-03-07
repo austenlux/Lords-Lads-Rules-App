@@ -108,6 +108,7 @@ export default function App() {
     micPermissionStatus,
     downloadProgressBytes,
     retryModelSetup,
+    modelDebugInfo,
   } = useGameAssistant();
 
   const {
@@ -274,6 +275,7 @@ export default function App() {
         micPermissionStatus={micPermissionStatus}
         downloadProgressBytes={downloadProgressBytes}
         onRetryModelSetup={retryModelSetup}
+        modelDebugInfo={modelDebugInfo}
       />
     );
   };

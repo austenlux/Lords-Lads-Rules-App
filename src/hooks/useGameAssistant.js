@@ -69,6 +69,8 @@ export function useGameAssistant() {
   // 'unknown' | 'granted' | 'not_granted'
   const [micPermissionStatus, setMicPermissionStatus] = useState('unknown');
   const [downloadProgressBytes, setDownloadProgressBytes] = useState(0);
+  /** iOS only: parsed getModelDebugInfo() result; null on Android or when missing/failed */
+  const [modelDebugInfo, setModelDebugInfo] = useState(null);
 
   // Prevents concurrent invocations of askTheRules.
   const isBusy = useRef(false);
@@ -127,14 +129,22 @@ export function useGameAssistant() {
       console.log('[VoiceAssistant JS] checkModelStatus returned:', status);
       setModelStatus(status);
 
-      // Also get debug info on iOS
-      if (isIOS && native.getModelDebugInfo) {
+      if (isIOS && typeof native.getModelDebugInfo === 'function') {
         try {
-          const debugInfo = await native.getModelDebugInfo();
-          console.log('[VoiceAssistant JS] getModelDebugInfo returned:', debugInfo);
-        } catch (e) {
-          console.log('[VoiceAssistant JS] getModelDebugInfo error:', e);
+          const raw = await native.getModelDebugInfo();
+          const parsed = (() => {
+            try {
+              return typeof raw === 'string' ? JSON.parse(raw) : raw;
+            } catch {
+              return null;
+            }
+          })();
+          setModelDebugInfo(parsed && typeof parsed === 'object' ? parsed : null);
+        } catch {
+          setModelDebugInfo(null);
         }
+      } else {
+        setModelDebugInfo(null);
       }
 
       if (status === 'available') {
@@ -534,5 +544,7 @@ export function useGameAssistant() {
     downloadProgressBytes,
     /** re-runs the full model + mic setup flow; useful from the debug panel */
     retryModelSetup: runSetup,
+    /** iOS only: parsed getModelDebugInfo(); null on Android or when missing/failed */
+    modelDebugInfo,
   };
 }
