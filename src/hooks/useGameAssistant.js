@@ -71,6 +71,8 @@ export function useGameAssistant() {
   const [downloadProgressBytes, setDownloadProgressBytes] = useState(0);
   /** iOS only: parsed getModelDebugInfo() result; null on Android or when missing/failed */
   const [modelDebugInfo, setModelDebugInfo] = useState(null);
+  const [isRetryingModelSetup, setIsRetryingModelSetup] = useState(false);
+  const [retryModelSetupError, setRetryModelSetupError] = useState(null);
 
   // Prevents concurrent invocations of askTheRules.
   const isBusy = useRef(false);
@@ -90,12 +92,25 @@ export function useGameAssistant() {
 
   // ── Background setup: model + mic permission (runs once on mount) ────────
 
-  const runSetup = useCallback(async () => {
+  const runSetup = useCallback(async (isRetry = false) => {
     const native = NativeVoiceAssistantOptional;
+
+    const setRetryDone = (success, message = null) => {
+      if (!isRetry) return;
+      setIsRetryingModelSetup(false);
+      setRetryModelSetupError(message);
+    };
+
     if (!native) {
       setModelStatus('unavailable');
       setIsSupported(false);
+      setRetryDone(false, 'Module not available');
       return;
+    }
+
+    if (isRetry) {
+      setIsRetryingModelSetup(true);
+      setRetryModelSetupError(null);
     }
 
     if (isIOS) {
@@ -151,36 +166,39 @@ export function useGameAssistant() {
 
       if (status === 'available') {
         setIsSupported(true);
+        setRetryDone(true);
         return;
       }
 
       if (status === 'unavailable') {
         setIsSupported(false);
+        setRetryDone(false, 'Model not supported on this device');
         return;
       }
 
       if (status === 'downloadable') {
-        // Trigger download silently — FAB stays hidden until complete.
         setModelStatus('downloading');
         setDownloadProgressBytes(0);
         try {
           await native.downloadModel();
           setModelStatus('available');
           setIsSupported(true);
+          setRetryDone(true);
         } catch {
           setModelStatus('download_failed');
           setIsSupported(false);
+          setRetryDone(false, 'Download failed');
         }
         return;
       }
 
       if (status === 'downloading') {
-        // Model is already downloading — poll until available.
         let attempts = 0;
         const poll = async () => {
           if (attempts >= MODEL_POLL_MAX_ATTEMPTS) {
             setModelStatus('download_failed');
             setIsSupported(false);
+            setRetryDone(false, 'Download failed');
             return;
           }
           attempts += 1;
@@ -190,14 +208,17 @@ export function useGameAssistant() {
             setModelStatus(latest);
             if (latest === 'available') {
               setIsSupported(true);
+              setRetryDone(true);
             } else if (latest === 'unavailable') {
               setIsSupported(false);
+              setRetryDone(false, 'Model not supported on this device');
             } else {
               poll();
             }
           } catch {
             setModelStatus('download_failed');
             setIsSupported(false);
+            setRetryDone(false, 'Download failed');
           }
         };
         poll();
@@ -205,8 +226,13 @@ export function useGameAssistant() {
     } catch {
       setModelStatus('unavailable');
       setIsSupported(false);
+      setRetryDone(false, 'Setup failed');
     }
   }, []);
+
+  const retryModelSetup = useCallback(() => {
+    runSetup(true);
+  }, [runSetup]);
 
   useEffect(() => {
     runSetup();
@@ -547,7 +573,11 @@ export function useGameAssistant() {
     /** cumulative bytes downloaded during an active model download */
     downloadProgressBytes,
     /** re-runs the full model + mic setup flow; useful from the debug panel */
-    retryModelSetup: runSetup,
+    retryModelSetup,
+    /** true while retryModelSetup is in progress */
+    isRetryingModelSetup,
+    /** user-visible error message after a failed retry, or null */
+    retryModelSetupError,
     /** iOS only: parsed getModelDebugInfo(); null on Android or when missing/failed */
     modelDebugInfo,
   };
