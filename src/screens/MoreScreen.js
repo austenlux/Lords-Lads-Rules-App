@@ -996,7 +996,7 @@ export default function MoreScreen({
                         <Text style={vaReadinessStyles.actionButtonText}>Open Mic Settings</Text>
                       </TouchableOpacity>
                     )}
-                    {(modelStatus === 'download_failed' || modelStatus === 'unavailable' || modelStatus === 'downloadable') && (
+                    {(modelStatus === 'download_failed' || modelStatus === 'downloadable') && (
                       <TouchableOpacity
                         style={vaReadinessStyles.actionButton}
                         onPress={onRetryModelSetup}
