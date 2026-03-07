@@ -2,12 +2,18 @@ import UIKit
 import React
 
 @UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate, RCTBridgeDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate {
   var window: UIWindow?
   var bridge: RCTBridge?
 
   func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-    bridge = RCTBridge(delegate: self, launchOptions: launchOptions)
+    let bundleURL: URL?
+    #if DEBUG
+      bundleURL = RCTBundleURLProvider.sharedSettings().jsBundleURL(forBundleRoot: "index")
+    #else
+      bundleURL = Bundle.main.url(forResource: "main", withExtension: "jsbundle")
+    #endif
+    bridge = RCTCreateBridgeWithTurboModules(bundleURL, launchOptions as? [String: Any])
     guard let bridge = bridge else { return false }
     let rootView = RCTRootView(bridge: bridge, moduleName: "LordsandLadsRules", initialProperties: nil)
     
@@ -24,13 +30,5 @@ class AppDelegate: UIResponder, UIApplicationDelegate, RCTBridgeDelegate {
     window?.makeKeyAndVisible()
     
     return true
-  }
-  
-  func sourceURL(for bridge: RCTBridge!) -> URL! {
-    #if DEBUG
-      return RCTBundleURLProvider.sharedSettings().jsBundleURL(forBundleRoot: "index")
-    #else
-      return Bundle.main.url(forResource: "main", withExtension: "jsbundle")
-    #endif
   }
 } 

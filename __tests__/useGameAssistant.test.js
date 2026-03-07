@@ -41,6 +41,13 @@ jest.mock('../src/utils/sanitizeTextForSpeech', () => ({
 
 const { useGameAssistant } = require('../src/hooks/useGameAssistant');
 
+/** Run timers and flush microtasks so async hook state updates run inside act(). */
+async function flushTimersAndMicrotasks() {
+  await jest.runAllTimersAsync();
+  await Promise.resolve();
+  await Promise.resolve();
+}
+
 describe('useGameAssistant', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -86,7 +93,7 @@ describe('useGameAssistant', () => {
     const { result } = renderHook(() => useGameAssistant());
 
     await act(async () => {
-      await jest.runAllTimersAsync();
+      await flushTimersAndMicrotasks();
     });
 
     expect(result.current.isSupported).toBe(true);
@@ -99,7 +106,7 @@ describe('useGameAssistant', () => {
     const { result } = renderHook(() => useGameAssistant());
 
     await act(async () => {
-      await jest.runAllTimersAsync();
+      await flushTimersAndMicrotasks();
     });
 
     expect(result.current.isSupported).toBe(false);
@@ -113,7 +120,7 @@ describe('useGameAssistant', () => {
     const { result } = renderHook(() => useGameAssistant());
 
     await act(async () => {
-      await jest.runAllTimersAsync();
+      await flushTimersAndMicrotasks();
     });
 
     expect(mockNativeModule.getMicPermissionStatus).toHaveBeenCalled();
@@ -127,7 +134,7 @@ describe('useGameAssistant', () => {
     const { result } = renderHook(() => useGameAssistant());
 
     await act(async () => {
-      await jest.runAllTimersAsync();
+      await flushTimersAndMicrotasks();
     });
 
     expect(mockNativeModule.getMicPermissionStatus).toHaveBeenCalled();
@@ -141,7 +148,7 @@ describe('useGameAssistant', () => {
     const { result } = renderHook(() => useGameAssistant());
 
     await act(async () => {
-      await jest.runAllTimersAsync();
+      await flushTimersAndMicrotasks();
     });
 
     expect(mockNativeModule.getMicPermissionStatus).toHaveBeenCalled();
@@ -175,7 +182,7 @@ describe('useGameAssistant', () => {
     const { result } = renderHook(() => useGameAssistant());
 
     await act(async () => {
-      await jest.runAllTimersAsync();
+      await flushTimersAndMicrotasks();
     });
 
     expect(result.current.modelDebugInfo).toBeNull();
@@ -189,7 +196,7 @@ describe('useGameAssistant', () => {
     const { result } = renderHook(() => useGameAssistant());
 
     await act(async () => {
-      await jest.runAllTimersAsync();
+      await flushTimersAndMicrotasks();
     });
 
     expect(mockNativeModule.getModelDebugInfo).toHaveBeenCalled();
@@ -203,7 +210,7 @@ describe('useGameAssistant', () => {
     const { result } = renderHook(() => useGameAssistant());
 
     await act(async () => {
-      await jest.runAllTimersAsync();
+      await flushTimersAndMicrotasks();
     });
 
     expect(result.current.modelDebugInfo).toBeNull();
@@ -215,7 +222,7 @@ describe('useGameAssistant', () => {
     const { result } = renderHook(() => useGameAssistant());
 
     await act(async () => {
-      await jest.runAllTimersAsync();
+      await flushTimersAndMicrotasks();
     });
 
     expect(result.current.isRetryingModelSetup).toBe(false);
