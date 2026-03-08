@@ -422,7 +422,7 @@ export default function App() {
   );
 
   return (
-    <View style={{ flex: 1, width: windowWidth, height: windowHeight, backgroundColor: '#121212' }}>
+    <View style={{ flex: 1, width: windowWidth, height: windowHeight }}>
       <StatusBar
         barStyle="light-content"
         backgroundColor={isIOS ? 'transparent' : '#121212'}
