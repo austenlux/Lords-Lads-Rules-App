@@ -403,13 +403,17 @@ export default function App() {
   );
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#121212' }}>
-      <Image
-        source={isIOS ? BG_LOGO_IOS : BG_LOGO_ANDROID}
-        style={{ position: 'absolute', left: 0, top: 0, width: windowWidth, height: windowHeight }}
-        resizeMode="contain"
-      />
-      <View style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(18, 18, 18, 0.7)' }]} pointerEvents="none" />
+    <View style={{ flex: 1, backgroundColor: isIOS ? 'transparent' : '#121212' }}>
+      {!isIOS && (
+        <>
+          <Image
+            source={BG_LOGO_ANDROID}
+            style={{ position: 'absolute', left: 0, top: 0, width: windowWidth, height: windowHeight }}
+            resizeMode="contain"
+          />
+          <View style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(18, 18, 18, 0.7)' }]} pointerEvents="none" />
+        </>
+      )}
       <StatusBar
         barStyle="light-content"
         backgroundColor={isIOS ? 'transparent' : '#121212'}

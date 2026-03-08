@@ -16,30 +16,46 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     bridge = RCTCreateBridgeWithTurboModules(bundleURL, launchOptions as? [String: Any])
     guard let bridge = bridge else { return false }
     let rootView = RCTRootView(bridge: bridge, moduleName: "LordsandLadsRules", initialProperties: nil)
-    
-    if #available(iOS 13.0, *) {
-      rootView.backgroundColor = UIColor(red: 18/255, green: 18/255, blue: 18/255, alpha: 1)
-    } else {
-      rootView.backgroundColor = UIColor(red: 18/255, green: 18/255, blue: 18/255, alpha: 1)
+    rootView.backgroundColor = .clear
+
+    let screen = UIScreen.main.bounds
+    let darkBg = UIColor(red: 18/255, green: 18/255, blue: 18/255, alpha: 1)
+
+    let container = UIView(frame: screen)
+    container.backgroundColor = darkBg
+
+    if let bgLogo = UIImage(named: "BgLogo") {
+      let iv = UIImageView(image: bgLogo)
+      iv.contentMode = .scaleAspectFit
+      iv.frame = screen
+      container.addSubview(iv)
     }
-    
-    window = UIWindow(frame: UIScreen.main.bounds)
+
+    let overlay = UIView(frame: screen)
+    overlay.backgroundColor = UIColor(red: 18/255, green: 18/255, blue: 18/255, alpha: 0.7)
+    container.addSubview(overlay)
+
+    container.addSubview(rootView)
+    rootView.frame = screen
+    rootView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+
+    window = UIWindow(frame: screen)
     let rootViewController = UIViewController()
-    rootViewController.view = rootView
+    rootViewController.view = container
     window?.rootViewController = rootViewController
     window?.makeKeyAndVisible()
 
-    let screen = UIScreen.main.bounds.size
-    let splash = UIView(frame: UIScreen.main.bounds)
+    let screenSize = screen.size
+    let splash = UIView(frame: screen)
     splash.tag = 19740
-    splash.backgroundColor = UIColor(red: 18/255, green: 18/255, blue: 18/255, alpha: 1)
+    splash.backgroundColor = darkBg
     if let logo = UIImage(named: "LaunchLogo") {
-      let side = min(screen.width, screen.height) * 0.88
+      let side = min(screenSize.width, screenSize.height) * 0.88
       let iv = UIImageView(image: logo)
       iv.contentMode = .scaleAspectFit
       iv.frame = CGRect(
-        x: (screen.width - side) / 2,
-        y: (screen.height - side) / 2,
+        x: (screenSize.width - side) / 2,
+        y: (screenSize.height - side) / 2,
         width: side,
         height: side
       )
