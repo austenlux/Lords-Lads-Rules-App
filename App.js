@@ -31,8 +31,9 @@ import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context'
 const SPLASH_MIN_MS = 1000;
 const SPLASH_FADE_MS = 400;
 const LOGO_SIZE_RATIO = 0.9;
-/** Background logo assets (both required so Metro bundles them). iOS uses logo_dark (same as splash); Android uses greyscale. */
-const BG_LOGO_IOS = require('./assets/logo_dark.png');
+/** iOS: asset catalog image (Metro require doesn't work in iOS release builds).
+    Android: Metro-bundled greyscale logo. */
+const BG_LOGO_IOS = { uri: 'BgLogo' };
 const BG_LOGO_ANDROID = require('./assets/logo_dark_greyscale.png');
 
 const TABS = ['rules', 'expansions', 'tools', 'more'];
