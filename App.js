@@ -329,12 +329,12 @@ export default function App() {
               const index = Math.round(e.nativeEvent.contentOffset.x / windowWidth);
               if (TABS[index]) setActiveTab(TABS[index]);
             }}
-            style={{ flex: 1 }}
+            style={{ flex: 1, backgroundColor: 'transparent' }}
           >
-            <View style={[effectivePageStyle, { width: windowWidth }]}>{renderPage('rules')}</View>
-            <View style={[effectivePageStyle, { width: windowWidth }]}>{renderPage('expansions')}</View>
-            <View style={[effectivePageStyle, { width: windowWidth }]}>{renderPage('tools')}</View>
-            <View style={[effectivePageStyle, { width: windowWidth }]}>{renderPage('more')}</View>
+            <View style={[effectivePageStyle, { width: windowWidth, backgroundColor: 'transparent' }]}>{renderPage('rules')}</View>
+            <View style={[effectivePageStyle, { width: windowWidth, backgroundColor: 'transparent' }]}>{renderPage('expansions')}</View>
+            <View style={[effectivePageStyle, { width: windowWidth, backgroundColor: 'transparent' }]}>{renderPage('tools')}</View>
+            <View style={[effectivePageStyle, { width: windowWidth, backgroundColor: 'transparent' }]}>{renderPage('more')}</View>
           </ScrollView>
         ) : (
         <PagerView
@@ -431,26 +431,34 @@ export default function App() {
         <View style={{ flex: 1 }}>
           <Image
             source={require('./assets/logo_dark_greyscale.png')}
-            style={{
-              position: 'absolute',
-              width: logoLayout.bgLogoSize,
-              height: logoLayout.bgLogoSize,
-              left: logoLayout.bgLogoLeft,
-              top: logoLayout.bgLogoTop,
-            }}
+            style={[
+              {
+                position: 'absolute',
+                width: logoLayout.bgLogoSize,
+                height: logoLayout.bgLogoSize,
+                left: logoLayout.bgLogoLeft,
+                top: logoLayout.bgLogoTop,
+              },
+              isIOS && { zIndex: 0 },
+            ]}
             resizeMode="contain"
           />
           <View
-            style={{
-              position: 'absolute',
-              left: logoLayout.bgLogoLeft,
-              top: logoLayout.bgLogoTop,
-              width: logoLayout.bgLogoSize,
-              height: logoLayout.bgLogoSize,
-              backgroundColor: 'rgba(18, 18, 18, 0.7)',
-            }}
+            style={[
+              {
+                position: 'absolute',
+                left: logoLayout.bgLogoLeft,
+                top: logoLayout.bgLogoTop,
+                width: logoLayout.bgLogoSize,
+                height: logoLayout.bgLogoSize,
+                backgroundColor: 'rgba(18, 18, 18, 0.7)',
+              },
+              isIOS && { zIndex: 0 },
+            ]}
           />
-          {mainContent}
+          <View style={[{ flex: 1 }, isIOS && { zIndex: 1, backgroundColor: 'transparent' }]}>
+            {mainContent}
+          </View>
         </View>
       </Animated.View>
       {/* Voice Assistant — FAB + conversation modal.

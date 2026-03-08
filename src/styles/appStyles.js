@@ -300,6 +300,32 @@ const styles = StyleSheet.create({
     maxWidth: 500,
     alignSelf: 'center',
   },
+  /** Tools screen: container and title. aboutTitle is base; on iOS use toolsTitleIOS to match moreTitle. */
+  aboutContainer: {
+    padding: 20,
+    paddingTop: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    maxWidth: 500,
+    alignSelf: 'center',
+  },
+  aboutTitle: {
+    marginBottom: 24,
+    textAlign: 'center',
+  },
+  /** iOS-only: Tools screen title matches moreTitle (large, bold, accent). */
+  ...(Platform.OS === 'ios' && {
+    toolsTitleIOS: {
+      fontSize: 48,
+      fontWeight: 'bold',
+      color: '#BB86FC',
+      lineHeight: 56,
+      textShadowColor: 'rgba(187, 134, 252, 0.3)',
+      textShadowOffset: { width: 0, height: 0 },
+      textShadowRadius: 20,
+    },
+  }),
   moreTitle: {
     fontSize: 48,
     fontWeight: 'bold',
@@ -413,6 +439,15 @@ const styles = StyleSheet.create({
     width: Platform.OS === 'ios' ? 72 : 88,
     height: Platform.OS === 'ios' ? 72 : 88,
   },
+  /** iOS-only: fixed-size wrapper so nail PNGs get a definite layout and render. */
+  ...(Platform.OS === 'ios' && {
+    nailImageWrapperIOS: {
+      width: 72,
+      height: 72,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+  }),
   nailLabel: {
     fontSize: 18,
     fontWeight: '600',

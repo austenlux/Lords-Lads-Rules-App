@@ -81,7 +81,7 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
     >
       <View style={[styles.contentContainer, { paddingTop: contentPaddingTop ?? HEADER_HEIGHT }]}>
         <View style={styles.aboutContainer}>
-          <Text style={styles.aboutTitle}>Tools</Text>
+          <Text style={[styles.aboutTitle, Platform.OS === 'ios' && styles.toolsTitleIOS]}>Tools</Text>
 
           <CollapsibleSection
             title="Nail Calculator"
