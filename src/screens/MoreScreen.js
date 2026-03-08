@@ -166,13 +166,13 @@ export default function MoreScreen({
   const [expandedVersions, setExpandedVersions] = useState({});
   const [pastReleasesExpanded, setPastReleasesExpanded] = useState(false);
   const [sectionsExpanded, setSectionsExpanded] = useState({
-    [SECTION_KEYS.BUY_NAILS]: DEFAULT_SECTION_EXPANDED,
-    [SECTION_KEYS.CHANGELOG]: DEFAULT_SECTION_EXPANDED,
+    [SECTION_KEYS.BUY_NAILS]: false,
+    [SECTION_KEYS.CHANGELOG]: false,
     [SECTION_KEYS.SETTINGS]: false,
     [SECTION_KEYS.INFO]: false,
-    [SECTION_KEYS.DEBUG]: Platform.OS === 'ios', // Expanded on iOS so Debug → Voice Assistant → iOS Debug Info is visible
+    [SECTION_KEYS.DEBUG]: false,
   });
-  const [debugVisible, setDebugVisible] = useState(true); // TEMP: Always show for debugging
+  const [debugVisible, setDebugVisible] = useState(false);
   const [expandRulesDefault, setExpandRulesDefault] = useState(false);
   const [expandExpansionsDefault, setExpandExpansionsDefault] = useState(false);
   const animations = useRef({}).current;
