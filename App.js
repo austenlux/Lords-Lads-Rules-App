@@ -432,9 +432,16 @@ export default function App() {
       {isIOS ? (
         <Animated.View style={{ flex: 1, opacity: mainAppOpacity }}>
           <ImageBackground
-            source={require('./assets/logo_dark_greyscale.png')}
+            source={require('./assets/logo_dark.png')}
             style={{ flex: 1 }}
-            resizeMode="cover"
+            resizeMode="contain"
+            imageStyle={{
+              position: 'absolute',
+              left: logoLayout.bgLogoLeft,
+              top: logoLayout.bgLogoTop,
+              width: logoLayout.bgLogoSize,
+              height: logoLayout.bgLogoSize,
+            }}
           >
             <View
               style={{
