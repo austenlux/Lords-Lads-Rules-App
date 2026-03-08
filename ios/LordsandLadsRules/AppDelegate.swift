@@ -38,7 +38,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
       iv.contentMode = .scaleAspectFit
       // BgLogo (1024x1024 square, circle fills edge-to-edge) renders larger than
       // LaunchLogo (1419x1393, more padding around circle) at the same frame size.
-      let bgScale: CGFloat = 0.965
+      let bgScale: CGFloat = 0.975
       let bgSide = logoSide * bgScale
       iv.frame = CGRect(
         x: (screenSize.width - bgSide) / 2,
