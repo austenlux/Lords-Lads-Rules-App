@@ -185,7 +185,7 @@ export default function MoreScreen({
   const [voiceParentExpanded, setVoiceParentExpanded] = useState(false);
   const [voiceMetaExpanded, setVoiceMetaExpanded] = useState(false);
   const [expandedDebugVoices, setExpandedDebugVoices] = useState({});
-  const [vaDebugExpanded, setVaDebugExpanded] = useState(Platform.OS === 'ios'); // Expanded on iOS so Status + iOS fields are visible without extra tap
+  const [vaDebugExpanded, setVaDebugExpanded] = useState(false);
   const [buildInfoExpanded, setBuildInfoExpanded] = useState(false);
 
   // Initialise rotation animations for settings cards and debug sections.
