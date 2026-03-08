@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   StatusBar,
   Image,
-  ImageBackground,
   Dimensions,
   Animated,
   Platform,
@@ -404,11 +403,12 @@ export default function App() {
   );
 
   return (
-    <ImageBackground
-      source={isIOS ? BG_LOGO_IOS : BG_LOGO_ANDROID}
-      resizeMode="contain"
-      style={{ flex: 1, backgroundColor: '#121212' }}
-    >
+    <View style={{ flex: 1, backgroundColor: '#121212' }}>
+      <Image
+        source={isIOS ? BG_LOGO_IOS : BG_LOGO_ANDROID}
+        style={{ position: 'absolute', left: 0, top: 0, width: windowWidth, height: windowHeight }}
+        resizeMode="contain"
+      />
       <View style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(18, 18, 18, 0.7)' }]} pointerEvents="none" />
       <StatusBar
         barStyle="light-content"
@@ -504,7 +504,7 @@ export default function App() {
           </View>
         </View>
       )}
-    </ImageBackground>
+    </View>
   );
 }
 
