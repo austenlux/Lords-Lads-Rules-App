@@ -430,7 +430,7 @@ export default function App() {
       />
       {/* Background: on iOS use ImageBackground so the logo actually renders (absolute Image often doesn't on iOS). */}
       {isIOS ? (
-        <Animated.View style={{ flex: 1, opacity: mainAppOpacity }}>
+        <View style={{ flex: 1 }}>
           <ImageBackground
             source={require('./assets/logo_dark.png')}
             style={{ flex: 1 }}
@@ -456,7 +456,7 @@ export default function App() {
             {/* TEMP A1 debug: empty view to test if ImageBackground renders when content is absent */}
             <View style={{ flex: 1 }} />
           </ImageBackground>
-        </Animated.View>
+        </View>
       ) : (
         <>
           <View
