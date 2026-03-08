@@ -429,41 +429,43 @@ export default function App() {
       />
       <Animated.View style={{ flex: 1, opacity: mainAppOpacity }}>
         <View style={{ flex: 1 }}>
-          {/* Background layer: logo + overlay in one wrapper so paint order is correct on iOS (no zIndex). */}
-          <View
-            style={{
-              position: 'absolute',
-              left: 0,
-              right: 0,
-              top: 0,
-              bottom: 0,
-            }}
-            pointerEvents="none"
-          >
-            <Image
-              source={require('./assets/logo_dark_greyscale.png')}
-              style={{
-                position: 'absolute',
-                width: logoLayout.bgLogoSize,
-                height: logoLayout.bgLogoSize,
-                left: logoLayout.bgLogoLeft,
-                top: logoLayout.bgLogoTop,
-              }}
-              resizeMode="contain"
-            />
+          {/* Content wrapper: background as first child (drawn behind), content second (on top). Required on iOS so the logo/overlay render in the same view hierarchy. */}
+          <View style={{ flex: 1, position: 'relative' }}>
             <View
               style={{
                 position: 'absolute',
-                left: logoLayout.bgLogoLeft,
-                top: logoLayout.bgLogoTop,
-                width: logoLayout.bgLogoSize,
-                height: logoLayout.bgLogoSize,
-                backgroundColor: 'rgba(18, 18, 18, 0.7)',
+                left: 0,
+                right: 0,
+                top: 0,
+                bottom: 0,
               }}
-            />
-          </View>
-          <View style={{ flex: 1, backgroundColor: 'transparent' }}>
-            {mainContent}
+              pointerEvents="none"
+            >
+              <Image
+                source={require('./assets/logo_dark_greyscale.png')}
+                style={{
+                  position: 'absolute',
+                  width: logoLayout.bgLogoSize,
+                  height: logoLayout.bgLogoSize,
+                  left: logoLayout.bgLogoLeft,
+                  top: logoLayout.bgLogoTop,
+                }}
+                resizeMode="contain"
+              />
+              <View
+                style={{
+                  position: 'absolute',
+                  left: logoLayout.bgLogoLeft,
+                  top: logoLayout.bgLogoTop,
+                  width: logoLayout.bgLogoSize,
+                  height: logoLayout.bgLogoSize,
+                  backgroundColor: 'rgba(18, 18, 18, 0.7)',
+                }}
+              />
+            </View>
+            <View style={{ flex: 1, backgroundColor: 'transparent' }}>
+              {mainContent}
+            </View>
           </View>
         </View>
       </Animated.View>
