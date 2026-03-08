@@ -36,7 +36,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     if let bgLogo = UIImage(named: "BgLogo") {
       let iv = UIImageView(image: bgLogo)
       iv.contentMode = .scaleAspectFit
-      iv.frame = logoFrame
+      // BgLogo (1024x1024 square, circle fills edge-to-edge) renders larger than
+      // LaunchLogo (1419x1393, more padding around circle) at the same frame size.
+      let bgScale: CGFloat = 0.965
+      let bgSide = logoSide * bgScale
+      iv.frame = CGRect(
+        x: (screenSize.width - bgSide) / 2,
+        y: (screenSize.height - bgSide) / 2,
+        width: bgSide,
+        height: bgSide
+      )
       container.addSubview(iv)
     }
 
