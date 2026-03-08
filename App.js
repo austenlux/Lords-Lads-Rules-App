@@ -434,14 +434,7 @@ export default function App() {
           <ImageBackground
             source={require('./assets/logo_dark_greyscale.png')}
             style={{ flex: 1 }}
-            resizeMode="contain"
-            imageStyle={{
-              position: 'absolute',
-              left: logoLayout.bgLogoLeft,
-              top: logoLayout.bgLogoTop,
-              width: logoLayout.bgLogoSize,
-              height: logoLayout.bgLogoSize,
-            }}
+            resizeMode="cover"
           >
             <View
               style={{
