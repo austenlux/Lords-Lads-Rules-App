@@ -818,17 +818,11 @@ export default function MoreScreen({
                         onPress={() => Linking.openURL(getVenmoPayUrl(item.amount))}
                         android_ripple={{ color: 'rgba(187, 134, 252, 0.4)', borderless: false }}
                       >
-                        {Platform.OS === 'ios' ? (
-                          <View style={styles.nailImageWrapperIOS}>
-                            <Image
-                              source={Image.resolveAssetSource ? Image.resolveAssetSource(item.image) : item.image}
-                              style={styles.nailImageIOS}
-                              resizeMode="contain"
-                            />
-                          </View>
-                        ) : (
-                          <Image source={item.image} style={styles.nailImage} resizeMode="contain" />
-                        )}
+                        <Image
+                          source={item.image}
+                          style={styles.nailImage}
+                          resizeMode="contain"
+                        />
                         <Text style={styles.nailLabel}>{item.label}</Text>
                       </Pressable>
                     </View>
@@ -844,17 +838,11 @@ export default function MoreScreen({
                         onPress={() => Linking.openURL(getVenmoPayUrl(item.amount))}
                         android_ripple={{ color: 'rgba(187, 134, 252, 0.4)', borderless: false }}
                       >
-                        {Platform.OS === 'ios' ? (
-                          <View style={styles.nailImageWrapperIOS}>
-                            <Image
-                              source={Image.resolveAssetSource ? Image.resolveAssetSource(item.image) : item.image}
-                              style={styles.nailImageIOS}
-                              resizeMode="contain"
-                            />
-                          </View>
-                        ) : (
-                          <Image source={item.image} style={styles.nailImage} resizeMode="contain" />
-                        )}
+                        <Image
+                          source={item.image}
+                          style={styles.nailImage}
+                          resizeMode="contain"
+                        />
                         <Text style={styles.nailLabel}>{item.label}</Text>
                       </Pressable>
                     </View>

@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   StatusBar,
   Image,
-  ImageBackground,
   Dimensions,
   Animated,
   Platform,
@@ -32,6 +31,10 @@ const SPLASH_FADE_MS = 400;
 const LOGO_SIZE_RATIO = 0.9;
 /** Slightly smaller than splash so the background logo never appears larger and avoids shift. */
 const BG_LOGO_SIZE_SCALE = 0.99;
+
+/** Background logo assets (both required so Metro bundles them). iOS uses logo_dark (same as splash); Android uses greyscale. */
+const BG_LOGO_IOS = require('./assets/logo_dark.png');
+const BG_LOGO_ANDROID = require('./assets/logo_dark_greyscale.png');
 
 const TABS = ['rules', 'expansions', 'tools', 'more'];
 const tabToIndex = (tab) => TABS.indexOf(tab);
@@ -428,12 +431,17 @@ export default function App() {
         backgroundColor={isIOS ? 'transparent' : '#121212'}
         translucent={isIOS || undefined}
       />
-      {/* Background logo + overlay. iOS: ImageBackground so the logo reliably renders; Android: absolute-positioned Image + overlay. */}
-      {isIOS ? (
-        <ImageBackground
-          source={require('./assets/logo_dark_greyscale.png')}
-          style={[StyleSheet.absoluteFillObject, { width: logoLayout.width, height: logoLayout.height }]}
-          imageStyle={{
+      {/* Background logo + overlay. Same structure on both platforms. */}
+      <View
+        style={[
+          StyleSheet.absoluteFillObject,
+          { width: logoLayout.width, height: logoLayout.height, zIndex: 0 },
+        ]}
+        pointerEvents="none"
+      >
+        <Image
+          source={isIOS ? BG_LOGO_IOS : BG_LOGO_ANDROID}
+          style={{
             position: 'absolute',
             left: logoLayout.bgLogoLeft,
             top: logoLayout.bgLogoTop,
@@ -441,61 +449,21 @@ export default function App() {
             height: logoLayout.bgLogoSize,
           }}
           resizeMode="contain"
-          pointerEvents="none"
-        >
-          <View
-            style={[
-              StyleSheet.absoluteFillObject,
-              {
-                left: logoLayout.bgLogoLeft,
-                top: logoLayout.bgLogoTop,
-                width: logoLayout.bgLogoSize,
-                height: logoLayout.bgLogoSize,
-                backgroundColor: 'rgba(18, 18, 18, 0.7)',
-              },
-            ]}
-            pointerEvents="none"
-          />
-          <Animated.View style={{ flex: 1, opacity: mainAppOpacity, backgroundColor: 'transparent' }}>
-            <View style={{ flex: 1, backgroundColor: 'transparent' }}>{mainContent}</View>
-          </Animated.View>
-        </ImageBackground>
-      ) : (
-        <>
-          <View
-            style={[
-              StyleSheet.absoluteFillObject,
-              { width: logoLayout.width, height: logoLayout.height },
-            ]}
-            pointerEvents="none"
-          >
-            <Image
-              source={require('./assets/logo_dark_greyscale.png')}
-              style={{
-                position: 'absolute',
-                left: logoLayout.bgLogoLeft,
-                top: logoLayout.bgLogoTop,
-                width: logoLayout.bgLogoSize,
-                height: logoLayout.bgLogoSize,
-              }}
-              resizeMode="contain"
-            />
-            <View
-              style={{
-                position: 'absolute',
-                left: logoLayout.bgLogoLeft,
-                top: logoLayout.bgLogoTop,
-                width: logoLayout.bgLogoSize,
-                height: logoLayout.bgLogoSize,
-                backgroundColor: 'rgba(18, 18, 18, 0.7)',
-              }}
-            />
-          </View>
-          <Animated.View style={{ flex: 1, opacity: mainAppOpacity, backgroundColor: 'transparent' }}>
-            <View style={{ flex: 1, backgroundColor: 'transparent' }}>{mainContent}</View>
-          </Animated.View>
-        </>
-      )}
+        />
+        <View
+          style={{
+            position: 'absolute',
+            left: logoLayout.bgLogoLeft,
+            top: logoLayout.bgLogoTop,
+            width: logoLayout.bgLogoSize,
+            height: logoLayout.bgLogoSize,
+            backgroundColor: 'rgba(18, 18, 18, 0.7)',
+          }}
+        />
+      </View>
+      <Animated.View style={{ flex: 1, opacity: mainAppOpacity, backgroundColor: 'transparent', zIndex: 1 }}>
+        <View style={{ flex: 1, backgroundColor: 'transparent' }}>{mainContent}</View>
+      </Animated.View>
       {/* Voice Assistant — FAB + conversation modal.
           Shown once the splash is dismissed and Gemini Nano is confirmed available. */}
       {aiSupported && splashDismissed && (

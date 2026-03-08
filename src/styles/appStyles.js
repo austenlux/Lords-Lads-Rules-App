@@ -434,7 +434,7 @@ const styles = StyleSheet.create({
   },
   nailButtonWrapper: {
     borderRadius: 12,
-    overflow: 'hidden',
+    overflow: Platform.OS === 'ios' ? 'visible' : 'hidden',
     width: '100%',
     alignItems: 'center',
   },
