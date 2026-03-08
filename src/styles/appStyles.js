@@ -310,6 +310,20 @@ const styles = StyleSheet.create({
     maxWidth: 500,
     alignSelf: 'center',
   },
+  /** iOS: Tools container uses full-width stretch layout like More (sections not squished/centered). */
+  ...(Platform.OS === 'ios' && {
+    toolsContainerIOS: {
+      alignSelf: 'stretch',
+      alignItems: 'stretch',
+      width: '100%',
+      maxWidth: '100%',
+    },
+  }),
+  /** Section wrapper for Tools; on iOS matches More (full width). */
+  aboutSectionWrapper: {
+    marginBottom: 0,
+    width: '100%',
+  },
   aboutTitle: {
     marginBottom: 24,
     textAlign: 'center',
@@ -439,11 +453,13 @@ const styles = StyleSheet.create({
     width: Platform.OS === 'ios' ? 72 : 88,
     height: Platform.OS === 'ios' ? 72 : 88,
   },
-  /** iOS-only: fixed-size wrapper so nail PNGs get a definite layout and render. */
+  /** iOS-only: fixed-size wrapper so nail PNGs get a definite layout and render (no overflow that could clip). */
   ...(Platform.OS === 'ios' && {
     nailImageWrapperIOS: {
       width: 72,
       height: 72,
+      minWidth: 72,
+      minHeight: 72,
       justifyContent: 'center',
       alignItems: 'center',
     },

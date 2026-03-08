@@ -429,34 +429,40 @@ export default function App() {
       />
       <Animated.View style={{ flex: 1, opacity: mainAppOpacity }}>
         <View style={{ flex: 1 }}>
-          <Image
-            source={require('./assets/logo_dark_greyscale.png')}
-            style={[
-              {
+          {/* Background layer: logo + overlay in one wrapper so paint order is correct on iOS (no zIndex). */}
+          <View
+            style={{
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              top: 0,
+              bottom: 0,
+            }}
+            pointerEvents="none"
+          >
+            <Image
+              source={require('./assets/logo_dark_greyscale.png')}
+              style={{
                 position: 'absolute',
                 width: logoLayout.bgLogoSize,
                 height: logoLayout.bgLogoSize,
                 left: logoLayout.bgLogoLeft,
                 top: logoLayout.bgLogoTop,
-              },
-              isIOS && { zIndex: 0 },
-            ]}
-            resizeMode="contain"
-          />
-          <View
-            style={[
-              {
+              }}
+              resizeMode="contain"
+            />
+            <View
+              style={{
                 position: 'absolute',
                 left: logoLayout.bgLogoLeft,
                 top: logoLayout.bgLogoTop,
                 width: logoLayout.bgLogoSize,
                 height: logoLayout.bgLogoSize,
                 backgroundColor: 'rgba(18, 18, 18, 0.7)',
-              },
-              isIOS && { zIndex: 0 },
-            ]}
-          />
-          <View style={[{ flex: 1 }, isIOS && { zIndex: 1, backgroundColor: 'transparent' }]}>
+              }}
+            />
+          </View>
+          <View style={{ flex: 1, backgroundColor: 'transparent' }}>
             {mainContent}
           </View>
         </View>

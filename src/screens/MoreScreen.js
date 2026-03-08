@@ -820,7 +820,11 @@ export default function MoreScreen({
                       >
                         {Platform.OS === 'ios' ? (
                           <View style={styles.nailImageWrapperIOS}>
-                            <Image source={item.image} style={styles.nailImage} resizeMode="contain" />
+                            <Image
+                              source={item.image}
+                              style={[styles.nailImage, { width: 72, height: 72 }]}
+                              resizeMode="contain"
+                            />
                           </View>
                         ) : (
                           <Image source={item.image} style={styles.nailImage} resizeMode="contain" />
@@ -842,7 +846,11 @@ export default function MoreScreen({
                       >
                         {Platform.OS === 'ios' ? (
                           <View style={styles.nailImageWrapperIOS}>
-                            <Image source={item.image} style={styles.nailImage} resizeMode="contain" />
+                            <Image
+                              source={item.image}
+                              style={[styles.nailImage, { width: 72, height: 72 }]}
+                              resizeMode="contain"
+                            />
                           </View>
                         ) : (
                           <Image source={item.image} style={styles.nailImage} resizeMode="contain" />
