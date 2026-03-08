@@ -21,13 +21,22 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     let screen = UIScreen.main.bounds
     let darkBg = UIColor(red: 18/255, green: 18/255, blue: 18/255, alpha: 1)
 
+    let screenSize = screen.size
+    let logoSide = min(screenSize.width, screenSize.height) * 0.88
+    let logoFrame = CGRect(
+      x: (screenSize.width - logoSide) / 2,
+      y: (screenSize.height - logoSide) / 2,
+      width: logoSide,
+      height: logoSide
+    )
+
     let container = UIView(frame: screen)
     container.backgroundColor = darkBg
 
     if let bgLogo = UIImage(named: "BgLogo") {
       let iv = UIImageView(image: bgLogo)
       iv.contentMode = .scaleAspectFit
-      iv.frame = screen
+      iv.frame = logoFrame
       container.addSubview(iv)
     }
 
@@ -45,20 +54,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     window?.rootViewController = rootViewController
     window?.makeKeyAndVisible()
 
-    let screenSize = screen.size
     let splash = UIView(frame: screen)
     splash.tag = 19740
     splash.backgroundColor = darkBg
     if let logo = UIImage(named: "LaunchLogo") {
-      let side = min(screenSize.width, screenSize.height) * 0.88
       let iv = UIImageView(image: logo)
       iv.contentMode = .scaleAspectFit
-      iv.frame = CGRect(
-        x: (screenSize.width - side) / 2,
-        y: (screenSize.height - side) / 2,
-        width: side,
-        height: side
-      )
+      iv.frame = logoFrame
       splash.addSubview(iv)
     }
     window?.addSubview(splash)
