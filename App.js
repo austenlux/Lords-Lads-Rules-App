@@ -427,46 +427,33 @@ export default function App() {
         backgroundColor={isIOS ? 'transparent' : '#121212'}
         translucent={isIOS || undefined}
       />
-      <Animated.View style={{ flex: 1, opacity: mainAppOpacity }}>
-        <View style={{ flex: 1 }}>
-          {/* Content wrapper: background as first child (drawn behind), content second (on top). Required on iOS so the logo/overlay render in the same view hierarchy. */}
-          <View style={{ flex: 1, position: 'relative' }}>
-            <View
-              style={{
-                position: 'absolute',
-                left: 0,
-                right: 0,
-                top: 0,
-                bottom: 0,
-              }}
-              pointerEvents="none"
-            >
-              <Image
-                source={require('./assets/logo_dark_greyscale.png')}
-                style={{
-                  position: 'absolute',
-                  width: logoLayout.bgLogoSize,
-                  height: logoLayout.bgLogoSize,
-                  left: logoLayout.bgLogoLeft,
-                  top: logoLayout.bgLogoTop,
-                }}
-                resizeMode="contain"
-              />
-              <View
-                style={{
-                  position: 'absolute',
-                  left: logoLayout.bgLogoLeft,
-                  top: logoLayout.bgLogoTop,
-                  width: logoLayout.bgLogoSize,
-                  height: logoLayout.bgLogoSize,
-                  backgroundColor: 'rgba(18, 18, 18, 0.7)',
-                }}
-              />
-            </View>
-            <View style={{ flex: 1, backgroundColor: 'transparent' }}>
-              {mainContent}
-            </View>
-          </View>
+      {/* Root-level background: first two children so they draw behind content on both platforms (no nesting under opaque views). */}
+      <Image
+        source={require('./assets/logo_dark_greyscale.png')}
+        style={{
+          position: 'absolute',
+          left: logoLayout.bgLogoLeft,
+          top: logoLayout.bgLogoTop,
+          width: logoLayout.bgLogoSize,
+          height: logoLayout.bgLogoSize,
+        }}
+        resizeMode="contain"
+        pointerEvents="none"
+      />
+      <View
+        style={{
+          position: 'absolute',
+          left: logoLayout.bgLogoLeft,
+          top: logoLayout.bgLogoTop,
+          width: logoLayout.bgLogoSize,
+          height: logoLayout.bgLogoSize,
+          backgroundColor: 'rgba(18, 18, 18, 0.7)',
+        }}
+        pointerEvents="none"
+      />
+      <Animated.View style={{ flex: 1, opacity: mainAppOpacity, backgroundColor: 'transparent' }}>
+        <View style={{ flex: 1, backgroundColor: 'transparent' }}>
+          {mainContent}
         </View>
       </Animated.View>
       {/* Voice Assistant — FAB + conversation modal.
