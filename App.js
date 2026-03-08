@@ -453,7 +453,8 @@ export default function App() {
                 backgroundColor: 'rgba(18, 18, 18, 0.7)',
               }}
             />
-            <View style={{ flex: 1 }}>{mainContent}</View>
+            {/* TEMP A1 debug: empty view to test if ImageBackground renders when content is absent */}
+            <View style={{ flex: 1 }} />
           </ImageBackground>
         </Animated.View>
       ) : (
