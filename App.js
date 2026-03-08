@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   StatusBar,
   Image,
+  ImageBackground,
   Dimensions,
   Animated,
   Platform,
@@ -427,17 +428,12 @@ export default function App() {
         backgroundColor={isIOS ? 'transparent' : '#121212'}
         translucent={isIOS || undefined}
       />
-      {/* Background: logo + overlay as root-level siblings; content in transparent Animated.View. Android shows logo; iOS Release may need assets in Xcode or Debug build to confirm. */}
-      <View
-        style={[
-          StyleSheet.absoluteFillObject,
-          { width: logoLayout.width, height: logoLayout.height },
-        ]}
-        pointerEvents="none"
-      >
-        <Image
+      {/* Background logo + overlay. iOS: ImageBackground so the logo reliably renders; Android: absolute-positioned Image + overlay. */}
+      {isIOS ? (
+        <ImageBackground
           source={require('./assets/logo_dark_greyscale.png')}
-          style={{
+          style={[StyleSheet.absoluteFillObject, { width: logoLayout.width, height: logoLayout.height }]}
+          imageStyle={{
             position: 'absolute',
             left: logoLayout.bgLogoLeft,
             top: logoLayout.bgLogoTop,
@@ -445,21 +441,61 @@ export default function App() {
             height: logoLayout.bgLogoSize,
           }}
           resizeMode="contain"
-        />
-        <View
-          style={{
-            position: 'absolute',
-            left: logoLayout.bgLogoLeft,
-            top: logoLayout.bgLogoTop,
-            width: logoLayout.bgLogoSize,
-            height: logoLayout.bgLogoSize,
-            backgroundColor: 'rgba(18, 18, 18, 0.7)',
-          }}
-        />
-      </View>
-      <Animated.View style={{ flex: 1, opacity: mainAppOpacity, backgroundColor: 'transparent' }}>
-        <View style={{ flex: 1, backgroundColor: 'transparent' }}>{mainContent}</View>
-      </Animated.View>
+          pointerEvents="none"
+        >
+          <View
+            style={[
+              StyleSheet.absoluteFillObject,
+              {
+                left: logoLayout.bgLogoLeft,
+                top: logoLayout.bgLogoTop,
+                width: logoLayout.bgLogoSize,
+                height: logoLayout.bgLogoSize,
+                backgroundColor: 'rgba(18, 18, 18, 0.7)',
+              },
+            ]}
+            pointerEvents="none"
+          />
+          <Animated.View style={{ flex: 1, opacity: mainAppOpacity, backgroundColor: 'transparent' }}>
+            <View style={{ flex: 1, backgroundColor: 'transparent' }}>{mainContent}</View>
+          </Animated.View>
+        </ImageBackground>
+      ) : (
+        <>
+          <View
+            style={[
+              StyleSheet.absoluteFillObject,
+              { width: logoLayout.width, height: logoLayout.height },
+            ]}
+            pointerEvents="none"
+          >
+            <Image
+              source={require('./assets/logo_dark_greyscale.png')}
+              style={{
+                position: 'absolute',
+                left: logoLayout.bgLogoLeft,
+                top: logoLayout.bgLogoTop,
+                width: logoLayout.bgLogoSize,
+                height: logoLayout.bgLogoSize,
+              }}
+              resizeMode="contain"
+            />
+            <View
+              style={{
+                position: 'absolute',
+                left: logoLayout.bgLogoLeft,
+                top: logoLayout.bgLogoTop,
+                width: logoLayout.bgLogoSize,
+                height: logoLayout.bgLogoSize,
+                backgroundColor: 'rgba(18, 18, 18, 0.7)',
+              }}
+            />
+          </View>
+          <Animated.View style={{ flex: 1, opacity: mainAppOpacity, backgroundColor: 'transparent' }}>
+            <View style={{ flex: 1, backgroundColor: 'transparent' }}>{mainContent}</View>
+          </Animated.View>
+        </>
+      )}
       {/* Voice Assistant — FAB + conversation modal.
           Shown once the splash is dismissed and Gemini Nano is confirmed available. */}
       {aiSupported && splashDismissed && (

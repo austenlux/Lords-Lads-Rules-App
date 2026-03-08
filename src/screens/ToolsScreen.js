@@ -80,7 +80,7 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
       contentInsetAdjustmentBehavior={Platform.OS === 'ios' ? 'never' : undefined}
     >
       <View style={[styles.contentContainer, { paddingTop: contentPaddingTop ?? HEADER_HEIGHT }]}>
-        <View style={[styles.aboutContainer, Platform.OS === 'ios' && styles.toolsContainerIOS]}>
+        <View style={Platform.OS === 'ios' ? styles.moreContainer : styles.aboutContainer}>
           <Text style={[styles.aboutTitle, Platform.OS === 'ios' && styles.toolsTitleIOS]}>Tools</Text>
 
           <CollapsibleSection

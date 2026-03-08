@@ -444,7 +444,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingVertical: 16,
     paddingHorizontal: 12,
-    overflow: 'hidden',
+    overflow: Platform.OS === 'ios' ? 'visible' : 'hidden',
   },
   nailButtonPressed: {
     opacity: 0.8,
@@ -453,7 +453,7 @@ const styles = StyleSheet.create({
     width: Platform.OS === 'ios' ? 72 : 88,
     height: Platform.OS === 'ios' ? 72 : 88,
   },
-  /** iOS-only: fixed-size wrapper so nail PNGs get a definite layout and render (no overflow that could clip). */
+  /** iOS-only: fixed-size wrapper and image so nail PNGs get a definite layout and render. */
   ...(Platform.OS === 'ios' && {
     nailImageWrapperIOS: {
       width: 72,
@@ -462,6 +462,11 @@ const styles = StyleSheet.create({
       minHeight: 72,
       justifyContent: 'center',
       alignItems: 'center',
+      overflow: 'visible',
+    },
+    nailImageIOS: {
+      width: 72,
+      height: 72,
     },
   }),
   nailLabel: {
