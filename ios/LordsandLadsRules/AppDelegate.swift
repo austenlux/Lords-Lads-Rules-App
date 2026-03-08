@@ -28,7 +28,25 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     rootViewController.view = rootView
     window?.rootViewController = rootViewController
     window?.makeKeyAndVisible()
-    
+
+    let screen = UIScreen.main.bounds.size
+    let splash = UIView(frame: UIScreen.main.bounds)
+    splash.tag = 19740
+    splash.backgroundColor = UIColor(red: 18/255, green: 18/255, blue: 18/255, alpha: 1)
+    if let logo = UIImage(named: "LaunchLogo") {
+      let side = min(screen.width, screen.height) * 0.88
+      let iv = UIImageView(image: logo)
+      iv.contentMode = .scaleAspectFit
+      iv.frame = CGRect(
+        x: (screen.width - side) / 2,
+        y: (screen.height - side) / 2,
+        width: side,
+        height: side
+      )
+      splash.addSubview(iv)
+    }
+    window?.addSubview(splash)
+
     return true
   }
 } 

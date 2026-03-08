@@ -19,6 +19,7 @@
 		VA000A0000000000VA00000A /* RCTVoiceAssistant.mm in Sources */ = {isa = PBXBuildFile; fileRef = VA00050000000000VA000005 /* RCTVoiceAssistant.mm */; };
 		VA000B0000000000VA00000B /* ThinkingSounds in Resources */ = {isa = PBXBuildFile; fileRef = VA00070000000000VA000007 /* ThinkingSounds */; };
 		BD00010000000000BD000001 /* RCTBridgeDelegateWithTurboModules.mm in Sources */ = {isa = PBXBuildFile; fileRef = BD00030000000000BD000003 /* RCTBridgeDelegateWithTurboModules.mm */; };
+		SP00010000000000SP000001 /* NativeSplashScreen.m in Sources */ = {isa = PBXBuildFile; fileRef = SP00020000000000SP000002 /* NativeSplashScreen.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -42,6 +43,7 @@
 		VA00070000000000VA000007 /* ThinkingSounds */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ThinkingSounds; path = LordsandLadsRules/ThinkingSounds; sourceTree = "<group>"; };
 		BD00020000000000BD000002 /* RCTBridgeDelegateWithTurboModules.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCTBridgeDelegateWithTurboModules.h; sourceTree = "<group>"; };
 		BD00030000000000BD000003 /* RCTBridgeDelegateWithTurboModules.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = RCTBridgeDelegateWithTurboModules.mm; sourceTree = "<group>"; };
+		SP00020000000000SP000002 /* NativeSplashScreen.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NativeSplashScreen.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -127,6 +129,7 @@
 			children = (
 				BD00020000000000BD000002 /* RCTBridgeDelegateWithTurboModules.h */,
 				BD00030000000000BD000003 /* RCTBridgeDelegateWithTurboModules.mm */,
+				SP00020000000000SP000002 /* NativeSplashScreen.m */,
 			);
 			name = RCTBridgeDelegateWithTurboModules;
 			path = LordsandLadsRules;
@@ -307,6 +310,7 @@
 				VA00080000000000VA000008 /* VoiceAssistantSwift.swift in Sources */,
 				VA00090000000000VA000009 /* ThinkingSoundPlayer.swift in Sources */,
 				VA000A0000000000VA00000A /* RCTVoiceAssistant.mm in Sources */,
+				SP00010000000000SP000001 /* NativeSplashScreen.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -6,11 +6,13 @@ import {
   TouchableOpacity,
   StatusBar,
   Image,
+  ImageBackground,
   Dimensions,
   Animated,
   Platform,
   ScrollView,
   Linking,
+  NativeModules,
   StyleSheet,
 } from 'react-native';
 import PagerView from 'react-native-pager-view';
@@ -29,9 +31,6 @@ import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context'
 const SPLASH_MIN_MS = 1000;
 const SPLASH_FADE_MS = 400;
 const LOGO_SIZE_RATIO = 0.9;
-/** Slightly smaller than splash so the background logo never appears larger and avoids shift. */
-const BG_LOGO_SIZE_SCALE = 0.99;
-
 /** Background logo assets (both required so Metro bundles them). iOS uses logo_dark (same as splash); Android uses greyscale. */
 const BG_LOGO_IOS = require('./assets/logo_dark.png');
 const BG_LOGO_ANDROID = require('./assets/logo_dark_greyscale.png');
@@ -52,22 +51,16 @@ function getPageHeight() {
 function getLogoLayout() {
   const { width, height } = Dimensions.get('window');
   const logoSize = Math.min(width, height) * LOGO_SIZE_RATIO;
-  const bgLogoSize = logoSize * BG_LOGO_SIZE_SCALE;
   return {
     width,
     height,
     logoSize,
     logoLeft: (width - logoSize) / 2,
     logoTop: (height - logoSize) / 2,
-    bgLogoSize,
-    bgLogoLeft: (width - bgLogoSize) / 2,
-    bgLogoTop: (height - bgLogoSize) / 2,
   };
 }
 
 export default function App() {
-  const [splashMinTimeElapsed, setSplashMinTimeElapsed] = useState(false);
-  const [splashDismissed, setSplashDismissed] = useState(false);
   const [isConvoOpen, setIsConvoOpen] = useState(false);
   const [showMicDialog, setShowMicDialog] = useState(false);
   const prevIsThinkingRef = useRef(false);
@@ -77,6 +70,7 @@ export default function App() {
   const splashOpacity = useRef(new Animated.Value(1)).current;
   const mainAppOpacity = useRef(new Animated.Value(0)).current;
   const fadeOutStarted = useRef(false);
+  const splashDismissedRef = useRef(false);
   const pagerRef = useRef(null);
   const iosScrollRef = useRef(null);
   const insets = useSafeAreaInsets();
@@ -84,7 +78,16 @@ export default function App() {
 
   useEffect(() => {
     const t = setTimeout(() => {
-      setSplashMinTimeElapsed(true);
+      if (isIOS) {
+        NativeModules.NativeSplashScreen?.dismiss();
+      }
+      if (!fadeOutStarted.current) {
+        fadeOutStarted.current = true;
+        Animated.parallel([
+          Animated.timing(splashOpacity, { toValue: 0, duration: SPLASH_FADE_MS, useNativeDriver: true }),
+          Animated.timing(mainAppOpacity, { toValue: 1, duration: SPLASH_FADE_MS, useNativeDriver: true }),
+        ]).start(() => { splashDismissedRef.current = true; });
+      }
     }, SPLASH_MIN_MS);
     return () => clearTimeout(t);
   }, []);
@@ -162,25 +165,6 @@ export default function App() {
     }
   }, [isThinking, isConvoOpen, isListening]);
 
-  // After 1 second, fade splash out and main content in. Do not wait for loading.
-  useEffect(() => {
-    if (!splashMinTimeElapsed || fadeOutStarted.current) return;
-    fadeOutStarted.current = true;
-    Animated.parallel([
-      Animated.timing(splashOpacity, {
-        toValue: 0,
-        duration: SPLASH_FADE_MS,
-        useNativeDriver: true,
-      }),
-      Animated.timing(mainAppOpacity, {
-        toValue: 1,
-        duration: SPLASH_FADE_MS,
-        useNativeDriver: true,
-      }),
-    ]).start(({ finished }) => {
-      if (finished) setSplashDismissed(true);
-    });
-  }, [splashMinTimeElapsed, splashOpacity, mainAppOpacity]);
 
   const logoLayout = getLogoLayout();
   const { width: windowWidth, height: windowHeight } = Dimensions.get('window');
@@ -419,65 +403,34 @@ export default function App() {
   );
 
   return (
-    <View style={{ flex: 1, width: windowWidth, height: windowHeight, backgroundColor: '#121212' }}>
+    <ImageBackground
+      source={isIOS ? BG_LOGO_IOS : BG_LOGO_ANDROID}
+      resizeMode="contain"
+      style={{ flex: 1, backgroundColor: '#121212' }}
+    >
+      <View style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(18, 18, 18, 0.7)' }]} pointerEvents="none" />
       <StatusBar
         barStyle="light-content"
         backgroundColor={isIOS ? 'transparent' : '#121212'}
         translucent={isIOS || undefined}
       />
-      {/* Background: full-screen logo image then overlay. Use same asset as splash on iOS so it's in bundle. */}
-      <View
-        style={[
-          StyleSheet.absoluteFillObject,
-          { zIndex: 0, width: logoLayout.width, height: logoLayout.height },
-        ]}
-        pointerEvents="none"
-      >
-        <Image
-          source={isIOS ? BG_LOGO_IOS : BG_LOGO_ANDROID}
-          style={{
-            position: 'absolute',
-            left: logoLayout.bgLogoLeft,
-            top: logoLayout.bgLogoTop,
-            width: logoLayout.bgLogoSize,
-            height: logoLayout.bgLogoSize,
-          }}
-          resizeMode="contain"
-        />
-        <View style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(18, 18, 18, 0.7)' }]} />
-      </View>
-      <Animated.View style={{ flex: 1, opacity: mainAppOpacity, backgroundColor: 'transparent', zIndex: 1 }}>
-        <View style={{ flex: 1, backgroundColor: 'transparent' }}>{mainContent}</View>
+      <Animated.View style={{ flex: 1, opacity: mainAppOpacity }}>
+        {mainContent}
       </Animated.View>
-      {/* Voice Assistant — FAB + conversation modal.
-          Shown once the splash is dismissed and Gemini Nano is confirmed available. */}
-      {aiSupported && splashDismissed && (
+
+      {aiSupported && (
         <View
           pointerEvents="box-none"
-          style={{
-            position: 'absolute',
-            left: 0,
-            right: 0,
-            bottom: 0,
-            top: 0,
-            zIndex: 10,
-          }}
+          style={{ position: 'absolute', left: 0, right: 0, bottom: 0, top: 0, zIndex: 10 }}
         >
-          {/* Conversation modal — floats above the FAB */}
           <VoiceAssistantModal
             messages={messages}
             isOpen={isConvoOpen}
             fabBottom={TAB_BAR_HEIGHT + tabBarBottomInset + 16}
           />
-
-          {/* FAB — anchored bottom-right */}
           <View
             pointerEvents="box-none"
-            style={{
-              position: 'absolute',
-              right: 20,
-              bottom: TAB_BAR_HEIGHT + tabBarBottomInset + 16,
-            }}
+            style={{ position: 'absolute', right: 20, bottom: TAB_BAR_HEIGHT + tabBarBottomInset + 16 }}
           >
             <VoiceAssistantFAB
               isListening={isListening}
@@ -501,18 +454,15 @@ export default function App() {
         </View>
       )}
 
-      {!splashDismissed && (
+      {!isIOS && (
         <Animated.View
           style={{
-            position: 'absolute',
-            left: 0,
-            right: 0,
-            top: 0,
-            bottom: 0,
+            ...StyleSheet.absoluteFillObject,
             zIndex: 100,
             backgroundColor: '#121212',
             opacity: splashOpacity,
           }}
+          pointerEvents="none"
         >
           <Image
             source={require('./assets/logo_dark.png')}
@@ -553,7 +503,7 @@ export default function App() {
           </View>
         </View>
       )}
-    </View>
+    </ImageBackground>
   );
 }
 
