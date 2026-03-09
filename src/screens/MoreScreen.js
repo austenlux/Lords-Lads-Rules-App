@@ -59,8 +59,8 @@ import CalendarIcon from '../../assets/icons/calendar.svg';
 import ExpandIcon from '../../assets/icons/expand.svg';
 import PaintIcon from '../../assets/icons/paint.svg';
 import SplatIcon from '../../assets/icons/splat.svg';
-import Font1Icon from '../../assets/icons/font1.svg';
-import Font2Icon from '../../assets/icons/font2.svg';
+import Font1Icon from '../../assets/icons/font.svg';
+import Font2Icon from '../../assets/icons/font.svg';
 import SpeakerIcon from '../../assets/icons/speaker.svg';
 import AnvilIcon from '../../assets/icons/anvil.svg';
 import TreeIcon from '../../assets/icons/tree.svg';
@@ -68,6 +68,7 @@ import LogIcon from '../../assets/icons/log.svg';
 import MountainIcon from '../../assets/icons/mountain.svg';
 import SkyIcon from '../../assets/icons/sky.svg';
 import BeerIcon from '../../assets/icons/beer.svg';
+import RainbowIcon from '../../assets/icons/rainbow.svg';
 import CheckIcon from '../../assets/icons/check.svg';
 import CloseIcon from '../../assets/icons/close.svg';
 
@@ -83,6 +84,7 @@ const COLOR_GROUP_ICONS = {
   timber:   { Icon: LogIcon,      color: '#A0522D', stroke: false },
   wilds:    { Icon: MountainIcon, color: '#4A8A5B', stroke: false },
   elements: { Icon: SkyIcon,      color: null,      stroke: false },
+  aurora:   { Icon: RainbowIcon,  color: '#BF00FF', stroke: false },
   brew:     { Icon: BeerIcon,     color: '#D18D00', stroke: true  },
 };
 
