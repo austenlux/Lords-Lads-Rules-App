@@ -187,6 +187,7 @@ export default function MoreScreen({
   const [expandedDebugVoices, setExpandedDebugVoices] = useState({});
   const [vaDebugExpanded, setVaDebugExpanded] = useState(false);
   const [buildInfoExpanded, setBuildInfoExpanded] = useState(false);
+  const [commitMsgExpanded, setCommitMsgExpanded] = useState(false);
 
   // Initialise rotation animations for settings cards and debug sections.
   useEffect(() => {
@@ -922,14 +923,29 @@ export default function MoreScreen({
                             { label: 'Android', value: `${Platform.constants?.Release ?? '?'} (API ${Platform.Version})` },
                           ]),
                       { label: 'Screen',       value: (() => { const { width, height } = Dimensions.get('window'); return `${Math.round(width)} × ${Math.round(height)}`; })() },
-                    ].map(({ label, value }, idx, arr) => (
-                      <View key={label} style={[styles.debugMetaRow, idx === arr.length - 1 && { borderBottomWidth: 0 }]}>
-                        <Text style={styles.debugMetaLabel}>{label}</Text>
-                        <Text style={[styles.debugMetaValue, { fontFamily: Platform.OS === 'android' ? 'monospace' : 'Menlo', flexShrink: 1 }]} numberOfLines={2}>
-                          {value}
-                        </Text>
-                      </View>
-                    ))}
+                    ].map(({ label, value }, idx, arr) => {
+                      const isLast = idx === arr.length - 1;
+                      const isMsg = label === 'Message';
+                      const row = (
+                        <View key={label} style={[styles.debugMetaRow, isLast && { borderBottomWidth: 0 }]}>
+                          <Text style={styles.debugMetaLabel}>{label}</Text>
+                          <Text
+                            style={[styles.debugMetaValue, { fontFamily: Platform.OS === 'android' ? 'monospace' : 'Menlo', flexShrink: 1 }, isMsg && !commitMsgExpanded && { color: '#BB86FC' }]}
+                            numberOfLines={isMsg && commitMsgExpanded ? undefined : 2}
+                          >
+                            {value}{isMsg && !commitMsgExpanded ? ' ▸' : ''}
+                          </Text>
+                        </View>
+                      );
+                      if (isMsg) {
+                        return (
+                          <Pressable key={label} onPress={() => setCommitMsgExpanded(prev => !prev)}>
+                            {row}
+                          </Pressable>
+                        );
+                      }
+                      return row;
+                    })}
                   </View>
                 )}
               </TouchableOpacity>
