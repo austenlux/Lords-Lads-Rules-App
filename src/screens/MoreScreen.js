@@ -911,11 +911,16 @@ export default function MoreScreen({
                       { label: 'Message',      value: BUILD_COMMIT_MESSAGE },
                       { label: 'Version',      value: `${BUILD_VERSION_NAME} (${BUILD_VERSION_CODE})` },
                       { label: 'Built',        value: new Date(BUILD_TIMESTAMP).toLocaleString() },
-                      { label: 'Device',       value: Platform.constants?.Model ?? 'unknown' },
-                      { label: 'Brand',        value: (Platform.constants?.Brand ?? 'unknown').replace(/\b\w/g, c => c.toUpperCase()) },
                       ...(Platform.OS === 'ios'
-                        ? [{ label: 'iOS', value: `${Platform.constants?.systemVersion ?? '?'}` }]
-                        : [{ label: 'Android', value: `${Platform.constants?.Release ?? '?'} (API ${Platform.Version})` }]),
+                        ? [
+                            { label: 'Device', value: Platform.constants?.interfaceIdiom === 'phone' ? 'iPhone' : Platform.constants?.interfaceIdiom === 'pad' ? 'iPad' : Platform.constants?.interfaceIdiom ?? 'unknown' },
+                            { label: 'iOS',    value: `${Platform.constants?.osVersion ?? '?'}` },
+                          ]
+                        : [
+                            { label: 'Device', value: Platform.constants?.Model ?? 'unknown' },
+                            { label: 'Brand',  value: (Platform.constants?.Brand ?? 'unknown').replace(/\b\w/g, c => c.toUpperCase()) },
+                            { label: 'Android', value: `${Platform.constants?.Release ?? '?'} (API ${Platform.Version})` },
+                          ]),
                       { label: 'Screen',       value: (() => { const { width, height } = Dimensions.get('window'); return `${Math.round(width)} × ${Math.round(height)}`; })() },
                     ].map(({ label, value }, idx, arr) => (
                       <View key={label} style={[styles.debugMetaRow, idx === arr.length - 1 && { borderBottomWidth: 0 }]}>
