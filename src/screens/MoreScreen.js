@@ -64,6 +64,7 @@ import Font2Icon from '../../assets/icons/font2.svg';
 import SpeakerIcon from '../../assets/icons/speaker.svg';
 import AnvilIcon from '../../assets/icons/anvil.svg';
 import TreeIcon from '../../assets/icons/tree.svg';
+import LogIcon from '../../assets/icons/log.svg';
 import MountainIcon from '../../assets/icons/mountain.svg';
 import SkyIcon from '../../assets/icons/sky.svg';
 import BeerIcon from '../../assets/icons/beer.svg';
@@ -79,7 +80,7 @@ const CardIconTitle = ({ icon, title, styles, titleColor }) => (
 
 const COLOR_GROUP_ICONS = {
   forge:    { Icon: AnvilIcon,    color: '#7B8C9E', stroke: false },
-  timber:   { Icon: TreeIcon,     color: '#8B4513', stroke: false },
+  timber:   { Icon: LogIcon,      color: '#8B4513', stroke: false },
   wilds:    { Icon: MountainIcon, color: '#3E5F4A', stroke: false },
   elements: { Icon: SkyIcon,      color: null,      stroke: false },
   brew:     { Icon: BeerIcon,     color: '#FFBF00', stroke: true  },
