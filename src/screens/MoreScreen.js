@@ -80,10 +80,10 @@ const CardIconTitle = ({ icon, title, styles, titleColor }) => (
 
 const COLOR_GROUP_ICONS = {
   forge:    { Icon: AnvilIcon,    color: '#7B8C9E', stroke: false },
-  timber:   { Icon: LogIcon,      color: '#8B4513', stroke: false },
-  wilds:    { Icon: MountainIcon, color: '#3E5F4A', stroke: false },
+  timber:   { Icon: LogIcon,      color: '#A0522D', stroke: false },
+  wilds:    { Icon: MountainIcon, color: '#4A8A5B', stroke: false },
   elements: { Icon: SkyIcon,      color: null,      stroke: false },
-  brew:     { Icon: BeerIcon,     color: '#FFBF00', stroke: true  },
+  brew:     { Icon: BeerIcon,     color: '#D18D00', stroke: true  },
 };
 
 const PAST_RELEASES_KEY = 'pastReleases';

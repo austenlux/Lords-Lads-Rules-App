@@ -20,18 +20,18 @@ export const COLOR_GROUPS = [
     label: 'The Timber',
     options: [
       { id: 'weathered-oak',     label: 'Weathered Oak',     color: '#968D81' },
-      { id: 'burnt-sienna',      label: 'Burnt Sienna',      color: '#8B4513' },
+      { id: 'burnt-sienna',      label: 'Burnt Sienna',      color: '#A0522D' },
       { id: 'fresh-cedar',       label: 'Fresh Cedar',       color: '#C19A6B' },
-      { id: 'aged-mahogany',     label: 'Aged Mahogany',     color: '#8D4B3D' },
+      { id: 'aged-mahogany',     label: 'Aged Mahogany',     color: '#7B3F32' },
     ],
   },
   {
     id: 'wilds',
     label: 'The Wilds',
     options: [
-      { id: 'forest-pine',       label: 'Forest Pine',       color: '#3E5F4A' },
+      { id: 'forest-pine',       label: 'Forest Pine',       color: '#4A8A5B' },
       { id: 'meadow-moss',       label: 'Meadow Moss',       color: '#8A9A5B' },
-      { id: 'rusty-spike',       label: 'Rusty Spike',       color: '#A0522D' },
+      { id: 'rusty-spike',       label: 'Rusty Spike',       color: '#B7410E' },
       { id: 'blood-orange',      label: 'Blood Orange',      color: '#CC5500' },
     ],
   },
@@ -50,7 +50,7 @@ export const COLOR_GROUPS = [
     label: 'The Brew',
     options: [
       { id: 'golden-lager',      label: 'Golden Lager',      color: '#FFD700' },
-      { id: 'amber-ale',         label: 'Amber Ale',         color: '#FFBF00' },
+      { id: 'amber-ale',         label: 'Amber Ale',         color: '#D18D00' },
       { id: 'frothy-head',       label: 'Frothy Head',       color: '#F5F5DC' },
       { id: 'toasted-malt',      label: 'Toasted Malt',      color: '#D2B48C' },
     ],
