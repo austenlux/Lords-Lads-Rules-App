@@ -9,7 +9,7 @@ export const COLOR_GROUPS = [
     id: 'forge',
     label: 'The Forge',
     options: [
-      { id: 'forged-iron',       label: 'Forged Iron',       color: '#333333' },
+      { id: 'forged-iron',       label: 'Forged Iron',       color: '#7A7A7A' },
       { id: 'hammer-steel',      label: 'Hammer Steel',      color: '#7B8C9E' },
       { id: 'oxidized-copper',   label: 'Oxidized Copper',   color: '#4A707A' },
       { id: 'blasted-granite',   label: 'Blasted Granite',   color: '#5C5C5C' },
@@ -21,15 +21,15 @@ export const COLOR_GROUPS = [
     options: [
       { id: 'weathered-oak',     label: 'Weathered Oak',     color: '#968D81' },
       { id: 'burnt-sienna',      label: 'Burnt Sienna',      color: '#8B4513' },
-      { id: 'charred-ember',     label: 'Charred Ember',     color: '#1A1A1A' },
-      { id: 'dark-walnut',       label: 'Dark Walnut',       color: '#4E342E' },
+      { id: 'charred-ember',     label: 'Charred Ember',     color: '#3D3D3D' },
+      { id: 'dark-walnut',       label: 'Dark Walnut',       color: '#5D3E36' },
     ],
   },
   {
     id: 'wilds',
     label: 'The Wilds',
     options: [
-      { id: 'forest-pine',       label: 'Forest Pine',       color: '#2E473B' },
+      { id: 'forest-pine',       label: 'Forest Pine',       color: '#3E5F4A' },
       { id: 'meadow-moss',       label: 'Meadow Moss',       color: '#8A9A5B' },
       { id: 'rusty-spike',       label: 'Rusty Spike',       color: '#A0522D' },
       { id: 'blood-orange',      label: 'Blood Orange',      color: '#CC5500' },

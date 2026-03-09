@@ -2,8 +2,8 @@
  * App-wide constants: content URLs, cache keys, and theme colors.
  */
 
-export const ACCENT_COLOR = '#333333';
-export const ACCENT_GLOW  = 'rgba(51, 51, 51, 0.3)';
+export const ACCENT_COLOR = '#7A7A7A';
+export const ACCENT_GLOW  = 'rgba(122, 122, 122, 0.3)';
 
 export const CONTENT_URL =
   'https://raw.githubusercontent.com/seanKenkeremath/lords-and-lads/master/README.md';

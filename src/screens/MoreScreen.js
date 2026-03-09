@@ -79,8 +79,8 @@ const CardIconTitle = ({ icon, title, styles, titleColor }) => (
 
 const COLOR_GROUP_ICONS = {
   forge:    { Icon: AnvilIcon,    color: '#7B8C9E', stroke: false },
-  timber:   { Icon: TreeIcon,     color: '#4E342E', stroke: false },
-  wilds:    { Icon: MountainIcon, color: '#2E473B', stroke: false },
+  timber:   { Icon: TreeIcon,     color: '#5D3E36', stroke: false },
+  wilds:    { Icon: MountainIcon, color: '#3E5F4A', stroke: false },
   elements: { Icon: SkyIcon,      color: '#87CEEB', stroke: false },
   brew:     { Icon: BeerIcon,     color: '#FFBF00', stroke: true  },
 };
