@@ -38,6 +38,7 @@ const SETTINGS_KEYS = {
   EXPAND_RULES_DEFAULT: '@lnl_expand_rules_default',
   EXPAND_EXPANSIONS_DEFAULT: '@lnl_expand_expansions_default',
   THINKING_SOUNDS_ENABLED: '@lnl_thinking_sounds_enabled',
+  THEME: '@lnl_theme',
 };
 import { getVenmoPayUrl } from '../constants';
 import CollapsibleSection, { DEFAULT_SECTION_EXPANDED } from '../components/CollapsibleSection';
@@ -56,6 +57,7 @@ import GithubIcon from '../../assets/icons/github.svg';
 import ShipIcon from '../../assets/icons/ship.svg';
 import CalendarIcon from '../../assets/icons/calendar.svg';
 import ExpandIcon from '../../assets/icons/expand.svg';
+import PaintIcon from '../../assets/icons/paint.svg';
 import SpeakerIcon from '../../assets/icons/speaker.svg';
 import CheckIcon from '../../assets/icons/check.svg';
 import CloseIcon from '../../assets/icons/close.svg';
@@ -66,6 +68,18 @@ const CardIconTitle = ({ icon, title, styles }) => (
     <Text style={styles.versionText}>{title}</Text>
   </View>
 );
+
+const THEME_OPTIONS = [
+  { id: 'purple', label: 'Purple', color: '#BB86FC' },
+  { id: 'blue',   label: 'Blue',   color: '#64B5F6' },
+  { id: 'green',  label: 'Green',  color: '#66BB6A' },
+  { id: 'red',    label: 'Red',    color: '#EF5350' },
+  { id: 'orange', label: 'Orange', color: '#FFA726' },
+  { id: 'brown',  label: 'Brown',  color: '#A1887F' },
+  { id: 'teal',   label: 'Teal',   color: '#4DB6AC' },
+  { id: 'pink',   label: 'Pink',   color: '#F48FB1' },
+];
+const DEFAULT_THEME = 'purple';
 
 const PAST_RELEASES_KEY = 'pastReleases';
 const SECTION_KEYS = { BUY_NAILS: 'buyNails', CHANGELOG: 'changelog', SETTINGS: 'settings', INFO: 'info', DEBUG: 'debug' };
@@ -181,6 +195,8 @@ export default function MoreScreen({
   const [expandedLocales, setExpandedLocales] = useState({});
   const [expandDefaultsExpanded, setExpandDefaultsExpanded] = useState(false);
   const [thinkingSoundsEnabled, setThinkingSoundsEnabled] = useState(false);
+  const [selectedTheme, setSelectedTheme] = useState(DEFAULT_THEME);
+  const [themeExpanded, setThemeExpanded] = useState(false);
   const [featureFlagsExpanded, setFeatureFlagsExpanded] = useState(false);
   const [voiceParentExpanded, setVoiceParentExpanded] = useState(false);
   const [voiceMetaExpanded, setVoiceMetaExpanded] = useState(false);
@@ -194,6 +210,7 @@ export default function MoreScreen({
     if (!animations['expandDefaults']) animations['expandDefaults'] = { rotation: new Animated.Value(0) };
     if (!animations['voiceParent'])    animations['voiceParent']    = { rotation: new Animated.Value(0) };
     if (!animations['voiceMeta'])      animations['voiceMeta']      = { rotation: new Animated.Value(0) };
+    if (!animations['theme'])          animations['theme']          = { rotation: new Animated.Value(0) };
     if (!animations['featureFlags'])   animations['featureFlags']   = { rotation: new Animated.Value(0) };
     if (!animations['vaDebug'])        animations['vaDebug']        = { rotation: new Animated.Value(0) };
     if (!animations['buildInfo'])      animations['buildInfo']      = { rotation: new Animated.Value(0) };
@@ -201,17 +218,18 @@ export default function MoreScreen({
 
   useEffect(() => {
     const load = async () => {
-      const [rules, expansions, thinkingSounds] = await Promise.all([
+      const [rules, expansions, thinkingSounds, theme] = await Promise.all([
         AsyncStorage.getItem(SETTINGS_KEYS.EXPAND_RULES_DEFAULT),
         AsyncStorage.getItem(SETTINGS_KEYS.EXPAND_EXPANSIONS_DEFAULT),
         AsyncStorage.getItem(SETTINGS_KEYS.THINKING_SOUNDS_ENABLED),
+        AsyncStorage.getItem(SETTINGS_KEYS.THEME),
       ]);
       setExpandRulesDefault(rules === 'true');
       setExpandExpansionsDefault(expansions === 'true');
-      // Default is false; only enable if explicitly saved as 'true'.
       const soundsOn = thinkingSounds === 'true';
       setThinkingSoundsEnabled(soundsOn);
       NativeVoiceAssistantOptional?.setThinkingSoundEnabled(soundsOn);
+      if (theme && THEME_OPTIONS.some(t => t.id === theme)) setSelectedTheme(theme);
     };
     load();
   }, []);
@@ -341,6 +359,18 @@ export default function MoreScreen({
     const isExpanded = !expandDefaultsExpanded;
     animateSection(animations['expandDefaults'], isExpanded);
     setExpandDefaultsExpanded(isExpanded);
+  };
+
+  const toggleTheme = () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    const isExpanded = !themeExpanded;
+    animateSection(animations['theme'], isExpanded);
+    setThemeExpanded(isExpanded);
+  };
+
+  const selectTheme = async (themeId) => {
+    setSelectedTheme(themeId);
+    await AsyncStorage.setItem(SETTINGS_KEYS.THEME, themeId);
   };
 
   const toggleVoiceParent = () => {
@@ -755,6 +785,47 @@ export default function MoreScreen({
                 )}
               </TouchableOpacity>
             )}
+
+            {/* ── Card: Theme ── */}
+            <TouchableOpacity
+              style={styles.versionContainer}
+              onPress={toggleTheme}
+              activeOpacity={0.7}
+            >
+              <View style={styles.versionHeader}>
+                <CardIconTitle icon={<PaintIcon fill="#BB86FC" />} title="Theme" styles={styles} />
+                <Animated.View style={{ transform: [{ rotate: animations['theme']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
+                  <Text style={styles.versionArrow}>▶</Text>
+                </Animated.View>
+              </View>
+              {themeExpanded && (
+                <View style={[styles.versionContent, { paddingLeft: 0, paddingRight: 0 }]}>
+                  {THEME_OPTIONS.map((theme, index) => {
+                    const isSelected = theme.id === selectedTheme;
+                    const isLast = index === THEME_OPTIONS.length - 1;
+                    return (
+                      <Pressable
+                        key={theme.id}
+                        onPress={() => selectTheme(theme.id)}
+                        style={({ pressed }) => [
+                          styles.voiceRadioItem,
+                          isLast && styles.voiceRadioItemLast,
+                          pressed && styles.voiceRadioItemPressed,
+                        ]}
+                        android_ripple={{ color: 'rgba(187, 134, 252, 0.2)', borderless: false }}
+                      >
+                        <View style={[styles.voiceRadioOuter, isSelected && { borderColor: theme.color }]}>
+                          {isSelected && <View style={[styles.voiceRadioInner, { backgroundColor: theme.color }]} />}
+                        </View>
+                        <Text style={[styles.voiceRadioText, { color: theme.color }, isSelected && { fontWeight: '600' }]}>
+                          {theme.label}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              )}
+            </TouchableOpacity>
           </CollapsibleSection>
 
           <CollapsibleSection
