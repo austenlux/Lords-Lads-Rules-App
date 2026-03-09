@@ -62,10 +62,10 @@ import SpeakerIcon from '../../assets/icons/speaker.svg';
 import CheckIcon from '../../assets/icons/check.svg';
 import CloseIcon from '../../assets/icons/close.svg';
 
-const CardIconTitle = ({ icon, title, styles }) => (
+const CardIconTitle = ({ icon, title, styles, titleColor }) => (
   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
     {React.cloneElement(icon, { width: 20, height: 20 })}
-    <Text style={styles.versionText}>{title}</Text>
+    <Text style={[styles.versionText, titleColor && { color: titleColor }]}>{title}</Text>
   </View>
 );
 
@@ -793,7 +793,7 @@ export default function MoreScreen({
               activeOpacity={0.7}
             >
               <View style={styles.versionHeader}>
-                <CardIconTitle icon={<PaintIcon fill={THEME_OPTIONS.find(t => t.id === selectedTheme)?.color ?? '#BB86FC'} />} title="Theme" styles={styles} />
+                <CardIconTitle icon={<PaintIcon fill={THEME_OPTIONS.find(t => t.id === selectedTheme)?.color ?? '#BB86FC'} />} title="Theme" styles={styles} titleColor={THEME_OPTIONS.find(t => t.id === selectedTheme)?.color} />
                 <Animated.View style={{ transform: [{ rotate: animations['theme']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
                   <Text style={styles.versionArrow}>▶</Text>
                 </Animated.View>

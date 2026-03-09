@@ -325,21 +325,16 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   aboutTitle: {
+    fontSize: 48,
+    fontWeight: 'bold',
+    color: '#BB86FC',
     marginBottom: 24,
     textAlign: 'center',
+    lineHeight: 56,
+    textShadowColor: 'rgba(187, 134, 252, 0.3)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 20,
   },
-  /** iOS-only: Tools screen title matches moreTitle (large, bold, accent). */
-  ...(Platform.OS === 'ios' && {
-    toolsTitleIOS: {
-      fontSize: 48,
-      fontWeight: 'bold',
-      color: '#BB86FC',
-      lineHeight: 56,
-      textShadowColor: 'rgba(187, 134, 252, 0.3)',
-      textShadowOffset: { width: 0, height: 0 },
-      textShadowRadius: 20,
-    },
-  }),
   moreTitle: {
     fontSize: 48,
     fontWeight: 'bold',
