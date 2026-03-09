@@ -34,7 +34,7 @@ export const COLOR_GROUPS = [
       { id: 'forest-pine',       label: 'Forest Pine',       color: '#4A8A5B' },
       { id: 'meadow-moss',       label: 'Meadow Moss',       color: '#8A9A5B' },
       { id: 'wild-heather',      label: 'Wild Heather',      color: '#8D5B8D' },
-      { id: 'heartblood-red',    label: 'Heartblood Red',    color: '#8B0000' },
+      { id: 'oxblood',            label: 'Oxblood',            color: '#7D2D2D' },
     ],
   },
   {
