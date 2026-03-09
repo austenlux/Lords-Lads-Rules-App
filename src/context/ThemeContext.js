@@ -86,7 +86,7 @@ export const FONT_PAIRINGS = [
     titleFont: font('MedievalSharp', 'MedievalSharp'),
     descFont:  font('Roboto Mono', 'RobotoMono'),
     titlePreview: 'Hammer & Anvil',
-    descPreview:  'Technical specification 04-B',
+    descPreview:  'Technical specification VII-A',
   },
   {
     id: 'lumberjacks-field-guide',

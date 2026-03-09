@@ -836,7 +836,7 @@ export default function MoreScreen({
               activeOpacity={0.7}
             >
               <View style={styles.versionHeader}>
-                <CardIconTitle icon={<PaintIcon fill="#E89B3E" />} title="Theme" styles={styles} />
+                <CardIconTitle icon={<PaintIcon fill={accent} />} title="Theme" styles={styles} />
                 <Animated.View style={{ transform: [{ rotate: animations['theme']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
                   <Text style={styles.versionArrow}>▶</Text>
                 </Animated.View>
@@ -869,13 +869,20 @@ export default function MoreScreen({
                               activeOpacity={0.7}
                             >
                               <View style={styles.versionHeader}>
-                                {(() => {
-                                  const { Icon, color: iconColor, stroke: isStroke } = COLOR_GROUP_ICONS[group.id];
-                                  const iconProps = iconColor
-                                    ? (isStroke ? { fill: 'none', stroke: iconColor } : { fill: iconColor })
-                                    : {};
-                                  return <CardIconTitle icon={<Icon {...iconProps} />} title={group.label} styles={styles} titleColor={accent} />;
-                                })()}
+                                <View style={styles.versionRow}>
+                                  {(() => {
+                                    const { Icon, color: iconColor, stroke: isStroke } = COLOR_GROUP_ICONS[group.id];
+                                    const iconProps = iconColor
+                                      ? (isStroke ? { fill: 'none', stroke: iconColor } : { fill: iconColor })
+                                      : {};
+                                    return <CardIconTitle icon={<Icon {...iconProps} />} title={group.label} styles={styles} titleColor={accent} />;
+                                  })()}
+                                  {group.options.some(opt => opt.id === selectedTheme) && (
+                                    <View style={styles.latestBadge}>
+                                      <Text style={styles.latestBadgeText}>Active</Text>
+                                    </View>
+                                  )}
+                                </View>
                                 <Animated.View style={{ transform: [{ rotate: animations[groupKey]?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
                                   <Text style={styles.versionArrow}>▶</Text>
                                 </Animated.View>
