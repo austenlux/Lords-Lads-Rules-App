@@ -735,7 +735,7 @@ export default function MoreScreen({
                     <Switch
                       value={expandRulesDefault}
                       onValueChange={setExpandRulesDefaultAndSave}
-                      trackColor={{ false: '#555', true: '#7B5CBF' }}
+                      trackColor={{ false: '#555', true: accent }}
                       thumbColor="#E1E1E1"
                     />
                   </View>
@@ -747,7 +747,7 @@ export default function MoreScreen({
                     <Switch
                       value={expandExpansionsDefault}
                       onValueChange={setExpandExpansionsDefaultAndSave}
-                      trackColor={{ false: '#555', true: '#7B5CBF' }}
+                      trackColor={{ false: '#555', true: accent }}
                       thumbColor="#E1E1E1"
                     />
                   </View>
@@ -1103,7 +1103,7 @@ export default function MoreScreen({
                       <Switch
                         value={thinkingSoundsEnabled}
                         onValueChange={setThinkingSoundsEnabledAndSave}
-                        trackColor={{ false: '#555', true: '#7B5CBF' }}
+                        trackColor={{ false: '#555', true: accent }}
                         thumbColor="#E1E1E1"
                       />
                     </View>
