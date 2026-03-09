@@ -2,15 +2,15 @@ import React, { createContext, useContext, useState, useEffect, useMemo } from '
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const STORAGE_KEY = '@lnl_theme';
-const DEFAULT_THEME_ID = 'forged-iron';
+const DEFAULT_THEME_ID = 'hammer-steel';
 
 export const COLOR_GROUPS = [
   {
     id: 'forge',
     label: 'The Forge',
     options: [
-      { id: 'forged-iron',       label: 'Forged Iron',       color: '#7A7A7A' },
       { id: 'hammer-steel',      label: 'Hammer Steel',      color: '#7B8C9E' },
+      { id: 'forged-iron',       label: 'Forged Iron',       color: '#7A7A7A' },
       { id: 'oxidized-copper',   label: 'Oxidized Copper',   color: '#4A707A' },
       { id: 'blasted-granite',   label: 'Blasted Granite',   color: '#5C5C5C' },
     ],
@@ -21,8 +21,8 @@ export const COLOR_GROUPS = [
     options: [
       { id: 'weathered-oak',     label: 'Weathered Oak',     color: '#968D81' },
       { id: 'burnt-sienna',      label: 'Burnt Sienna',      color: '#8B4513' },
-      { id: 'charred-ember',     label: 'Charred Ember',     color: '#3D3D3D' },
-      { id: 'dark-walnut',       label: 'Dark Walnut',       color: '#5D3E36' },
+      { id: 'fresh-cedar',       label: 'Fresh Cedar',       color: '#C19A6B' },
+      { id: 'aged-mahogany',     label: 'Aged Mahogany',     color: '#8D4B3D' },
     ],
   },
   {
