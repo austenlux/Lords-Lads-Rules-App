@@ -79,7 +79,7 @@ const CardIconTitle = ({ icon, title, styles, titleColor }) => (
 
 const COLOR_GROUP_ICONS = {
   forge:    { Icon: AnvilIcon,    color: '#7B8C9E', stroke: false },
-  timber:   { Icon: TreeIcon,     color: '#5D3E36', stroke: false },
+  timber:   { Icon: TreeIcon,     color: '#8B4513', stroke: false },
   wilds:    { Icon: MountainIcon, color: '#3E5F4A', stroke: false },
   elements: { Icon: SkyIcon,      color: null,      stroke: false },
   brew:     { Icon: BeerIcon,     color: '#FFBF00', stroke: true  },
@@ -911,7 +911,7 @@ export default function MoreScreen({
                                               isSelected && styles.colorBtnTextSelected,
                                             ]}
                                           >
-                                            {theme.label}
+                                            {theme.label.replace(' ', '\n')}
                                           </Text>
                                         </Pressable>
                                       );

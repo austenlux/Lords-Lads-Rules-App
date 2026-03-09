@@ -833,9 +833,11 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
     backgroundColor: 'transparent',
   },
   colorBtnText: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '500',
     letterSpacing: 0.3,
+    textAlign: 'center',
+    lineHeight: 18,
   },
   colorBtnTextSelected: {
     fontWeight: '700',
