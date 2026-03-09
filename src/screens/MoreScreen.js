@@ -58,6 +58,9 @@ import ShipIcon from '../../assets/icons/ship.svg';
 import CalendarIcon from '../../assets/icons/calendar.svg';
 import ExpandIcon from '../../assets/icons/expand.svg';
 import PaintIcon from '../../assets/icons/paint.svg';
+import SplatIcon from '../../assets/icons/splat.svg';
+import Font1Icon from '../../assets/icons/font1.svg';
+import Font2Icon from '../../assets/icons/font2.svg';
 import SpeakerIcon from '../../assets/icons/speaker.svg';
 import CheckIcon from '../../assets/icons/check.svg';
 import CloseIcon from '../../assets/icons/close.svg';
@@ -197,6 +200,9 @@ export default function MoreScreen({
   const [thinkingSoundsEnabled, setThinkingSoundsEnabled] = useState(false);
   const [selectedTheme, setSelectedTheme] = useState(DEFAULT_THEME);
   const [themeExpanded, setThemeExpanded] = useState(false);
+  const [themeColorExpanded, setThemeColorExpanded] = useState(false);
+  const [themeFontPrimaryExpanded, setThemeFontPrimaryExpanded] = useState(false);
+  const [themeFontSecondaryExpanded, setThemeFontSecondaryExpanded] = useState(false);
   const [featureFlagsExpanded, setFeatureFlagsExpanded] = useState(false);
   const [voiceParentExpanded, setVoiceParentExpanded] = useState(false);
   const [voiceMetaExpanded, setVoiceMetaExpanded] = useState(false);
@@ -210,7 +216,10 @@ export default function MoreScreen({
     if (!animations['expandDefaults']) animations['expandDefaults'] = { rotation: new Animated.Value(0) };
     if (!animations['voiceParent'])    animations['voiceParent']    = { rotation: new Animated.Value(0) };
     if (!animations['voiceMeta'])      animations['voiceMeta']      = { rotation: new Animated.Value(0) };
-    if (!animations['theme'])          animations['theme']          = { rotation: new Animated.Value(0) };
+    if (!animations['theme'])              animations['theme']              = { rotation: new Animated.Value(0) };
+    if (!animations['themeColor'])         animations['themeColor']         = { rotation: new Animated.Value(0) };
+    if (!animations['themeFontPrimary'])   animations['themeFontPrimary']   = { rotation: new Animated.Value(0) };
+    if (!animations['themeFontSecondary']) animations['themeFontSecondary'] = { rotation: new Animated.Value(0) };
     if (!animations['featureFlags'])   animations['featureFlags']   = { rotation: new Animated.Value(0) };
     if (!animations['vaDebug'])        animations['vaDebug']        = { rotation: new Animated.Value(0) };
     if (!animations['buildInfo'])      animations['buildInfo']      = { rotation: new Animated.Value(0) };
@@ -365,7 +374,36 @@ export default function MoreScreen({
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     const isExpanded = !themeExpanded;
     animateSection(animations['theme'], isExpanded);
+    if (!isExpanded) {
+      animateSection(animations['themeColor'], false);
+      animateSection(animations['themeFontPrimary'], false);
+      animateSection(animations['themeFontSecondary'], false);
+      setThemeColorExpanded(false);
+      setThemeFontPrimaryExpanded(false);
+      setThemeFontSecondaryExpanded(false);
+    }
     setThemeExpanded(isExpanded);
+  };
+
+  const toggleThemeColor = () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    const isExpanded = !themeColorExpanded;
+    animateSection(animations['themeColor'], isExpanded);
+    setThemeColorExpanded(isExpanded);
+  };
+
+  const toggleThemeFontPrimary = () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    const isExpanded = !themeFontPrimaryExpanded;
+    animateSection(animations['themeFontPrimary'], isExpanded);
+    setThemeFontPrimaryExpanded(isExpanded);
+  };
+
+  const toggleThemeFontSecondary = () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    const isExpanded = !themeFontSecondaryExpanded;
+    animateSection(animations['themeFontSecondary'], isExpanded);
+    setThemeFontSecondaryExpanded(isExpanded);
   };
 
   const selectTheme = async (themeId) => {
@@ -788,41 +826,98 @@ export default function MoreScreen({
 
             {/* ── Card: Theme ── */}
             <TouchableOpacity
-              style={styles.versionContainer}
+              style={[styles.versionContainer, { paddingHorizontal: 10 }]}
               onPress={toggleTheme}
               activeOpacity={0.7}
             >
               <View style={styles.versionHeader}>
-                <CardIconTitle icon={<PaintIcon fill={THEME_OPTIONS.find(t => t.id === selectedTheme)?.color ?? '#BB86FC'} />} title="Theme" styles={styles} titleColor={THEME_OPTIONS.find(t => t.id === selectedTheme)?.color} />
+                <CardIconTitle icon={<PaintIcon fill="#E89B3E" />} title="Theme" styles={styles} />
                 <Animated.View style={{ transform: [{ rotate: animations['theme']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
                   <Text style={styles.versionArrow}>▶</Text>
                 </Animated.View>
               </View>
               {themeExpanded && (
                 <View style={[styles.versionContent, { paddingLeft: 0, paddingRight: 0 }]}>
-                  {THEME_OPTIONS.map((theme, index) => {
-                    const isSelected = theme.id === selectedTheme;
-                    const isLast = index === THEME_OPTIONS.length - 1;
-                    return (
-                      <Pressable
-                        key={theme.id}
-                        onPress={() => selectTheme(theme.id)}
-                        style={({ pressed }) => [
-                          styles.voiceRadioItem,
-                          isLast && styles.voiceRadioItemLast,
-                          pressed && styles.voiceRadioItemPressed,
-                        ]}
-                        android_ripple={{ color: 'rgba(187, 134, 252, 0.2)', borderless: false }}
-                      >
-                        <View style={[styles.voiceRadioOuter, isSelected && { borderColor: theme.color }]}>
-                          {isSelected && <View style={[styles.voiceRadioInner, { backgroundColor: theme.color }]} />}
-                        </View>
-                        <Text style={[styles.voiceRadioText, { color: theme.color }, isSelected && { fontWeight: '600' }]}>
-                          {theme.label}
-                        </Text>
-                      </Pressable>
-                    );
-                  })}
+
+                  {/* ── Sub-section: Color ── */}
+                  <TouchableOpacity
+                    style={[styles.versionContainer, { paddingHorizontal: 10 }]}
+                    onPress={toggleThemeColor}
+                    activeOpacity={0.7}
+                  >
+                    <View style={styles.versionHeader}>
+                      <CardIconTitle icon={<SplatIcon fill={THEME_OPTIONS.find(t => t.id === selectedTheme)?.color ?? '#BB86FC'} />} title="Color" styles={styles} titleColor={THEME_OPTIONS.find(t => t.id === selectedTheme)?.color} />
+                      <Animated.View style={{ transform: [{ rotate: animations['themeColor']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
+                        <Text style={styles.versionArrow}>▶</Text>
+                      </Animated.View>
+                    </View>
+                    {themeColorExpanded && (
+                      <View style={[styles.versionContent, { paddingLeft: 0, paddingRight: 0 }]}>
+                        {THEME_OPTIONS.map((theme, index) => {
+                          const isSelected = theme.id === selectedTheme;
+                          const isLast = index === THEME_OPTIONS.length - 1;
+                          return (
+                            <Pressable
+                              key={theme.id}
+                              onPress={() => selectTheme(theme.id)}
+                              style={({ pressed }) => [
+                                styles.voiceRadioItem,
+                                isLast && styles.voiceRadioItemLast,
+                                pressed && styles.voiceRadioItemPressed,
+                              ]}
+                              android_ripple={{ color: 'rgba(187, 134, 252, 0.2)', borderless: false }}
+                            >
+                              <View style={[styles.voiceRadioOuter, isSelected && { borderColor: theme.color }]}>
+                                {isSelected && <View style={[styles.voiceRadioInner, { backgroundColor: theme.color }]} />}
+                              </View>
+                              <Text style={[styles.voiceRadioText, { color: theme.color }, isSelected && { fontWeight: '600' }]}>
+                                {theme.label}
+                              </Text>
+                            </Pressable>
+                          );
+                        })}
+                      </View>
+                    )}
+                  </TouchableOpacity>
+
+                  {/* ── Sub-section: Font - Primary ── */}
+                  <TouchableOpacity
+                    style={[styles.versionContainer, { paddingHorizontal: 10 }]}
+                    onPress={toggleThemeFontPrimary}
+                    activeOpacity={0.7}
+                  >
+                    <View style={styles.versionHeader}>
+                      <CardIconTitle icon={<Font1Icon fill="#E1E1E1" />} title="Font - Primary" styles={styles} />
+                      <Animated.View style={{ transform: [{ rotate: animations['themeFontPrimary']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
+                        <Text style={styles.versionArrow}>▶</Text>
+                      </Animated.View>
+                    </View>
+                    {themeFontPrimaryExpanded && (
+                      <View style={styles.versionContent}>
+                        <Text style={styles.versionValue}>Coming soon</Text>
+                      </View>
+                    )}
+                  </TouchableOpacity>
+
+                  {/* ── Sub-section: Font - Secondary ── */}
+                  <TouchableOpacity
+                    style={[styles.versionContainer, { paddingHorizontal: 10 }]}
+                    onPress={toggleThemeFontSecondary}
+                    activeOpacity={0.7}
+                  >
+                    <View style={styles.versionHeader}>
+                      <CardIconTitle icon={<Font2Icon fill="#E1E1E1" />} title="Font - Secondary" styles={styles} />
+                      <Animated.View style={{ transform: [{ rotate: animations['themeFontSecondary']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
+                        <Text style={styles.versionArrow}>▶</Text>
+                      </Animated.View>
+                    </View>
+                    {themeFontSecondaryExpanded && (
+                      <View style={styles.versionContent}>
+                        <Text style={styles.versionValue}>Coming soon</Text>
+                      </View>
+                    )}
+                  </TouchableOpacity>
+
                 </View>
               )}
             </TouchableOpacity>
