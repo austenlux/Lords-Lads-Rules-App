@@ -40,7 +40,7 @@ const SETTINGS_KEYS = {
   THINKING_SOUNDS_ENABLED: '@lnl_thinking_sounds_enabled',
 };
 import { getVenmoPayUrl } from '../constants';
-import { useTheme, COLOR_GROUPS } from '../context/ThemeContext';
+import { useTheme, COLOR_GROUPS, FONT_PAIRINGS } from '../context/ThemeContext';
 import CollapsibleSection, { DEFAULT_SECTION_EXPANDED } from '../components/CollapsibleSection';
 import SyncedIcon from '../../assets/icons/synced.svg';
 import VenmoIcon from '../../assets/icons/venmo.svg';
@@ -201,7 +201,7 @@ export default function MoreScreen({
   const [expandedLocales, setExpandedLocales] = useState({});
   const [expandDefaultsExpanded, setExpandDefaultsExpanded] = useState(false);
   const [thinkingSoundsEnabled, setThinkingSoundsEnabled] = useState(false);
-  const { themeId: selectedTheme, accent, selectTheme } = useTheme();
+  const { themeId: selectedTheme, accent, selectTheme, fontId: selectedFont, selectFont } = useTheme();
   const [themeExpanded, setThemeExpanded] = useState(false);
   const [themeColorExpanded, setThemeColorExpanded] = useState(false);
   const [colorGroupExpanded, setColorGroupExpanded] = useState({});
@@ -931,8 +931,41 @@ export default function MoreScreen({
                       </Animated.View>
                     </View>
                     {themeFontPrimaryExpanded && (
-                      <View style={styles.versionContent}>
-                        <Text style={styles.versionValue}>Coming soon</Text>
+                      <View style={[styles.versionContent, { paddingLeft: 0, paddingRight: 0 }]}>
+                        {FONT_PAIRINGS.map((pairing) => {
+                          const isFontSelected = pairing.id === selectedFont;
+                          return (
+                            <View key={pairing.id} style={styles.fontPairingWrapper}>
+                              <Text style={[styles.fontPairingName, { color: accent }]}>{pairing.name}</Text>
+                              <Pressable
+                                onPress={() => selectFont(pairing.id)}
+                                style={({ pressed }) => [
+                                  styles.fontBtn,
+                                  { borderColor: accent },
+                                  isFontSelected && { backgroundColor: accent },
+                                  pressed && !isFontSelected && { opacity: 0.7 },
+                                ]}
+                              >
+                                <Text
+                                  style={[
+                                    styles.fontBtnTitle,
+                                    { fontFamily: pairing.titleFont, color: isFontSelected ? '#1E1E22' : accent },
+                                  ]}
+                                >
+                                  {pairing.titlePreview}
+                                </Text>
+                                <Text
+                                  style={[
+                                    styles.fontBtnDesc,
+                                    { fontFamily: pairing.descFont, color: isFontSelected ? '#1E1E22' : '#E1E1E1' },
+                                  ]}
+                                >
+                                  {pairing.descPreview}
+                                </Text>
+                              </Pressable>
+                            </View>
+                          );
+                        })}
                       </View>
                     )}
                   </TouchableOpacity>

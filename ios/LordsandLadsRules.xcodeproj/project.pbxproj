@@ -20,6 +20,22 @@
 		VA000B0000000000VA00000B /* ThinkingSounds in Resources */ = {isa = PBXBuildFile; fileRef = VA00070000000000VA000007 /* ThinkingSounds */; };
 		BD00010000000000BD000001 /* RCTBridgeDelegateWithTurboModules.mm in Sources */ = {isa = PBXBuildFile; fileRef = BD00030000000000BD000003 /* RCTBridgeDelegateWithTurboModules.mm */; };
 		SP00010000000000SP000001 /* NativeSplashScreen.m in Sources */ = {isa = PBXBuildFile; fileRef = SP00020000000000SP000002 /* NativeSplashScreen.m */; };
+		90F7890C86A34A5AB878A393 /* PublicSans.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 23DF9121162C4A1F9E6FE269 /* PublicSans.ttf */; };
+		60B01846C865465D9F29A21B /* WorkSans.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E39E3753CEAF465F99AE720D /* WorkSans.ttf */; };
+		56830EFF74FE42598710CFD3 /* RobotoMono.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 986BF7A3E1C149588B5B323B /* RobotoMono.ttf */; };
+		E197666215654CA39FA8A8A2 /* MedievalSharp.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C31540640CF1439AB61A8897 /* MedievalSharp.ttf */; };
+		79B41BDD7224481DAF68E2DA /* Arvo.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 73B6926AF9B540C6855CFF36 /* Arvo.ttf */; };
+		F45399323B334F06B4AC8122 /* Bangers.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C6A786074AF049F1826C03B8 /* Bangers.ttf */; };
+		944F4BAEF17B4C3688FDBB51 /* Rubik-Black.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9DFE79A48512402EAEEEF273 /* Rubik-Black.ttf */; };
+		E611671EF4FD42C9A4658A63 /* Lora.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 92FC20EBE7CC44C1BB15188A /* Lora.ttf */; };
+		1D8907F82FD844D29266F843 /* Eczar.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D9A92B040A0E410D8E812415 /* Eczar.ttf */; };
+		32B9C78A85D0466A9A1EDEA3 /* AlfaSlabOne.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B92192ADEC0440438CE215BD /* AlfaSlabOne.ttf */; };
+		8772D1B32E634FE7B21D4C3E /* Inter.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 4E28A19050E34180BB412F6F /* Inter.ttf */; };
+		D71748A78CEA4C8FB0C8EC25 /* Montserrat.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AD990132037E4832B490719E /* Montserrat.ttf */; };
+		9C918601C52945D98A86266E /* CinzelDecorative.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3E2FDC47817342558E45D7E3 /* CinzelDecorative.ttf */; };
+		35EAC1658DDD4082B54CBD90 /* OpenSans.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 52A21B13BF5D4DB592DE7C54 /* OpenSans.ttf */; };
+		981F81AAF0EA40C2B9CCA2CB /* GermaniaOne.ttf in Resources */ = {isa = PBXBuildFile; fileRef = DA4B5B55EA084C37BB34481C /* GermaniaOne.ttf */; };
+		69FA703DAAC8461AA044E627 /* Lato.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 35ED11AD0C0D4009ACF9ED82 /* Lato.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -44,6 +60,22 @@
 		BD00020000000000BD000002 /* RCTBridgeDelegateWithTurboModules.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCTBridgeDelegateWithTurboModules.h; sourceTree = "<group>"; };
 		BD00030000000000BD000003 /* RCTBridgeDelegateWithTurboModules.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = RCTBridgeDelegateWithTurboModules.mm; sourceTree = "<group>"; };
 		SP00020000000000SP000002 /* NativeSplashScreen.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NativeSplashScreen.m; sourceTree = "<group>"; };
+		23DF9121162C4A1F9E6FE269 /* PublicSans.ttf */ = {isa = PBXFileReference; name = "PublicSans.ttf"; path = "../assets/fonts/PublicSans.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		E39E3753CEAF465F99AE720D /* WorkSans.ttf */ = {isa = PBXFileReference; name = "WorkSans.ttf"; path = "../assets/fonts/WorkSans.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		986BF7A3E1C149588B5B323B /* RobotoMono.ttf */ = {isa = PBXFileReference; name = "RobotoMono.ttf"; path = "../assets/fonts/RobotoMono.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		C31540640CF1439AB61A8897 /* MedievalSharp.ttf */ = {isa = PBXFileReference; name = "MedievalSharp.ttf"; path = "../assets/fonts/MedievalSharp.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		73B6926AF9B540C6855CFF36 /* Arvo.ttf */ = {isa = PBXFileReference; name = "Arvo.ttf"; path = "../assets/fonts/Arvo.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		C6A786074AF049F1826C03B8 /* Bangers.ttf */ = {isa = PBXFileReference; name = "Bangers.ttf"; path = "../assets/fonts/Bangers.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		9DFE79A48512402EAEEEF273 /* Rubik-Black.ttf */ = {isa = PBXFileReference; name = "Rubik-Black.ttf"; path = "../assets/fonts/Rubik-Black.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		92FC20EBE7CC44C1BB15188A /* Lora.ttf */ = {isa = PBXFileReference; name = "Lora.ttf"; path = "../assets/fonts/Lora.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		D9A92B040A0E410D8E812415 /* Eczar.ttf */ = {isa = PBXFileReference; name = "Eczar.ttf"; path = "../assets/fonts/Eczar.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		B92192ADEC0440438CE215BD /* AlfaSlabOne.ttf */ = {isa = PBXFileReference; name = "AlfaSlabOne.ttf"; path = "../assets/fonts/AlfaSlabOne.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		4E28A19050E34180BB412F6F /* Inter.ttf */ = {isa = PBXFileReference; name = "Inter.ttf"; path = "../assets/fonts/Inter.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		AD990132037E4832B490719E /* Montserrat.ttf */ = {isa = PBXFileReference; name = "Montserrat.ttf"; path = "../assets/fonts/Montserrat.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		3E2FDC47817342558E45D7E3 /* CinzelDecorative.ttf */ = {isa = PBXFileReference; name = "CinzelDecorative.ttf"; path = "../assets/fonts/CinzelDecorative.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		52A21B13BF5D4DB592DE7C54 /* OpenSans.ttf */ = {isa = PBXFileReference; name = "OpenSans.ttf"; path = "../assets/fonts/OpenSans.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		DA4B5B55EA084C37BB34481C /* GermaniaOne.ttf */ = {isa = PBXFileReference; name = "GermaniaOne.ttf"; path = "../assets/fonts/GermaniaOne.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		35ED11AD0C0D4009ACF9ED82 /* Lato.ttf */ = {isa = PBXFileReference; name = "Lato.ttf"; path = "../assets/fonts/Lato.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -101,6 +133,7 @@
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				BBD78D7AC51CEA395F1C20DB /* Pods */,
+				71420F41115C4BF7910C3A66 /* Resources */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -146,6 +179,30 @@
 			name = VoiceAssistant;
 			path = LordsandLadsRules/VoiceAssistant;
 			sourceTree = "<group>";
+		};
+		71420F41115C4BF7910C3A66 /* Resources */ = {
+			isa = "PBXGroup";
+			children = (
+				23DF9121162C4A1F9E6FE269 /* PublicSans.ttf */,
+				E39E3753CEAF465F99AE720D /* WorkSans.ttf */,
+				986BF7A3E1C149588B5B323B /* RobotoMono.ttf */,
+				C31540640CF1439AB61A8897 /* MedievalSharp.ttf */,
+				73B6926AF9B540C6855CFF36 /* Arvo.ttf */,
+				C6A786074AF049F1826C03B8 /* Bangers.ttf */,
+				9DFE79A48512402EAEEEF273 /* Rubik-Black.ttf */,
+				92FC20EBE7CC44C1BB15188A /* Lora.ttf */,
+				D9A92B040A0E410D8E812415 /* Eczar.ttf */,
+				B92192ADEC0440438CE215BD /* AlfaSlabOne.ttf */,
+				4E28A19050E34180BB412F6F /* Inter.ttf */,
+				AD990132037E4832B490719E /* Montserrat.ttf */,
+				3E2FDC47817342558E45D7E3 /* CinzelDecorative.ttf */,
+				52A21B13BF5D4DB592DE7C54 /* OpenSans.ttf */,
+				DA4B5B55EA084C37BB34481C /* GermaniaOne.ttf */,
+				35ED11AD0C0D4009ACF9ED82 /* Lato.ttf */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+			path = "";
 		};
 /* End PBXGroup section */
 
@@ -212,6 +269,22 @@
 				9A9B9C9D1E1F202122232426 /* ../release_notes.md in Resources */,
 				1DF4F06F11F719F3F0CC2F35 /* PrivacyInfo.xcprivacy in Resources */,
 				VA000B0000000000VA00000B /* ThinkingSounds in Resources */,
+				90F7890C86A34A5AB878A393 /* PublicSans.ttf in Resources */,
+				60B01846C865465D9F29A21B /* WorkSans.ttf in Resources */,
+				56830EFF74FE42598710CFD3 /* RobotoMono.ttf in Resources */,
+				E197666215654CA39FA8A8A2 /* MedievalSharp.ttf in Resources */,
+				79B41BDD7224481DAF68E2DA /* Arvo.ttf in Resources */,
+				F45399323B334F06B4AC8122 /* Bangers.ttf in Resources */,
+				944F4BAEF17B4C3688FDBB51 /* Rubik-Black.ttf in Resources */,
+				E611671EF4FD42C9A4658A63 /* Lora.ttf in Resources */,
+				1D8907F82FD844D29266F843 /* Eczar.ttf in Resources */,
+				32B9C78A85D0466A9A1EDEA3 /* AlfaSlabOne.ttf in Resources */,
+				8772D1B32E634FE7B21D4C3E /* Inter.ttf in Resources */,
+				D71748A78CEA4C8FB0C8EC25 /* Montserrat.ttf in Resources */,
+				9C918601C52945D98A86266E /* CinzelDecorative.ttf in Resources */,
+				35EAC1658DDD4082B54CBD90 /* OpenSans.ttf in Resources */,
+				981F81AAF0EA40C2B9CCA2CB /* GermaniaOne.ttf in Resources */,
+				69FA703DAAC8461AA044E627 /* Lato.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

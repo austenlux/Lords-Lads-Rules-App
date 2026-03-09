@@ -1,0 +1,69 @@
+{
+  "migIndex": 1,
+  "data": [
+    {
+      "path": "assets/fonts/PublicSans.ttf",
+      "sha1": "51af805f40c4d8ced34b9eea4e96de3dc5106846"
+    },
+    {
+      "path": "assets/fonts/WorkSans.ttf",
+      "sha1": "5e0183b29b57c54595c62ac6bc223b21f1434226"
+    },
+    {
+      "path": "assets/fonts/RobotoMono.ttf",
+      "sha1": "8e9ef8e1d8d2f0796179f2e6197abf3b4b130e79"
+    },
+    {
+      "path": "assets/fonts/MedievalSharp.ttf",
+      "sha1": "2aa66be87b648c3e4ca7983c440e1f009b092ee6"
+    },
+    {
+      "path": "assets/fonts/Arvo.ttf",
+      "sha1": "75bb57541b81a0d556a355dab7937b49c2255ddf"
+    },
+    {
+      "path": "assets/fonts/Bangers.ttf",
+      "sha1": "54f14f1a7d0652f588e5dc723ffc53077686a91e"
+    },
+    {
+      "path": "assets/fonts/Rubik-Black.ttf",
+      "sha1": "869ba65d721bf489cbf7509071f43651093a0e74"
+    },
+    {
+      "path": "assets/fonts/Lora.ttf",
+      "sha1": "2f0de70df8ae30d4e64fffcb8850fc9b111365c3"
+    },
+    {
+      "path": "assets/fonts/Eczar.ttf",
+      "sha1": "881e00219b0da4297f11c05f4f3333e348736af4"
+    },
+    {
+      "path": "assets/fonts/AlfaSlabOne.ttf",
+      "sha1": "3379279f774fdb42b7e4bb027efb64337d791f1c"
+    },
+    {
+      "path": "assets/fonts/Inter.ttf",
+      "sha1": "bd1976c1f019853ab6143ef1246e25aa66fd990e"
+    },
+    {
+      "path": "assets/fonts/Montserrat.ttf",
+      "sha1": "ec13ef1f2c99f8780d6f2eb3f9f27ef89f30161b"
+    },
+    {
+      "path": "assets/fonts/CinzelDecorative.ttf",
+      "sha1": "c7c4f19fcfb7cc34ded9341ecc6d1c72ee272dbf"
+    },
+    {
+      "path": "assets/fonts/OpenSans.ttf",
+      "sha1": "576aa669c4ceb3830fde859a4db52916def172af"
+    },
+    {
+      "path": "assets/fonts/GermaniaOne.ttf",
+      "sha1": "43625fafc89a9bab1f71c4ae312666860856db25"
+    },
+    {
+      "path": "assets/fonts/Lato.ttf",
+      "sha1": "e923c72eda5e50a87e18ff5c71e9ef4b3b6455a3"
+    }
+  ]
+}

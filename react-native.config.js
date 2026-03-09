@@ -9,6 +9,7 @@ const androidConfig = require('@react-native-community/cli-config-android');
 const root = path.resolve(__dirname);
 
 module.exports = {
+  assets: ['./assets/fonts'],
   platforms: {
     android: {
       projectConfig: (r) => androidConfig.projectConfig(r || root),

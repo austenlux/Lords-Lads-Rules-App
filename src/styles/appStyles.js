@@ -843,6 +843,30 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
     fontWeight: '700',
     color: '#1E1E22',
   },
+  fontPairingWrapper: {
+    paddingHorizontal: 12,
+    marginBottom: 14,
+  },
+  fontPairingName: {
+    fontSize: 13,
+    fontWeight: '600',
+    marginBottom: 6,
+    letterSpacing: 0.3,
+  },
+  fontBtn: {
+    borderWidth: 1.5,
+    borderRadius: 10,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    backgroundColor: 'transparent',
+  },
+  fontBtnTitle: {
+    fontSize: 20,
+    marginBottom: 4,
+  },
+  fontBtnDesc: {
+    fontSize: 13,
+  },
   showMatchesButton: {
     backgroundColor: ACCENT_COLOR,
     paddingHorizontal: 12,

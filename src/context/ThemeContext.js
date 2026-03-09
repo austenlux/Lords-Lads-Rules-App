@@ -1,7 +1,9 @@
 import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const STORAGE_KEY = '@lnl_theme';
+const FONT_STORAGE_KEY = '@lnl_font';
 const DEFAULT_THEME_ID = 'hammer-steel';
 
 export const COLOR_GROUPS = [
@@ -73,6 +75,31 @@ const THEME_MAP = Object.fromEntries(
   COLOR_GROUPS.flatMap(g => g.options).map(t => [t.id, t.color]),
 );
 
+const font = (ios, android) => Platform.select({ ios, android });
+
+const DEFAULT_FONT_ID = 'blacksmiths-ledger';
+
+export const FONT_PAIRINGS = [
+  {
+    id: 'blacksmiths-ledger',
+    name: "The Blacksmith's Ledger",
+    titleFont: font('MedievalSharp', 'MedievalSharp'),
+    descFont:  font('Roboto Mono', 'RobotoMono'),
+    titlePreview: 'Hammer & Anvil',
+    descPreview:  'Technical specification 04-B',
+  },
+  {
+    id: 'lumberjacks-field-guide',
+    name: "Lumberjack's Field Guide",
+    titleFont: font('Alfa Slab One', 'AlfaSlabOne'),
+    descFont:  font('Public Sans', 'PublicSans'),
+    titlePreview: 'Tall Timber',
+    descPreview:  'Exploring the northern wilderness.',
+  },
+];
+
+const FONT_MAP = Object.fromEntries(FONT_PAIRINGS.map(f => [f.id, f]));
+
 function hexToGlow(hex, alpha = 0.3) {
   const r = parseInt(hex.slice(1, 3), 16);
   const g = parseInt(hex.slice(3, 5), 16);
@@ -84,10 +111,15 @@ const ThemeContext = createContext(null);
 
 export function ThemeProvider({ children }) {
   const [themeId, setThemeId] = useState(DEFAULT_THEME_ID);
+  const [fontId, setFontId] = useState(DEFAULT_FONT_ID);
 
   useEffect(() => {
-    AsyncStorage.getItem(STORAGE_KEY).then(stored => {
-      if (stored && THEME_MAP[stored]) setThemeId(stored);
+    Promise.all([
+      AsyncStorage.getItem(STORAGE_KEY),
+      AsyncStorage.getItem(FONT_STORAGE_KEY),
+    ]).then(([storedTheme, storedFont]) => {
+      if (storedTheme && THEME_MAP[storedTheme]) setThemeId(storedTheme);
+      if (storedFont && FONT_MAP[storedFont]) setFontId(storedFont);
     });
   }, []);
 
@@ -97,6 +129,12 @@ export function ThemeProvider({ children }) {
     await AsyncStorage.setItem(STORAGE_KEY, id);
   };
 
+  const selectFont = async (id) => {
+    if (!FONT_MAP[id]) return;
+    setFontId(id);
+    await AsyncStorage.setItem(FONT_STORAGE_KEY, id);
+  };
+
   const value = useMemo(() => {
     const accent = THEME_MAP[themeId];
     return {
@@ -104,8 +142,10 @@ export function ThemeProvider({ children }) {
       accent,
       accentGlow: hexToGlow(accent, 0.3),
       selectTheme,
+      fontId,
+      selectFont,
     };
-  }, [themeId]);
+  }, [themeId, fontId]);
 
   return (
     <ThemeContext.Provider value={value}>

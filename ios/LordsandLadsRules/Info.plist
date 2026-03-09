@@ -59,7 +59,26 @@
 	<string>The Voice Assistant uses speech recognition to understand your questions about the game rules.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>The Voice Assistant needs microphone access to hear your questions.</string>
-  <key>UIBackgroundColor</key>
+	<key>UIBackgroundColor</key>
 	<string>#121212</string>
+	<key>UIAppFonts</key>
+	<array>
+		<string>PublicSans.ttf</string>
+		<string>WorkSans.ttf</string>
+		<string>RobotoMono.ttf</string>
+		<string>MedievalSharp.ttf</string>
+		<string>Arvo.ttf</string>
+		<string>Bangers.ttf</string>
+		<string>Rubik-Black.ttf</string>
+		<string>Lora.ttf</string>
+		<string>Eczar.ttf</string>
+		<string>AlfaSlabOne.ttf</string>
+		<string>Inter.ttf</string>
+		<string>Montserrat.ttf</string>
+		<string>CinzelDecorative.ttf</string>
+		<string>OpenSans.ttf</string>
+		<string>GermaniaOne.ttf</string>
+		<string>Lato.ttf</string>
+	</array>
 </dict>
 </plist>
