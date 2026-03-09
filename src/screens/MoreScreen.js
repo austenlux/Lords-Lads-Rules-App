@@ -81,7 +81,7 @@ const COLOR_GROUP_ICONS = {
   forge:    { Icon: AnvilIcon,    color: '#7B8C9E', stroke: false },
   timber:   { Icon: TreeIcon,     color: '#5D3E36', stroke: false },
   wilds:    { Icon: MountainIcon, color: '#3E5F4A', stroke: false },
-  elements: { Icon: SkyIcon,      color: '#87CEEB', stroke: false },
+  elements: { Icon: SkyIcon,      color: null,      stroke: false },
   brew:     { Icon: BeerIcon,     color: '#FFBF00', stroke: true  },
 };
 
@@ -879,9 +879,9 @@ export default function MoreScreen({
                               <View style={styles.versionHeader}>
                                 {(() => {
                                   const { Icon, color: iconColor, stroke: isStroke } = COLOR_GROUP_ICONS[group.id];
-                                  const iconProps = isStroke
-                                    ? { fill: 'none', stroke: iconColor }
-                                    : { fill: iconColor };
+                                  const iconProps = iconColor
+                                    ? (isStroke ? { fill: 'none', stroke: iconColor } : { fill: iconColor })
+                                    : {};
                                   return <CardIconTitle icon={<Icon {...iconProps} />} title={group.label} styles={styles} titleColor={accent} />;
                                 })()}
                                 <Animated.View style={{ transform: [{ rotate: animations[groupKey]?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
