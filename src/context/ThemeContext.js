@@ -14,7 +14,7 @@ export const COLOR_GROUPS = [
       { id: 'hammer-steel',      label: 'Hammer Steel',      color: '#7B8C9E' },
       { id: 'forged-iron',       label: 'Forged Iron',       color: '#7A7A7A' },
       { id: 'oxidized-copper',   label: 'Oxidized Copper',   color: '#4A707A' },
-      { id: 'blasted-granite',   label: 'Blasted Granite',   color: '#5C5C5C' },
+      { id: 'glowing-embers',    label: 'Glowing Embers',    color: '#C6442E' },
     ],
   },
   {
@@ -33,8 +33,8 @@ export const COLOR_GROUPS = [
     options: [
       { id: 'forest-pine',       label: 'Forest Pine',       color: '#4A8A5B' },
       { id: 'meadow-moss',       label: 'Meadow Moss',       color: '#8A9A5B' },
-      { id: 'rusty-spike',       label: 'Rusty Spike',       color: '#B7410E' },
-      { id: 'blood-orange',      label: 'Blood Orange',      color: '#CC5500' },
+      { id: 'wild-heather',      label: 'Wild Heather',      color: '#8D5B8D' },
+      { id: 'heartblood-red',    label: 'Heartblood Red',    color: '#8B0000' },
     ],
   },
   {
