@@ -59,8 +59,7 @@ import CalendarIcon from '../../assets/icons/calendar.svg';
 import ExpandIcon from '../../assets/icons/expand.svg';
 import PaintIcon from '../../assets/icons/paint.svg';
 import SplatIcon from '../../assets/icons/splat.svg';
-import Font1Icon from '../../assets/icons/font.svg';
-import Font2Icon from '../../assets/icons/font.svg';
+import FontIcon from '../../assets/icons/font.svg';
 import SpeakerIcon from '../../assets/icons/speaker.svg';
 import AnvilIcon from '../../assets/icons/anvil.svg';
 import TreeIcon from '../../assets/icons/tree.svg';
@@ -84,7 +83,7 @@ const COLOR_GROUP_ICONS = {
   timber:   { Icon: LogIcon,      color: '#A0522D', stroke: false },
   wilds:    { Icon: MountainIcon, color: '#4A8A5B', stroke: false },
   elements: { Icon: SkyIcon,      color: null,      stroke: false },
-  aurora:   { Icon: RainbowIcon,  color: '#BF00FF', stroke: false },
+  aurora:   { Icon: RainbowIcon,  color: '#A646D1', stroke: false },
   brew:     { Icon: BeerIcon,     color: '#D18D00', stroke: true  },
 };
 
@@ -207,7 +206,6 @@ export default function MoreScreen({
   const [themeColorExpanded, setThemeColorExpanded] = useState(false);
   const [colorGroupExpanded, setColorGroupExpanded] = useState({});
   const [themeFontPrimaryExpanded, setThemeFontPrimaryExpanded] = useState(false);
-  const [themeFontSecondaryExpanded, setThemeFontSecondaryExpanded] = useState(false);
   const [featureFlagsExpanded, setFeatureFlagsExpanded] = useState(false);
   const [voiceParentExpanded, setVoiceParentExpanded] = useState(false);
   const [voiceMetaExpanded, setVoiceMetaExpanded] = useState(false);
@@ -228,7 +226,6 @@ export default function MoreScreen({
       if (!animations[key]) animations[key] = { rotation: new Animated.Value(0) };
     });
     if (!animations['themeFontPrimary'])   animations['themeFontPrimary']   = { rotation: new Animated.Value(0) };
-    if (!animations['themeFontSecondary']) animations['themeFontSecondary'] = { rotation: new Animated.Value(0) };
     if (!animations['featureFlags'])   animations['featureFlags']   = { rotation: new Animated.Value(0) };
     if (!animations['vaDebug'])        animations['vaDebug']        = { rotation: new Animated.Value(0) };
     if (!animations['buildInfo'])      animations['buildInfo']      = { rotation: new Animated.Value(0) };
@@ -385,11 +382,9 @@ export default function MoreScreen({
       animateSection(animations['themeColor'], false);
       COLOR_GROUPS.forEach(g => animateSection(animations[`colorGroup_${g.id}`], false));
       animateSection(animations['themeFontPrimary'], false);
-      animateSection(animations['themeFontSecondary'], false);
       setThemeColorExpanded(false);
       setColorGroupExpanded({});
       setThemeFontPrimaryExpanded(false);
-      setThemeFontSecondaryExpanded(false);
     }
     setThemeExpanded(isExpanded);
   };
@@ -419,12 +414,6 @@ export default function MoreScreen({
     setThemeFontPrimaryExpanded(isExpanded);
   };
 
-  const toggleThemeFontSecondary = () => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    const isExpanded = !themeFontSecondaryExpanded;
-    animateSection(animations['themeFontSecondary'], isExpanded);
-    setThemeFontSecondaryExpanded(isExpanded);
-  };
 
 
   const toggleVoiceParent = () => {
@@ -862,7 +851,7 @@ export default function MoreScreen({
                     activeOpacity={0.7}
                   >
                     <View style={styles.versionHeader}>
-                      <CardIconTitle icon={<SplatIcon fill={accent} />} title="Color" styles={styles} titleColor={accent} />
+                      <CardIconTitle icon={<SplatIcon fill={accent} />} title="Colors" styles={styles} titleColor={accent} />
                       <Animated.View style={{ transform: [{ rotate: animations['themeColor']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
                         <Text style={styles.versionArrow}>▶</Text>
                       </Animated.View>
@@ -936,7 +925,7 @@ export default function MoreScreen({
                     activeOpacity={0.7}
                   >
                     <View style={styles.versionHeader}>
-                      <CardIconTitle icon={<Font1Icon fill="#E1E1E1" />} title="Font - Primary" styles={styles} />
+                      <CardIconTitle icon={<FontIcon fill="#E1E1E1" />} title="Fonts" styles={styles} />
                       <Animated.View style={{ transform: [{ rotate: animations['themeFontPrimary']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
                         <Text style={styles.versionArrow}>▶</Text>
                       </Animated.View>
@@ -948,24 +937,6 @@ export default function MoreScreen({
                     )}
                   </TouchableOpacity>
 
-                  {/* ── Sub-section: Font - Secondary ── */}
-                  <TouchableOpacity
-                    style={[styles.versionContainer, { paddingHorizontal: 10 }]}
-                    onPress={toggleThemeFontSecondary}
-                    activeOpacity={0.7}
-                  >
-                    <View style={styles.versionHeader}>
-                      <CardIconTitle icon={<Font2Icon fill="#E1E1E1" />} title="Font - Secondary" styles={styles} />
-                      <Animated.View style={{ transform: [{ rotate: animations['themeFontSecondary']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
-                        <Text style={styles.versionArrow}>▶</Text>
-                      </Animated.View>
-                    </View>
-                    {themeFontSecondaryExpanded && (
-                      <View style={styles.versionContent}>
-                        <Text style={styles.versionValue}>Coming soon</Text>
-                      </View>
-                    )}
-                  </TouchableOpacity>
 
                 </View>
               )}
