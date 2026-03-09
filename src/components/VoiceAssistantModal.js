@@ -22,13 +22,13 @@ import {
   View,
 } from 'react-native';
 import Markdown from 'react-native-markdown-display';
-import { ACCENT_COLOR } from '../constants';
+import { useTheme } from '../context/ThemeContext';
 
 // ─────────────────────────────────────────────────── Constants ──
 
 const BUBBLE_RADIUS = 16;
 
-const COLORS = {
+const BASE_MODAL_COLORS = {
   backdrop:        'rgba(18, 18, 18, 0.92)',
   border:          'rgba(187, 134, 252, 0.25)',
   userBubble:      '#2D1F47',
@@ -37,19 +37,15 @@ const COLORS = {
   assistantBubble: '#1E1E1E',
   assistantBorder: 'rgba(255, 255, 255, 0.08)',
   assistantText:   '#E0E0E0',
-  roleLabelUser:   ACCENT_COLOR,
   roleLabelAI:     '#888888',
-  cursor:          ACCENT_COLOR,
 };
 
-// Markdown styles for the assistant bubble — matches the app's dark theme.
-const markdownStyles = {
-  body:       { color: COLORS.assistantText, fontSize: 14, lineHeight: 22 },
-  heading1:   { color: ACCENT_COLOR, fontSize: 16, fontWeight: '700', marginBottom: 4 },
-  heading2:   { color: ACCENT_COLOR, fontSize: 15, fontWeight: '600', marginBottom: 4 },
+const BASE_MD_STYLES = {
+  body:       { color: BASE_MODAL_COLORS.assistantText, fontSize: 14, lineHeight: 22 },
+  heading1:   { fontSize: 16, fontWeight: '700', marginBottom: 4 },
+  heading2:   { fontSize: 15, fontWeight: '600', marginBottom: 4 },
   strong:     { fontWeight: '700', color: '#FFFFFF' },
   em:         { fontStyle: 'italic' },
-  bullet_list_icon: { color: ACCENT_COLOR },
   code_inline: { backgroundColor: '#2A2A2A', color: '#CF6679', borderRadius: 4, paddingHorizontal: 4 },
 };
 
@@ -108,6 +104,15 @@ const TOP_MARGIN  = 8;
 const STATUS_BAR  = Platform.OS === 'android' ? (StatusBar.currentHeight ?? 24) : 44;
 
 export default function VoiceAssistantModal({ messages, isOpen, fabBottom = 96 }) {
+  const { accent } = useTheme();
+  const COLORS = { ...BASE_MODAL_COLORS, roleLabelUser: accent, cursor: accent };
+  const markdownStyles = {
+    ...BASE_MD_STYLES,
+    heading1: { ...BASE_MD_STYLES.heading1, color: accent },
+    heading2: { ...BASE_MD_STYLES.heading2, color: accent },
+    bullet_list_icon: { color: accent },
+  };
+
   const listRef           = useRef(null);
   const mountOpacity      = useRef(new Animated.Value(0)).current;
   // Tracks whether the modal is mounted (visible or fading). Set to true

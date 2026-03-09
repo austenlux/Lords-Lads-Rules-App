@@ -38,9 +38,9 @@ const SETTINGS_KEYS = {
   EXPAND_RULES_DEFAULT: '@lnl_expand_rules_default',
   EXPAND_EXPANSIONS_DEFAULT: '@lnl_expand_expansions_default',
   THINKING_SOUNDS_ENABLED: '@lnl_thinking_sounds_enabled',
-  THEME: '@lnl_theme',
 };
-import { getVenmoPayUrl, ACCENT_COLOR } from '../constants';
+import { getVenmoPayUrl } from '../constants';
+import { useTheme, THEME_OPTIONS } from '../context/ThemeContext';
 import CollapsibleSection, { DEFAULT_SECTION_EXPANDED } from '../components/CollapsibleSection';
 import SyncedIcon from '../../assets/icons/synced.svg';
 import VenmoIcon from '../../assets/icons/venmo.svg';
@@ -71,18 +71,6 @@ const CardIconTitle = ({ icon, title, styles, titleColor }) => (
     <Text style={[styles.versionText, titleColor && { color: titleColor }]}>{title}</Text>
   </View>
 );
-
-const THEME_OPTIONS = [
-  { id: 'purple', label: 'Purple', color: ACCENT_COLOR },
-  { id: 'blue',   label: 'Blue',   color: '#64B5F6' },
-  { id: 'green',  label: 'Green',  color: '#66BB6A' },
-  { id: 'red',    label: 'Red',    color: '#EF5350' },
-  { id: 'orange', label: 'Orange', color: '#FFA726' },
-  { id: 'brown',  label: 'Brown',  color: '#A1887F' },
-  { id: 'teal',   label: 'Teal',   color: '#4DB6AC' },
-  { id: 'pink',   label: 'Pink',   color: '#F48FB1' },
-];
-const DEFAULT_THEME = 'purple';
 
 const PAST_RELEASES_KEY = 'pastReleases';
 const SECTION_KEYS = { BUY_NAILS: 'buyNails', CHANGELOG: 'changelog', SETTINGS: 'settings', INFO: 'info', DEBUG: 'debug' };
@@ -119,7 +107,7 @@ const VA_STATUS_COLOR = {
     unknown:         '#888888',
     available:       '#4CAF50',
     downloadable:    '#FF9800',
-    downloading:     ACCENT_COLOR,
+    downloading:     '#BB86FC',
     unavailable:     '#888888',
     download_failed: '#CF6679',
   },
@@ -144,7 +132,7 @@ const vaReadinessStyles = RNStyleSheet.create({
     alignItems: 'center',
   },
   actionButtonText: {
-    color: ACCENT_COLOR,
+    color: '#BB86FC',
     fontSize: 13,
     fontWeight: '600',
   },
@@ -198,7 +186,7 @@ export default function MoreScreen({
   const [expandedLocales, setExpandedLocales] = useState({});
   const [expandDefaultsExpanded, setExpandDefaultsExpanded] = useState(false);
   const [thinkingSoundsEnabled, setThinkingSoundsEnabled] = useState(false);
-  const [selectedTheme, setSelectedTheme] = useState(DEFAULT_THEME);
+  const { themeId: selectedTheme, accent, selectTheme } = useTheme();
   const [themeExpanded, setThemeExpanded] = useState(false);
   const [themeColorExpanded, setThemeColorExpanded] = useState(false);
   const [themeFontPrimaryExpanded, setThemeFontPrimaryExpanded] = useState(false);
@@ -227,18 +215,16 @@ export default function MoreScreen({
 
   useEffect(() => {
     const load = async () => {
-      const [rules, expansions, thinkingSounds, theme] = await Promise.all([
+      const [rules, expansions, thinkingSounds] = await Promise.all([
         AsyncStorage.getItem(SETTINGS_KEYS.EXPAND_RULES_DEFAULT),
         AsyncStorage.getItem(SETTINGS_KEYS.EXPAND_EXPANSIONS_DEFAULT),
         AsyncStorage.getItem(SETTINGS_KEYS.THINKING_SOUNDS_ENABLED),
-        AsyncStorage.getItem(SETTINGS_KEYS.THEME),
       ]);
       setExpandRulesDefault(rules === 'true');
       setExpandExpansionsDefault(expansions === 'true');
       const soundsOn = thinkingSounds === 'true';
       setThinkingSoundsEnabled(soundsOn);
       NativeVoiceAssistantOptional?.setThinkingSoundEnabled(soundsOn);
-      if (theme && THEME_OPTIONS.some(t => t.id === theme)) setSelectedTheme(theme);
     };
     load();
   }, []);
@@ -406,10 +392,6 @@ export default function MoreScreen({
     setThemeFontSecondaryExpanded(isExpanded);
   };
 
-  const selectTheme = async (themeId) => {
-    setSelectedTheme(themeId);
-    await AsyncStorage.setItem(SETTINGS_KEYS.THEME, themeId);
-  };
 
   const toggleVoiceParent = () => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -846,7 +828,7 @@ export default function MoreScreen({
                     activeOpacity={0.7}
                   >
                     <View style={styles.versionHeader}>
-                      <CardIconTitle icon={<SplatIcon fill={THEME_OPTIONS.find(t => t.id === selectedTheme)?.color ?? ACCENT_COLOR} />} title="Color" styles={styles} titleColor={THEME_OPTIONS.find(t => t.id === selectedTheme)?.color} />
+                      <CardIconTitle icon={<SplatIcon fill={accent} />} title="Color" styles={styles} titleColor={accent} />
                       <Animated.View style={{ transform: [{ rotate: animations['themeColor']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
                         <Text style={styles.versionArrow}>▶</Text>
                       </Animated.View>
@@ -1096,7 +1078,7 @@ export default function MoreScreen({
                         <View key={label} style={[styles.debugMetaRow, isLast && { borderBottomWidth: 0 }]}>
                           <Text style={styles.debugMetaLabel}>{label}</Text>
                           <Text
-                            style={[styles.debugMetaValue, { fontFamily: Platform.OS === 'android' ? 'monospace' : 'Menlo', flexShrink: 1 }, isMsg && !commitMsgExpanded && { color: ACCENT_COLOR }]}
+                            style={[styles.debugMetaValue, { fontFamily: Platform.OS === 'android' ? 'monospace' : 'Menlo', flexShrink: 1 }, isMsg && !commitMsgExpanded && { color: accent }]}
                             numberOfLines={isMsg && commitMsgExpanded ? undefined : 2}
                           >
                             {value}{isMsg && !commitMsgExpanded ? ' ▸' : ''}

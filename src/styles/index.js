@@ -1,2 +1,2 @@
-export { default as styles, HEADER_HEIGHT } from './appStyles';
-export { default as markdownStyles } from './markdownStyles';
+export { default as createStyles, HEADER_HEIGHT } from './appStyles';
+export { default as createMarkdownStyles } from './markdownStyles';

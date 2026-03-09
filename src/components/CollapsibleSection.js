@@ -5,7 +5,7 @@
  */
 import React, { useRef, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Animated } from 'react-native';
-import { ACCENT_COLOR } from '../constants';
+import { useTheme } from '../context/ThemeContext';
 
 /** Default expanded state for a section; false = collapsed, matching Rules/Expansions. */
 export const DEFAULT_SECTION_EXPANDED = false;
@@ -22,6 +22,7 @@ export default function CollapsibleSection({
   style,
   sectionRef,
 }) {
+  const { accent } = useTheme();
   const animatedRotation = useRef(new Animated.Value(isExpanded ? 1 : 0)).current;
 
   useEffect(() => {
@@ -50,7 +51,7 @@ export default function CollapsibleSection({
         {titleNode != null ? (
           titleNode
         ) : (
-          <Text style={[styles.sectionTitle, { fontSize, color: ACCENT_COLOR }]}>{title}</Text>
+          <Text style={[styles.sectionTitle, { fontSize, color: accent }]}>{title}</Text>
         )}
       </TouchableOpacity>
       {isExpanded && <View style={styles.sectionContent}>{children}</View>}

@@ -2,11 +2,10 @@
  * Styles for react-native-markdown-display (headings, links, code, tables, etc.).
  */
 import { Platform } from 'react-native';
-import { ACCENT_COLOR } from '../constants';
 
 const monospace = Platform.OS === 'ios' ? 'Menlo' : 'monospace';
 
-export default {
+const createMarkdownStyles = (ACCENT_COLOR) => ({
   body: {
     color: '#E1E1E1',
     fontSize: 16,
@@ -116,4 +115,6 @@ export default {
     color: '#ffffff',
     borderRadius: 2,
   },
-};
+});
+
+export default createMarkdownStyles;

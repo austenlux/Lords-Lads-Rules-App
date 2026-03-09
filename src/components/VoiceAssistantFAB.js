@@ -23,7 +23,7 @@ import {
 } from 'react-native';
 import MicIcon   from '../../assets/icons/mic.svg';
 import CloseIcon from '../../assets/icons/close.svg';
-import { ACCENT_COLOR } from '../constants';
+import { useTheme } from '../context/ThemeContext';
 
 // ─────────────────────────────────────────────── Constants ──
 
@@ -32,19 +32,21 @@ const PULSE_SIZE    = FAB_SIZE + 24;
 const FAB_RADIUS    = FAB_SIZE / 2;
 const PULSE_RADIUS  = PULSE_SIZE / 2;
 
-const COLORS = {
-  idle:      ACCENT_COLOR,   // app purple accent
-  listening: '#CF6679',   // app red / error accent
-  thinking:  '#7B57B0',   // dimmed purple while generating
-  stop:      '#CF6679',   // red stop button when AI is talking
-  icon:      '#121212',   // dark background colour for icon
-  stopIcon:  '#FFFFFF',   // white stop square
+const BASE_COLORS = {
+  listening: '#CF6679',
+  thinking:  '#7B57B0',
+  stop:      '#CF6679',
+  icon:      '#121212',
+  stopIcon:  '#FFFFFF',
   shadow:    '#000',
 };
 
 // ─────────────────────────────────────────────── Component ──
 
 export default function VoiceAssistantFAB({ isListening, isThinking, isActive, hasConversation, onPress, onStop }) {
+  const { accent } = useTheme();
+  const COLORS = { ...BASE_COLORS, idle: accent };
+
   // ── Fade-in on mount ──────────────────────────────────────────────────
   const mountOpacity = useRef(new Animated.Value(0)).current;
 

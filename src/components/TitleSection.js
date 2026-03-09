@@ -5,9 +5,10 @@ import React, { useRef, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Animated } from 'react-native';
 import { decodeHtmlEntities, normalizeSearchQuery } from '../utils/searchUtils';
 import HighlightedMarkdown from './HighlightedMarkdown';
-import { ACCENT_COLOR, ACCENT_GLOW } from '../constants';
+import { useTheme } from '../context/ThemeContext';
 
 export default function TitleSection({ title, content, searchQuery, onNavigate, styles, markdownStyles }) {
+  const { accent, accentGlow } = useTheme();
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(20)).current;
   const decodedTitle = decodeHtmlEntities(title);
@@ -57,10 +58,10 @@ export default function TitleSection({ title, content, searchQuery, onNavigate, 
     fontSize: 48,
     textAlign: 'center',
     marginBottom: 24,
-    color: ACCENT_COLOR,
+    color: accent,
     fontWeight: 'bold',
     lineHeight: 56,
-    textShadowColor: ACCENT_GLOW,
+    textShadowColor: accentGlow,
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 20,
   };
@@ -78,7 +79,7 @@ export default function TitleSection({ title, content, searchQuery, onNavigate, 
                       part.toLowerCase() === trimmedSearchQuery.toLowerCase() ? (
                         <Text
                           key={i}
-                          style={[{ fontSize: 48, fontWeight: 'bold', color: ACCENT_COLOR, textShadowColor: ACCENT_GLOW, textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 20 }, styles.highlightedText]}
+                          style={[{ fontSize: 48, fontWeight: 'bold', color: accent, textShadowColor: accentGlow, textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 20 }, styles.highlightedText]}
                         >
                           {part}
                         </Text>

@@ -2,12 +2,11 @@
  * App layout and component styles (tab bar, headers, sections, more, etc.).
  */
 import { StyleSheet, StatusBar, Platform } from 'react-native';
-import { ACCENT_COLOR, ACCENT_GLOW } from '../constants';
 
 const STATUS_BAR_HEIGHT = StatusBar.currentHeight ?? 0;
 const HEADER_HEIGHT = STATUS_BAR_HEIGHT + 74;
 
-const styles = StyleSheet.create({
+const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: '#121212',
@@ -831,5 +830,5 @@ const styles = StyleSheet.create({
   },
 });
 
-export default styles;
+export default createStyles;
 export { HEADER_HEIGHT };

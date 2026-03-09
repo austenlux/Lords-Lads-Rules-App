@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   View,
   Text,
@@ -20,8 +20,8 @@ import ExpansionsIcon from './assets/icons/expansions.svg';
 import ToolsIcon from './assets/icons/tools.svg';
 import AboutIcon from './assets/icons/about.svg';
 import SearchIcon from './assets/icons/search.svg';
-import { styles, markdownStyles } from './src/styles';
-import { ACCENT_COLOR } from './src/constants';
+import { createStyles, createMarkdownStyles } from './src/styles';
+import { ThemeProvider, useTheme } from './src/context/ThemeContext';
 import { useContent } from './src/hooks/useContent';
 import { useGameAssistant } from './src/hooks/useGameAssistant';
 import { ContentScreen, MoreScreen, ToolsScreen } from './src/screens';
@@ -62,6 +62,18 @@ function getLogoLayout() {
 }
 
 export default function App() {
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
+  );
+}
+
+function AppContent() {
+  const { accent, accentGlow } = useTheme();
+  const styles = useMemo(() => createStyles(accent, accentGlow), [accent, accentGlow]);
+  const markdownStyles = useMemo(() => createMarkdownStyles(accent), [accent]);
+
   const [isConvoOpen, setIsConvoOpen] = useState(false);
   const [showMicDialog, setShowMicDialog] = useState(false);
   const prevIsThinkingRef = useRef(false);
@@ -488,13 +500,13 @@ export default function App() {
         <View style={micDialogStyles.overlay}>
           <View style={micDialogStyles.backdrop}>
             <View style={micDialogStyles.card}>
-              <Text style={micDialogStyles.title}>Microphone Access Required</Text>
+              <Text style={[micDialogStyles.title, { color: accent }]}>Microphone Access Required</Text>
               <Text style={micDialogStyles.body}>
                 The Voice Assistant needs microphone access to hear your questions.
                 Please enable it in your device settings.
               </Text>
               <TouchableOpacity
-                style={micDialogStyles.settingsButton}
+                style={[micDialogStyles.settingsButton, { backgroundColor: accent }]}
                 onPress={() => { setShowMicDialog(false); Linking.openSettings(); }}
               >
                 <Text style={micDialogStyles.settingsButtonText}>Open Settings</Text>
@@ -535,7 +547,6 @@ const micDialogStyles = StyleSheet.create({
     borderColor: 'rgba(187,134,252,0.25)',
   },
   title: {
-    color: ACCENT_COLOR,
     fontSize: 18,
     fontWeight: '700',
     marginBottom: 12,
@@ -547,7 +558,6 @@ const micDialogStyles = StyleSheet.create({
     marginBottom: 24,
   },
   settingsButton: {
-    backgroundColor: ACCENT_COLOR,
     borderRadius: 10,
     paddingVertical: 13,
     alignItems: 'center',

@@ -7,7 +7,7 @@ import { Text } from 'react-native';
 import { decodeHtmlEntities, normalizeSearchQuery } from '../utils/searchUtils';
 import HighlightedMarkdown from './HighlightedMarkdown';
 import CollapsibleSection from './CollapsibleSection';
-import { ACCENT_COLOR } from '../constants';
+import { useTheme } from '../context/ThemeContext';
 
 export default function Section({
   title,
@@ -23,6 +23,7 @@ export default function Section({
   styles,
   markdownStyles,
 }) {
+  const { accent } = useTheme();
   const trimmedSearchQuery = normalizeSearchQuery(searchQuery);
   const decodedTitle = decodeHtmlEntities(title);
 
@@ -38,12 +39,12 @@ export default function Section({
   const fontSize = 32 - (level - 1) * 4;
   const titleNode =
     trimmedSearchQuery.length >= 2 ? (
-      <Text style={[styles.sectionTitle, { fontSize, color: ACCENT_COLOR }]}>
+      <Text style={[styles.sectionTitle, { fontSize, color: accent }]}>
         {decodedTitle
           .split(new RegExp(`(${trimmedSearchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'))
           .map((part, i) =>
             part.toLowerCase() === trimmedSearchQuery.toLowerCase() ? (
-              <Text key={i} style={[{ fontSize, fontWeight: 'bold', color: ACCENT_COLOR }, styles.highlightedText]}>
+              <Text key={i} style={[{ fontSize, fontWeight: 'bold', color: accent }, styles.highlightedText]}>
                 {part}
               </Text>
             ) : (
