@@ -40,7 +40,7 @@ const SETTINGS_KEYS = {
   THINKING_SOUNDS_ENABLED: '@lnl_thinking_sounds_enabled',
   THEME: '@lnl_theme',
 };
-import { getVenmoPayUrl } from '../constants';
+import { getVenmoPayUrl, ACCENT_COLOR } from '../constants';
 import CollapsibleSection, { DEFAULT_SECTION_EXPANDED } from '../components/CollapsibleSection';
 import SyncedIcon from '../../assets/icons/synced.svg';
 import VenmoIcon from '../../assets/icons/venmo.svg';
@@ -73,7 +73,7 @@ const CardIconTitle = ({ icon, title, styles, titleColor }) => (
 );
 
 const THEME_OPTIONS = [
-  { id: 'purple', label: 'Purple', color: '#BB86FC' },
+  { id: 'purple', label: 'Purple', color: ACCENT_COLOR },
   { id: 'blue',   label: 'Blue',   color: '#64B5F6' },
   { id: 'green',  label: 'Green',  color: '#66BB6A' },
   { id: 'red',    label: 'Red',    color: '#EF5350' },
@@ -119,7 +119,7 @@ const VA_STATUS_COLOR = {
     unknown:         '#888888',
     available:       '#4CAF50',
     downloadable:    '#FF9800',
-    downloading:     '#BB86FC',
+    downloading:     ACCENT_COLOR,
     unavailable:     '#888888',
     download_failed: '#CF6679',
   },
@@ -144,7 +144,7 @@ const vaReadinessStyles = RNStyleSheet.create({
     alignItems: 'center',
   },
   actionButtonText: {
-    color: '#BB86FC',
+    color: ACCENT_COLOR,
     fontSize: 13,
     fontWeight: '600',
   },
@@ -846,7 +846,7 @@ export default function MoreScreen({
                     activeOpacity={0.7}
                   >
                     <View style={styles.versionHeader}>
-                      <CardIconTitle icon={<SplatIcon fill={THEME_OPTIONS.find(t => t.id === selectedTheme)?.color ?? '#BB86FC'} />} title="Color" styles={styles} titleColor={THEME_OPTIONS.find(t => t.id === selectedTheme)?.color} />
+                      <CardIconTitle icon={<SplatIcon fill={THEME_OPTIONS.find(t => t.id === selectedTheme)?.color ?? ACCENT_COLOR} />} title="Color" styles={styles} titleColor={THEME_OPTIONS.find(t => t.id === selectedTheme)?.color} />
                       <Animated.View style={{ transform: [{ rotate: animations['themeColor']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
                         <Text style={styles.versionArrow}>▶</Text>
                       </Animated.View>
@@ -1096,7 +1096,7 @@ export default function MoreScreen({
                         <View key={label} style={[styles.debugMetaRow, isLast && { borderBottomWidth: 0 }]}>
                           <Text style={styles.debugMetaLabel}>{label}</Text>
                           <Text
-                            style={[styles.debugMetaValue, { fontFamily: Platform.OS === 'android' ? 'monospace' : 'Menlo', flexShrink: 1 }, isMsg && !commitMsgExpanded && { color: '#BB86FC' }]}
+                            style={[styles.debugMetaValue, { fontFamily: Platform.OS === 'android' ? 'monospace' : 'Menlo', flexShrink: 1 }, isMsg && !commitMsgExpanded && { color: ACCENT_COLOR }]}
                             numberOfLines={isMsg && commitMsgExpanded ? undefined : 2}
                           >
                             {value}{isMsg && !commitMsgExpanded ? ' ▸' : ''}

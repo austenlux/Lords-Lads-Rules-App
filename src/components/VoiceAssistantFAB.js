@@ -23,6 +23,7 @@ import {
 } from 'react-native';
 import MicIcon   from '../../assets/icons/mic.svg';
 import CloseIcon from '../../assets/icons/close.svg';
+import { ACCENT_COLOR } from '../constants';
 
 // ─────────────────────────────────────────────── Constants ──
 
@@ -32,7 +33,7 @@ const FAB_RADIUS    = FAB_SIZE / 2;
 const PULSE_RADIUS  = PULSE_SIZE / 2;
 
 const COLORS = {
-  idle:      '#BB86FC',   // app purple accent
+  idle:      ACCENT_COLOR,   // app purple accent
   listening: '#CF6679',   // app red / error accent
   thinking:  '#7B57B0',   // dimmed purple while generating
   stop:      '#CF6679',   // red stop button when AI is talking

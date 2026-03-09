@@ -5,6 +5,7 @@ import React, { useRef, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Animated } from 'react-native';
 import { decodeHtmlEntities, normalizeSearchQuery } from '../utils/searchUtils';
 import HighlightedMarkdown from './HighlightedMarkdown';
+import { ACCENT_COLOR, ACCENT_GLOW } from '../constants';
 
 export default function TitleSection({ title, content, searchQuery, onNavigate, styles, markdownStyles }) {
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -56,10 +57,10 @@ export default function TitleSection({ title, content, searchQuery, onNavigate, 
     fontSize: 48,
     textAlign: 'center',
     marginBottom: 24,
-    color: '#BB86FC',
+    color: ACCENT_COLOR,
     fontWeight: 'bold',
     lineHeight: 56,
-    textShadowColor: 'rgba(187, 134, 252, 0.3)',
+    textShadowColor: ACCENT_GLOW,
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 20,
   };
@@ -77,7 +78,7 @@ export default function TitleSection({ title, content, searchQuery, onNavigate, 
                       part.toLowerCase() === trimmedSearchQuery.toLowerCase() ? (
                         <Text
                           key={i}
-                          style={[{ fontSize: 48, fontWeight: 'bold', color: '#BB86FC', textShadowColor: 'rgba(187, 134, 252, 0.3)', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 20 }, styles.highlightedText]}
+                          style={[{ fontSize: 48, fontWeight: 'bold', color: ACCENT_COLOR, textShadowColor: ACCENT_GLOW, textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 20 }, styles.highlightedText]}
                         >
                           {part}
                         </Text>

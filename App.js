@@ -21,6 +21,7 @@ import ToolsIcon from './assets/icons/tools.svg';
 import AboutIcon from './assets/icons/about.svg';
 import SearchIcon from './assets/icons/search.svg';
 import { styles, markdownStyles } from './src/styles';
+import { ACCENT_COLOR } from './src/constants';
 import { useContent } from './src/hooks/useContent';
 import { useGameAssistant } from './src/hooks/useGameAssistant';
 import { ContentScreen, MoreScreen, ToolsScreen } from './src/screens';
@@ -534,7 +535,7 @@ const micDialogStyles = StyleSheet.create({
     borderColor: 'rgba(187,134,252,0.25)',
   },
   title: {
-    color: '#BB86FC',
+    color: ACCENT_COLOR,
     fontSize: 18,
     fontWeight: '700',
     marginBottom: 12,
@@ -546,7 +547,7 @@ const micDialogStyles = StyleSheet.create({
     marginBottom: 24,
   },
   settingsButton: {
-    backgroundColor: '#BB86FC',
+    backgroundColor: ACCENT_COLOR,
     borderRadius: 10,
     paddingVertical: 13,
     alignItems: 'center',

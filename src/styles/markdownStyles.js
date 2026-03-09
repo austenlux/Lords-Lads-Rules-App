@@ -2,6 +2,7 @@
  * Styles for react-native-markdown-display (headings, links, code, tables, etc.).
  */
 import { Platform } from 'react-native';
+import { ACCENT_COLOR } from '../constants';
 
 const monospace = Platform.OS === 'ios' ? 'Menlo' : 'monospace';
 
@@ -12,7 +13,7 @@ export default {
     lineHeight: 24,
   },
   heading1: {
-    color: '#BB86FC',
+    color: ACCENT_COLOR,
     fontSize: 32,
     fontWeight: 'bold',
     marginBottom: 0,
@@ -20,7 +21,7 @@ export default {
     lineHeight: 40,
   },
   heading2: {
-    color: '#BB86FC',
+    color: ACCENT_COLOR,
     fontSize: 26,
     fontWeight: 'bold',
     marginBottom: 0,
@@ -28,7 +29,7 @@ export default {
     lineHeight: 34,
   },
   heading3: {
-    color: '#BB86FC',
+    color: ACCENT_COLOR,
     fontSize: 22,
     fontWeight: 'bold',
     marginBottom: 0,
@@ -58,11 +59,11 @@ export default {
     paddingLeft: 0,
   },
   bullet_list_icon: {
-    color: '#BB86FC',
+    color: ACCENT_COLOR,
     marginRight: 8,
   },
   ordered_list_icon: {
-    color: '#BB86FC',
+    color: ACCENT_COLOR,
     marginRight: 8,
   },
   code_inline: {
@@ -89,7 +90,7 @@ export default {
   },
   blockquote: {
     backgroundColor: '#1E1E1E',
-    borderLeftColor: '#BB86FC',
+    borderLeftColor: ACCENT_COLOR,
     borderLeftWidth: 4,
     padding: 16,
     marginVertical: 0,
@@ -104,7 +105,7 @@ export default {
   th: {
     padding: 12,
     backgroundColor: '#1E1E1E',
-    color: '#BB86FC',
+    color: ACCENT_COLOR,
   },
   td: {
     padding: 12,

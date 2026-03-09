@@ -22,6 +22,7 @@ import {
   View,
 } from 'react-native';
 import Markdown from 'react-native-markdown-display';
+import { ACCENT_COLOR } from '../constants';
 
 // ─────────────────────────────────────────────────── Constants ──
 
@@ -36,19 +37,19 @@ const COLORS = {
   assistantBubble: '#1E1E1E',
   assistantBorder: 'rgba(255, 255, 255, 0.08)',
   assistantText:   '#E0E0E0',
-  roleLabelUser:   '#BB86FC',
+  roleLabelUser:   ACCENT_COLOR,
   roleLabelAI:     '#888888',
-  cursor:          '#BB86FC',
+  cursor:          ACCENT_COLOR,
 };
 
 // Markdown styles for the assistant bubble — matches the app's dark theme.
 const markdownStyles = {
   body:       { color: COLORS.assistantText, fontSize: 14, lineHeight: 22 },
-  heading1:   { color: '#BB86FC', fontSize: 16, fontWeight: '700', marginBottom: 4 },
-  heading2:   { color: '#BB86FC', fontSize: 15, fontWeight: '600', marginBottom: 4 },
+  heading1:   { color: ACCENT_COLOR, fontSize: 16, fontWeight: '700', marginBottom: 4 },
+  heading2:   { color: ACCENT_COLOR, fontSize: 15, fontWeight: '600', marginBottom: 4 },
   strong:     { fontWeight: '700', color: '#FFFFFF' },
   em:         { fontStyle: 'italic' },
-  bullet_list_icon: { color: '#BB86FC' },
+  bullet_list_icon: { color: ACCENT_COLOR },
   code_inline: { backgroundColor: '#2A2A2A', color: '#CF6679', borderRadius: 4, paddingHorizontal: 4 },
 };
 

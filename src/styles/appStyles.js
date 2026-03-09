@@ -2,6 +2,7 @@
  * App layout and component styles (tab bar, headers, sections, more, etc.).
  */
 import { StyleSheet, StatusBar, Platform } from 'react-native';
+import { ACCENT_COLOR, ACCENT_GLOW } from '../constants';
 
 const STATUS_BAR_HEIGHT = StatusBar.currentHeight ?? 0;
 const HEADER_HEIGHT = STATUS_BAR_HEIGHT + 74;
@@ -51,7 +52,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   retryButton: {
-    backgroundColor: '#BB86FC',
+    backgroundColor: ACCENT_COLOR,
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,
@@ -67,7 +68,7 @@ const styles = StyleSheet.create({
     color: '#E1E1E1',
   },
   chevron: {
-    color: '#BB86FC',
+    color: ACCENT_COLOR,
     fontSize: 16,
   },
   sectionHeader: {
@@ -79,7 +80,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontWeight: 'bold',
     flex: 1,
-    color: '#BB86FC',
+    color: ACCENT_COLOR,
   },
   sectionContent: {
     paddingLeft: 16,
@@ -98,7 +99,7 @@ const styles = StyleSheet.create({
   mainTitle: {
     fontSize: 40,
     fontWeight: 'bold',
-    color: '#BB86FC',
+    color: ACCENT_COLOR,
     marginBottom: 16,
     textAlign: 'center',
   },
@@ -195,7 +196,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     fontSize: 16,
     borderWidth: 1,
-    borderColor: 'rgba(187, 134, 252, 0.3)',
+    borderColor: ACCENT_GLOW,
   },
   closeIconContainer: {
     padding: 8,
@@ -206,7 +207,7 @@ const styles = StyleSheet.create({
     color: '#E1E1E1',
   },
   highlightedText: {
-    backgroundColor: 'rgba(187, 134, 252, 0.3)',
+    backgroundColor: ACCENT_GLOW,
     color: '#ffffff',
     fontWeight: 'bold',
   },
@@ -261,7 +262,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   activeTabButtonInner: {
-    backgroundColor: '#BB86FC',
+    backgroundColor: ACCENT_COLOR,
     borderRadius: 12,
     paddingVertical: 4,
     paddingHorizontal: 10,
@@ -327,22 +328,22 @@ const styles = StyleSheet.create({
   aboutTitle: {
     fontSize: 48,
     fontWeight: 'bold',
-    color: '#BB86FC',
+    color: ACCENT_COLOR,
     marginBottom: 24,
     textAlign: 'center',
     lineHeight: 56,
-    textShadowColor: 'rgba(187, 134, 252, 0.3)',
+    textShadowColor: ACCENT_GLOW,
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 20,
   },
   moreTitle: {
     fontSize: 48,
     fontWeight: 'bold',
-    color: '#BB86FC',
+    color: ACCENT_COLOR,
     marginBottom: 24,
     textAlign: 'center',
     lineHeight: 56,
-    textShadowColor: 'rgba(187, 134, 252, 0.3)',
+    textShadowColor: ACCENT_GLOW,
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 20,
   },
@@ -354,7 +355,7 @@ const styles = StyleSheet.create({
   moreSectionTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#BB86FC',
+    color: ACCENT_COLOR,
     marginLeft: 10,
   },
   moreSectionWrapper: {
@@ -381,7 +382,7 @@ const styles = StyleSheet.create({
   debugMetaLabel: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#BB86FC',
+    color: ACCENT_COLOR,
     width: 130,
     flexShrink: 0,
   },
@@ -416,7 +417,7 @@ const styles = StyleSheet.create({
   amountButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#BB86FC',
+    color: ACCENT_COLOR,
   },
   venmoGridRow: {
     flexDirection: 'row',
@@ -467,13 +468,13 @@ const styles = StyleSheet.create({
   nailLabel: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#BB86FC',
+    color: ACCENT_COLOR,
     marginTop: 8,
   },
   versionContainer: {
     padding: 12,
     borderWidth: 1,
-    borderColor: 'rgba(187, 134, 252, 0.3)',
+    borderColor: ACCENT_GLOW,
     borderRadius: 8,
     marginBottom: 8,
     backgroundColor: 'rgba(45, 45, 50, 0.75)',
@@ -492,7 +493,7 @@ const styles = StyleSheet.create({
   versionText: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#BB86FC',
+    color: ACCENT_COLOR,
     marginRight: 12,
   },
   versionDate: {
@@ -501,7 +502,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   versionArrow: {
-    color: '#BB86FC',
+    color: ACCENT_COLOR,
     fontSize: 16,
   },
   versionContentContainer: {
@@ -516,7 +517,7 @@ const styles = StyleSheet.create({
   changelogSubtitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#BB86FC',
+    color: ACCENT_COLOR,
     marginBottom: 8,
   },
   changelogItem: {
@@ -649,7 +650,7 @@ const styles = StyleSheet.create({
   toolQuickRefTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#BB86FC',
+    color: ACCENT_COLOR,
     marginTop: 16,
     marginBottom: 8,
   },
@@ -768,7 +769,7 @@ const styles = StyleSheet.create({
   voiceSubsectionTitle: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#BB86FC',
+    color: ACCENT_COLOR,
     marginTop: 16,
     marginBottom: 10,
   },
@@ -791,20 +792,20 @@ const styles = StyleSheet.create({
     height: 22,
     borderRadius: 11,
     borderWidth: 2,
-    borderColor: '#BB86FC',
+    borderColor: ACCENT_COLOR,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
   },
   voiceRadioOuterSelected: {
-    borderColor: '#BB86FC',
+    borderColor: ACCENT_COLOR,
     backgroundColor: 'transparent',
   },
   voiceRadioInner: {
     width: 11,
     height: 11,
     borderRadius: 6,
-    backgroundColor: '#BB86FC',
+    backgroundColor: ACCENT_COLOR,
   },
   voiceRadioText: {
     fontSize: 15,
@@ -812,11 +813,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   voiceRadioTextSelected: {
-    color: '#BB86FC',
+    color: ACCENT_COLOR,
     fontWeight: '600',
   },
   showMatchesButton: {
-    backgroundColor: '#BB86FC',
+    backgroundColor: ACCENT_COLOR,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 4,

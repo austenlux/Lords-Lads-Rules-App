@@ -5,6 +5,7 @@
  */
 import React, { useRef, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Animated } from 'react-native';
+import { ACCENT_COLOR } from '../constants';
 
 /** Default expanded state for a section; false = collapsed, matching Rules/Expansions. */
 export const DEFAULT_SECTION_EXPANDED = false;
@@ -49,7 +50,7 @@ export default function CollapsibleSection({
         {titleNode != null ? (
           titleNode
         ) : (
-          <Text style={[styles.sectionTitle, { fontSize, color: '#BB86FC' }]}>{title}</Text>
+          <Text style={[styles.sectionTitle, { fontSize, color: ACCENT_COLOR }]}>{title}</Text>
         )}
       </TouchableOpacity>
       {isExpanded && <View style={styles.sectionContent}>{children}</View>}
