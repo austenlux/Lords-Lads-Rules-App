@@ -40,7 +40,7 @@ const SETTINGS_KEYS = {
   THINKING_SOUNDS_ENABLED: '@lnl_thinking_sounds_enabled',
 };
 import { getVenmoPayUrl } from '../constants';
-import { useTheme, THEME_OPTIONS } from '../context/ThemeContext';
+import { useTheme, COLOR_GROUPS } from '../context/ThemeContext';
 import CollapsibleSection, { DEFAULT_SECTION_EXPANDED } from '../components/CollapsibleSection';
 import SyncedIcon from '../../assets/icons/synced.svg';
 import VenmoIcon from '../../assets/icons/venmo.svg';
@@ -189,6 +189,7 @@ export default function MoreScreen({
   const { themeId: selectedTheme, accent, selectTheme } = useTheme();
   const [themeExpanded, setThemeExpanded] = useState(false);
   const [themeColorExpanded, setThemeColorExpanded] = useState(false);
+  const [colorGroupExpanded, setColorGroupExpanded] = useState({});
   const [themeFontPrimaryExpanded, setThemeFontPrimaryExpanded] = useState(false);
   const [themeFontSecondaryExpanded, setThemeFontSecondaryExpanded] = useState(false);
   const [featureFlagsExpanded, setFeatureFlagsExpanded] = useState(false);
@@ -206,6 +207,10 @@ export default function MoreScreen({
     if (!animations['voiceMeta'])      animations['voiceMeta']      = { rotation: new Animated.Value(0) };
     if (!animations['theme'])              animations['theme']              = { rotation: new Animated.Value(0) };
     if (!animations['themeColor'])         animations['themeColor']         = { rotation: new Animated.Value(0) };
+    COLOR_GROUPS.forEach(g => {
+      const key = `colorGroup_${g.id}`;
+      if (!animations[key]) animations[key] = { rotation: new Animated.Value(0) };
+    });
     if (!animations['themeFontPrimary'])   animations['themeFontPrimary']   = { rotation: new Animated.Value(0) };
     if (!animations['themeFontSecondary']) animations['themeFontSecondary'] = { rotation: new Animated.Value(0) };
     if (!animations['featureFlags'])   animations['featureFlags']   = { rotation: new Animated.Value(0) };
@@ -362,9 +367,11 @@ export default function MoreScreen({
     animateSection(animations['theme'], isExpanded);
     if (!isExpanded) {
       animateSection(animations['themeColor'], false);
+      COLOR_GROUPS.forEach(g => animateSection(animations[`colorGroup_${g.id}`], false));
       animateSection(animations['themeFontPrimary'], false);
       animateSection(animations['themeFontSecondary'], false);
       setThemeColorExpanded(false);
+      setColorGroupExpanded({});
       setThemeFontPrimaryExpanded(false);
       setThemeFontSecondaryExpanded(false);
     }
@@ -375,7 +382,18 @@ export default function MoreScreen({
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     const isExpanded = !themeColorExpanded;
     animateSection(animations['themeColor'], isExpanded);
+    if (!isExpanded) {
+      COLOR_GROUPS.forEach(g => animateSection(animations[`colorGroup_${g.id}`], false));
+      setColorGroupExpanded({});
+    }
     setThemeColorExpanded(isExpanded);
+  };
+
+  const toggleColorGroup = (groupId) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    const isExpanded = !colorGroupExpanded[groupId];
+    animateSection(animations[`colorGroup_${groupId}`], isExpanded);
+    setColorGroupExpanded(prev => ({ ...prev, [groupId]: isExpanded }));
   };
 
   const toggleThemeFontPrimary = () => {
@@ -835,33 +853,56 @@ export default function MoreScreen({
                     </View>
                     {themeColorExpanded && (
                       <View style={[styles.versionContent, { paddingLeft: 0, paddingRight: 0 }]}>
-                        <View style={styles.colorGrid}>
-                          {THEME_OPTIONS.map((theme) => {
-                            const isSelected = theme.id === selectedTheme;
-                            return (
-                              <Pressable
-                                key={theme.id}
-                                onPress={() => selectTheme(theme.id)}
-                                style={({ pressed }) => [
-                                  styles.colorBtn,
-                                  { borderColor: theme.color },
-                                  isSelected && { backgroundColor: theme.color },
-                                  pressed && !isSelected && { opacity: 0.7 },
-                                ]}
-                              >
-                                <Text
-                                  style={[
-                                    styles.colorBtnText,
-                                    { color: theme.color },
-                                    isSelected && styles.colorBtnTextSelected,
-                                  ]}
-                                >
-                                  {theme.label}
-                                </Text>
-                              </Pressable>
-                            );
-                          })}
-                        </View>
+                        {COLOR_GROUPS.map((group) => {
+                          const groupKey = `colorGroup_${group.id}`;
+                          const isGroupOpen = !!colorGroupExpanded[group.id];
+                          return (
+                            <TouchableOpacity
+                              key={group.id}
+                              style={[styles.versionContainer, { paddingHorizontal: 10 }]}
+                              onPress={() => toggleColorGroup(group.id)}
+                              activeOpacity={0.7}
+                            >
+                              <View style={styles.versionHeader}>
+                                <Text style={[styles.versionLabel, { color: accent }]}>{group.label}</Text>
+                                <Animated.View style={{ transform: [{ rotate: animations[groupKey]?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
+                                  <Text style={styles.versionArrow}>▶</Text>
+                                </Animated.View>
+                              </View>
+                              {isGroupOpen && (
+                                <View style={[styles.versionContent, { paddingLeft: 0, paddingRight: 0 }]}>
+                                  <View style={styles.colorGrid}>
+                                    {group.options.map((theme) => {
+                                      const isSelected = theme.id === selectedTheme;
+                                      return (
+                                        <Pressable
+                                          key={theme.id}
+                                          onPress={() => selectTheme(theme.id)}
+                                          style={({ pressed }) => [
+                                            styles.colorBtn,
+                                            { borderColor: theme.color },
+                                            isSelected && { backgroundColor: theme.color },
+                                            pressed && !isSelected && { opacity: 0.7 },
+                                          ]}
+                                        >
+                                          <Text
+                                            style={[
+                                              styles.colorBtnText,
+                                              { color: theme.color },
+                                              isSelected && styles.colorBtnTextSelected,
+                                            ]}
+                                          >
+                                            {theme.label}
+                                          </Text>
+                                        </Pressable>
+                                      );
+                                    })}
+                                  </View>
+                                </View>
+                              )}
+                            </TouchableOpacity>
+                          );
+                        })}
                       </View>
                     )}
                   </TouchableOpacity>
