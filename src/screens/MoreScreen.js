@@ -851,7 +851,7 @@ export default function MoreScreen({
                     activeOpacity={0.7}
                   >
                     <View style={styles.versionHeader}>
-                      <CardIconTitle icon={<SplatIcon fill={accent} />} title="Colors" styles={styles} titleColor={accent} />
+                      <CardIconTitle icon={<SplatIcon fill="#BB86FC" />} title="Colors" styles={styles} titleColor={accent} />
                       <Animated.View style={{ transform: [{ rotate: animations['themeColor']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
                         <Text style={styles.versionArrow}>▶</Text>
                       </Animated.View>

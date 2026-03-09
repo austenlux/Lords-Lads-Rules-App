@@ -63,7 +63,7 @@ export const COLOR_GROUPS = [
     options: [
       { id: 'electric-lime',     label: 'Electric Lime',     color: '#B4D926' },
       { id: 'borealis-green',    label: 'Borealis Green',    color: '#42D930' },
-      { id: 'twilight-violet',   label: 'Twilight Violet',   color: '#A646D1' },
+      { id: 'twilight-violet',   label: 'Twilight Violet',   color: '#BB86FC' },
       { id: 'crimson-horizon',   label: 'Crimson Horizon',   color: '#D93070' },
     ],
   },
