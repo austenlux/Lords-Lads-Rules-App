@@ -2,57 +2,57 @@ import React, { createContext, useContext, useState, useEffect, useMemo } from '
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const STORAGE_KEY = '@lnl_theme';
-const DEFAULT_THEME_ID = 'purple';
+const DEFAULT_THEME_ID = 'forged-iron';
 
 export const COLOR_GROUPS = [
   {
     id: 'forge',
     label: 'The Forge',
     options: [
-      { id: 'purple', label: 'Purple', color: '#BB86FC' },
-      { id: 'red',    label: 'Red',    color: '#EF5350' },
-      { id: 'orange', label: 'Orange', color: '#FFA726' },
-      { id: 'pink',   label: 'Pink',   color: '#F48FB1' },
+      { id: 'forged-iron',       label: 'Forged Iron',       color: '#333333' },
+      { id: 'hammer-steel',      label: 'Hammer Steel',      color: '#7B8C9E' },
+      { id: 'oxidized-copper',   label: 'Oxidized Copper',   color: '#4A707A' },
+      { id: 'blasted-granite',   label: 'Blasted Granite',   color: '#5C5C5C' },
     ],
   },
   {
     id: 'timber',
     label: 'The Timber',
     options: [
-      { id: 'brown',  label: 'Brown',  color: '#A1887F' },
-      { id: 'teal',   label: 'Teal',   color: '#4DB6AC' },
-      { id: 'green',  label: 'Green',  color: '#66BB6A' },
-      { id: 'blue',   label: 'Blue',   color: '#64B5F6' },
+      { id: 'weathered-oak',     label: 'Weathered Oak',     color: '#968D81' },
+      { id: 'burnt-sienna',      label: 'Burnt Sienna',      color: '#8B4513' },
+      { id: 'charred-ember',     label: 'Charred Ember',     color: '#1A1A1A' },
+      { id: 'dark-walnut',       label: 'Dark Walnut',       color: '#4E342E' },
     ],
   },
   {
     id: 'wilds',
     label: 'The Wilds',
     options: [
-      { id: 'green',  label: 'Green',  color: '#66BB6A' },
-      { id: 'teal',   label: 'Teal',   color: '#4DB6AC' },
-      { id: 'brown',  label: 'Brown',  color: '#A1887F' },
-      { id: 'orange', label: 'Orange', color: '#FFA726' },
+      { id: 'forest-pine',       label: 'Forest Pine',       color: '#2E473B' },
+      { id: 'meadow-moss',       label: 'Meadow Moss',       color: '#8A9A5B' },
+      { id: 'rusty-spike',       label: 'Rusty Spike',       color: '#A0522D' },
+      { id: 'blood-orange',      label: 'Blood Orange',      color: '#CC5500' },
     ],
   },
   {
     id: 'elements',
     label: 'The Elements',
     options: [
-      { id: 'blue',   label: 'Blue',   color: '#64B5F6' },
-      { id: 'red',    label: 'Red',    color: '#EF5350' },
-      { id: 'purple', label: 'Purple', color: '#BB86FC' },
-      { id: 'teal',   label: 'Teal',   color: '#4DB6AC' },
+      { id: 'sky-blue',          label: 'Sky Blue',          color: '#87CEEB' },
+      { id: 'river-stone',       label: 'River Stone',       color: '#A9BA9D' },
+      { id: 'glacial-ice',       label: 'Glacial Ice',       color: '#D1EAF0' },
+      { id: 'morning-mist',      label: 'Morning Mist',      color: '#B7C9D3' },
     ],
   },
   {
     id: 'brew',
     label: 'The Brew',
     options: [
-      { id: 'pink',   label: 'Pink',   color: '#F48FB1' },
-      { id: 'purple', label: 'Purple', color: '#BB86FC' },
-      { id: 'orange', label: 'Orange', color: '#FFA726' },
-      { id: 'red',    label: 'Red',    color: '#EF5350' },
+      { id: 'golden-lager',      label: 'Golden Lager',      color: '#FFD700' },
+      { id: 'amber-ale',         label: 'Amber Ale',         color: '#FFBF00' },
+      { id: 'frothy-head',       label: 'Frothy Head',       color: '#F5F5DC' },
+      { id: 'toasted-malt',      label: 'Toasted Malt',      color: '#D2B48C' },
     ],
   },
 ];
