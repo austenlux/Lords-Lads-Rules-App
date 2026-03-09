@@ -62,6 +62,11 @@ import SplatIcon from '../../assets/icons/splat.svg';
 import Font1Icon from '../../assets/icons/font1.svg';
 import Font2Icon from '../../assets/icons/font2.svg';
 import SpeakerIcon from '../../assets/icons/speaker.svg';
+import AnvilIcon from '../../assets/icons/anvil.svg';
+import TreeIcon from '../../assets/icons/tree.svg';
+import MountainIcon from '../../assets/icons/mountain.svg';
+import SkyIcon from '../../assets/icons/sky.svg';
+import BeerIcon from '../../assets/icons/beer.svg';
 import CheckIcon from '../../assets/icons/check.svg';
 import CloseIcon from '../../assets/icons/close.svg';
 
@@ -71,6 +76,14 @@ const CardIconTitle = ({ icon, title, styles, titleColor }) => (
     <Text style={[styles.versionText, titleColor && { color: titleColor }]}>{title}</Text>
   </View>
 );
+
+const COLOR_GROUP_ICONS = {
+  forge:    AnvilIcon,
+  timber:   TreeIcon,
+  wilds:    MountainIcon,
+  elements: SkyIcon,
+  brew:     BeerIcon,
+};
 
 const PAST_RELEASES_KEY = 'pastReleases';
 const SECTION_KEYS = { BUY_NAILS: 'buyNails', CHANGELOG: 'changelog', SETTINGS: 'settings', INFO: 'info', DEBUG: 'debug' };
@@ -864,7 +877,13 @@ export default function MoreScreen({
                               activeOpacity={0.7}
                             >
                               <View style={styles.versionHeader}>
-                                <Text style={[styles.versionLabel, { color: accent }]}>{group.label}</Text>
+                                {(() => {
+                                  const GroupIcon = COLOR_GROUP_ICONS[group.id];
+                                  const iconProps = group.id === 'brew'
+                                    ? { fill: 'none', stroke: accent }
+                                    : { fill: accent };
+                                  return <CardIconTitle icon={<GroupIcon {...iconProps} />} title={group.label} styles={styles} titleColor={accent} />;
+                                })()}
                                 <Animated.View style={{ transform: [{ rotate: animations[groupKey]?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
                                   <Text style={styles.versionArrow}>▶</Text>
                                 </Animated.View>
