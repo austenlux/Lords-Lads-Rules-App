@@ -83,7 +83,7 @@ const COLOR_GROUP_ICONS = {
   timber:   { Icon: LogIcon,      color: '#A0522D', stroke: false },
   wilds:    { Icon: MountainIcon, color: '#4A8A5B', stroke: false },
   elements: { Icon: SkyIcon,      color: null,      stroke: false },
-  aurora:   { Icon: RainbowIcon,  color: '#A646D1', stroke: false },
+  aurora:   { Icon: RainbowIcon,  color: null,      stroke: false },
   brew:     { Icon: BeerIcon,     color: '#D18D00', stroke: true  },
 };
 

@@ -46,16 +46,6 @@ export const COLOR_GROUPS = [
     ],
   },
   {
-    id: 'aurora',
-    label: 'The Aurora',
-    options: [
-      { id: 'electric-lime',     label: 'Electric Lime',     color: '#B4D926' },
-      { id: 'borealis-green',    label: 'Borealis Green',    color: '#42D930' },
-      { id: 'twilight-violet',   label: 'Twilight Violet',   color: '#A646D1' },
-      { id: 'crimson-horizon',   label: 'Crimson Horizon',   color: '#D93070' },
-    ],
-  },
-  {
     id: 'brew',
     label: 'The Brew',
     options: [
@@ -63,6 +53,16 @@ export const COLOR_GROUPS = [
       { id: 'amber-ale',         label: 'Amber Ale',         color: '#D18D00' },
       { id: 'frothy-head',       label: 'Frothy Head',       color: '#F5F5DC' },
       { id: 'toasted-malt',      label: 'Toasted Malt',      color: '#D2B48C' },
+    ],
+  },
+  {
+    id: 'aurora',
+    label: 'The Aurora',
+    options: [
+      { id: 'electric-lime',     label: 'Electric Lime',     color: '#B4D926' },
+      { id: 'borealis-green',    label: 'Borealis Green',    color: '#42D930' },
+      { id: 'twilight-violet',   label: 'Twilight Violet',   color: '#A646D1' },
+      { id: 'crimson-horizon',   label: 'Crimson Horizon',   color: '#D93070' },
     ],
   },
 ];
