@@ -815,6 +815,32 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
     color: ACCENT_COLOR,
     fontWeight: '600',
   },
+  colorGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    gap: 10,
+  },
+  colorBtn: {
+    width: '47%',
+    borderWidth: 1.5,
+    borderRadius: 10,
+    paddingVertical: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'transparent',
+  },
+  colorBtnText: {
+    fontSize: 15,
+    fontWeight: '500',
+    letterSpacing: 0.3,
+  },
+  colorBtnTextSelected: {
+    fontWeight: '700',
+    color: '#1E1E22',
+  },
   showMatchesButton: {
     backgroundColor: ACCENT_COLOR,
     paddingHorizontal: 12,

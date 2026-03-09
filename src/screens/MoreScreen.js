@@ -835,29 +835,33 @@ export default function MoreScreen({
                     </View>
                     {themeColorExpanded && (
                       <View style={[styles.versionContent, { paddingLeft: 0, paddingRight: 0 }]}>
-                        {THEME_OPTIONS.map((theme, index) => {
-                          const isSelected = theme.id === selectedTheme;
-                          const isLast = index === THEME_OPTIONS.length - 1;
-                          return (
-                            <Pressable
-                              key={theme.id}
-                              onPress={() => selectTheme(theme.id)}
-                              style={({ pressed }) => [
-                                styles.voiceRadioItem,
-                                isLast && styles.voiceRadioItemLast,
-                                pressed && styles.voiceRadioItemPressed,
-                              ]}
-                              android_ripple={{ color: 'rgba(187, 134, 252, 0.2)', borderless: false }}
-                            >
-                              <View style={[styles.voiceRadioOuter, isSelected && { borderColor: theme.color }]}>
-                                {isSelected && <View style={[styles.voiceRadioInner, { backgroundColor: theme.color }]} />}
-                              </View>
-                              <Text style={[styles.voiceRadioText, { color: theme.color }, isSelected && { fontWeight: '600' }]}>
-                                {theme.label}
-                              </Text>
-                            </Pressable>
-                          );
-                        })}
+                        <View style={styles.colorGrid}>
+                          {THEME_OPTIONS.map((theme) => {
+                            const isSelected = theme.id === selectedTheme;
+                            return (
+                              <Pressable
+                                key={theme.id}
+                                onPress={() => selectTheme(theme.id)}
+                                style={({ pressed }) => [
+                                  styles.colorBtn,
+                                  { borderColor: theme.color },
+                                  isSelected && { backgroundColor: theme.color },
+                                  pressed && !isSelected && { opacity: 0.7 },
+                                ]}
+                              >
+                                <Text
+                                  style={[
+                                    styles.colorBtnText,
+                                    { color: theme.color },
+                                    isSelected && styles.colorBtnTextSelected,
+                                  ]}
+                                >
+                                  {theme.label}
+                                </Text>
+                              </Pressable>
+                            );
+                          })}
+                        </View>
                       </View>
                     )}
                   </TouchableOpacity>
