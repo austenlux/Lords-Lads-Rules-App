@@ -218,10 +218,10 @@ const styles = StyleSheet.create({
   },
   panel: {
     marginHorizontal: 12,
-    backgroundColor: COLORS.backdrop,
+    backgroundColor: BASE_MODAL_COLORS.backdrop,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: BASE_MODAL_COLORS.border,
     overflow: 'hidden',
   },
   listContent: {
@@ -246,19 +246,19 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   userBubble: {
-    backgroundColor: COLORS.userBubble,
-    borderColor: COLORS.userBorder,
+    backgroundColor: BASE_MODAL_COLORS.userBubble,
+    borderColor: BASE_MODAL_COLORS.userBorder,
     borderBottomRightRadius: 4,
   },
   assistantBubble: {
-    backgroundColor: COLORS.assistantBubble,
-    borderColor: COLORS.assistantBorder,
+    backgroundColor: BASE_MODAL_COLORS.assistantBubble,
+    borderColor: BASE_MODAL_COLORS.assistantBorder,
     borderBottomLeftRadius: 4,
   },
   roleLabel: {
     fontSize: 11,
     fontWeight: '600',
-    color: COLORS.roleLabelUser,
+    color: '#BB86FC',
     marginBottom: 4,
     textTransform: 'uppercase',
     letterSpacing: 0.8,
@@ -266,7 +266,7 @@ const styles = StyleSheet.create({
   roleLabelAI: {
     fontSize: 11,
     fontWeight: '600',
-    color: COLORS.roleLabelAI,
+    color: BASE_MODAL_COLORS.roleLabelAI,
     marginBottom: 4,
     textTransform: 'uppercase',
     letterSpacing: 0.8,
@@ -274,7 +274,7 @@ const styles = StyleSheet.create({
   userText: {
     fontSize: 14,
     lineHeight: 22,
-    color: COLORS.userText,
+    color: BASE_MODAL_COLORS.userText,
   },
   thinkingText: {
     fontSize: 14,
