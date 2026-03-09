@@ -793,7 +793,7 @@ export default function MoreScreen({
               activeOpacity={0.7}
             >
               <View style={styles.versionHeader}>
-                <CardIconTitle icon={<PaintIcon fill="#BB86FC" />} title="Theme" styles={styles} />
+                <CardIconTitle icon={<PaintIcon fill={THEME_OPTIONS.find(t => t.id === selectedTheme)?.color ?? '#BB86FC'} />} title="Theme" styles={styles} />
                 <Animated.View style={{ transform: [{ rotate: animations['theme']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
                   <Text style={styles.versionArrow}>▶</Text>
                 </Animated.View>
