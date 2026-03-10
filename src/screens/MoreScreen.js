@@ -74,9 +74,9 @@ import CloseIcon from '../../assets/icons/close.svg';
 function CardIconTitle({ icon, title, styles, titleColor }) {
   const { titleFontStyle } = useTheme();
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1, flexShrink: 1 }}>
       {React.cloneElement(icon, { width: 20, height: 20 })}
-      <Text style={[styles.versionText, titleFontStyle, titleColor && { color: titleColor }]}>{title}</Text>
+      <Text style={[styles.versionText, { flexShrink: 1 }, titleFontStyle, titleColor && { color: titleColor }]}>{title}</Text>
     </View>
   );
 }
