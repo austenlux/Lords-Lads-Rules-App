@@ -49,7 +49,7 @@ const NAILS_COLOR = '#2E7D32';
 const UPRISING_COLOR = '#CC4400';
 
 export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }) {
-  const { titleFont, bodyFont } = useTheme();
+  const { titleFontStyle, bodyFontStyle } = useTheme();
   const [sectionsExpanded, setSectionsExpanded] = useState({
     [SECTION_KEYS.NAIL_CALC]: DEFAULT_SECTION_EXPANDED,
     [SECTION_KEYS.GAME_STAT_TRACKER]: DEFAULT_SECTION_EXPANDED,
@@ -83,7 +83,7 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
     >
       <View style={[styles.contentContainer, { paddingTop: contentPaddingTop ?? HEADER_HEIGHT }]}>
         <View style={Platform.OS === 'ios' ? styles.moreContainer : styles.aboutContainer}>
-          <Text style={[styles.aboutTitle, { fontFamily: titleFont }]}>Tools</Text>
+          <Text style={[styles.aboutTitle, titleFontStyle]}>Tools</Text>
 
           <CollapsibleSection
             title="Nail Calculator"
@@ -94,7 +94,7 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
             style={styles.aboutSectionWrapper}
           >
             <View style={styles.versionContainer}>
-              <Text style={[styles.toolDescription, { fontFamily: bodyFont }]}>
+              <Text style={[styles.toolDescription, bodyFontStyle]}>
                 Number of Lord Nails = <Text style={styles.toolDescriptionCode}> ceil(n/2 − 1) </Text>
                 {'\n'}
                 Number of Uprising Nails = <Text style={styles.toolDescriptionCode}> ceil(n/7) </Text>
@@ -105,11 +105,11 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                 <View style={styles.toolInputBlock}>
                   <View style={styles.toolLabelWithIcon}>
                     <PlayersIcon width={22} height={22} fill={PLAYERS_COLOR} style={styles.toolLabelIcon} />
-                    <Text style={[styles.toolInputLabel, { fontFamily: bodyFont }]}>Players</Text>
+                    <Text style={[styles.toolInputLabel, bodyFontStyle]}>Players</Text>
                   </View>
                   <View style={styles.toolInputContainer}>
                     <TextInput
-                      style={[styles.toolInput, { fontFamily: bodyFont }]}
+                      style={[styles.toolInput, bodyFontStyle]}
                       value={playerCountInput}
                       onChangeText={handlePlayerCountChange}
                       keyboardType="number-pad"
@@ -117,7 +117,7 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                     />
                     {playerCountInput === ZWSP && (
                       <View style={styles.toolInputPlaceholder} pointerEvents="none">
-                        <Text style={[styles.toolInputPlaceholderText, { fontFamily: bodyFont }]}>e.g. 6</Text>
+                        <Text style={[styles.toolInputPlaceholderText, bodyFontStyle]}>e.g. 6</Text>
                       </View>
                     )}
                   </View>
@@ -125,10 +125,10 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                 <View style={styles.toolOutputBlock}>
                   <View style={styles.toolLabelWithIcon}>
                     <NailsIcon width={22} height={22} fill={NAILS_COLOR} style={styles.toolLabelIcon} />
-                    <Text style={[styles.toolOutputLabel, { fontFamily: bodyFont }]}>Lord nails</Text>
+                    <Text style={[styles.toolOutputLabel, bodyFontStyle]}>Lord nails</Text>
                   </View>
                   <View style={styles.toolOutputBox} pointerEvents="none">
-                    <Text style={[styles.toolOutputValue, { fontFamily: bodyFont }]}>
+                    <Text style={[styles.toolOutputValue, bodyFontStyle]}>
                       {lordNails != null ? lordNails : '—'}
                     </Text>
                   </View>
@@ -136,17 +136,17 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                 <View style={styles.toolOutputBlock}>
                   <View style={styles.toolLabelWithIcon}>
                     <UprisingIcon width={22} height={22} fill={UPRISING_COLOR} style={styles.toolLabelIcon} />
-                    <Text style={[styles.toolOutputLabel, { fontFamily: bodyFont }]}>Uprising nails</Text>
+                    <Text style={[styles.toolOutputLabel, bodyFontStyle]}>Uprising nails</Text>
                   </View>
                   <View style={styles.toolOutputBox} pointerEvents="none">
-                    <Text style={[styles.toolOutputValueUprising, { fontFamily: bodyFont }]}>
+                    <Text style={[styles.toolOutputValueUprising, bodyFontStyle]}>
                       {uprisingNails != null ? uprisingNails : '—'}
                     </Text>
                   </View>
                 </View>
               </View>
 
-              <Text style={[styles.toolQuickRefTitle, { fontFamily: titleFont }]}>Quick Reference</Text>
+              <Text style={[styles.toolQuickRefTitle, titleFontStyle]}>Quick Reference</Text>
               <View style={styles.toolTableWrap}>
                 <View style={styles.toolTableRow}>
                   <View style={styles.toolTableLabelCell}>
@@ -154,7 +154,7 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                   </View>
                   {Array.from({ length: QUICK_REF_COLUMNS }, (_, i) => i + QUICK_REF_PLAYERS_START).map((n) => (
                     <View key={`p-${n}`} style={styles.toolTableDataCell}>
-                      <Text style={[styles.toolTableDataTextPlayers, { fontFamily: bodyFont }]}>{n}</Text>
+                      <Text style={[styles.toolTableDataTextPlayers, bodyFontStyle]}>{n}</Text>
                     </View>
                   ))}
                 </View>
@@ -164,7 +164,7 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                   </View>
                   {Array.from({ length: QUICK_REF_COLUMNS }, (_, i) => i + QUICK_REF_PLAYERS_START).map((n) => (
                     <View key={`l-${n}`} style={styles.toolTableDataCell}>
-                      <Text style={[styles.toolTableDataTextNails, { fontFamily: bodyFont }]}>{lordNailFormula(n)}</Text>
+                      <Text style={[styles.toolTableDataTextNails, bodyFontStyle]}>{lordNailFormula(n)}</Text>
                     </View>
                   ))}
                 </View>
@@ -174,7 +174,7 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                   </View>
                   {Array.from({ length: QUICK_REF_COLUMNS }, (_, i) => i + QUICK_REF_PLAYERS_START).map((n) => (
                     <View key={`u-${n}`} style={styles.toolTableDataCell}>
-                      <Text style={[styles.toolTableDataTextUprising, { fontFamily: bodyFont }]}>{uprisingNailFormula(n)}</Text>
+                      <Text style={[styles.toolTableDataTextUprising, bodyFontStyle]}>{uprisingNailFormula(n)}</Text>
                     </View>
                   ))}
                 </View>
@@ -191,7 +191,7 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
             style={styles.aboutSectionWrapper}
           >
             <View style={styles.versionContainer}>
-              <Text style={[styles.toolDescription, { fontFamily: bodyFont }]}>Coming soon.</Text>
+              <Text style={[styles.toolDescription, bodyFontStyle]}>Coming soon.</Text>
             </View>
           </CollapsibleSection>
         </View>

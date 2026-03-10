@@ -22,7 +22,7 @@ export default function ContentScreen({
   onRetry,
   emptyStateContentLabel = 'rules',
 }) {
-  const { titleFont, bodyFont } = useTheme();
+  const { titleFontStyle, bodyFontStyle } = useTheme();
   const [retryInProgress, setRetryInProgress] = useState(false);
   const showSearchEmpty = sections.length === 0 && searchQuery && searchQuery.length >= 2;
   const showFetchFailedEmpty = sections.length === 0 && isEmptyState && !showSearchEmpty;
@@ -64,8 +64,8 @@ export default function ContentScreen({
             <View style={styles.emptyStateIcon}>
               <NoWifiIcon width={50} height={50} />
             </View>
-            <Text style={[styles.emptyStateTitle, { fontFamily: titleFont }]}>{emptyTitle}</Text>
-            <Text style={[styles.emptyStateText, { fontFamily: bodyFont }]}>{emptyMessage}</Text>
+            <Text style={[styles.emptyStateTitle, titleFontStyle]}>{emptyTitle}</Text>
+            <Text style={[styles.emptyStateText, bodyFontStyle]}>{emptyMessage}</Text>
             {onRetry && (
               retryInProgress ? (
                 <View style={[styles.retryButton, { marginTop: 16, justifyContent: 'center', alignItems: 'center' }]}>
@@ -73,7 +73,7 @@ export default function ContentScreen({
                 </View>
               ) : (
                 <TouchableOpacity style={[styles.retryButton, { marginTop: 16 }]} onPress={handleRetry}>
-                  <Text style={[styles.retryButtonText, { fontFamily: bodyFont }]}>Try Again</Text>
+                  <Text style={[styles.retryButtonText, bodyFontStyle]}>Try Again</Text>
                 </TouchableOpacity>
               )
             )}

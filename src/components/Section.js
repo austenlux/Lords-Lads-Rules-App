@@ -23,7 +23,7 @@ export default function Section({
   styles,
   markdownStyles,
 }) {
-  const { accent, titleFont } = useTheme();
+  const { accent, titleFontStyle } = useTheme();
   const trimmedSearchQuery = normalizeSearchQuery(searchQuery);
   const decodedTitle = decodeHtmlEntities(title);
 
@@ -39,12 +39,12 @@ export default function Section({
   const fontSize = 32 - (level - 1) * 4;
   const titleNode =
     trimmedSearchQuery.length >= 2 ? (
-      <Text style={[styles.sectionTitle, { fontSize, color: accent, fontFamily: titleFont }]}>
+      <Text style={[styles.sectionTitle, { fontSize, color: accent }, titleFontStyle]}>
         {decodedTitle
           .split(new RegExp(`(${trimmedSearchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'))
           .map((part, i) =>
             part.toLowerCase() === trimmedSearchQuery.toLowerCase() ? (
-              <Text key={i} style={[{ fontSize, fontWeight: 'bold', color: accent, fontFamily: titleFont }, styles.highlightedText]}>
+              <Text key={i} style={[{ fontSize, fontWeight: 'bold', color: accent }, titleFontStyle, styles.highlightedText]}>
                 {part}
               </Text>
             ) : (

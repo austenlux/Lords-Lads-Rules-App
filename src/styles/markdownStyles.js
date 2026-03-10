@@ -5,12 +5,12 @@ import { Platform } from 'react-native';
 
 const monospace = Platform.OS === 'ios' ? 'Menlo' : 'monospace';
 
-const createMarkdownStyles = (ACCENT_COLOR, titleFont, bodyFont) => ({
+const createMarkdownStyles = (ACCENT_COLOR, titleFontStyle, bodyFontStyle) => ({
   body: {
     color: '#E1E1E1',
     fontSize: 16,
     lineHeight: 24,
-    fontFamily: bodyFont,
+    ...bodyFontStyle,
   },
   heading1: {
     color: ACCENT_COLOR,
@@ -19,7 +19,7 @@ const createMarkdownStyles = (ACCENT_COLOR, titleFont, bodyFont) => ({
     marginBottom: 0,
     marginTop: 0,
     lineHeight: 40,
-    fontFamily: titleFont,
+    ...titleFontStyle,
   },
   heading2: {
     color: ACCENT_COLOR,
@@ -28,7 +28,7 @@ const createMarkdownStyles = (ACCENT_COLOR, titleFont, bodyFont) => ({
     marginBottom: 0,
     marginTop: 0,
     lineHeight: 34,
-    fontFamily: titleFont,
+    ...titleFontStyle,
   },
   heading3: {
     color: ACCENT_COLOR,
@@ -37,22 +37,22 @@ const createMarkdownStyles = (ACCENT_COLOR, titleFont, bodyFont) => ({
     marginBottom: 0,
     marginTop: 0,
     lineHeight: 30,
-    fontFamily: titleFont,
+    ...titleFontStyle,
   },
   link: {
     color: '#03DAC6',
-    fontFamily: bodyFont,
+    ...bodyFontStyle,
   },
   listItem: {
     marginBottom: 12,
     marginTop: 12,
     color: '#E1E1E1',
-    fontFamily: bodyFont,
+    ...bodyFontStyle,
   },
   paragraph: {
     marginBottom: 8,
     color: '#E1E1E1',
-    fontFamily: bodyFont,
+    ...bodyFontStyle,
   },
   bullet_list: {
     marginBottom: 0,
@@ -100,7 +100,7 @@ const createMarkdownStyles = (ACCENT_COLOR, titleFont, bodyFont) => ({
     borderLeftWidth: 4,
     padding: 16,
     marginVertical: 0,
-    fontFamily: bodyFont,
+    ...bodyFontStyle,
   },
   table: {
     borderColor: '#333',
@@ -113,12 +113,12 @@ const createMarkdownStyles = (ACCENT_COLOR, titleFont, bodyFont) => ({
     padding: 12,
     backgroundColor: '#1E1E1E',
     color: ACCENT_COLOR,
-    fontFamily: bodyFont,
+    ...bodyFontStyle,
   },
   td: {
     padding: 12,
     borderColor: '#333',
-    fontFamily: bodyFont,
+    ...bodyFontStyle,
   },
   mark: {
     backgroundColor: 'rgba(187, 134, 252, 0.3)',

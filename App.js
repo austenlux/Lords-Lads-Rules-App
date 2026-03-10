@@ -70,9 +70,9 @@ export default function App() {
 }
 
 function AppContent() {
-  const { accent, accentGlow, titleFont, bodyFont } = useTheme();
+  const { accent, accentGlow, titleFontStyle, bodyFontStyle } = useTheme();
   const styles = useMemo(() => createStyles(accent, accentGlow), [accent, accentGlow]);
-  const markdownStyles = useMemo(() => createMarkdownStyles(accent, titleFont, bodyFont), [accent, titleFont, bodyFont]);
+  const markdownStyles = useMemo(() => createMarkdownStyles(accent, titleFontStyle, bodyFontStyle), [accent, titleFontStyle, bodyFontStyle]);
 
   const [isConvoOpen, setIsConvoOpen] = useState(false);
   const [showMicDialog, setShowMicDialog] = useState(false);
@@ -301,7 +301,7 @@ function AppContent() {
             <View style={styles.searchBarWrapper}>
               <TextInput
                 ref={searchInputRef}
-                style={[styles.searchInput, { fontFamily: bodyFont }]}
+                style={[styles.searchInput, bodyFontStyle]}
                 placeholder={activeTab === 'rules' ? 'Search rules...' : activeTab === 'expansions' ? 'Search expansions...' : 'Search...'}
                 placeholderTextColor="#888"
                 value={searchQuery}
@@ -362,7 +362,7 @@ function AppContent() {
             <View style={[styles.tabIconContainer, activeTab === 'rules' && styles.activeTabIconContainer]}>
               <RulesIcon width={32} height={32} color={activeTab === 'rules' ? '#121212' : '#E1E1E1'} fill={activeTab === 'rules' ? '#121212' : '#E1E1E1'} style={styles.tabIcon} />
             </View>
-            <Text style={[styles.tabButtonText, { fontFamily: bodyFont }, activeTab === 'rules' && styles.activeTabButtonText]}>Rules</Text>
+            <Text style={[styles.tabButtonText, bodyFontStyle, activeTab === 'rules' && styles.activeTabButtonText]}>Rules</Text>
           </View>
         </TouchableOpacity>
         <TouchableOpacity
@@ -373,7 +373,7 @@ function AppContent() {
             <View style={[styles.tabIconContainer, activeTab === 'expansions' && styles.activeTabIconContainer]}>
               <ExpansionsIcon width={32} height={32} color={activeTab === 'expansions' ? '#121212' : '#E1E1E1'} fill={activeTab === 'expansions' ? '#121212' : '#E1E1E1'} style={styles.tabIcon} />
             </View>
-            <Text style={[styles.tabButtonText, { fontFamily: bodyFont }, activeTab === 'expansions' && styles.activeTabButtonText]}>Expansions</Text>
+            <Text style={[styles.tabButtonText, bodyFontStyle, activeTab === 'expansions' && styles.activeTabButtonText]}>Expansions</Text>
           </View>
         </TouchableOpacity>
         <TouchableOpacity
@@ -384,7 +384,7 @@ function AppContent() {
             <View style={[styles.tabIconContainer, activeTab === 'tools' && styles.activeTabIconContainer]}>
               <ToolsIcon width={32} height={32} color={activeTab === 'tools' ? '#121212' : '#E1E1E1'} fill={activeTab === 'tools' ? '#121212' : '#E1E1E1'} style={styles.tabIcon} />
             </View>
-            <Text style={[styles.tabButtonText, { fontFamily: bodyFont }, activeTab === 'tools' && styles.activeTabButtonText]}>Tools</Text>
+            <Text style={[styles.tabButtonText, bodyFontStyle, activeTab === 'tools' && styles.activeTabButtonText]}>Tools</Text>
           </View>
         </TouchableOpacity>
         <TouchableOpacity
@@ -395,7 +395,7 @@ function AppContent() {
             <View style={[styles.tabIconContainer, activeTab === 'more' && styles.activeTabIconContainer]}>
               <AboutIcon width={32} height={32} color={activeTab === 'more' ? '#121212' : '#E1E1E1'} fill={activeTab === 'more' ? '#121212' : '#E1E1E1'} style={styles.tabIcon} />
             </View>
-            <Text style={[styles.tabButtonText, { fontFamily: bodyFont }, activeTab === 'more' && styles.activeTabButtonText]}>More</Text>
+            <Text style={[styles.tabButtonText, bodyFontStyle, activeTab === 'more' && styles.activeTabButtonText]}>More</Text>
           </View>
         </TouchableOpacity>
       </View>
@@ -500,8 +500,8 @@ function AppContent() {
         <View style={micDialogStyles.overlay}>
           <View style={micDialogStyles.backdrop}>
             <View style={micDialogStyles.card}>
-              <Text style={[micDialogStyles.title, { color: accent, fontFamily: titleFont }]}>Microphone Access Required</Text>
-              <Text style={[micDialogStyles.body, { fontFamily: bodyFont }]}>
+              <Text style={[micDialogStyles.title, { color: accent }, titleFontStyle]}>Microphone Access Required</Text>
+              <Text style={[micDialogStyles.body, bodyFontStyle]}>
                 The Voice Assistant needs microphone access to hear your questions.
                 Please enable it in your device settings.
               </Text>
@@ -509,13 +509,13 @@ function AppContent() {
                 style={[micDialogStyles.settingsButton, { backgroundColor: accent }]}
                 onPress={() => { setShowMicDialog(false); Linking.openSettings(); }}
               >
-                <Text style={[micDialogStyles.settingsButtonText, { fontFamily: bodyFont }]}>Open Settings</Text>
+                <Text style={[micDialogStyles.settingsButtonText, bodyFontStyle]}>Open Settings</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={micDialogStyles.dismissButton}
                 onPress={() => setShowMicDialog(false)}
               >
-                <Text style={[micDialogStyles.dismissButtonText, { fontFamily: bodyFont }]}>Dismiss</Text>
+                <Text style={[micDialogStyles.dismissButtonText, bodyFontStyle]}>Dismiss</Text>
               </TouchableOpacity>
             </View>
           </View>

@@ -162,6 +162,7 @@ export function ThemeProvider({ children }) {
   const value = useMemo(() => {
     const accent = THEME_MAP[themeId];
     const fontPairing = FONT_MAP[fontId];
+    const isAndroid = Platform.OS === 'android';
     return {
       themeId,
       accent,
@@ -171,6 +172,12 @@ export function ThemeProvider({ children }) {
       selectFont,
       titleFont: fontPairing.titleFont,
       bodyFont: fontPairing.descFont,
+      titleFontStyle: isAndroid
+        ? { fontFamily: fontPairing.titleFont, fontWeight: 'normal' }
+        : { fontFamily: fontPairing.titleFont },
+      bodyFontStyle: isAndroid
+        ? { fontFamily: fontPairing.descFont, fontWeight: 'normal' }
+        : { fontFamily: fontPairing.descFont },
     };
   }, [themeId, fontId]);
 
