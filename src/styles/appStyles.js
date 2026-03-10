@@ -712,6 +712,7 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 4,
+    marginRight: 8,
     marginLeft: 8,
   },
   latestBadgeText: {
