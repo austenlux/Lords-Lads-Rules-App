@@ -788,7 +788,7 @@ export default function MoreScreen({
                         >
                           <View style={styles.versionHeader}>
                             <View style={styles.versionRow}>
-                              <Text style={[styles.versionText, { flexShrink: 1 }, titleFontStyle]}>{group.display}</Text>
+                              <Text style={[styles.versionText, { flex: 1 }, titleFontStyle]}>{group.display}</Text>
                               {groupHasSelection && (
                                 <View style={styles.latestBadge}>
                                   <Text style={[styles.latestBadgeText, bodyFontStyle]}>Active</Text>
