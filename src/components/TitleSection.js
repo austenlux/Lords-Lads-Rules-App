@@ -60,7 +60,6 @@ export default function TitleSection({ title, content, searchQuery, onNavigate, 
     marginBottom: 24,
     color: accent,
     fontWeight: 'bold',
-    lineHeight: 56,
     textShadowColor: accentGlow,
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 20,
@@ -72,7 +71,7 @@ export default function TitleSection({ title, content, searchQuery, onNavigate, 
       <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }], width: '100%', alignItems: 'center' }}>
         <View style={styles.titleWrapper}>
           <TouchableOpacity activeOpacity={1}>
-            <Text style={titleStyle}>
+            <Text style={titleStyle} numberOfLines={1} adjustsFontSizeToFit>
               {trimmedSearchQuery.length >= 2
                 ? decodedTitle
                     .split(new RegExp(`(${trimmedSearchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'))
