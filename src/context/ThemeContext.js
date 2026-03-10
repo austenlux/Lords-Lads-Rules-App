@@ -96,6 +96,30 @@ export const FONT_PAIRINGS = [
     titlePreview: 'Tall Timber',
     descPreview:  'Exploring the northern wilderness.',
   },
+  {
+    id: 'tavern-law',
+    name: 'The Tavern Law',
+    titleFont: font('Bangers', 'Bangers'),
+    descFont:  font('Open Sans', 'OpenSans'),
+    titlePreview: 'NO FIGHTING',
+    descPreview:  'Management is not responsible for lost teeth.',
+  },
+  {
+    id: 'deep-forest',
+    name: 'Deep Forest',
+    titleFont: font('Germania One', 'GermaniaOne'),
+    descFont:  font('Inter 18pt', 'Inter'),
+    titlePreview: 'Old Traditions',
+    descPreview:  'The woods have secrets older than stone.',
+  },
+  {
+    id: 'ironwood-guild',
+    name: 'Ironwood Guild',
+    titleFont: font('Cinzel Decorative', 'CinzelDecorative'),
+    descFont:  font('Montserrat', 'Montserrat'),
+    titlePreview: 'EST. 1892',
+    descPreview:  'Master craftsmanship in every grain.',
+  },
 ];
 
 const FONT_MAP = Object.fromEntries(FONT_PAIRINGS.map(f => [f.id, f]));
