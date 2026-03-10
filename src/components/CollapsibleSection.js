@@ -44,10 +44,10 @@ export default function CollapsibleSection({
   return (
     <View ref={sectionRef} style={[style, { marginLeft }]}>
       <TouchableOpacity onPress={onToggle} style={styles.sectionHeader}>
-        <Animated.View style={{ transform: [{ rotate }], marginRight: 8, width: 20 }}>
+        <Animated.View style={{ transform: [{ rotate }], marginRight: 8, width: 20, marginTop: 4 }}>
           <Text style={styles.chevron}>▶</Text>
         </Animated.View>
-        {icon != null ? <View style={{ marginRight: 8 }}>{icon}</View> : null}
+        {icon != null ? <View style={{ marginRight: 8, marginTop: 2 }}>{icon}</View> : null}
         {titleNode != null ? (
           titleNode
         ) : (
