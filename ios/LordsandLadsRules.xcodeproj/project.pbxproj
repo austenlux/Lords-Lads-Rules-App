@@ -36,6 +36,7 @@
 		35EAC1658DDD4082B54CBD90 /* OpenSans.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 52A21B13BF5D4DB592DE7C54 /* OpenSans.ttf */; };
 		981F81AAF0EA40C2B9CCA2CB /* GermaniaOne.ttf in Resources */ = {isa = PBXBuildFile; fileRef = DA4B5B55EA084C37BB34481C /* GermaniaOne.ttf */; };
 		69FA703DAAC8461AA044E627 /* Lato.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 35ED11AD0C0D4009ACF9ED82 /* Lato.ttf */; };
+		648A2FA60B37423BAF59B63F /* UnifrakturMaguntia.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 864D75A40639406388E862E6 /* UnifrakturMaguntia.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -76,6 +77,7 @@
 		52A21B13BF5D4DB592DE7C54 /* OpenSans.ttf */ = {isa = PBXFileReference; name = "OpenSans.ttf"; path = "../assets/fonts/OpenSans.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 		DA4B5B55EA084C37BB34481C /* GermaniaOne.ttf */ = {isa = PBXFileReference; name = "GermaniaOne.ttf"; path = "../assets/fonts/GermaniaOne.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 		35ED11AD0C0D4009ACF9ED82 /* Lato.ttf */ = {isa = PBXFileReference; name = "Lato.ttf"; path = "../assets/fonts/Lato.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		864D75A40639406388E862E6 /* UnifrakturMaguntia.ttf */ = {isa = PBXFileReference; name = "UnifrakturMaguntia.ttf"; path = "../assets/fonts/UnifrakturMaguntia.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -199,6 +201,7 @@
 				52A21B13BF5D4DB592DE7C54 /* OpenSans.ttf */,
 				DA4B5B55EA084C37BB34481C /* GermaniaOne.ttf */,
 				35ED11AD0C0D4009ACF9ED82 /* Lato.ttf */,
+				864D75A40639406388E862E6 /* UnifrakturMaguntia.ttf */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -285,6 +288,7 @@
 				35EAC1658DDD4082B54CBD90 /* OpenSans.ttf in Resources */,
 				981F81AAF0EA40C2B9CCA2CB /* GermaniaOne.ttf in Resources */,
 				69FA703DAAC8461AA044E627 /* Lato.ttf in Resources */,
+				648A2FA60B37423BAF59B63F /* UnifrakturMaguntia.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
