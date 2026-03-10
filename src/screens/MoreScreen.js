@@ -948,7 +948,6 @@ export default function MoreScreen({
                           const isFontSelected = pairing.id === selectedFont;
                           return (
                             <View key={pairing.id} style={styles.fontPairingWrapper}>
-                              <Text style={[styles.fontPairingName, { color: accent }, bodyFontStyle]}>{pairing.name}</Text>
                               <Pressable
                                 onPress={() => selectFont(pairing.id)}
                                 style={({ pressed }) => [
