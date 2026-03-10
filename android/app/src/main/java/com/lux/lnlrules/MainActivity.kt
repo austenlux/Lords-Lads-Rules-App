@@ -34,12 +34,14 @@ class MainActivity : ReactActivity() {
             // Set status bar color to transparent
             window.statusBarColor = Color.TRANSPARENT
             
-            // Make sure navigation bar stays dark
-            window.navigationBarColor = Color.parseColor("#121212")
+            window.navigationBarColor = Color.TRANSPARENT
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                window.isNavigationBarContrastEnforced = false
+            }
             
-            // Allow layout to extend into the status bar area
             window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE 
-                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
+                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION)
             
             // Clear any translucent flags that might add a darkening effect
             window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
