@@ -86,7 +86,7 @@ Note: iOS build is for simulator only. For physical devices, build locally with 
 * Maintains section expansion states when clearing search
 * Shows empty state message when no matches found
 
-### Improved text rendering:
+### Improved text rendering
 * Fixed HTML entities (& symbol now displays correctly)
 * Corrected Table of Contents indentation
 * Enhanced overall text formatting consistency

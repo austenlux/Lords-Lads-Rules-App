@@ -40,14 +40,16 @@ export default function CollapsibleSection({
 
   const marginLeft = (level - 1) * 12;
   const fontSize = 28 - (level - 1) * 4;
+  const chevronTopOffset = Math.round((fontSize - 16) * 0.5);
+  const iconTopOffset = Math.round(Math.max(0, (fontSize - 24) * 0.5));
 
   return (
     <View ref={sectionRef} style={[style, { marginLeft }]}>
       <TouchableOpacity onPress={onToggle} style={styles.sectionHeader}>
-        <Animated.View style={{ transform: [{ rotate }], marginRight: 8, width: 20 }}>
+        <Animated.View style={{ transform: [{ rotate }], marginRight: 8, width: 20, marginTop: chevronTopOffset }}>
           <Text style={styles.chevron}>▶</Text>
         </Animated.View>
-        {icon != null ? <View style={{ marginRight: 8 }}>{icon}</View> : null}
+        {icon != null ? <View style={{ marginRight: 8, marginTop: iconTopOffset }}>{icon}</View> : null}
         {titleNode != null ? (
           titleNode
         ) : (

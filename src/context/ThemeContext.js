@@ -173,8 +173,8 @@ export function ThemeProvider({ children }) {
       titleFont: fontPairing.titleFont,
       bodyFont: fontPairing.descFont,
       titleFontStyle: isAndroid
-        ? { fontFamily: fontPairing.titleFont, fontWeight: 'normal', paddingRight: 4 }
-        : { fontFamily: fontPairing.titleFont, paddingRight: 4 },
+        ? { fontFamily: fontPairing.titleFont, fontWeight: 'normal' }
+        : { fontFamily: fontPairing.titleFont },
       bodyFontStyle: isAndroid
         ? { fontFamily: fontPairing.descFont, fontWeight: 'normal' }
         : { fontFamily: fontPairing.descFont },

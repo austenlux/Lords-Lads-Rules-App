@@ -72,7 +72,7 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
   },
   sectionHeader: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     paddingVertical: 12,
     paddingRight: 16,
   },
@@ -80,6 +80,7 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
     fontWeight: 'bold',
     flex: 1,
     color: ACCENT_COLOR,
+    paddingHorizontal: 2,
   },
   sectionContent: {
     paddingLeft: 16,
@@ -480,7 +481,7 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
   },
   versionHeader: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
   },
   versionRow: {
@@ -494,6 +495,7 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
     fontWeight: 'bold',
     color: ACCENT_COLOR,
     marginRight: 12,
+    paddingHorizontal: 2,
   },
   versionDate: {
     fontSize: 15,
@@ -518,6 +520,7 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
     fontWeight: 'bold',
     color: ACCENT_COLOR,
     marginBottom: 8,
+    paddingHorizontal: 2,
   },
   changelogItem: {
     fontSize: 16,
