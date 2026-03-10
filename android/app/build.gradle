@@ -108,6 +108,8 @@ dependencies {
     // Gemini Nano on-device inference via Android AICore (ML Kit GenAI Prompt API)
     implementation("com.google.mlkit:genai-prompt:1.0.0-beta1")
 
+    implementation("androidx.core:core-ktx:1.15.0")
+
     // On-device speech recognition uses android.speech.SpeechRecognizer (Android SDK, no dep needed).
     // SpeechRecognizer.createOnDeviceSpeechRecognizer() is available from API 31+ without any
     // additional Maven dependency. RECORD_AUDIO permission is declared in AndroidManifest.xml.
