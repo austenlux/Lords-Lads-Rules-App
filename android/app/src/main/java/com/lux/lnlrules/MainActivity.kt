@@ -4,9 +4,8 @@ import android.content.Context
 import android.content.res.Configuration
 import android.os.Bundle
 import android.graphics.Color
-import android.os.Build
-import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsControllerCompat
+import androidx.activity.SystemBarStyle
+import androidx.activity.enableEdgeToEdge
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
@@ -27,20 +26,10 @@ class MainActivity : ReactActivity() {
         DefaultReactActivityDelegate(this, mainComponentName, fabricEnabled)
         
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
+            navigationBarStyle = SystemBarStyle.dark(Color.TRANSPARENT)
+        )
         super.onCreate(savedInstanceState)
-
-        WindowCompat.setDecorFitsSystemWindows(window, false)
-
-        window.statusBarColor = Color.TRANSPARENT
-        window.navigationBarColor = Color.TRANSPARENT
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            window.isNavigationBarContrastEnforced = false
-        }
-
-        WindowInsetsControllerCompat(window, window.decorView).apply {
-            isAppearanceLightStatusBars = false
-            isAppearanceLightNavigationBars = false
-        }
     }
 } 

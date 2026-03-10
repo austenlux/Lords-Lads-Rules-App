@@ -109,6 +109,7 @@ dependencies {
     implementation("com.google.mlkit:genai-prompt:1.0.0-beta1")
 
     implementation("androidx.core:core-ktx:1.15.0")
+    implementation("androidx.activity:activity-ktx:1.9.3")
 
     // On-device speech recognition uses android.speech.SpeechRecognizer (Android SDK, no dep needed).
     // SpeechRecognizer.createOnDeviceSpeechRecognizer() is available from API 31+ without any
