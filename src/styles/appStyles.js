@@ -72,7 +72,7 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
   },
   sectionHeader: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     paddingVertical: 12,
     paddingRight: 16,
   },
@@ -480,7 +480,7 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
   },
   versionHeader: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     justifyContent: 'space-between',
   },
   versionRow: {
