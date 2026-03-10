@@ -37,6 +37,7 @@
 		981F81AAF0EA40C2B9CCA2CB /* GermaniaOne.ttf in Resources */ = {isa = PBXBuildFile; fileRef = DA4B5B55EA084C37BB34481C /* GermaniaOne.ttf */; };
 		69FA703DAAC8461AA044E627 /* Lato.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 35ED11AD0C0D4009ACF9ED82 /* Lato.ttf */; };
 		648A2FA60B37423BAF59B63F /* UnifrakturMaguntia.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 864D75A40639406388E862E6 /* UnifrakturMaguntia.ttf */; };
+		5BD25B3766C044EFAEEC5192 /* PirataOne.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8E54FA6BBE604DDCA3561E02 /* PirataOne.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -78,6 +79,7 @@
 		DA4B5B55EA084C37BB34481C /* GermaniaOne.ttf */ = {isa = PBXFileReference; name = "GermaniaOne.ttf"; path = "../assets/fonts/GermaniaOne.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 		35ED11AD0C0D4009ACF9ED82 /* Lato.ttf */ = {isa = PBXFileReference; name = "Lato.ttf"; path = "../assets/fonts/Lato.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 		864D75A40639406388E862E6 /* UnifrakturMaguntia.ttf */ = {isa = PBXFileReference; name = "UnifrakturMaguntia.ttf"; path = "../assets/fonts/UnifrakturMaguntia.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		8E54FA6BBE604DDCA3561E02 /* PirataOne.ttf */ = {isa = PBXFileReference; name = "PirataOne.ttf"; path = "../assets/fonts/PirataOne.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -202,6 +204,7 @@
 				DA4B5B55EA084C37BB34481C /* GermaniaOne.ttf */,
 				35ED11AD0C0D4009ACF9ED82 /* Lato.ttf */,
 				864D75A40639406388E862E6 /* UnifrakturMaguntia.ttf */,
+				8E54FA6BBE604DDCA3561E02 /* PirataOne.ttf */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -289,6 +292,7 @@
 				981F81AAF0EA40C2B9CCA2CB /* GermaniaOne.ttf in Resources */,
 				69FA703DAAC8461AA044E627 /* Lato.ttf in Resources */,
 				648A2FA60B37423BAF59B63F /* UnifrakturMaguntia.ttf in Resources */,
+				5BD25B3766C044EFAEEC5192 /* PirataOne.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

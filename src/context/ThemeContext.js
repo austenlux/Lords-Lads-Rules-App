@@ -99,7 +99,7 @@ export const FONT_PAIRINGS = [
   {
     id: 'tavern-law',
     name: 'The Tavern Law',
-    titleFont: font('UnifrakturMaguntia', 'UnifrakturMaguntia'),
+    titleFont: font('Pirata One', 'PirataOne'),
     descFont:  font('Open Sans', 'OpenSans'),
     titlePreview: 'NO FIGHTING',
     descPreview:  'Management is not responsible for lost teeth.',
