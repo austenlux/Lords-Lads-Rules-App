@@ -101,7 +101,7 @@ export const FONT_PAIRINGS = [
     name: 'The Tavern Law',
     titleFont: font('Pirata One', 'PirataOne'),
     descFont:  font('Open Sans', 'OpenSans'),
-    titlePreview: 'NO FIGHTING',
+    titlePreview: 'Tavern Law',
     descPreview:  'Management is not responsible for lost teeth.',
   },
   {
@@ -117,8 +117,32 @@ export const FONT_PAIRINGS = [
     name: 'Ironwood Guild',
     titleFont: font('Cinzel Decorative', 'CinzelDecorative'),
     descFont:  font('Montserrat', 'Montserrat'),
-    titlePreview: 'EST. 1892',
+    titlePreview: 'Ironwood Guild',
     descPreview:  'Master craftsmanship in every grain.',
+  },
+  {
+    id: 'summit-peak',
+    name: 'Summit Peak',
+    titleFont: font('Rubik Black', 'Rubik-Black'),
+    descFont:  font('Work Sans', 'WorkSans'),
+    titlePreview: 'Summit Peak',
+    descPreview:  'Elevation: 4,500ft above sea level.',
+  },
+  {
+    id: 'quality-steel',
+    name: 'Quality Steel',
+    titleFont: font('Arvo', 'Arvo'),
+    descFont:  font('Lato', 'Lato'),
+    titlePreview: 'Quality Steel',
+    descPreview:  'Forged in fire, tempered in oil.',
+  },
+  {
+    id: 'elder-wisdom',
+    name: 'Elder Wisdom',
+    titleFont: font('Eczar', 'Eczar'),
+    descFont:  font('Lora', 'Lora'),
+    titlePreview: 'Elder Wisdom',
+    descPreview:  'The journey of a thousand miles begins here.',
   },
 ];
 
