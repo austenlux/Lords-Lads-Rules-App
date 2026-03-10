@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.graphics.Color
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
+import androidx.core.view.WindowInsetsControllerCompat
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
@@ -31,5 +32,7 @@ class MainActivity : ReactActivity() {
             navigationBarStyle = SystemBarStyle.dark(Color.TRANSPARENT)
         )
         super.onCreate(savedInstanceState)
+
+        WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightNavigationBars = true
     }
 } 
