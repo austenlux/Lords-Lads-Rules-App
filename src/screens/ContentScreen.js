@@ -6,6 +6,7 @@ import React, { useState } from 'react';
 import { View, ScrollView, Platform, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { EmptySearchResults } from '../components';
 import NoWifiIcon from '../components/NoWifiIcon';
+import { useTheme } from '../context/ThemeContext';
 
 export default function ContentScreen({
   sections,
@@ -21,6 +22,7 @@ export default function ContentScreen({
   onRetry,
   emptyStateContentLabel = 'rules',
 }) {
+  const { titleFont, bodyFont } = useTheme();
   const [retryInProgress, setRetryInProgress] = useState(false);
   const showSearchEmpty = sections.length === 0 && searchQuery && searchQuery.length >= 2;
   const showFetchFailedEmpty = sections.length === 0 && isEmptyState && !showSearchEmpty;
@@ -62,8 +64,8 @@ export default function ContentScreen({
             <View style={styles.emptyStateIcon}>
               <NoWifiIcon width={50} height={50} />
             </View>
-            <Text style={styles.emptyStateTitle}>{emptyTitle}</Text>
-            <Text style={styles.emptyStateText}>{emptyMessage}</Text>
+            <Text style={[styles.emptyStateTitle, { fontFamily: titleFont }]}>{emptyTitle}</Text>
+            <Text style={[styles.emptyStateText, { fontFamily: bodyFont }]}>{emptyMessage}</Text>
             {onRetry && (
               retryInProgress ? (
                 <View style={[styles.retryButton, { marginTop: 16, justifyContent: 'center', alignItems: 'center' }]}>
@@ -71,7 +73,7 @@ export default function ContentScreen({
                 </View>
               ) : (
                 <TouchableOpacity style={[styles.retryButton, { marginTop: 16 }]} onPress={handleRetry}>
-                  <Text style={styles.retryButtonText}>Try Again</Text>
+                  <Text style={[styles.retryButtonText, { fontFamily: bodyFont }]}>Try Again</Text>
                 </TouchableOpacity>
               )
             )}

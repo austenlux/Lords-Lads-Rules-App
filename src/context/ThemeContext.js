@@ -161,6 +161,7 @@ export function ThemeProvider({ children }) {
 
   const value = useMemo(() => {
     const accent = THEME_MAP[themeId];
+    const fontPairing = FONT_MAP[fontId];
     return {
       themeId,
       accent,
@@ -168,6 +169,8 @@ export function ThemeProvider({ children }) {
       selectTheme,
       fontId,
       selectFont,
+      titleFont: fontPairing.titleFont,
+      bodyFont: fontPairing.descFont,
     };
   }, [themeId, fontId]);
 

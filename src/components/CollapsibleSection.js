@@ -22,7 +22,7 @@ export default function CollapsibleSection({
   style,
   sectionRef,
 }) {
-  const { accent } = useTheme();
+  const { accent, titleFont } = useTheme();
   const animatedRotation = useRef(new Animated.Value(isExpanded ? 1 : 0)).current;
 
   useEffect(() => {
@@ -51,7 +51,7 @@ export default function CollapsibleSection({
         {titleNode != null ? (
           titleNode
         ) : (
-          <Text style={[styles.sectionTitle, { fontSize, color: accent }]}>{title}</Text>
+          <Text style={[styles.sectionTitle, { fontSize, color: accent, fontFamily: titleFont }]}>{title}</Text>
         )}
       </TouchableOpacity>
       {isExpanded && <View style={styles.sectionContent}>{children}</View>}

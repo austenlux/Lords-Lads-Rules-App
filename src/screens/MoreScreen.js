@@ -71,12 +71,15 @@ import RainbowIcon from '../../assets/icons/rainbow.svg';
 import CheckIcon from '../../assets/icons/check.svg';
 import CloseIcon from '../../assets/icons/close.svg';
 
-const CardIconTitle = ({ icon, title, styles, titleColor }) => (
-  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-    {React.cloneElement(icon, { width: 20, height: 20 })}
-    <Text style={[styles.versionText, titleColor && { color: titleColor }]}>{title}</Text>
-  </View>
-);
+function CardIconTitle({ icon, title, styles, titleColor }) {
+  const { titleFont } = useTheme();
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+      {React.cloneElement(icon, { width: 20, height: 20 })}
+      <Text style={[styles.versionText, { fontFamily: titleFont }, titleColor && { color: titleColor }]}>{title}</Text>
+    </View>
+  );
+}
 
 const COLOR_GROUP_ICONS = {
   forge:    { Icon: AnvilIcon,    color: '#7B8C9E', stroke: false },
@@ -201,7 +204,7 @@ export default function MoreScreen({
   const [expandedLocales, setExpandedLocales] = useState({});
   const [expandDefaultsExpanded, setExpandDefaultsExpanded] = useState(false);
   const [thinkingSoundsEnabled, setThinkingSoundsEnabled] = useState(false);
-  const { themeId: selectedTheme, accent, selectTheme, fontId: selectedFont, selectFont } = useTheme();
+  const { themeId: selectedTheme, accent, selectTheme, fontId: selectedFont, selectFont, titleFont, bodyFont } = useTheme();
   const [themeExpanded, setThemeExpanded] = useState(false);
   const [themeColorExpanded, setThemeColorExpanded] = useState(false);
   const [colorGroupExpanded, setColorGroupExpanded] = useState({});
@@ -617,11 +620,11 @@ export default function MoreScreen({
       <View style={styles.versionHeader}>
         <View style={styles.versionRow}>
           {showLatestBadge && <ShipIcon width={20} height={20} fill="#29B6F6" />}
-          <Text style={styles.versionText}>{version.version}</Text>
-          <Text style={styles.versionDate}>{version.date}</Text>
+          <Text style={[styles.versionText, { fontFamily: titleFont }]}>{version.version}</Text>
+          <Text style={[styles.versionDate, { fontFamily: bodyFont }]}>{version.date}</Text>
           {showLatestBadge && (
             <View style={styles.latestBadge}>
-              <Text style={styles.latestBadgeText}>Latest</Text>
+              <Text style={[styles.latestBadgeText, { fontFamily: bodyFont }]}>Latest</Text>
             </View>
           )}
         </View>
@@ -645,16 +648,16 @@ export default function MoreScreen({
         <View style={styles.versionContent}>
           {version.sections.map((section, sectionIndex) => (
             <View key={sectionIndex}>
-              <Text style={styles.changelogSubtitle}>{section.title}:</Text>
+              <Text style={[styles.changelogSubtitle, { fontFamily: titleFont }]}>{section.title}:</Text>
               {section.items.map((item, itemIndex) => (
-                <Text key={itemIndex} style={styles.changelogItem}>
+                <Text key={itemIndex} style={[styles.changelogItem, { fontFamily: bodyFont }]}>
                   • {item}
                 </Text>
               ))}
             </View>
           ))}
           {version.note && (
-            <Text style={[styles.changelogItem, { marginTop: 8, fontStyle: 'italic' }]}>
+            <Text style={[styles.changelogItem, { marginTop: 8, fontStyle: 'italic', fontFamily: bodyFont }]}>
               {version.note}
             </Text>
           )}
@@ -671,7 +674,7 @@ export default function MoreScreen({
       <View style={[styles.contentContainer, { paddingTop: contentPaddingTop ?? HEADER_HEIGHT }]}>
         <View style={styles.moreContainer}>
           <Text
-            style={styles.moreTitle}
+            style={[styles.moreTitle, { fontFamily: titleFont }]}
             onLongPress={handleMoreTitleLongPress}
             suppressHighlighting
           >
@@ -690,17 +693,17 @@ export default function MoreScreen({
             <View style={styles.versionContainer}>
               <CardIconTitle icon={<GithubIcon fill="#E1E1E1" />} title="Official Rulebook" styles={styles} />
               <Pressable onPress={() => Linking.openURL(RULEBOOK_REPO_URL)} style={{ marginTop: 6, marginBottom: 12 }}>
-                <Text style={styles.infoLink}>{RULEBOOK_REPO_URL}</Text>
+                <Text style={[styles.infoLink, { fontFamily: bodyFont }]}>{RULEBOOK_REPO_URL}</Text>
               </Pressable>
               <CardIconTitle icon={<SyncedIcon fill="#26C6DA" />} title="Rules Last Synced" styles={styles} />
-              <Text style={[styles.moreTimestamp, { marginTop: 4 }]}>{lastFetchDate || 'Never'}</Text>
+              <Text style={[styles.moreTimestamp, { marginTop: 4, fontFamily: bodyFont }]}>{lastFetchDate || 'Never'}</Text>
             </View>
 
             {/* ── App Repository card ── */}
             <View style={styles.versionContainer}>
               <CardIconTitle icon={<GithubIcon fill="#E1E1E1" />} title="App Repository" styles={styles} />
               <Pressable onPress={() => Linking.openURL(APP_REPO_URL)} style={{ marginTop: 6 }}>
-                <Text style={styles.infoLink}>{APP_REPO_URL}</Text>
+                <Text style={[styles.infoLink, { fontFamily: bodyFont }]}>{APP_REPO_URL}</Text>
               </Pressable>
             </View>
           </CollapsibleSection>
@@ -730,7 +733,7 @@ export default function MoreScreen({
                   <View style={styles.settingsRow}>
                     <View style={styles.settingsRowLabel}>
                       <RulesIcon width={22} height={22} fill="#E1E1E1" style={styles.settingsRowIcon} />
-                      <Text style={styles.settingsRowText}>Rules</Text>
+                      <Text style={[styles.settingsRowText, { fontFamily: bodyFont }]}>Rules</Text>
                     </View>
                     <Switch
                       value={expandRulesDefault}
@@ -742,7 +745,7 @@ export default function MoreScreen({
                   <View style={[styles.settingsRow, styles.settingsRowLast]}>
                     <View style={styles.settingsRowLabel}>
                       <ExpansionsIcon width={22} height={22} fill="#E1E1E1" style={styles.settingsRowIcon} />
-                      <Text style={styles.settingsRowText}>Expansions</Text>
+                      <Text style={[styles.settingsRowText, { fontFamily: bodyFont }]}>Expansions</Text>
                     </View>
                     <Switch
                       value={expandExpansionsDefault}
@@ -783,10 +786,10 @@ export default function MoreScreen({
                         >
                           <View style={styles.versionHeader}>
                             <View style={styles.versionRow}>
-                              <Text style={[styles.versionText, { flexShrink: 1 }]}>{group.display}</Text>
+                              <Text style={[styles.versionText, { flexShrink: 1, fontFamily: titleFont }]}>{group.display}</Text>
                               {groupHasSelection && (
                                 <View style={styles.latestBadge}>
-                                  <Text style={styles.latestBadgeText}>Active</Text>
+                                  <Text style={[styles.latestBadgeText, { fontFamily: bodyFont }]}>Active</Text>
                                 </View>
                               )}
                             </View>
@@ -813,7 +816,7 @@ export default function MoreScreen({
                                     <View style={[styles.voiceRadioOuter, isSelected && styles.voiceRadioOuterSelected]}>
                                       {isSelected && <View style={styles.voiceRadioInner} />}
                                     </View>
-                                    <Text style={[styles.voiceRadioText, isSelected && styles.voiceRadioTextSelected]}>
+                                    <Text style={[styles.voiceRadioText, { fontFamily: bodyFont }, isSelected && styles.voiceRadioTextSelected]}>
                                       {voice.name}
                                     </Text>
                                   </Pressable>
@@ -879,7 +882,7 @@ export default function MoreScreen({
                                   })()}
                                   {group.options.some(opt => opt.id === selectedTheme) && (
                                     <View style={styles.latestBadge}>
-                                      <Text style={styles.latestBadgeText}>Active</Text>
+                                      <Text style={[styles.latestBadgeText, { fontFamily: bodyFont }]}>Active</Text>
                                     </View>
                                   )}
                                 </View>
@@ -906,7 +909,7 @@ export default function MoreScreen({
                                           <Text
                                             style={[
                                               styles.colorBtnText,
-                                              { color: theme.color },
+                                              { color: theme.color, fontFamily: bodyFont },
                                               isSelected && styles.colorBtnTextSelected,
                                             ]}
                                           >
@@ -943,7 +946,7 @@ export default function MoreScreen({
                           const isFontSelected = pairing.id === selectedFont;
                           return (
                             <View key={pairing.id} style={styles.fontPairingWrapper}>
-                              <Text style={[styles.fontPairingName, { color: accent }]}>{pairing.name}</Text>
+                              <Text style={[styles.fontPairingName, { color: accent, fontFamily: bodyFont }]}>{pairing.name}</Text>
                               <Pressable
                                 onPress={() => selectFont(pairing.id)}
                                 style={({ pressed }) => [
@@ -1050,7 +1053,7 @@ export default function MoreScreen({
                           style={styles.nailImage}
                           resizeMode="contain"
                         />
-                        <Text style={styles.nailLabel}>{item.label}</Text>
+                        <Text style={[styles.nailLabel, { fontFamily: bodyFont }]}>{item.label}</Text>
                       </Pressable>
                     </View>
                   </View>
@@ -1070,7 +1073,7 @@ export default function MoreScreen({
                           style={styles.nailImage}
                           resizeMode="contain"
                         />
-                        <Text style={styles.nailLabel}>{item.label}</Text>
+                        <Text style={[styles.nailLabel, { fontFamily: bodyFont }]}>{item.label}</Text>
                       </Pressable>
                     </View>
                   </View>
@@ -1105,7 +1108,7 @@ export default function MoreScreen({
                   <View style={styles.versionContent}>
                     <View style={[styles.settingsRow, styles.settingsRowLast, { marginBottom: 8 }]}>
                       <View style={styles.settingsRowLabel}>
-                        <Text style={styles.settingsRowText}>Thinking Sounds</Text>
+                        <Text style={[styles.settingsRowText, { fontFamily: bodyFont }]}>Thinking Sounds</Text>
                       </View>
                       <Switch
                         value={thinkingSoundsEnabled}
@@ -1154,7 +1157,7 @@ export default function MoreScreen({
                       const isMsg = label === 'Message';
                       const row = (
                         <View key={label} style={[styles.debugMetaRow, isLast && { borderBottomWidth: 0 }]}>
-                          <Text style={styles.debugMetaLabel}>{label}</Text>
+                          <Text style={[styles.debugMetaLabel, { fontFamily: bodyFont }]}>{label}</Text>
                           <Text
                             style={[styles.debugMetaValue, { fontFamily: Platform.OS === 'android' ? 'monospace' : 'Menlo', flexShrink: 1 }, isMsg && !commitMsgExpanded && { color: accent }]}
                             numberOfLines={isMsg && commitMsgExpanded ? undefined : 2}
@@ -1202,13 +1205,13 @@ export default function MoreScreen({
                       />
                     </View>
                     <View style={styles.debugMetaRow}>
-                      <Text style={styles.debugMetaLabel}>Device Support</Text>
+                      <Text style={[styles.debugMetaLabel, { fontFamily: bodyFont }]}>Device Support</Text>
                       <Text style={[styles.debugMetaValue, { color: VA_STATUS_COLOR.deviceSupport[modelStatus === 'unavailable' ? 'unavailable' : modelStatus === 'unknown' ? 'unknown' : 'supported'] }]}>
                         {VA_STATUS_LABEL.deviceSupport[modelStatus === 'unavailable' ? 'unavailable' : modelStatus === 'unknown' ? 'unknown' : 'supported']}
                       </Text>
                     </View>
                     <View style={styles.debugMetaRow}>
-                      <Text style={styles.debugMetaLabel}>Model</Text>
+                      <Text style={[styles.debugMetaLabel, { fontFamily: bodyFont }]}>Model</Text>
                       <Text style={[styles.debugMetaValue, { color: VA_STATUS_COLOR.modelDownload[modelStatus] ?? '#888' }]}>
                         {modelStatus === 'downloading' && downloadProgressBytes > 0
                           ? `Downloading… ${(downloadProgressBytes / 1_048_576).toFixed(1)} MB`
@@ -1216,7 +1219,7 @@ export default function MoreScreen({
                       </Text>
                     </View>
                     <View style={[styles.debugMetaRow, (Platform.OS !== 'ios' || !modelDebugInfo) && { borderBottomWidth: 0 }]}>
-                      <Text style={styles.debugMetaLabel}>Mic Permission</Text>
+                      <Text style={[styles.debugMetaLabel, { fontFamily: bodyFont }]}>Mic Permission</Text>
                       <Text style={[styles.debugMetaValue, { color: VA_STATUS_COLOR.mic[micPermissionStatus] ?? '#888' }]}>
                         {VA_STATUS_LABEL.mic[micPermissionStatus] ?? micPermissionStatus}
                       </Text>
@@ -1225,7 +1228,7 @@ export default function MoreScreen({
                       <>
                         {modelDebugInfo.iosVersion != null && (
                           <View style={[styles.debugMetaRow, modelDebugInfo.modelAvailability == null && !(modelDebugInfo.unavailableReason != null && modelDebugInfo.unavailableReason !== '') && { borderBottomWidth: 0 }]}>
-                            <Text style={styles.debugMetaLabel}>iOS Version</Text>
+                            <Text style={[styles.debugMetaLabel, { fontFamily: bodyFont }]}>iOS Version</Text>
                             <Text style={[styles.debugMetaValue, { fontFamily: Platform.OS === 'android' ? 'monospace' : 'Menlo', flexShrink: 1 }]}>
                               {String(modelDebugInfo.iosVersion)}
                             </Text>
@@ -1233,13 +1236,13 @@ export default function MoreScreen({
                         )}
                         {modelDebugInfo.modelAvailability != null && (
                           <View style={[styles.debugMetaRow, !(modelDebugInfo.unavailableReason != null && modelDebugInfo.unavailableReason !== '') && { borderBottomWidth: 0 }]}>
-                            <Text style={styles.debugMetaLabel}>Model Availability</Text>
+                            <Text style={[styles.debugMetaLabel, { fontFamily: bodyFont }]}>Model Availability</Text>
                             <Text style={styles.debugMetaValue}>{String(modelDebugInfo.modelAvailability)}</Text>
                           </View>
                         )}
                         {modelDebugInfo.unavailableReason != null && modelDebugInfo.unavailableReason !== '' && (
                           <View style={[styles.debugMetaRow, { borderBottomWidth: 0 }]}>
-                            <Text style={styles.debugMetaLabel}>Unavailable Reason</Text>
+                            <Text style={[styles.debugMetaLabel, { fontFamily: bodyFont }]}>Unavailable Reason</Text>
                             <Text style={styles.debugMetaValue}>{String(modelDebugInfo.unavailableReason)}</Text>
                           </View>
                         )}
@@ -1250,7 +1253,7 @@ export default function MoreScreen({
                         style={vaReadinessStyles.actionButton}
                         onPress={() => Linking.openSettings()}
                       >
-                        <Text style={vaReadinessStyles.actionButtonText}>Open Mic Settings</Text>
+                        <Text style={[vaReadinessStyles.actionButtonText, { fontFamily: bodyFont }]}>Open Mic Settings</Text>
                       </TouchableOpacity>
                     )}
                     {(modelStatus === 'download_failed' || modelStatus === 'downloadable') && (
@@ -1260,7 +1263,7 @@ export default function MoreScreen({
                           onPress={onRetryModelSetup}
                           disabled={isRetryingModelSetup}
                         >
-                          <Text style={vaReadinessStyles.actionButtonText}>
+                          <Text style={[vaReadinessStyles.actionButtonText, { fontFamily: bodyFont }]}>
                             {isRetryingModelSetup ? 'Retrying…' : 'Retry Model Setup'}
                           </Text>
                         </TouchableOpacity>
@@ -1281,7 +1284,7 @@ export default function MoreScreen({
                       <View style={styles.versionHeader}>
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                           <CardIconTitle icon={<SpeakerIcon fill="#AB47BC" />} title="Models" styles={styles} />
-                          <Text style={styles.versionDate}>{availableVoices.length} Available</Text>
+                          <Text style={[styles.versionDate, { fontFamily: bodyFont }]}>{availableVoices.length} Available</Text>
                         </View>
                         <Animated.View style={{ transform: [{ rotate: animations['voiceMeta']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
                           <Text style={styles.versionArrow}>▶</Text>
@@ -1322,12 +1325,12 @@ export default function MoreScreen({
                                   <View style={[styles.versionContent, { paddingTop: 4, paddingLeft: 8, paddingRight: 4 }]}>
                                     {metaRows.map(row => (
                                       <View key={row.label} style={styles.debugMetaRow}>
-                                        <Text style={styles.debugMetaLabel}>{row.label}</Text>
+                                        <Text style={[styles.debugMetaLabel, { fontFamily: bodyFont }]}>{row.label}</Text>
                                         <Text style={styles.debugMetaValue}>{row.value}</Text>
                                       </View>
                                     ))}
                                     <View style={[styles.debugMetaRow, { borderBottomWidth: 0 }]}>
-                                      <Text style={styles.debugMetaLabel}>Features</Text>
+                                      <Text style={[styles.debugMetaLabel, { fontFamily: bodyFont }]}>Features</Text>
                                       <View style={{ flex: 1 }}>
                                         {featureItems.length > 0
                                           ? featureItems.map((f, i) => (

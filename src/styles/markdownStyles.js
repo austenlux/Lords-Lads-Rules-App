@@ -5,11 +5,12 @@ import { Platform } from 'react-native';
 
 const monospace = Platform.OS === 'ios' ? 'Menlo' : 'monospace';
 
-const createMarkdownStyles = (ACCENT_COLOR) => ({
+const createMarkdownStyles = (ACCENT_COLOR, titleFont, bodyFont) => ({
   body: {
     color: '#E1E1E1',
     fontSize: 16,
     lineHeight: 24,
+    fontFamily: bodyFont,
   },
   heading1: {
     color: ACCENT_COLOR,
@@ -18,6 +19,7 @@ const createMarkdownStyles = (ACCENT_COLOR) => ({
     marginBottom: 0,
     marginTop: 0,
     lineHeight: 40,
+    fontFamily: titleFont,
   },
   heading2: {
     color: ACCENT_COLOR,
@@ -26,6 +28,7 @@ const createMarkdownStyles = (ACCENT_COLOR) => ({
     marginBottom: 0,
     marginTop: 0,
     lineHeight: 34,
+    fontFamily: titleFont,
   },
   heading3: {
     color: ACCENT_COLOR,
@@ -34,18 +37,22 @@ const createMarkdownStyles = (ACCENT_COLOR) => ({
     marginBottom: 0,
     marginTop: 0,
     lineHeight: 30,
+    fontFamily: titleFont,
   },
   link: {
     color: '#03DAC6',
+    fontFamily: bodyFont,
   },
   listItem: {
     marginBottom: 12,
     marginTop: 12,
     color: '#E1E1E1',
+    fontFamily: bodyFont,
   },
   paragraph: {
     marginBottom: 8,
     color: '#E1E1E1',
+    fontFamily: bodyFont,
   },
   bullet_list: {
     marginBottom: 0,
@@ -93,6 +100,7 @@ const createMarkdownStyles = (ACCENT_COLOR) => ({
     borderLeftWidth: 4,
     padding: 16,
     marginVertical: 0,
+    fontFamily: bodyFont,
   },
   table: {
     borderColor: '#333',
@@ -105,10 +113,12 @@ const createMarkdownStyles = (ACCENT_COLOR) => ({
     padding: 12,
     backgroundColor: '#1E1E1E',
     color: ACCENT_COLOR,
+    fontFamily: bodyFont,
   },
   td: {
     padding: 12,
     borderColor: '#333',
+    fontFamily: bodyFont,
   },
   mark: {
     backgroundColor: 'rgba(187, 134, 252, 0.3)',

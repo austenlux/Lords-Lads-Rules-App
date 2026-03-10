@@ -63,15 +63,15 @@ function ThinkingText({ style }) {
   return <Text style={style}>{'Thinking' + '.'.repeat(DOT_SEQUENCE[frame])}</Text>;
 }
 
-function UserBubble({ text }) {
+function UserBubble({ text, bodyFont }) {
   const isEmpty = !text?.trim();
   return (
     <View style={styles.bubbleRow}>
       <View style={[styles.bubble, styles.userBubble]}>
-        <Text style={styles.roleLabel}>You</Text>
+        <Text style={[styles.roleLabel, { fontFamily: bodyFont }]}>You</Text>
         {isEmpty
-          ? <Text style={styles.listeningText}>Listening…</Text>
-          : <Text style={styles.userText}>{text}</Text>
+          ? <Text style={[styles.listeningText, { fontFamily: bodyFont }]}>Listening…</Text>
+          : <Text style={[styles.userText, { fontFamily: bodyFont }]}>{text}</Text>
         }
       </View>
     </View>
@@ -79,15 +79,15 @@ function UserBubble({ text }) {
 }
 
 
-function AssistantBubble({ text }) {
+function AssistantBubble({ text, titleFont, bodyFont, mdStyles }) {
   return (
     <View style={[styles.bubbleRow, styles.bubbleRowAssistant]}>
       <View style={[styles.bubble, styles.assistantBubble]}>
-        <Text style={styles.roleLabelAI}>Assistant</Text>
+        <Text style={[styles.roleLabelAI, { fontFamily: bodyFont }]}>Assistant</Text>
         {text ? (
-          <Markdown style={markdownStyles}>{text}</Markdown>
+          <Markdown style={mdStyles}>{text}</Markdown>
         ) : (
-          <ThinkingText style={styles.thinkingText} />
+          <ThinkingText style={[styles.thinkingText, { fontFamily: bodyFont }]} />
         )}
       </View>
     </View>
@@ -104,12 +104,13 @@ const TOP_MARGIN  = 8;
 const STATUS_BAR  = Platform.OS === 'android' ? (StatusBar.currentHeight ?? 24) : 44;
 
 export default function VoiceAssistantModal({ messages, isOpen, fabBottom = 96 }) {
-  const { accent } = useTheme();
+  const { accent, titleFont, bodyFont } = useTheme();
   const COLORS = { ...BASE_MODAL_COLORS, roleLabelUser: accent, cursor: accent };
-  const markdownStyles = {
+  const mdStyles = {
     ...BASE_MD_STYLES,
-    heading1: { ...BASE_MD_STYLES.heading1, color: accent },
-    heading2: { ...BASE_MD_STYLES.heading2, color: accent },
+    body: { ...BASE_MD_STYLES.body, fontFamily: bodyFont },
+    heading1: { ...BASE_MD_STYLES.heading1, color: accent, fontFamily: titleFont },
+    heading2: { ...BASE_MD_STYLES.heading2, color: accent, fontFamily: titleFont },
     bullet_list_icon: { color: accent },
   };
 
@@ -192,9 +193,9 @@ export default function VoiceAssistantModal({ messages, isOpen, fabBottom = 96 }
           showsVerticalScrollIndicator={false}
           renderItem={({ item }) =>
             item.role === 'user' ? (
-              <UserBubble text={item.text} />
+              <UserBubble text={item.text} bodyFont={bodyFont} />
             ) : (
-              <AssistantBubble text={item.text} />
+              <AssistantBubble text={item.text} titleFont={titleFont} bodyFont={bodyFont} mdStyles={mdStyles} />
             )
           }
           onContentSizeChange={(_, h) => {
