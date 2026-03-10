@@ -421,7 +421,13 @@ function AppContent() {
         <>
           <Image
             source={BG_LOGO_ANDROID}
-            style={{ position: 'absolute', left: 0, top: 0, width: windowWidth, height: windowHeight }}
+            style={{
+              position: 'absolute',
+              width: logoLayout.logoSize,
+              height: logoLayout.logoSize,
+              left: logoLayout.logoLeft,
+              top: logoLayout.logoTop,
+            }}
             resizeMode="contain"
           />
           <View style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(18, 18, 18, 0.7)' }]} pointerEvents="none" />
