@@ -469,8 +469,47 @@ export default function MoreScreen({
   };
 
 
+  const debugFlashAnim = useRef(new Animated.Value(0)).current;
+
+  const collapseAllSections = () => {
+    setSectionsExpanded({
+      [SECTION_KEYS.BUY_NAILS]: false,
+      [SECTION_KEYS.CHANGELOG]: false,
+      [SECTION_KEYS.SETTINGS]: false,
+      [SECTION_KEYS.INFO]: false,
+      [SECTION_KEYS.DEBUG]: false,
+    });
+    setExpandedVersions({});
+    setExpandedLocales({});
+    setExpandedDebugVoices({});
+    setExpandDefaultsExpanded(false);
+    setThemeExpanded(false);
+    setThemeColorExpanded(false);
+    setColorGroupExpanded({});
+    setThemeFontPrimaryExpanded(false);
+    setFeatureFlagsExpanded(false);
+    setVoiceParentExpanded(false);
+    setVoiceMetaExpanded(false);
+    setVaDebugExpanded(false);
+    setBuildInfoExpanded(false);
+    setCommitMsgExpanded(false);
+    Object.values(animations).forEach(a => animateSection(a, false, 0));
+    Object.values(voiceLocaleAnims).forEach(a => animateSection(a, false, 0));
+    Object.values(debugVoiceAnims).forEach(a => animateSection(a, false, 0));
+  };
+
   const handleMoreTitleLongPress = () => {
-    if (!debugVisible) setDebugVisible(true);
+    const willShow = !debugVisible;
+    setDebugVisible(willShow);
+    if (willShow) {
+      collapseAllSections();
+      Animated.sequence([
+        Animated.timing(debugFlashAnim, { toValue: 1, duration: 200, useNativeDriver: false }),
+        Animated.timing(debugFlashAnim, { toValue: 0, duration: 200, useNativeDriver: false }),
+        Animated.timing(debugFlashAnim, { toValue: 1, duration: 200, useNativeDriver: false }),
+        Animated.timing(debugFlashAnim, { toValue: 0, duration: 200, useNativeDriver: false }),
+      ]).start();
+    }
   };
 
   /** Max height for expanded section so content can wrap; avoids static height cut-off. */
@@ -1085,6 +1124,13 @@ export default function MoreScreen({
           </CollapsibleSection>
 
           {debugVisible && (
+            <Animated.View style={{
+              backgroundColor: debugFlashAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: ['transparent', 'rgba(255, 112, 67, 0.15)'],
+              }),
+              borderRadius: 12,
+            }}>
             <CollapsibleSection
               title="Debug"
               icon={<DebugIcon width={24} height={24} fill="#FF7043" />}
@@ -1356,6 +1402,7 @@ export default function MoreScreen({
                 )}
               </TouchableOpacity>
             </CollapsibleSection>
+            </Animated.View>
           )}
         </View>
       </View>
