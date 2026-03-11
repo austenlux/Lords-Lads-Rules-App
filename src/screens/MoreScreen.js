@@ -1125,6 +1125,7 @@ export default function MoreScreen({
 
           {debugVisible && (
             <Animated.View style={{
+              width: '100%',
               backgroundColor: debugFlashAnim.interpolate({
                 inputRange: [0, 1],
                 outputRange: ['transparent', 'rgba(255, 112, 67, 0.15)'],
