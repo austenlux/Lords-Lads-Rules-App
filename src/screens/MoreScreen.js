@@ -1330,7 +1330,7 @@ export default function MoreScreen({
                       activeOpacity={0.7}
                     >
                       <View style={styles.versionHeader}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 }}>
                           <CardIconTitle icon={<SpeakerIcon fill="#AB47BC" />} title="Models" styles={styles} />
                           <Text style={[styles.versionDate, bodyFontStyle]}>{availableVoices.length} Available</Text>
                         </View>
