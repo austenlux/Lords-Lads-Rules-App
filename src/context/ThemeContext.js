@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const STORAGE_KEY = '@lnl_theme';
 const FONT_STORAGE_KEY = '@lnl_font';
-const DEFAULT_THEME_ID = 'hammer-steel';
+const DEFAULT_THEME_ID = 'fresh-cedar';
 
 export const COLOR_GROUPS = [
   {
@@ -77,7 +77,7 @@ const THEME_MAP = Object.fromEntries(
 
 const font = (ios, android) => Platform.select({ ios, android });
 
-const DEFAULT_FONT_ID = 'blacksmiths-ledger';
+const DEFAULT_FONT_ID = 'ironwood-guild';
 
 export const FONT_PAIRINGS = [
   {
