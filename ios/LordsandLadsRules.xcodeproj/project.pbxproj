@@ -8,36 +8,36 @@
 
 /* Begin PBXBuildFile section */
 		0C80B921A6F3F58F76C31292 /* libPods-LordsandLadsRules.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5DCACB8F33CDC322A6C60F78 /* libPods-LordsandLadsRules.a */; };
-		FM00010000000000FM000001 /* FoundationModels.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FM00020000000000FM000002 /* FoundationModels.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
+		1D8907F82FD844D29266F843 /* Eczar.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D9A92B040A0E410D8E812415 /* Eczar.ttf */; };
 		1DF4F06F11F719F3F0CC2F35 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
+		32B9C78A85D0466A9A1EDEA3 /* AlfaSlabOne.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B92192ADEC0440438CE215BD /* AlfaSlabOne.ttf */; };
+		35EAC1658DDD4082B54CBD90 /* OpenSans.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 52A21B13BF5D4DB592DE7C54 /* OpenSans.ttf */; };
+		56830EFF74FE42598710CFD3 /* RobotoMono.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 986BF7A3E1C149588B5B323B /* RobotoMono.ttf */; };
+		5BD25B3766C044EFAEEC5192 /* PirataOne.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8E54FA6BBE604DDCA3561E02 /* PirataOne.ttf */; };
+		60B01846C865465D9F29A21B /* WorkSans.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E39E3753CEAF465F99AE720D /* WorkSans.ttf */; };
+		648A2FA60B37423BAF59B63F /* UnifrakturMaguntia.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 864D75A40639406388E862E6 /* UnifrakturMaguntia.ttf */; };
+		69FA703DAAC8461AA044E627 /* Lato.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 35ED11AD0C0D4009ACF9ED82 /* Lato.ttf */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
+		79B41BDD7224481DAF68E2DA /* Arvo.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 73B6926AF9B540C6855CFF36 /* Arvo.ttf */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		8772D1B32E634FE7B21D4C3E /* Inter.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 4E28A19050E34180BB412F6F /* Inter.ttf */; };
+		90F7890C86A34A5AB878A393 /* PublicSans.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 23DF9121162C4A1F9E6FE269 /* PublicSans.ttf */; };
+		944F4BAEF17B4C3688FDBB51 /* Rubik-Black.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9DFE79A48512402EAEEEF273 /* Rubik-Black.ttf */; };
+		981F81AAF0EA40C2B9CCA2CB /* GermaniaOne.ttf in Resources */ = {isa = PBXBuildFile; fileRef = DA4B5B55EA084C37BB34481C /* GermaniaOne.ttf */; };
 		9A9B9C9D1E1F202122232426 /* ../release_notes.md in Resources */ = {isa = PBXBuildFile; fileRef = 9A9B9C9D1E1F202122232425 /* ../release_notes.md */; };
+		9C918601C52945D98A86266E /* CinzelDecorative.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3E2FDC47817342558E45D7E3 /* CinzelDecorative.ttf */; };
+		BD00010000000000BD000001 /* RCTBridgeDelegateWithTurboModules.mm in Sources */ = {isa = PBXBuildFile; fileRef = BD00030000000000BD000003 /* RCTBridgeDelegateWithTurboModules.mm */; };
+		D71748A78CEA4C8FB0C8EC25 /* Montserrat.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AD990132037E4832B490719E /* Montserrat.ttf */; };
+		E197666215654CA39FA8A8A2 /* MedievalSharp.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C31540640CF1439AB61A8897 /* MedievalSharp.ttf */; };
+		E611671EF4FD42C9A4658A63 /* Lora.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 92FC20EBE7CC44C1BB15188A /* Lora.ttf */; };
+		F45399323B334F06B4AC8122 /* Bangers.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C6A786074AF049F1826C03B8 /* Bangers.ttf */; };
+		FM00010000000000FM000001 /* FoundationModels.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FM00020000000000FM000002 /* FoundationModels.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		SP00010000000000SP000001 /* NativeSplashScreen.m in Sources */ = {isa = PBXBuildFile; fileRef = SP00020000000000SP000002 /* NativeSplashScreen.m */; };
 		VA00080000000000VA000008 /* VoiceAssistantSwift.swift in Sources */ = {isa = PBXBuildFile; fileRef = VA00020000000000VA000002 /* VoiceAssistantSwift.swift */; };
 		VA00090000000000VA000009 /* ThinkingSoundPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = VA00030000000000VA000003 /* ThinkingSoundPlayer.swift */; };
 		VA000A0000000000VA00000A /* RCTVoiceAssistant.mm in Sources */ = {isa = PBXBuildFile; fileRef = VA00050000000000VA000005 /* RCTVoiceAssistant.mm */; };
 		VA000B0000000000VA00000B /* ThinkingSounds in Resources */ = {isa = PBXBuildFile; fileRef = VA00070000000000VA000007 /* ThinkingSounds */; };
-		BD00010000000000BD000001 /* RCTBridgeDelegateWithTurboModules.mm in Sources */ = {isa = PBXBuildFile; fileRef = BD00030000000000BD000003 /* RCTBridgeDelegateWithTurboModules.mm */; };
-		SP00010000000000SP000001 /* NativeSplashScreen.m in Sources */ = {isa = PBXBuildFile; fileRef = SP00020000000000SP000002 /* NativeSplashScreen.m */; };
-		90F7890C86A34A5AB878A393 /* PublicSans.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 23DF9121162C4A1F9E6FE269 /* PublicSans.ttf */; };
-		60B01846C865465D9F29A21B /* WorkSans.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E39E3753CEAF465F99AE720D /* WorkSans.ttf */; };
-		56830EFF74FE42598710CFD3 /* RobotoMono.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 986BF7A3E1C149588B5B323B /* RobotoMono.ttf */; };
-		E197666215654CA39FA8A8A2 /* MedievalSharp.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C31540640CF1439AB61A8897 /* MedievalSharp.ttf */; };
-		79B41BDD7224481DAF68E2DA /* Arvo.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 73B6926AF9B540C6855CFF36 /* Arvo.ttf */; };
-		F45399323B334F06B4AC8122 /* Bangers.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C6A786074AF049F1826C03B8 /* Bangers.ttf */; };
-		944F4BAEF17B4C3688FDBB51 /* Rubik-Black.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9DFE79A48512402EAEEEF273 /* Rubik-Black.ttf */; };
-		E611671EF4FD42C9A4658A63 /* Lora.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 92FC20EBE7CC44C1BB15188A /* Lora.ttf */; };
-		1D8907F82FD844D29266F843 /* Eczar.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D9A92B040A0E410D8E812415 /* Eczar.ttf */; };
-		32B9C78A85D0466A9A1EDEA3 /* AlfaSlabOne.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B92192ADEC0440438CE215BD /* AlfaSlabOne.ttf */; };
-		8772D1B32E634FE7B21D4C3E /* Inter.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 4E28A19050E34180BB412F6F /* Inter.ttf */; };
-		D71748A78CEA4C8FB0C8EC25 /* Montserrat.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AD990132037E4832B490719E /* Montserrat.ttf */; };
-		9C918601C52945D98A86266E /* CinzelDecorative.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3E2FDC47817342558E45D7E3 /* CinzelDecorative.ttf */; };
-		35EAC1658DDD4082B54CBD90 /* OpenSans.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 52A21B13BF5D4DB592DE7C54 /* OpenSans.ttf */; };
-		981F81AAF0EA40C2B9CCA2CB /* GermaniaOne.ttf in Resources */ = {isa = PBXBuildFile; fileRef = DA4B5B55EA084C37BB34481C /* GermaniaOne.ttf */; };
-		69FA703DAAC8461AA044E627 /* Lato.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 35ED11AD0C0D4009ACF9ED82 /* Lato.ttf */; };
-		648A2FA60B37423BAF59B63F /* UnifrakturMaguntia.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 864D75A40639406388E862E6 /* UnifrakturMaguntia.ttf */; };
-		5BD25B3766C044EFAEEC5192 /* PirataOne.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8E54FA6BBE604DDCA3561E02 /* PirataOne.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -45,41 +45,41 @@
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = LordsandLadsRules/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = LordsandLadsRules/Info.plist; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = LordsandLadsRules/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		23DF9121162C4A1F9E6FE269 /* PublicSans.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = PublicSans.ttf; path = ../assets/fonts/PublicSans.ttf; sourceTree = "<group>"; };
+		35ED11AD0C0D4009ACF9ED82 /* Lato.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Lato.ttf; path = ../assets/fonts/Lato.ttf; sourceTree = "<group>"; };
 		3B4392A12AC88292D35C810B /* Pods-LordsandLadsRules.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LordsandLadsRules.debug.xcconfig"; path = "Target Support Files/Pods-LordsandLadsRules/Pods-LordsandLadsRules.debug.xcconfig"; sourceTree = "<group>"; };
+		3E2FDC47817342558E45D7E3 /* CinzelDecorative.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = CinzelDecorative.ttf; path = ../assets/fonts/CinzelDecorative.ttf; sourceTree = "<group>"; };
+		4E28A19050E34180BB412F6F /* Inter.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Inter.ttf; path = ../assets/fonts/Inter.ttf; sourceTree = "<group>"; };
+		52A21B13BF5D4DB592DE7C54 /* OpenSans.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = OpenSans.ttf; path = ../assets/fonts/OpenSans.ttf; sourceTree = "<group>"; };
 		5709B34CF0A7D63546082F79 /* Pods-LordsandLadsRules.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LordsandLadsRules.release.xcconfig"; path = "Target Support Files/Pods-LordsandLadsRules/Pods-LordsandLadsRules.release.xcconfig"; sourceTree = "<group>"; };
 		5DCACB8F33CDC322A6C60F78 /* libPods-LordsandLadsRules.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-LordsandLadsRules.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		73B6926AF9B540C6855CFF36 /* Arvo.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Arvo.ttf; path = ../assets/fonts/Arvo.ttf; sourceTree = "<group>"; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = LordsandLadsRules/AppDelegate.swift; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = LordsandLadsRules/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		864D75A40639406388E862E6 /* UnifrakturMaguntia.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = UnifrakturMaguntia.ttf; path = ../assets/fonts/UnifrakturMaguntia.ttf; sourceTree = "<group>"; };
+		8E54FA6BBE604DDCA3561E02 /* PirataOne.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = PirataOne.ttf; path = ../assets/fonts/PirataOne.ttf; sourceTree = "<group>"; };
+		92FC20EBE7CC44C1BB15188A /* Lora.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Lora.ttf; path = ../assets/fonts/Lora.ttf; sourceTree = "<group>"; };
+		986BF7A3E1C149588B5B323B /* RobotoMono.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = RobotoMono.ttf; path = ../assets/fonts/RobotoMono.ttf; sourceTree = "<group>"; };
 		9A9B9C9D1E1F202122232425 /* ../release_notes.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = ../release_notes.md; sourceTree = SOURCE_ROOT; };
+		9DFE79A48512402EAEEEF273 /* Rubik-Black.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Rubik-Black.ttf"; path = "../assets/fonts/Rubik-Black.ttf"; sourceTree = "<group>"; };
+		AD990132037E4832B490719E /* Montserrat.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Montserrat.ttf; path = ../assets/fonts/Montserrat.ttf; sourceTree = "<group>"; };
+		B92192ADEC0440438CE215BD /* AlfaSlabOne.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = AlfaSlabOne.ttf; path = ../assets/fonts/AlfaSlabOne.ttf; sourceTree = "<group>"; };
+		BD00020000000000BD000002 /* RCTBridgeDelegateWithTurboModules.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCTBridgeDelegateWithTurboModules.h; sourceTree = "<group>"; };
+		BD00030000000000BD000003 /* RCTBridgeDelegateWithTurboModules.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = RCTBridgeDelegateWithTurboModules.mm; sourceTree = "<group>"; };
+		C31540640CF1439AB61A8897 /* MedievalSharp.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = MedievalSharp.ttf; path = ../assets/fonts/MedievalSharp.ttf; sourceTree = "<group>"; };
+		C6A786074AF049F1826C03B8 /* Bangers.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Bangers.ttf; path = ../assets/fonts/Bangers.ttf; sourceTree = "<group>"; };
+		D9A92B040A0E410D8E812415 /* Eczar.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Eczar.ttf; path = ../assets/fonts/Eczar.ttf; sourceTree = "<group>"; };
+		DA4B5B55EA084C37BB34481C /* GermaniaOne.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = GermaniaOne.ttf; path = ../assets/fonts/GermaniaOne.ttf; sourceTree = "<group>"; };
+		E39E3753CEAF465F99AE720D /* WorkSans.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = WorkSans.ttf; path = ../assets/fonts/WorkSans.ttf; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		FM00020000000000FM000002 /* FoundationModels.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FoundationModels.framework; path = System/Library/Frameworks/FoundationModels.framework; sourceTree = SDKROOT; };
+		SP00020000000000SP000002 /* NativeSplashScreen.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NativeSplashScreen.m; sourceTree = "<group>"; };
 		VA00020000000000VA000002 /* VoiceAssistantSwift.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceAssistantSwift.swift; sourceTree = "<group>"; };
 		VA00030000000000VA000003 /* ThinkingSoundPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThinkingSoundPlayer.swift; sourceTree = "<group>"; };
 		VA00040000000000VA000004 /* RCTVoiceAssistant.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCTVoiceAssistant.h; sourceTree = "<group>"; };
 		VA00050000000000VA000005 /* RCTVoiceAssistant.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = RCTVoiceAssistant.mm; sourceTree = "<group>"; };
 		VA00060000000000VA000006 /* LordsandLadsRules-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "LordsandLadsRules-Bridging-Header.h"; path = "LordsandLadsRules/LordsandLadsRules-Bridging-Header.h"; sourceTree = "<group>"; };
 		VA00070000000000VA000007 /* ThinkingSounds */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ThinkingSounds; path = LordsandLadsRules/ThinkingSounds; sourceTree = "<group>"; };
-		BD00020000000000BD000002 /* RCTBridgeDelegateWithTurboModules.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCTBridgeDelegateWithTurboModules.h; sourceTree = "<group>"; };
-		BD00030000000000BD000003 /* RCTBridgeDelegateWithTurboModules.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = RCTBridgeDelegateWithTurboModules.mm; sourceTree = "<group>"; };
-		SP00020000000000SP000002 /* NativeSplashScreen.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NativeSplashScreen.m; sourceTree = "<group>"; };
-		23DF9121162C4A1F9E6FE269 /* PublicSans.ttf */ = {isa = PBXFileReference; name = "PublicSans.ttf"; path = "../assets/fonts/PublicSans.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		E39E3753CEAF465F99AE720D /* WorkSans.ttf */ = {isa = PBXFileReference; name = "WorkSans.ttf"; path = "../assets/fonts/WorkSans.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		986BF7A3E1C149588B5B323B /* RobotoMono.ttf */ = {isa = PBXFileReference; name = "RobotoMono.ttf"; path = "../assets/fonts/RobotoMono.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		C31540640CF1439AB61A8897 /* MedievalSharp.ttf */ = {isa = PBXFileReference; name = "MedievalSharp.ttf"; path = "../assets/fonts/MedievalSharp.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		73B6926AF9B540C6855CFF36 /* Arvo.ttf */ = {isa = PBXFileReference; name = "Arvo.ttf"; path = "../assets/fonts/Arvo.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		C6A786074AF049F1826C03B8 /* Bangers.ttf */ = {isa = PBXFileReference; name = "Bangers.ttf"; path = "../assets/fonts/Bangers.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		9DFE79A48512402EAEEEF273 /* Rubik-Black.ttf */ = {isa = PBXFileReference; name = "Rubik-Black.ttf"; path = "../assets/fonts/Rubik-Black.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		92FC20EBE7CC44C1BB15188A /* Lora.ttf */ = {isa = PBXFileReference; name = "Lora.ttf"; path = "../assets/fonts/Lora.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		D9A92B040A0E410D8E812415 /* Eczar.ttf */ = {isa = PBXFileReference; name = "Eczar.ttf"; path = "../assets/fonts/Eczar.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		B92192ADEC0440438CE215BD /* AlfaSlabOne.ttf */ = {isa = PBXFileReference; name = "AlfaSlabOne.ttf"; path = "../assets/fonts/AlfaSlabOne.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		4E28A19050E34180BB412F6F /* Inter.ttf */ = {isa = PBXFileReference; name = "Inter.ttf"; path = "../assets/fonts/Inter.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		AD990132037E4832B490719E /* Montserrat.ttf */ = {isa = PBXFileReference; name = "Montserrat.ttf"; path = "../assets/fonts/Montserrat.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		3E2FDC47817342558E45D7E3 /* CinzelDecorative.ttf */ = {isa = PBXFileReference; name = "CinzelDecorative.ttf"; path = "../assets/fonts/CinzelDecorative.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		52A21B13BF5D4DB592DE7C54 /* OpenSans.ttf */ = {isa = PBXFileReference; name = "OpenSans.ttf"; path = "../assets/fonts/OpenSans.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		DA4B5B55EA084C37BB34481C /* GermaniaOne.ttf */ = {isa = PBXFileReference; name = "GermaniaOne.ttf"; path = "../assets/fonts/GermaniaOne.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		35ED11AD0C0D4009ACF9ED82 /* Lato.ttf */ = {isa = PBXFileReference; name = "Lato.ttf"; path = "../assets/fonts/Lato.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		864D75A40639406388E862E6 /* UnifrakturMaguntia.ttf */ = {isa = PBXFileReference; name = "UnifrakturMaguntia.ttf"; path = "../assets/fonts/UnifrakturMaguntia.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		8E54FA6BBE604DDCA3561E02 /* PirataOne.ttf */ = {isa = PBXFileReference; name = "PirataOne.ttf"; path = "../assets/fonts/PirataOne.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -120,6 +120,31 @@
 				5DCACB8F33CDC322A6C60F78 /* libPods-LordsandLadsRules.a */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		71420F41115C4BF7910C3A66 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				23DF9121162C4A1F9E6FE269 /* PublicSans.ttf */,
+				E39E3753CEAF465F99AE720D /* WorkSans.ttf */,
+				986BF7A3E1C149588B5B323B /* RobotoMono.ttf */,
+				C31540640CF1439AB61A8897 /* MedievalSharp.ttf */,
+				73B6926AF9B540C6855CFF36 /* Arvo.ttf */,
+				C6A786074AF049F1826C03B8 /* Bangers.ttf */,
+				9DFE79A48512402EAEEEF273 /* Rubik-Black.ttf */,
+				92FC20EBE7CC44C1BB15188A /* Lora.ttf */,
+				D9A92B040A0E410D8E812415 /* Eczar.ttf */,
+				B92192ADEC0440438CE215BD /* AlfaSlabOne.ttf */,
+				4E28A19050E34180BB412F6F /* Inter.ttf */,
+				AD990132037E4832B490719E /* Montserrat.ttf */,
+				3E2FDC47817342558E45D7E3 /* CinzelDecorative.ttf */,
+				52A21B13BF5D4DB592DE7C54 /* OpenSans.ttf */,
+				DA4B5B55EA084C37BB34481C /* GermaniaOne.ttf */,
+				35ED11AD0C0D4009ACF9ED82 /* Lato.ttf */,
+				864D75A40639406388E862E6 /* UnifrakturMaguntia.ttf */,
+				8E54FA6BBE604DDCA3561E02 /* PirataOne.ttf */,
+			);
+			name = Resources;
 			sourceTree = "<group>";
 		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
@@ -183,32 +208,6 @@
 			name = VoiceAssistant;
 			path = LordsandLadsRules/VoiceAssistant;
 			sourceTree = "<group>";
-		};
-		71420F41115C4BF7910C3A66 /* Resources */ = {
-			isa = "PBXGroup";
-			children = (
-				23DF9121162C4A1F9E6FE269 /* PublicSans.ttf */,
-				E39E3753CEAF465F99AE720D /* WorkSans.ttf */,
-				986BF7A3E1C149588B5B323B /* RobotoMono.ttf */,
-				C31540640CF1439AB61A8897 /* MedievalSharp.ttf */,
-				73B6926AF9B540C6855CFF36 /* Arvo.ttf */,
-				C6A786074AF049F1826C03B8 /* Bangers.ttf */,
-				9DFE79A48512402EAEEEF273 /* Rubik-Black.ttf */,
-				92FC20EBE7CC44C1BB15188A /* Lora.ttf */,
-				D9A92B040A0E410D8E812415 /* Eczar.ttf */,
-				B92192ADEC0440438CE215BD /* AlfaSlabOne.ttf */,
-				4E28A19050E34180BB412F6F /* Inter.ttf */,
-				AD990132037E4832B490719E /* Montserrat.ttf */,
-				3E2FDC47817342558E45D7E3 /* CinzelDecorative.ttf */,
-				52A21B13BF5D4DB592DE7C54 /* OpenSans.ttf */,
-				DA4B5B55EA084C37BB34481C /* GermaniaOne.ttf */,
-				35ED11AD0C0D4009ACF9ED82 /* Lato.ttf */,
-				864D75A40639406388E862E6 /* UnifrakturMaguntia.ttf */,
-				8E54FA6BBE604DDCA3561E02 /* PirataOne.ttf */,
-			);
-			name = Resources;
-			sourceTree = "<group>";
-			path = "";
 		};
 /* End PBXGroup section */
 
@@ -404,12 +403,15 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				GCC_PREPROCESSOR_DEFINITIONS = "$(inherited) USE_HERMES=1";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = F3DTX3Z275;
 				ENABLE_BITCODE = NO;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"USE_HERMES=1",
+				);
 				INFOPLIST_FILE = LordsandLadsRules/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -437,12 +439,15 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				GCC_PREPROCESSOR_DEFINITIONS = "$(inherited) USE_HERMES=1";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = F3DTX3Z275;
 				ENABLE_BITCODE = NO;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"USE_HERMES=1",
+				);
 				INFOPLIST_FILE = LordsandLadsRules/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (

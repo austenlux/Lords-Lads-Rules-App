@@ -11,6 +11,7 @@ import {
   GITHUB_API_URL,
   CACHE_KEYS,
 } from '../constants';
+import { logError } from './errorLogger';
 
 const FETCH_TIMEOUT_MS = 10000;
 
@@ -248,6 +249,7 @@ export async function fetchRules() {
     }
   } catch (err) {
     console.error('Error fetching rules:', err);
+    logError('fetchRules', err, { url: CONTENT_URL });
     return { success: false };
   }
 }
@@ -305,6 +307,7 @@ export async function fetchExpansions() {
     }
   } catch (err) {
     console.error('Error fetching expansions:', err);
+    logError('fetchExpansions', err, { url: GITHUB_API_URL });
     return { success: false };
   }
 }

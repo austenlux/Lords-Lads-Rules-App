@@ -23,6 +23,7 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 }
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import RNFS from 'react-native-fs';
+import { getErrorLog, clearErrorLog } from '../services/errorLogger';
 import { HEADER_HEIGHT } from '../styles';
 import NativeVoiceAssistantOptional from '../specs/NativeVoiceAssistantOptional';
 import {
@@ -216,6 +217,8 @@ export default function MoreScreen({
   const [vaDebugExpanded, setVaDebugExpanded] = useState(false);
   const [buildInfoExpanded, setBuildInfoExpanded] = useState(false);
   const [commitMsgExpanded, setCommitMsgExpanded] = useState(false);
+  const [errorLogExpanded, setErrorLogExpanded] = useState(false);
+  const [errorLogEntries, setErrorLogEntries] = useState([]);
 
   // Initialise rotation animations for settings cards and debug sections.
   useEffect(() => {
@@ -232,6 +235,7 @@ export default function MoreScreen({
     if (!animations['featureFlags'])   animations['featureFlags']   = { rotation: new Animated.Value(0) };
     if (!animations['vaDebug'])        animations['vaDebug']        = { rotation: new Animated.Value(0) };
     if (!animations['buildInfo'])      animations['buildInfo']      = { rotation: new Animated.Value(0) };
+    if (!animations['errorLog'])      animations['errorLog']      = { rotation: new Animated.Value(0) };
   }, []);
 
   useEffect(() => {
@@ -461,6 +465,14 @@ export default function MoreScreen({
     setBuildInfoExpanded(isExpanded);
   };
 
+  const toggleErrorLog = async () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    const isExpanded = !errorLogExpanded;
+    animateSection(animations['errorLog'], isExpanded);
+    if (isExpanded) setErrorLogEntries(await getErrorLog());
+    setErrorLogExpanded(isExpanded);
+  };
+
   const toggleDebugVoice = (voiceId) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     const isExpanded = !expandedDebugVoices[voiceId];
@@ -493,6 +505,8 @@ export default function MoreScreen({
     setVaDebugExpanded(false);
     setBuildInfoExpanded(false);
     setCommitMsgExpanded(false);
+    setErrorLogExpanded(false);
+    setErrorLogEntries([]);
     Object.values(animations).forEach(a => animateSection(a, false, 0));
     Object.values(voiceLocaleAnims).forEach(a => animateSection(a, false, 0));
     Object.values(debugVoiceAnims).forEach(a => animateSection(a, false, 0));
@@ -1259,7 +1273,7 @@ export default function MoreScreen({
                       </Text>
                     </View>
                     <View style={styles.debugMetaRow}>
-                      <Text style={[styles.debugMetaLabel, bodyFontStyle]}>Model</Text>
+                      <Text style={[styles.debugMetaLabel, bodyFontStyle]}>AI Model</Text>
                       <Text style={[styles.debugMetaValue, { color: VA_STATUS_COLOR.modelDownload[modelStatus] ?? '#888' }]}>
                         {modelStatus === 'downloading' && downloadProgressBytes > 0
                           ? `Downloading… ${(downloadProgressBytes / 1_048_576).toFixed(1)} MB`
@@ -1307,12 +1321,12 @@ export default function MoreScreen({
                     {(modelStatus === 'download_failed' || modelStatus === 'downloadable') && (
                       <>
                         <TouchableOpacity
-                          style={[vaReadinessStyles.actionButton, isRetryingModelSetup && { opacity: 0.7 }]}
+                          style={[vaReadinessStyles.actionButton, { backgroundColor: `${accent}26`, borderColor: `${accent}66` }, isRetryingModelSetup && { opacity: 0.7 }]}
                           onPress={onRetryModelSetup}
                           disabled={isRetryingModelSetup}
                         >
-                          <Text style={[vaReadinessStyles.actionButtonText, bodyFontStyle]}>
-                            {isRetryingModelSetup ? 'Retrying…' : 'Retry Model Setup'}
+                          <Text style={[vaReadinessStyles.actionButtonText, { color: accent }, bodyFontStyle]}>
+                            {isRetryingModelSetup ? 'Retrying…' : 'Retry AI Model Setup'}
                           </Text>
                         </TouchableOpacity>
                         {retryModelSetupError != null && retryModelSetupError !== '' && (
@@ -1399,6 +1413,42 @@ export default function MoreScreen({
                         </View>
                       )}
                     </TouchableOpacity>
+                  </View>
+                )}
+              </TouchableOpacity>
+              {/* ── Error Log ── */}
+              <TouchableOpacity
+                style={[styles.versionContainer, { paddingHorizontal: 10 }]}
+                onPress={toggleErrorLog}
+                activeOpacity={0.7}
+              >
+                <View style={styles.versionHeader}>
+                  <CardIconTitle icon={<DebugIcon fill="#CF6679" />} title="Error Log" styles={styles} />
+                  <Animated.View style={{ transform: [{ rotate: animations['errorLog']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
+                    <Text style={styles.versionArrow}>▶</Text>
+                  </Animated.View>
+                </View>
+                {errorLogExpanded && (
+                  <View style={[styles.versionContent, { paddingLeft: 0, paddingRight: 0 }]}>
+                    {errorLogEntries.length === 0 ? (
+                      <Text style={[styles.debugMetaValue, { paddingHorizontal: 12, paddingVertical: 8 }]}>No errors recorded.</Text>
+                    ) : (
+                      <>
+                        <TouchableOpacity
+                          style={{ alignSelf: 'flex-end', marginRight: 12, marginBottom: 8 }}
+                          onPress={async () => { await clearErrorLog(); setErrorLogEntries([]); }}
+                        >
+                          <Text style={[{ color: '#CF6679', fontSize: 12 }, bodyFontStyle]}>Clear Log</Text>
+                        </TouchableOpacity>
+                        {errorLogEntries.map((entry, i) => (
+                          <View key={i} style={[styles.debugMetaRow, { flexDirection: 'column', alignItems: 'flex-start', gap: 2 }]}>
+                            <Text style={[{ fontSize: 10, color: '#888' }, bodyFontStyle]}>{entry.ts}</Text>
+                            <Text style={[{ fontSize: 12, color: '#CF6679' }, bodyFontStyle]}>[{entry.source}] {entry.message}</Text>
+                            {entry.url && <Text style={[{ fontSize: 10, color: '#666' }, bodyFontStyle]}>{entry.url}</Text>}
+                          </View>
+                        ))}
+                      </>
+                    )}
                   </View>
                 )}
               </TouchableOpacity>

@@ -22,7 +22,7 @@ export default function ContentScreen({
   onRetry,
   emptyStateContentLabel = 'rules',
 }) {
-  const { titleFontStyle, bodyFontStyle } = useTheme();
+  const { accent, titleFontStyle, bodyFontStyle } = useTheme();
   const [retryInProgress, setRetryInProgress] = useState(false);
   const showSearchEmpty = sections.length === 0 && searchQuery && searchQuery.length >= 2;
   const showFetchFailedEmpty = sections.length === 0 && isEmptyState && !showSearchEmpty;
@@ -64,7 +64,7 @@ export default function ContentScreen({
             <View style={styles.emptyStateIcon}>
               <NoWifiIcon width={50} height={50} />
             </View>
-            <Text style={[styles.emptyStateTitle, titleFontStyle]}>{emptyTitle}</Text>
+            <Text style={[styles.emptyStateTitle, { color: accent }, titleFontStyle]}>{emptyTitle}</Text>
             <Text style={[styles.emptyStateText, bodyFontStyle]}>{emptyMessage}</Text>
             {onRetry && (
               retryInProgress ? (
