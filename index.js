@@ -1,7 +1,9 @@
 import { AppRegistry, Text, TextInput } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import App from './App';
-import { logError } from './src/services/errorLogger';
+import { logError, logAppLaunch } from './src/services/errorLogger';
+
+logAppLaunch();
 
 const defaultHandler = ErrorUtils.getGlobalHandler();
 ErrorUtils.setGlobalHandler((error, isFatal) => {

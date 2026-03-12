@@ -1467,11 +1467,20 @@ export default function MoreScreen({
                           <Text style={[{ color: '#CF6679', fontSize: 12 }, bodyFontStyle]}>Clear Log</Text>
                         </TouchableOpacity>
                         {errorLogEntries.map((entry, i) => (
-                          <View key={i} style={[styles.debugMetaRow, { flexDirection: 'column', alignItems: 'flex-start', gap: 2 }]}>
-                            <Text style={[{ fontSize: 10, color: '#888' }, bodyFontStyle]}>{entry.ts}</Text>
-                            <Text style={[{ fontSize: 12, color: '#CF6679' }, bodyFontStyle]}>[{entry.source}] {entry.message}</Text>
-                            {entry.url && <Text style={[{ fontSize: 10, color: '#666' }, bodyFontStyle]}>{entry.url}</Text>}
-                          </View>
+                          entry.isDivider ? (
+                            <View key={i} style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 8, paddingHorizontal: 12 }}>
+                              <View style={{ flex: 1, height: 1, backgroundColor: '#444' }} />
+                              <Text style={[{ fontSize: 10, color: '#888', marginHorizontal: 8 }, bodyFontStyle]}>{entry.source}  {entry.ts}</Text>
+                              <View style={{ flex: 1, height: 1, backgroundColor: '#444' }} />
+                            </View>
+                          ) : (
+                            <View key={i} style={[styles.debugMetaRow, { flexDirection: 'column', alignItems: 'flex-start', gap: 2 }]}>
+                              <Text style={[{ fontSize: 10, color: '#888' }, bodyFontStyle]}>{entry.ts}</Text>
+                              <Text style={[{ fontSize: 12, color: '#CF6679' }, bodyFontStyle]}>[{entry.source}] {entry.message}</Text>
+                              {entry.url && <Text style={[{ fontSize: 10, color: '#666' }, bodyFontStyle]}>{entry.url}</Text>}
+                              {entry.errorName && <Text style={[{ fontSize: 10, color: '#666' }, bodyFontStyle]}>Type: {entry.errorName}</Text>}
+                            </View>
+                          )
                         ))}
                       </>
                     )}

@@ -26,6 +26,27 @@ export function onErrorLogChange(callback) {
 }
 
 /**
+ * Insert a lifecycle divider into the log to mark a new app launch.
+ */
+export async function logAppLaunch() {
+  const entry = {
+    ts: new Date().toLocaleString(),
+    source: '── App Launch ──',
+    message: 'New session started',
+    isDivider: true,
+  };
+  try {
+    const raw = await AsyncStorage.getItem(STORAGE_KEY);
+    const entries = raw ? JSON.parse(raw) : [];
+    entries.unshift(entry);
+    if (entries.length > MAX_ENTRIES) entries.length = MAX_ENTRIES;
+    cachedEntries = entries;
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+    notifyListeners();
+  } catch (_) {}
+}
+
+/**
  * Log an error with context.
  * @param {string} source - Where the error occurred (e.g. 'fetchRules', 'AI Model Download')
  * @param {string|Error} error - The error message or Error object

@@ -15,6 +15,7 @@ import {
   buildExpansionSections,
   parseMarkdownSections,
 } from '../services/contentService';
+import { CACHE_KEYS } from '../constants';
 import { normalizeSearchQuery } from '../utils/searchUtils';
 import { logError } from '../services/errorLogger';
 import { TitleSection, Section } from '../components';
@@ -83,12 +84,17 @@ export function useContent(styles, markdownStyles) {
       }
       if (expansionTexts) {
         const allExpansionTexts = JSON.parse(expansionTexts);
-        const { mainContent, sections: expSections } = buildExpansionSections(allExpansionTexts);
-        setExpansionsContent(mainContent);
-        const sectionsCopy = JSON.parse(JSON.stringify(expSections));
-        setOriginalExpansionSections(sectionsCopy);
-        setExpansionSections(applyExpandPreference(expSections, expandExpansionsDefault));
-        hasCachedData = true;
+        const mainText = allExpansionTexts[0] || '';
+        if (mainText.includes('content unavailable')) {
+          await AsyncStorage.removeItem(CACHE_KEYS.EXPANSION_TEXTS);
+        } else {
+          const { mainContent, sections: expSections } = buildExpansionSections(allExpansionTexts);
+          setExpansionsContent(mainContent);
+          const sectionsCopy = JSON.parse(JSON.stringify(expSections));
+          setOriginalExpansionSections(sectionsCopy);
+          setExpansionSections(applyExpandPreference(expSections, expandExpansionsDefault));
+          hasCachedData = true;
+        }
       }
       return hasCachedData;
     } catch (err) {

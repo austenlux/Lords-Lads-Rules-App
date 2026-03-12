@@ -13,7 +13,7 @@ import {
 } from '../constants';
 import { logError } from './errorLogger';
 
-const FETCH_TIMEOUT_MS = 10000;
+const FETCH_TIMEOUT_MS = 20000;
 
 /**
  * Build expansion sections from an array of raw markdown texts.
@@ -251,7 +251,11 @@ export async function fetchRules() {
     }
   } catch (err) {
     console.error('Error fetching rules:', err);
-    logError('fetchRules', err, { url: CONTENT_URL });
+    logError('fetchRules', err, {
+      url: CONTENT_URL,
+      errorName: err?.name,
+      isAbort: err?.name === 'AbortError',
+    });
     return { success: false };
   }
 }
@@ -286,14 +290,16 @@ export async function fetchExpansions() {
 
       expansionPromises.unshift(
         fetch(EXPANSIONS_URL, { signal: controller.signal })
-          .then((res) =>
-            res.ok ? res.text() : '# Expansions\n\nExpansion content unavailable.'
-          )
-          .catch(() => '# Expansions\n\nExpansion content unavailable.')
+          .then((res) => (res.ok ? res.text() : null))
+          .catch(() => null)
       );
 
       const allExpansionTexts = await Promise.all(expansionPromises);
       clearTimeout(timeoutId);
+
+      if (!allExpansionTexts[0]) {
+        throw new Error('Main expansions README fetch failed');
+      }
 
       const { mainContent, sections } = buildExpansionSections(allExpansionTexts);
       const cacheData = [
@@ -309,7 +315,11 @@ export async function fetchExpansions() {
     }
   } catch (err) {
     console.error('Error fetching expansions:', err);
-    logError('fetchExpansions', err, { url: GITHUB_API_URL });
+    logError('fetchExpansions', err, {
+      url: GITHUB_API_URL,
+      errorName: err?.name,
+      isAbort: err?.name === 'AbortError',
+    });
     return { success: false };
   }
 }
