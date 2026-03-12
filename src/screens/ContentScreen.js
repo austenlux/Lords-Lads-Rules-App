@@ -18,6 +18,7 @@ export default function ContentScreen({
   contentHeight,
   contentPaddingTop,
   isEmptyState = false,
+  isLoading = false,
   rateLimited = false,
   onRetry,
   emptyStateContentLabel = 'rules',
@@ -25,7 +26,7 @@ export default function ContentScreen({
   const { accent, titleFontStyle, bodyFontStyle } = useTheme();
   const [retryInProgress, setRetryInProgress] = useState(false);
   const showSearchEmpty = sections.length === 0 && searchQuery && searchQuery.length >= 2;
-  const showFetchFailedEmpty = sections.length === 0 && isEmptyState && !showSearchEmpty;
+  const showFetchFailedEmpty = sections.length === 0 && isEmptyState && !isLoading && !showSearchEmpty;
   const isExpansions = emptyStateContentLabel === 'expansions';
   const emptyTitle = isExpansions ? 'Unable to load expansions' : 'Unable to load rules';
   const emptyMessage = (() => {
@@ -57,7 +58,11 @@ export default function ContentScreen({
       scrollEventThrottle={16}
     >
       <View style={[styles.contentContainer, contentPaddingTop != null && { paddingTop: contentPaddingTop }]}>
-        {showSearchEmpty ? (
+        {isLoading && sections.length === 0 ? (
+          <View style={[styles.emptyStateContainer, { paddingTop: 80 }]}>
+            <ActivityIndicator size="large" color={accent} />
+          </View>
+        ) : showSearchEmpty ? (
           <EmptySearchResults query={searchQuery} styles={styles} />
         ) : showFetchFailedEmpty ? (
           <View style={styles.emptyStateContainer}>

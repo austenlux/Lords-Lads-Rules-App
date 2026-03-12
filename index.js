@@ -1,9 +1,22 @@
 import { AppRegistry, Text, TextInput } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import App from './App';
-import { logError, logAppLaunch } from './src/services/errorLogger';
+import { logError, logEvent, logAppLaunch } from './src/services/errorLogger';
 
 logAppLaunch();
+
+setTimeout(() => {
+  const testUrl = 'https://raw.githubusercontent.com/seanKenkeremath/lords-and-lads/master/README.md';
+  logEvent('Connectivity', 'Diagnostic fetch starting (5s delay)', { url: testUrl });
+  const t0 = Date.now();
+  fetch(testUrl)
+    .then(res => {
+      logEvent('Connectivity', `HTTP ${res.status} in ${Date.now() - t0}ms`, { url: testUrl });
+    })
+    .catch(err => {
+      logError('Connectivity', err, { elapsedMs: Date.now() - t0, errorName: err?.name, url: testUrl });
+    });
+}, 5000);
 
 const defaultHandler = ErrorUtils.getGlobalHandler();
 ErrorUtils.setGlobalHandler((error, isFatal) => {

@@ -232,6 +232,7 @@ function AppContent() {
           contentHeight={contentHeight}
           contentPaddingTop={isIOS ? insets.top + IOS_HEADER_BAR_HEIGHT : undefined}
           isEmptyState={rulesEmpty}
+          isLoading={loading}
           onRetry={retryFetchContent}
           emptyStateContentLabel="rules"
         />
@@ -250,6 +251,7 @@ function AppContent() {
           contentHeight={contentHeight}
           contentPaddingTop={isIOS ? insets.top + IOS_HEADER_BAR_HEIGHT : undefined}
           isEmptyState={expansionsEmpty}
+          isLoading={loading}
           rateLimited={expansionsRateLimited}
           onRetry={retryFetchContent}
           emptyStateContentLabel="expansions"

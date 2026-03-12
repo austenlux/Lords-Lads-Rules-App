@@ -25,6 +25,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import RNFS from 'react-native-fs';
 import { getEventLog, clearEventLog, onEventLogChange } from '../services/errorLogger';
 import ErrorIcon from '../../assets/icons/error.svg';
+import TrashIcon from '../../assets/icons/trash.svg';
 import { HEADER_HEIGHT } from '../styles';
 import NativeVoiceAssistantOptional from '../specs/NativeVoiceAssistantOptional';
 import {
@@ -1439,7 +1440,7 @@ export default function MoreScreen({
                 activeOpacity={0.7}
               >
                 <View style={styles.versionHeader}>
-                  <CardIconTitle icon={<ErrorIcon width={20} height={20} fill="#CF6679" />} title="Event Log" styles={styles} />
+                  <CardIconTitle icon={<ErrorIcon width={20} height={20} fill="#4FC3F7" />} title="Event Log" styles={styles} />
                   <Animated.View style={{ transform: [{ rotate: animations['errorLog']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
                     <Text style={styles.versionArrow}>▶</Text>
                   </Animated.View>
@@ -1452,26 +1453,33 @@ export default function MoreScreen({
                       <>
                         <TouchableOpacity
                           style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
                             alignSelf: 'flex-end',
+                            gap: 5,
                             marginRight: 12,
                             marginBottom: 8,
                             paddingHorizontal: 14,
                             paddingVertical: 6,
                             borderRadius: 6,
                             borderWidth: 1,
-                            borderColor: '#CF6679',
-                            backgroundColor: 'rgba(207,102,121,0.12)',
+                            borderColor: '#888',
+                            backgroundColor: 'rgba(136,136,136,0.12)',
                           }}
                           onPress={() => { clearEventLog(); setErrorLogEntries([]); }}
                         >
-                          <Text style={[{ color: '#CF6679', fontSize: 12 }, bodyFontStyle]}>Clear Log</Text>
+                          <TrashIcon width={12} height={12} fill="#888" />
+                          <Text style={[{ color: '#888', fontSize: 12 }, bodyFontStyle]}>Clear Log</Text>
                         </TouchableOpacity>
                         {errorLogEntries.map((entry, i) => {
-                          const isError = entry.type === 'error';
-                          const typeColor = isError ? '#CF6679' : '#4FC3F7';
-                          const typeLabel = isError ? 'ERROR' : 'EVENT';
+                          const typeColor = entry.type === 'error' ? '#CF6679'
+                            : entry.type === 'success' ? '#66BB6A'
+                            : '#4FC3F7';
+                          const typeLabel = entry.type === 'error' ? 'ERROR'
+                            : entry.type === 'success' ? 'SUCCESS'
+                            : 'INFO';
                           return (
-                            <View key={i} style={[styles.debugMetaRow, { flexDirection: 'column', alignItems: 'flex-start', gap: 2 }]}>
+                            <View key={i} style={[styles.debugMetaRow, { flexDirection: 'column', alignItems: 'flex-start', gap: 3, paddingVertical: 6 }]}>
                               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                                 <Text style={[{
                                   fontSize: 9,
@@ -1486,11 +1494,29 @@ export default function MoreScreen({
                                 }, bodyFontStyle]}>{typeLabel}</Text>
                                 <Text style={[{ fontSize: 10, color: '#888' }, bodyFontStyle]}>{entry.ts}</Text>
                               </View>
-                              <Text style={[{ fontSize: 12, color: '#E0E0E0' }, bodyFontStyle]}>
-                                [{entry.source}] {entry.message}
-                              </Text>
-                              {entry.url && <Text style={[{ fontSize: 10, color: '#666' }, bodyFontStyle]}>{entry.url}</Text>}
-                              {entry.elapsedMs != null && <Text style={[{ fontSize: 10, color: '#666' }, bodyFontStyle]}>Elapsed: {entry.elapsedMs}ms</Text>}
+                              <View style={{ gap: 2, paddingLeft: 2 }}>
+                                <Text style={[{ fontSize: 10, color: '#AAA' }, bodyFontStyle]}>
+                                  <Text style={{ color: '#666' }}>Source: </Text>{entry.source}
+                                </Text>
+                                <Text style={[{ fontSize: 11, color: '#E0E0E0' }, bodyFontStyle]}>
+                                  <Text style={{ color: '#666' }}>Message: </Text>{entry.message}
+                                </Text>
+                                {entry.url != null && (
+                                  <Text style={[{ fontSize: 10, color: '#AAA' }, bodyFontStyle]}>
+                                    <Text style={{ color: '#666' }}>URL: </Text>{entry.url}
+                                  </Text>
+                                )}
+                                {entry.elapsedMs != null && (
+                                  <Text style={[{ fontSize: 10, color: '#AAA' }, bodyFontStyle]}>
+                                    <Text style={{ color: '#666' }}>Elapsed: </Text>{entry.elapsedMs}ms
+                                  </Text>
+                                )}
+                                {entry.errorName != null && (
+                                  <Text style={[{ fontSize: 10, color: '#AAA' }, bodyFontStyle]}>
+                                    <Text style={{ color: '#666' }}>Error: </Text>{entry.errorName}
+                                  </Text>
+                                )}
+                              </View>
                             </View>
                           );
                         })}
