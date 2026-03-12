@@ -1440,7 +1440,7 @@ export default function MoreScreen({
                 activeOpacity={0.7}
               >
                 <View style={styles.versionHeader}>
-                  <CardIconTitle icon={<ErrorIcon width={20} height={20} fill="#4FC3F7" />} title="Event Log" styles={styles} />
+                  <CardIconTitle icon={<ErrorIcon width={20} height={20} fill="#FFB74D" />} title="Event Log" styles={styles} />
                   <Animated.View style={{ transform: [{ rotate: animations['errorLog']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
                     <Text style={styles.versionArrow}>▶</Text>
                   </Animated.View>
@@ -1455,21 +1455,20 @@ export default function MoreScreen({
                           style={{
                             flexDirection: 'row',
                             alignItems: 'center',
-                            alignSelf: 'flex-end',
+                            alignSelf: 'center',
                             gap: 5,
-                            marginRight: 12,
                             marginBottom: 8,
                             paddingHorizontal: 14,
                             paddingVertical: 6,
                             borderRadius: 6,
                             borderWidth: 1,
-                            borderColor: '#888',
-                            backgroundColor: 'rgba(136,136,136,0.12)',
+                            borderColor: accent,
+                            backgroundColor: `${accent}1A`,
                           }}
                           onPress={() => { clearEventLog(); setErrorLogEntries([]); }}
                         >
-                          <TrashIcon width={12} height={12} fill="#888" />
-                          <Text style={[{ color: '#888', fontSize: 12 }, bodyFontStyle]}>Clear Log</Text>
+                          <TrashIcon width={12} height={12} fill={accent} />
+                          <Text style={[{ color: accent, fontSize: 12 }, bodyFontStyle]}>Clear Log</Text>
                         </TouchableOpacity>
                         {errorLogEntries.map((entry, i) => {
                           const typeColor = entry.type === 'error' ? '#CF6679'
@@ -1478,20 +1477,31 @@ export default function MoreScreen({
                           const typeLabel = entry.type === 'error' ? 'ERROR'
                             : entry.type === 'success' ? 'SUCCESS'
                             : 'INFO';
+                          const badgeIcon = entry.type === 'error'
+                            ? <CloseIcon width={8} height={8} stroke={typeColor} />
+                            : entry.type === 'success'
+                            ? <CheckIcon width={8} height={8} fill={typeColor} />
+                            : <InfoIcon width={8} height={8} stroke={typeColor} />;
                           return (
                             <View key={i} style={[styles.debugMetaRow, { flexDirection: 'column', alignItems: 'flex-start', gap: 3, paddingVertical: 6 }]}>
                               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                                <Text style={[{
-                                  fontSize: 9,
-                                  color: typeColor,
-                                  fontWeight: 'bold',
+                                <View style={{
+                                  flexDirection: 'row',
+                                  alignItems: 'center',
+                                  gap: 3,
                                   borderWidth: 1,
                                   borderColor: typeColor,
                                   borderRadius: 3,
                                   paddingHorizontal: 4,
                                   paddingVertical: 1,
-                                  overflow: 'hidden',
-                                }, bodyFontStyle]}>{typeLabel}</Text>
+                                }}>
+                                  {badgeIcon}
+                                  <Text style={[{
+                                    fontSize: 9,
+                                    color: typeColor,
+                                    fontWeight: 'bold',
+                                  }, bodyFontStyle]}>{typeLabel}</Text>
+                                </View>
                                 <Text style={[{ fontSize: 10, color: '#888' }, bodyFontStyle]}>{entry.ts}</Text>
                               </View>
                               <View style={{ gap: 2, paddingLeft: 2 }}>

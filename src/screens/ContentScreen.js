@@ -59,8 +59,14 @@ export default function ContentScreen({
     >
       <View style={[styles.contentContainer, contentPaddingTop != null && { paddingTop: contentPaddingTop }]}>
         {isLoading && sections.length === 0 ? (
-          <View style={[styles.emptyStateContainer, { paddingTop: 80 }]}>
+          <View style={styles.emptyStateContainer}>
             <ActivityIndicator size="large" color={accent} />
+            <Text style={[styles.emptyStateTitle, { color: accent, marginTop: 20 }, titleFontStyle]}>
+              {isExpansions ? 'Loading expansions…' : 'Loading rules…'}
+            </Text>
+            <Text style={[styles.emptyStateText, bodyFontStyle]}>
+              Fetching the latest content. This should only take a moment.
+            </Text>
           </View>
         ) : showSearchEmpty ? (
           <EmptySearchResults query={searchQuery} styles={styles} />
