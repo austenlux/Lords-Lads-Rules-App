@@ -217,12 +217,14 @@ export function parseMarkdownSections(text) {
  * @returns {Promise<{ rulesMarkdown: string|null, expansionTexts: string|null, lastFetchDate: string|null }>}
  */
 export async function getCachedContent() {
-  const [rulesMarkdown, expansionTexts, lastFetchDate] = await Promise.all([
+  const [rulesMarkdown, expansionTexts, lastFetchDate, rulesLastSynced, expansionsLastSynced] = await Promise.all([
     AsyncStorage.getItem(CACHE_KEYS.RULES_MARKDOWN),
     AsyncStorage.getItem(CACHE_KEYS.EXPANSION_TEXTS),
     AsyncStorage.getItem(CACHE_KEYS.LAST_FETCH_DATE),
+    AsyncStorage.getItem(CACHE_KEYS.RULES_LAST_SYNCED),
+    AsyncStorage.getItem(CACHE_KEYS.EXPANSIONS_LAST_SYNCED),
   ]);
-  return { rulesMarkdown, expansionTexts, lastFetchDate };
+  return { rulesMarkdown, expansionTexts, lastFetchDate, rulesLastSynced, expansionsLastSynced };
 }
 
 /**
@@ -317,4 +319,12 @@ export async function fetchExpansions() {
  */
 export async function saveLastFetchDate(dateString) {
   await AsyncStorage.setItem(CACHE_KEYS.LAST_FETCH_DATE, dateString);
+}
+
+export async function saveRulesLastSynced(dateString) {
+  await AsyncStorage.setItem(CACHE_KEYS.RULES_LAST_SYNCED, dateString);
+}
+
+export async function saveExpansionsLastSynced(dateString) {
+  await AsyncStorage.setItem(CACHE_KEYS.EXPANSIONS_LAST_SYNCED, dateString);
 }

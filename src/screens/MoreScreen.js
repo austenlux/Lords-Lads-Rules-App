@@ -23,7 +23,8 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 }
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import RNFS from 'react-native-fs';
-import { getErrorLog, clearErrorLog } from '../services/errorLogger';
+import { getErrorLog, clearErrorLog, onErrorLogChange } from '../services/errorLogger';
+import ErrorIcon from '../../assets/icons/error.svg';
 import { HEADER_HEIGHT } from '../styles';
 import NativeVoiceAssistantOptional from '../specs/NativeVoiceAssistantOptional';
 import {
@@ -171,6 +172,8 @@ const VENMO_OPTIONS = [
 
 export default function MoreScreen({
   lastFetchDate,
+  rulesLastSynced,
+  expansionsLastSynced,
   styles,
   contentHeight,
   contentPaddingTop,
@@ -219,6 +222,7 @@ export default function MoreScreen({
   const [commitMsgExpanded, setCommitMsgExpanded] = useState(false);
   const [errorLogExpanded, setErrorLogExpanded] = useState(false);
   const [errorLogEntries, setErrorLogEntries] = useState([]);
+  const errorLogUnsub = useRef(null);
 
   // Initialise rotation animations for settings cards and debug sections.
   useEffect(() => {
@@ -469,9 +473,18 @@ export default function MoreScreen({
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     const isExpanded = !errorLogExpanded;
     animateSection(animations['errorLog'], isExpanded);
-    if (isExpanded) setErrorLogEntries(await getErrorLog());
+    if (isExpanded) {
+      setErrorLogEntries(await getErrorLog());
+      errorLogUnsub.current = onErrorLogChange((entries) => setErrorLogEntries(entries));
+    } else {
+      if (errorLogUnsub.current) { errorLogUnsub.current(); errorLogUnsub.current = null; }
+    }
     setErrorLogExpanded(isExpanded);
   };
+
+  useEffect(() => {
+    return () => { if (errorLogUnsub.current) errorLogUnsub.current(); };
+  }, []);
 
   const toggleDebugVoice = (voiceId) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -752,7 +765,9 @@ export default function MoreScreen({
                 <Text style={[styles.infoLink, bodyFontStyle]}>{RULEBOOK_REPO_URL}</Text>
               </Pressable>
               <CardIconTitle icon={<SyncedIcon fill="#26C6DA" />} title="Rules Last Synced" styles={styles} />
-              <Text style={[styles.moreTimestamp, { marginTop: 4 }, bodyFontStyle]}>{lastFetchDate || 'Never'}</Text>
+              <Text style={[styles.moreTimestamp, { marginTop: 4 }, bodyFontStyle]}>{rulesLastSynced || lastFetchDate || 'Never'}</Text>
+              <CardIconTitle icon={<SyncedIcon fill="#26C6DA" />} title="Expansions Last Synced" styles={styles} />
+              <Text style={[styles.moreTimestamp, { marginTop: 4 }, bodyFontStyle]}>{expansionsLastSynced || lastFetchDate || 'Never'}</Text>
             </View>
 
             {/* ── App Repository card ── */}
@@ -822,7 +837,7 @@ export default function MoreScreen({
                 activeOpacity={0.7}
               >
                 <View style={styles.versionHeader}>
-                  <CardIconTitle icon={<MicIcon fill="#FF7043" />} title="Voice Assistant" styles={styles} />
+                  <CardIconTitle icon={<MicIcon fill="#4FC3F7" />} title="Voice Assistant" styles={styles} />
                   <Animated.View style={{ transform: [{ rotate: animations['voiceParent']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
                     <Text style={styles.versionArrow}>▶</Text>
                   </Animated.View>
@@ -1249,7 +1264,7 @@ export default function MoreScreen({
                 activeOpacity={0.7}
               >
                 <View style={styles.versionHeader}>
-                  <CardIconTitle icon={<MicIcon fill="#FF7043" />} title="Voice Assistant" styles={styles} />
+                  <CardIconTitle icon={<MicIcon fill="#4FC3F7" />} title="Voice Assistant" styles={styles} />
                   <Animated.View style={{ transform: [{ rotate: animations['vaDebug']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
                     <Text style={styles.versionArrow}>▶</Text>
                   </Animated.View>
@@ -1322,7 +1337,7 @@ export default function MoreScreen({
                     {(modelStatus === 'download_failed' || modelStatus === 'downloadable') && (
                       <>
                         <TouchableOpacity
-                          style={[vaReadinessStyles.actionButton, { backgroundColor: `${accent}26`, borderColor: `${accent}66` }, isRetryingModelSetup && { opacity: 0.7 }]}
+                          style={[vaReadinessStyles.actionButton, { marginTop: 12, backgroundColor: `${accent}26`, borderColor: `${accent}66` }, isRetryingModelSetup && { opacity: 0.7 }]}
                           onPress={onRetryModelSetup}
                           disabled={isRetryingModelSetup}
                         >
@@ -1424,7 +1439,7 @@ export default function MoreScreen({
                 activeOpacity={0.7}
               >
                 <View style={styles.versionHeader}>
-                  <CardIconTitle icon={<DebugIcon fill="#CF6679" />} title="Error Log" styles={styles} />
+                  <CardIconTitle icon={<ErrorIcon width={20} height={20} fill="#CF6679" />} title="Error Log" styles={styles} />
                   <Animated.View style={{ transform: [{ rotate: animations['errorLog']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
                     <Text style={styles.versionArrow}>▶</Text>
                   </Animated.View>
@@ -1436,7 +1451,17 @@ export default function MoreScreen({
                     ) : (
                       <>
                         <TouchableOpacity
-                          style={{ alignSelf: 'flex-end', marginRight: 12, marginBottom: 8 }}
+                          style={{
+                            alignSelf: 'flex-end',
+                            marginRight: 12,
+                            marginBottom: 8,
+                            paddingHorizontal: 14,
+                            paddingVertical: 6,
+                            borderRadius: 6,
+                            borderWidth: 1,
+                            borderColor: '#CF6679',
+                            backgroundColor: 'rgba(207,102,121,0.12)',
+                          }}
                           onPress={async () => { await clearErrorLog(); setErrorLogEntries([]); }}
                         >
                           <Text style={[{ color: '#CF6679', fontSize: 12 }, bodyFontStyle]}>Clear Log</Text>

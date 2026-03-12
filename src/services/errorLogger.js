@@ -1,6 +1,6 @@
 /**
  * Lightweight error logger that persists recent errors to AsyncStorage
- * and exposes them for the Debug menu.
+ * and exposes them for the Debug menu with real-time listener support.
  */
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -8,16 +8,32 @@ const STORAGE_KEY = '@lnl_error_log';
 const MAX_ENTRIES = 50;
 
 let cachedEntries = null;
+const listeners = new Set();
+
+function notifyListeners() {
+  const snapshot = cachedEntries ? [...cachedEntries] : [];
+  listeners.forEach((fn) => fn(snapshot));
+}
+
+/**
+ * Subscribe to real-time error log updates.
+ * @param {function} callback - Called with the latest entries array on every change.
+ * @returns {function} Unsubscribe function.
+ */
+export function onErrorLogChange(callback) {
+  listeners.add(callback);
+  return () => listeners.delete(callback);
+}
 
 /**
  * Log an error with context.
- * @param {string} source - Where the error occurred (e.g. 'fetchRules', 'fetchExpansions')
+ * @param {string} source - Where the error occurred (e.g. 'fetchRules', 'AI Model Download')
  * @param {string|Error} error - The error message or Error object
- * @param {object} [meta] - Optional metadata (url, status, etc.)
+ * @param {object} [meta] - Optional metadata (url, status, phase, etc.)
  */
 export async function logError(source, error, meta = {}) {
   const entry = {
-    ts: new Date().toISOString(),
+    ts: new Date().toLocaleString(),
     source,
     message: error instanceof Error ? error.message : String(error),
     ...meta,
@@ -29,6 +45,7 @@ export async function logError(source, error, meta = {}) {
     if (entries.length > MAX_ENTRIES) entries.length = MAX_ENTRIES;
     cachedEntries = entries;
     await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+    notifyListeners();
   } catch (_) {}
 }
 
@@ -53,4 +70,5 @@ export async function getErrorLog() {
 export async function clearErrorLog() {
   cachedEntries = [];
   await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify([]));
+  notifyListeners();
 }

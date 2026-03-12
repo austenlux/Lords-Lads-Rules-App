@@ -10,6 +10,8 @@ import {
   fetchRules,
   fetchExpansions as fetchExpansionsFromService,
   saveLastFetchDate,
+  saveRulesLastSynced,
+  saveExpansionsLastSynced,
   buildExpansionSections,
   parseMarkdownSections,
 } from '../services/contentService';
@@ -47,6 +49,8 @@ export function useContent(styles, markdownStyles) {
   const [showSearch, setShowSearch] = useState(false);
   const [activeTab, setActiveTab] = useState('rules');
   const [lastFetchDate, setLastFetchDate] = useState(null);
+  const [rulesLastSynced, setRulesLastSynced] = useState(null);
+  const [expansionsLastSynced, setExpansionsLastSynced] = useState(null);
   const [expansionsRateLimited, setExpansionsRateLimited] = useState(false);
 
   const rulesScrollViewRef = useRef(null);
@@ -65,8 +69,10 @@ export function useContent(styles, markdownStyles) {
       const expandRulesDefault = expandRules === 'true';
       const expandExpansionsDefault = expandExpansions === 'true';
 
-      const { rulesMarkdown, expansionTexts, lastFetchDate: cachedDate } = await getCachedContent();
+      const { rulesMarkdown, expansionTexts, lastFetchDate: cachedDate, rulesLastSynced: cachedRules, expansionsLastSynced: cachedExpansions } = await getCachedContent();
       if (cachedDate) setLastFetchDate(cachedDate);
+      if (cachedRules) setRulesLastSynced(cachedRules);
+      if (cachedExpansions) setExpansionsLastSynced(cachedExpansions);
       let hasCachedData = false;
       if (rulesMarkdown) {
         setContent(rulesMarkdown);
@@ -120,8 +126,16 @@ export function useContent(styles, markdownStyles) {
   /** Refetch both rules and expansions (e.g. from empty-state Retry). Persists to cache on success. */
   const retryFetchContent = async () => {
     const [rulesOk, expansionsOk] = await Promise.all([fetchReadme(), fetchExpansions()]);
+    const now = new Date().toLocaleString();
+    if (rulesOk) {
+      setRulesLastSynced(now);
+      await saveRulesLastSynced(now);
+    }
+    if (expansionsOk) {
+      setExpansionsLastSynced(now);
+      await saveExpansionsLastSynced(now);
+    }
     if (rulesOk || expansionsOk) {
-      const now = new Date().toLocaleString();
       setLastFetchDate(now);
       await saveLastFetchDate(now);
     }
@@ -201,8 +215,16 @@ export function useContent(styles, markdownStyles) {
       const hasCachedData = await loadCachedContent();
       if (hasCachedData) setLoading(false);
       const [rulesOk, expansionsOk] = await Promise.all([fetchReadme(), fetchExpansions()]);
+      const now = new Date().toLocaleString();
+      if (rulesOk) {
+        setRulesLastSynced(now);
+        await saveRulesLastSynced(now);
+      }
+      if (expansionsOk) {
+        setExpansionsLastSynced(now);
+        await saveExpansionsLastSynced(now);
+      }
       if (rulesOk || expansionsOk) {
-        const now = new Date().toLocaleString();
         setLastFetchDate(now);
         await saveLastFetchDate(now);
       }
@@ -453,6 +475,8 @@ export function useContent(styles, markdownStyles) {
     activeTab,
     setActiveTab,
     lastFetchDate,
+    rulesLastSynced,
+    expansionsLastSynced,
     rulesEmpty: originalSections.length === 0,
     expansionsEmpty: originalExpansionSections.length === 0,
     expansionsRateLimited,

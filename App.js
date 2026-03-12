@@ -137,6 +137,8 @@ function AppContent() {
     activeTab,
     setActiveTab,
     lastFetchDate,
+    rulesLastSynced,
+    expansionsLastSynced,
     rulesEmpty,
     expansionsEmpty,
     expansionsRateLimited,
@@ -261,6 +263,8 @@ function AppContent() {
       <MoreScreen
         key="more"
         lastFetchDate={lastFetchDate}
+        rulesLastSynced={rulesLastSynced}
+        expansionsLastSynced={expansionsLastSynced}
         styles={styles}
         contentHeight={contentHeight}
         contentPaddingTop={isIOS ? insets.top + IOS_HEADER_BAR_HEIGHT : undefined}

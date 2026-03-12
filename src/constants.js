@@ -18,6 +18,8 @@ export const CACHE_KEYS = {
   RULES_MARKDOWN: '@cache_rules_markdown',
   EXPANSION_TEXTS: '@cache_expansion_texts',
   LAST_FETCH_DATE: '@cache_last_fetch_date',
+  RULES_LAST_SYNCED: '@cache_rules_last_synced',
+  EXPANSIONS_LAST_SYNCED: '@cache_expansions_last_synced',
 };
 
 /**
