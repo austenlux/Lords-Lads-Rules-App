@@ -14,6 +14,7 @@ import {
   parseMarkdownSections,
 } from '../services/contentService';
 import { normalizeSearchQuery } from '../utils/searchUtils';
+import { logError } from '../services/errorLogger';
 import { TitleSection, Section } from '../components';
 
 const EXPAND_SETTINGS_KEYS = {
@@ -86,6 +87,7 @@ export function useContent(styles, markdownStyles) {
       return hasCachedData;
     } catch (err) {
       console.error('Error loading cached content:', err);
+      logError('Cache Load', err, { phase: 'loadCachedContent' });
       return false;
     }
   };

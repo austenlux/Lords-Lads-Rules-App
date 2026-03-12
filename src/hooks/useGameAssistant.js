@@ -27,6 +27,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import NativeVoiceAssistantOptional from '../specs/NativeVoiceAssistantOptional';
 import { buildGameAssistantPrompt } from '../constants';
 import { sanitizeTextForSpeech } from '../utils/sanitizeTextForSpeech';
+import { logError } from '../services/errorLogger';
 
 const MODEL_POLL_INTERVAL_MS = 5000;
 const MODEL_POLL_MAX_ATTEMPTS = 24; // 2 minutes total
@@ -184,7 +185,8 @@ export function useGameAssistant() {
           setModelStatus('available');
           setIsSupported(true);
           setRetryDone(true);
-        } catch {
+        } catch (dlErr) {
+          logError('AI Model Download', dlErr || 'Download failed', { phase: 'downloadModel' });
           setModelStatus('download_failed');
           setIsSupported(false);
           setRetryDone(false, 'Download failed');
@@ -196,6 +198,7 @@ export function useGameAssistant() {
         let attempts = 0;
         const poll = async () => {
           if (attempts >= MODEL_POLL_MAX_ATTEMPTS) {
+            logError('AI Model Download', 'Polling timed out after max attempts', { phase: 'poll', attempts });
             setModelStatus('download_failed');
             setIsSupported(false);
             setRetryDone(false, 'Download failed');
@@ -215,7 +218,8 @@ export function useGameAssistant() {
             } else {
               poll();
             }
-          } catch {
+          } catch (pollErr) {
+            logError('AI Model Download', pollErr || 'Poll failed', { phase: 'poll', attempts });
             setModelStatus('download_failed');
             setIsSupported(false);
             setRetryDone(false, 'Download failed');
@@ -223,7 +227,8 @@ export function useGameAssistant() {
         };
         poll();
       }
-    } catch {
+    } catch (setupErr) {
+      logError('AI Model Setup', setupErr || 'Setup failed', { phase: 'checkModelStatus' });
       setModelStatus('unavailable');
       setIsSupported(false);
       setRetryDone(false, 'Setup failed');
@@ -525,6 +530,7 @@ export function useGameAssistant() {
           setIsThinking(false);
           isBusy.current = false;
         } else {
+          logError('Voice Assistant', err, { phase: 'askTheRules' });
           setError(msg || ERRORS.UNEXPECTED);
           setIsListening(false);
           setIsThinking(false);

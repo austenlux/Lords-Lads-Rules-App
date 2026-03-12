@@ -598,6 +598,7 @@ export default function MoreScreen({
         setExpandedVersions(initialExpanded);
       } catch (error) {
         console.error('Error loading release notes:', error);
+        logError('Release Notes', error, { phase: 'loadReleaseNotes' });
         const fallbackVersions = [
           {
             version: 'v1.3.0',
