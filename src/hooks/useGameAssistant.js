@@ -27,7 +27,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import NativeVoiceAssistantOptional from '../specs/NativeVoiceAssistantOptional';
 import { buildGameAssistantPrompt } from '../constants';
 import { sanitizeTextForSpeech } from '../utils/sanitizeTextForSpeech';
-import { logError } from '../services/errorLogger';
+import { logError, logEvent } from '../services/errorLogger';
 
 const MODEL_POLL_INTERVAL_MS = 5000;
 const MODEL_POLL_MAX_ATTEMPTS = 24; // 2 minutes total
@@ -143,8 +143,9 @@ export function useGameAssistant() {
     }
 
     try {
+      logEvent('AI Model', 'Checking model status...');
       const status = await native.checkModelStatus();
-      console.log('[VoiceAssistant JS] checkModelStatus returned:', status);
+      logEvent('AI Model', `Status: ${status}`);
       setModelStatus(status);
 
       if (isIOS && typeof native.getModelDebugInfo === 'function') {
@@ -180,8 +181,10 @@ export function useGameAssistant() {
       if (status === 'downloadable') {
         setModelStatus('downloading');
         setDownloadProgressBytes(0);
+        logEvent('AI Model', 'Starting download...');
         try {
           await native.downloadModel();
+          logEvent('AI Model', 'Download complete');
           setModelStatus('available');
           setIsSupported(true);
           setRetryDone(true);
@@ -195,6 +198,7 @@ export function useGameAssistant() {
       }
 
       if (status === 'downloading') {
+        logEvent('AI Model', 'Already downloading, polling for completion...');
         let attempts = 0;
         const poll = async () => {
           if (attempts >= MODEL_POLL_MAX_ATTEMPTS) {

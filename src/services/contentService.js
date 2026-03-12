@@ -11,7 +11,7 @@ import {
   GITHUB_API_URL,
   CACHE_KEYS,
 } from '../constants';
-import { logError } from './errorLogger';
+import { logError, logEvent } from './errorLogger';
 
 const FETCH_TIMEOUT_MS = 20000;
 
@@ -245,16 +245,18 @@ export async function getCachedContent() {
  * @returns {Promise<{ success: boolean, rulesText?: string, sections?: Array }>}
  */
 export async function fetchRules() {
+  logEvent('fetchRules', 'Starting', { url: CONTENT_URL });
   const t0 = Date.now();
   try {
     const response = await fetchWithTimeout(CONTENT_URL);
     const elapsed = Date.now() - t0;
     if (!response.ok) {
-      throw new Error(`Failed to fetch rules (Status: ${response.status}) [${elapsed}ms]`);
+      throw new Error(`HTTP ${response.status} after ${elapsed}ms`);
     }
     const rulesText = await response.text();
     await AsyncStorage.setItem(CACHE_KEYS.RULES_MARKDOWN, rulesText);
     const sections = parseMarkdownSections(rulesText);
+    logEvent('fetchRules', `Success in ${elapsed}ms`, { url: CONTENT_URL });
     return { success: true, rulesText, sections };
   } catch (err) {
     const elapsed = Date.now() - t0;
@@ -273,14 +275,16 @@ export async function fetchRules() {
  * @returns {Promise<{ success: boolean, mainContent?: string, sections?: Array, allExpansionTexts?: Array }>}
  */
 export async function fetchExpansions() {
+  logEvent('fetchExpansions', 'Starting', { url: GITHUB_API_URL });
   const t0 = Date.now();
   try {
     const directoryResponse = await fetchWithTimeout(GITHUB_API_URL);
     if (directoryResponse.status === 403 || directoryResponse.status === 429) {
+      logError('fetchExpansions', `Rate limited (HTTP ${directoryResponse.status})`, { url: GITHUB_API_URL });
       return { success: false, rateLimited: true };
     }
     if (!directoryResponse.ok) {
-      throw new Error(`Failed to fetch expansions directory (Status: ${directoryResponse.status})`);
+      throw new Error(`HTTP ${directoryResponse.status} after ${Date.now() - t0}ms`);
     }
     const directoryContents = await directoryResponse.json();
     const expansionFolders = directoryContents
@@ -305,6 +309,7 @@ export async function fetchExpansions() {
       throw new Error('Main expansions README fetch failed');
     }
 
+    const elapsed = Date.now() - t0;
     const { mainContent, sections } = buildExpansionSections(allExpansionTexts);
     const cacheData = [
       allExpansionTexts[0],
@@ -312,6 +317,7 @@ export async function fetchExpansions() {
     ];
     await AsyncStorage.setItem(CACHE_KEYS.EXPANSION_TEXTS, JSON.stringify(cacheData));
 
+    logEvent('fetchExpansions', `Success in ${elapsed}ms (${expansionFolders.length} expansions)`, { url: GITHUB_API_URL });
     return { success: true, mainContent, sections, allExpansionTexts };
   } catch (err) {
     const elapsed = Date.now() - t0;

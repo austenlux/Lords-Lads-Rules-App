@@ -43,6 +43,25 @@ export function logAppLaunch() {
 }
 
 /**
+ * Log a non-error event (info, success, lifecycle milestone, etc.).
+ * @param {string} source - Component/service name
+ * @param {string} message - Human-readable description
+ * @param {object} [meta] - Optional metadata
+ */
+export function logEvent(source, message, meta = {}) {
+  const entry = {
+    ts: new Date().toLocaleString(),
+    type: 'event',
+    source,
+    message,
+    ...meta,
+  };
+  entries.unshift(entry);
+  if (entries.length > MAX_ENTRIES) entries.length = MAX_ENTRIES;
+  notifyListeners();
+}
+
+/**
  * Log an error with context.
  * @param {string} source - Where the error occurred (e.g. 'fetchRules', 'AI Model Download')
  * @param {string|Error} error - The error message or Error object

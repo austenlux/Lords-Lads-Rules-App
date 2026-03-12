@@ -1466,19 +1466,34 @@ export default function MoreScreen({
                         >
                           <Text style={[{ color: '#CF6679', fontSize: 12 }, bodyFontStyle]}>Clear Log</Text>
                         </TouchableOpacity>
-                        {errorLogEntries.map((entry, i) => (
-                          <View key={i} style={[styles.debugMetaRow, { flexDirection: 'column', alignItems: 'flex-start', gap: 2 }]}>
-                            <Text style={[{ fontSize: 10, color: '#888' }, bodyFontStyle]}>{entry.ts}</Text>
-                            <Text style={[{
-                              fontSize: 12,
-                              color: entry.type === 'error' ? '#CF6679' : '#4FC3F7',
-                            }, bodyFontStyle]}>
-                              [{entry.source}] {entry.message}
-                            </Text>
-                            {entry.url && <Text style={[{ fontSize: 10, color: '#666' }, bodyFontStyle]}>{entry.url}</Text>}
-                            {entry.errorName && <Text style={[{ fontSize: 10, color: '#666' }, bodyFontStyle]}>Type: {entry.errorName}</Text>}
-                          </View>
-                        ))}
+                        {errorLogEntries.map((entry, i) => {
+                          const isError = entry.type === 'error';
+                          const typeColor = isError ? '#CF6679' : '#4FC3F7';
+                          const typeLabel = isError ? 'ERROR' : 'EVENT';
+                          return (
+                            <View key={i} style={[styles.debugMetaRow, { flexDirection: 'column', alignItems: 'flex-start', gap: 2 }]}>
+                              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                                <Text style={[{
+                                  fontSize: 9,
+                                  color: typeColor,
+                                  fontWeight: 'bold',
+                                  borderWidth: 1,
+                                  borderColor: typeColor,
+                                  borderRadius: 3,
+                                  paddingHorizontal: 4,
+                                  paddingVertical: 1,
+                                  overflow: 'hidden',
+                                }, bodyFontStyle]}>{typeLabel}</Text>
+                                <Text style={[{ fontSize: 10, color: '#888' }, bodyFontStyle]}>{entry.ts}</Text>
+                              </View>
+                              <Text style={[{ fontSize: 12, color: '#E0E0E0' }, bodyFontStyle]}>
+                                [{entry.source}] {entry.message}
+                              </Text>
+                              {entry.url && <Text style={[{ fontSize: 10, color: '#666' }, bodyFontStyle]}>{entry.url}</Text>}
+                              {entry.elapsedMs != null && <Text style={[{ fontSize: 10, color: '#666' }, bodyFontStyle]}>Elapsed: {entry.elapsedMs}ms</Text>}
+                            </View>
+                          );
+                        })}
                       </>
                     )}
                   </View>
