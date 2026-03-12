@@ -23,7 +23,7 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 }
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import RNFS from 'react-native-fs';
-import { getErrorLog, clearErrorLog, onErrorLogChange } from '../services/errorLogger';
+import { getEventLog, clearEventLog, onEventLogChange } from '../services/errorLogger';
 import ErrorIcon from '../../assets/icons/error.svg';
 import { HEADER_HEIGHT } from '../styles';
 import NativeVoiceAssistantOptional from '../specs/NativeVoiceAssistantOptional';
@@ -469,13 +469,13 @@ export default function MoreScreen({
     setBuildInfoExpanded(isExpanded);
   };
 
-  const toggleErrorLog = async () => {
+  const toggleErrorLog = () => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     const isExpanded = !errorLogExpanded;
     animateSection(animations['errorLog'], isExpanded);
     if (isExpanded) {
-      setErrorLogEntries(await getErrorLog());
-      errorLogUnsub.current = onErrorLogChange((entries) => setErrorLogEntries(entries));
+      setErrorLogEntries(getEventLog());
+      errorLogUnsub.current = onEventLogChange((entries) => setErrorLogEntries(entries));
     } else {
       if (errorLogUnsub.current) { errorLogUnsub.current(); errorLogUnsub.current = null; }
     }
@@ -1432,14 +1432,14 @@ export default function MoreScreen({
                   </View>
                 )}
               </TouchableOpacity>
-              {/* ── Error Log ── */}
+              {/* ── Event Log ── */}
               <TouchableOpacity
                 style={[styles.versionContainer, { paddingHorizontal: 10 }]}
                 onPress={toggleErrorLog}
                 activeOpacity={0.7}
               >
                 <View style={styles.versionHeader}>
-                  <CardIconTitle icon={<ErrorIcon width={20} height={20} fill="#CF6679" />} title="Error Log" styles={styles} />
+                  <CardIconTitle icon={<ErrorIcon width={20} height={20} fill="#CF6679" />} title="Event Log" styles={styles} />
                   <Animated.View style={{ transform: [{ rotate: animations['errorLog']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
                     <Text style={styles.versionArrow}>▶</Text>
                   </Animated.View>
@@ -1447,7 +1447,7 @@ export default function MoreScreen({
                 {errorLogExpanded && (
                   <View style={[styles.versionContent, { paddingLeft: 0, paddingRight: 0 }]}>
                     {errorLogEntries.length === 0 ? (
-                      <Text style={[styles.debugMetaValue, { paddingHorizontal: 12, paddingVertical: 8 }]}>No errors recorded.</Text>
+                      <Text style={[styles.debugMetaValue, { paddingHorizontal: 12, paddingVertical: 8 }]}>No events recorded.</Text>
                     ) : (
                       <>
                         <TouchableOpacity
@@ -1462,25 +1462,22 @@ export default function MoreScreen({
                             borderColor: '#CF6679',
                             backgroundColor: 'rgba(207,102,121,0.12)',
                           }}
-                          onPress={async () => { await clearErrorLog(); setErrorLogEntries([]); }}
+                          onPress={() => { clearEventLog(); setErrorLogEntries([]); }}
                         >
                           <Text style={[{ color: '#CF6679', fontSize: 12 }, bodyFontStyle]}>Clear Log</Text>
                         </TouchableOpacity>
                         {errorLogEntries.map((entry, i) => (
-                          entry.isDivider ? (
-                            <View key={i} style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 8, paddingHorizontal: 12 }}>
-                              <View style={{ flex: 1, height: 1, backgroundColor: '#444' }} />
-                              <Text style={[{ fontSize: 10, color: '#888', marginHorizontal: 8 }, bodyFontStyle]}>{entry.source}  {entry.ts}</Text>
-                              <View style={{ flex: 1, height: 1, backgroundColor: '#444' }} />
-                            </View>
-                          ) : (
-                            <View key={i} style={[styles.debugMetaRow, { flexDirection: 'column', alignItems: 'flex-start', gap: 2 }]}>
-                              <Text style={[{ fontSize: 10, color: '#888' }, bodyFontStyle]}>{entry.ts}</Text>
-                              <Text style={[{ fontSize: 12, color: '#CF6679' }, bodyFontStyle]}>[{entry.source}] {entry.message}</Text>
-                              {entry.url && <Text style={[{ fontSize: 10, color: '#666' }, bodyFontStyle]}>{entry.url}</Text>}
-                              {entry.errorName && <Text style={[{ fontSize: 10, color: '#666' }, bodyFontStyle]}>Type: {entry.errorName}</Text>}
-                            </View>
-                          )
+                          <View key={i} style={[styles.debugMetaRow, { flexDirection: 'column', alignItems: 'flex-start', gap: 2 }]}>
+                            <Text style={[{ fontSize: 10, color: '#888' }, bodyFontStyle]}>{entry.ts}</Text>
+                            <Text style={[{
+                              fontSize: 12,
+                              color: entry.type === 'error' ? '#CF6679' : '#4FC3F7',
+                            }, bodyFontStyle]}>
+                              [{entry.source}] {entry.message}
+                            </Text>
+                            {entry.url && <Text style={[{ fontSize: 10, color: '#666' }, bodyFontStyle]}>{entry.url}</Text>}
+                            {entry.errorName && <Text style={[{ fontSize: 10, color: '#666' }, bodyFontStyle]}>Type: {entry.errorName}</Text>}
+                          </View>
                         ))}
                       </>
                     )}

@@ -16,6 +16,19 @@ import { logError } from './errorLogger';
 const FETCH_TIMEOUT_MS = 20000;
 
 /**
+ * Fetch with a timeout via Promise.race (avoids AbortController platform bugs).
+ * Returns the Response on success; throws on timeout or network error.
+ */
+function fetchWithTimeout(url, opts = {}, timeout = FETCH_TIMEOUT_MS) {
+  return Promise.race([
+    fetch(url, opts),
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error(`Timed out after ${timeout}ms: ${url}`)), timeout)
+    ),
+  ]);
+}
+
+/**
  * Build expansion sections from an array of raw markdown texts.
  * First element is the main expansions README; rest are individual expansion READMEs.
  */
@@ -232,29 +245,24 @@ export async function getCachedContent() {
  * @returns {Promise<{ success: boolean, rulesText?: string, sections?: Array }>}
  */
 export async function fetchRules() {
+  const t0 = Date.now();
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
-    try {
-      const response = await fetch(CONTENT_URL, { signal: controller.signal });
-      clearTimeout(timeoutId);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch rules (Status: ${response.status})`);
-      }
-      const rulesText = await response.text();
-      await AsyncStorage.setItem(CACHE_KEYS.RULES_MARKDOWN, rulesText);
-      const sections = parseMarkdownSections(rulesText);
-      return { success: true, rulesText, sections };
-    } catch (err) {
-      clearTimeout(timeoutId);
-      throw err;
+    const response = await fetchWithTimeout(CONTENT_URL);
+    const elapsed = Date.now() - t0;
+    if (!response.ok) {
+      throw new Error(`Failed to fetch rules (Status: ${response.status}) [${elapsed}ms]`);
     }
+    const rulesText = await response.text();
+    await AsyncStorage.setItem(CACHE_KEYS.RULES_MARKDOWN, rulesText);
+    const sections = parseMarkdownSections(rulesText);
+    return { success: true, rulesText, sections };
   } catch (err) {
+    const elapsed = Date.now() - t0;
     console.error('Error fetching rules:', err);
     logError('fetchRules', err, {
       url: CONTENT_URL,
       errorName: err?.name,
-      isAbort: err?.name === 'AbortError',
+      elapsedMs: elapsed,
     });
     return { success: false };
   }
@@ -265,60 +273,53 @@ export async function fetchRules() {
  * @returns {Promise<{ success: boolean, mainContent?: string, sections?: Array, allExpansionTexts?: Array }>}
  */
 export async function fetchExpansions() {
+  const t0 = Date.now();
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
-    try {
-      const directoryResponse = await fetch(GITHUB_API_URL, { signal: controller.signal });
-      if (directoryResponse.status === 403 || directoryResponse.status === 429) {
-        clearTimeout(timeoutId);
-        return { success: false, rateLimited: true };
-      }
-      if (!directoryResponse.ok) {
-        throw new Error(`Failed to fetch expansions directory (Status: ${directoryResponse.status})`);
-      }
-      const directoryContents = await directoryResponse.json();
-      const expansionFolders = directoryContents
-        .filter((item) => item.type === 'dir')
-        .map((item) => item.name);
-
-      const expansionPromises = expansionFolders.map((folder) =>
-        fetch(`${EXPANSIONS_BASE_URL}/${folder}/README.md`, { signal: controller.signal })
-          .then((res) => (res.ok ? res.text() : null))
-          .catch(() => null)
-      );
-
-      expansionPromises.unshift(
-        fetch(EXPANSIONS_URL, { signal: controller.signal })
-          .then((res) => (res.ok ? res.text() : null))
-          .catch(() => null)
-      );
-
-      const allExpansionTexts = await Promise.all(expansionPromises);
-      clearTimeout(timeoutId);
-
-      if (!allExpansionTexts[0]) {
-        throw new Error('Main expansions README fetch failed');
-      }
-
-      const { mainContent, sections } = buildExpansionSections(allExpansionTexts);
-      const cacheData = [
-        allExpansionTexts[0],
-        ...allExpansionTexts.slice(1).filter((t) => t !== null),
-      ];
-      await AsyncStorage.setItem(CACHE_KEYS.EXPANSION_TEXTS, JSON.stringify(cacheData));
-
-      return { success: true, mainContent, sections, allExpansionTexts };
-    } catch (err) {
-      clearTimeout(timeoutId);
-      throw err;
+    const directoryResponse = await fetchWithTimeout(GITHUB_API_URL);
+    if (directoryResponse.status === 403 || directoryResponse.status === 429) {
+      return { success: false, rateLimited: true };
     }
+    if (!directoryResponse.ok) {
+      throw new Error(`Failed to fetch expansions directory (Status: ${directoryResponse.status})`);
+    }
+    const directoryContents = await directoryResponse.json();
+    const expansionFolders = directoryContents
+      .filter((item) => item.type === 'dir')
+      .map((item) => item.name);
+
+    const expansionPromises = expansionFolders.map((folder) =>
+      fetchWithTimeout(`${EXPANSIONS_BASE_URL}/${folder}/README.md`)
+        .then((res) => (res.ok ? res.text() : null))
+        .catch(() => null)
+    );
+
+    expansionPromises.unshift(
+      fetchWithTimeout(EXPANSIONS_URL)
+        .then((res) => (res.ok ? res.text() : null))
+        .catch(() => null)
+    );
+
+    const allExpansionTexts = await Promise.all(expansionPromises);
+
+    if (!allExpansionTexts[0]) {
+      throw new Error('Main expansions README fetch failed');
+    }
+
+    const { mainContent, sections } = buildExpansionSections(allExpansionTexts);
+    const cacheData = [
+      allExpansionTexts[0],
+      ...allExpansionTexts.slice(1).filter((t) => t !== null),
+    ];
+    await AsyncStorage.setItem(CACHE_KEYS.EXPANSION_TEXTS, JSON.stringify(cacheData));
+
+    return { success: true, mainContent, sections, allExpansionTexts };
   } catch (err) {
+    const elapsed = Date.now() - t0;
     console.error('Error fetching expansions:', err);
     logError('fetchExpansions', err, {
       url: GITHUB_API_URL,
       errorName: err?.name,
-      isAbort: err?.name === 'AbortError',
+      elapsedMs: elapsed,
     });
     return { success: false };
   }

@@ -1,49 +1,45 @@
 /**
- * Lightweight error logger that persists recent errors to AsyncStorage
- * and exposes them for the Debug menu with real-time listener support.
+ * In-memory event log for the current app lifecycle.
+ * Cleared on every launch — no cross-session persistence.
+ * Supports real-time listener subscriptions for the Debug menu.
  */
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const STORAGE_KEY = '@lnl_error_log';
-const MAX_ENTRIES = 50;
+const MAX_ENTRIES = 100;
 
-let cachedEntries = null;
+let entries = [];
 const listeners = new Set();
 
 function notifyListeners() {
-  const snapshot = cachedEntries ? [...cachedEntries] : [];
+  const snapshot = [...entries];
   listeners.forEach((fn) => fn(snapshot));
 }
 
 /**
- * Subscribe to real-time error log updates.
+ * Subscribe to real-time event log updates.
  * @param {function} callback - Called with the latest entries array on every change.
  * @returns {function} Unsubscribe function.
  */
-export function onErrorLogChange(callback) {
+export function onEventLogChange(callback) {
   listeners.add(callback);
   return () => listeners.delete(callback);
 }
 
+/** @deprecated Use onEventLogChange */
+export const onErrorLogChange = onEventLogChange;
+
 /**
- * Insert a lifecycle divider into the log to mark a new app launch.
+ * Log the app launch as the first event in this session.
  */
-export async function logAppLaunch() {
+export function logAppLaunch() {
+  entries = [];
   const entry = {
     ts: new Date().toLocaleString(),
-    source: '── App Launch ──',
+    type: 'event',
+    source: 'App Launch',
     message: 'New session started',
-    isDivider: true,
   };
-  try {
-    const raw = await AsyncStorage.getItem(STORAGE_KEY);
-    const entries = raw ? JSON.parse(raw) : [];
-    entries.unshift(entry);
-    if (entries.length > MAX_ENTRIES) entries.length = MAX_ENTRIES;
-    cachedEntries = entries;
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
-    notifyListeners();
-  } catch (_) {}
+  entries.push(entry);
+  notifyListeners();
 }
 
 /**
@@ -52,44 +48,37 @@ export async function logAppLaunch() {
  * @param {string|Error} error - The error message or Error object
  * @param {object} [meta] - Optional metadata (url, status, phase, etc.)
  */
-export async function logError(source, error, meta = {}) {
+export function logError(source, error, meta = {}) {
   const entry = {
     ts: new Date().toLocaleString(),
+    type: 'error',
     source,
     message: error instanceof Error ? error.message : String(error),
     ...meta,
   };
-  try {
-    const raw = await AsyncStorage.getItem(STORAGE_KEY);
-    const entries = raw ? JSON.parse(raw) : [];
-    entries.unshift(entry);
-    if (entries.length > MAX_ENTRIES) entries.length = MAX_ENTRIES;
-    cachedEntries = entries;
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
-    notifyListeners();
-  } catch (_) {}
-}
-
-/**
- * Retrieve all stored error entries (newest first).
- * @returns {Promise<Array>}
- */
-export async function getErrorLog() {
-  if (cachedEntries) return cachedEntries;
-  try {
-    const raw = await AsyncStorage.getItem(STORAGE_KEY);
-    cachedEntries = raw ? JSON.parse(raw) : [];
-    return cachedEntries;
-  } catch (_) {
-    return [];
-  }
-}
-
-/**
- * Clear all stored error entries.
- */
-export async function clearErrorLog() {
-  cachedEntries = [];
-  await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify([]));
+  entries.unshift(entry);
+  if (entries.length > MAX_ENTRIES) entries.length = MAX_ENTRIES;
   notifyListeners();
 }
+
+/**
+ * Retrieve all event entries (newest first, except App Launch which stays at the end).
+ * @returns {Array}
+ */
+export function getEventLog() {
+  return [...entries];
+}
+
+/** @deprecated Use getEventLog */
+export const getErrorLog = getEventLog;
+
+/**
+ * Clear all entries for this session.
+ */
+export function clearEventLog() {
+  entries = [];
+  notifyListeners();
+}
+
+/** @deprecated Use clearEventLog */
+export const clearErrorLog = clearEventLog;
