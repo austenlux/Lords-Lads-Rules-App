@@ -183,12 +183,6 @@ export function useGameAssistant() {
         return;
       }
 
-      if (status === 'not_ready') {
-        setIsSupported(false);
-        setRetryDone(false, 'Model not ready — check Apple Intelligence settings');
-        return;
-      }
-
       if (status === 'downloadable') {
         setModelStatus('downloading');
         setDownloadProgressBytes(0);
@@ -208,34 +202,37 @@ export function useGameAssistant() {
         return;
       }
 
-      if (status === 'downloading') {
-        logEvent('AI Model', 'Downloading (OS-managed), polling for completion...');
+      const pollableStatuses = ['downloading', 'not_ready'];
+      if (pollableStatuses.includes(status)) {
+        logEvent('AI Model', `Model ${status}, polling for availability...`);
         let attempts = 0;
         const poll = async () => {
           attempts += 1;
           await new Promise((r) => setTimeout(r, MODEL_POLL_INTERVAL_MS));
           try {
             const latest = await native.checkModelStatus();
-            logEvent('AI Model', `Poll #${attempts}: status=${latest}`);
+            if (attempts % 10 === 1) {
+              logEvent('AI Model', `Poll #${attempts}: status=${latest}`);
+            }
             setModelStatus(latest);
             if (latest === 'available') {
+              logEvent('AI Model', 'Model is now available');
               setIsSupported(true);
               setRetryDone(true);
-            } else if (latest === 'unavailable' || latest === 'ai_disabled' || latest === 'not_ready') {
+            } else if (latest === 'unavailable') {
               setIsSupported(false);
-              setRetryDone(false, latest === 'ai_disabled'
-                ? 'Enable Apple Intelligence in Settings'
-                : latest === 'not_ready'
-                ? 'Model not ready — check Apple Intelligence settings'
-                : 'Model not supported on this device');
+              setRetryDone(false, 'Model not supported on this device');
+            } else if (latest === 'ai_disabled') {
+              setIsSupported(false);
+              setRetryDone(false, 'Enable Apple Intelligence in Settings');
             } else {
               poll();
             }
           } catch (pollErr) {
-            logError('AI Model Download', pollErr || 'Poll failed', { phase: 'poll', attempts });
+            logError('AI Model', pollErr || 'Poll failed', { phase: 'poll', attempts });
             setModelStatus('download_failed');
             setIsSupported(false);
-            setRetryDone(false, 'Download failed');
+            setRetryDone(false, 'Setup failed');
           }
         };
         poll();

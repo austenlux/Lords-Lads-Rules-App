@@ -124,7 +124,7 @@ const VA_STATUS_LABEL = {
     downloadable:    'Pending Download',
     downloading:     'Downloading…',
     unavailable:     'Not Supported',
-    not_ready:       'Not Ready',
+    not_ready:       'Preparing…',
     ai_disabled:     'Apple Intelligence Off',
     download_failed: 'Download Failed',
   },
@@ -1354,12 +1354,19 @@ export default function MoreScreen({
                               </Text>
                             </View>
                           </View>
-                          {modelStatus === 'downloading' && (
+                          {(modelStatus === 'downloading' || modelStatus === 'not_ready') && (
                             <>
                               <DownloadProgressBar color={accent} />
-                              <Text style={[{ fontSize: 11, color: '#888', textAlign: 'center', marginBottom: 6 }, bodyFontStyle]}>
-                                Download continues in the background — you can leave and come back.
+                              <Text style={[{ fontSize: 11, color: '#888', textAlign: 'center', marginBottom: 2 }, bodyFontStyle]}>
+                                {modelStatus === 'not_ready'
+                                  ? 'The OS is preparing the AI model. This can take a while.'
+                                  : 'Download continues in the background — you can leave and come back.'}
                               </Text>
+                              {modelStatus === 'not_ready' && (
+                                <Text style={[{ fontSize: 10, color: '#666', textAlign: 'center', marginBottom: 6 }, bodyFontStyle]}>
+                                  Ensure Siri language is English (US) and you have 7 GB+ free storage.
+                                </Text>
+                              )}
                             </>
                           )}
                           <View style={[styles.debugMetaRow, { borderBottomWidth: 0 }]}>
