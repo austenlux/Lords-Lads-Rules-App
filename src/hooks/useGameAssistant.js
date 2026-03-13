@@ -74,6 +74,8 @@ export function useGameAssistant() {
 
   // Prevents concurrent invocations of askTheRules.
   const isBusy = useRef(false);
+  // When true, onAIChunkReceived events are silently ignored (no TTS/UI updates).
+  const isSummarizingRef = useRef(false);
   // Refs to the in-progress message ids so event callbacks can update them live.
   const activeUserMsgId = useRef(null);
   const activeAssistantMsgId = useRef(null);
@@ -308,6 +310,8 @@ export function useGameAssistant() {
     });
 
     const chunkSub = native.onAIChunkReceived(({ chunk }) => {
+      if (isSummarizingRef.current) return;
+
       // UI update — raw Markdown is preserved for display.
       setFullAnswer((prev) => prev + chunk);
       const id = activeAssistantMsgId.current;
@@ -399,6 +403,27 @@ export function useGameAssistant() {
       await AsyncStorage.setItem(VOICE_STORAGE_KEY, voiceId);
     } catch {
       // Persist failure is non-critical.
+    }
+  }, []);
+
+  // ── Summarization helper ─────────────────────────────────────────────────
+
+  /**
+   * Sends a prompt to the on-device LLM for summarization only.
+   * Sets the summarizing flag so streaming chunk events are silently ignored
+   * (no TTS, no UI updates).
+   *
+   * @param {string} prompt  Complete prompt to send to the model.
+   * @returns {Promise<string>} The full LLM response text.
+   */
+  const askForSummary = useCallback(async (prompt) => {
+    const native = NativeVoiceAssistantOptional;
+    if (!native) throw new Error('Native module not available');
+    isSummarizingRef.current = true;
+    try {
+      return await native.askQuestion(prompt);
+    } finally {
+      isSummarizingRef.current = false;
     }
   }, []);
 
@@ -586,5 +611,7 @@ export function useGameAssistant() {
     retryModelSetup,
     /** iOS only: parsed getModelDebugInfo(); null on Android or when missing/failed */
     modelDebugInfo,
+    /** send a prompt for silent LLM summarization (no TTS/UI side effects) */
+    askForSummary,
   };
 }
