@@ -20,6 +20,10 @@ export const CACHE_KEYS = {
   LAST_FETCH_DATE: '@cache_last_fetch_date',
   RULES_LAST_SYNCED: '@cache_rules_last_synced',
   EXPANSIONS_LAST_SYNCED: '@cache_expansions_last_synced',
+  RULES_SUMMARY: '@cache_rules_summary',
+  EXPANSIONS_SUMMARY: '@cache_expansions_summary',
+  RULES_SUMMARY_HASH: '@cache_rules_summary_hash',
+  EXPANSIONS_SUMMARY_HASH: '@cache_expansions_summary_hash',
 };
 
 /**
