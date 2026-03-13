@@ -23,7 +23,7 @@ function fetchWithTimeout(url, opts = {}, timeout = FETCH_TIMEOUT_MS) {
   return Promise.race([
     fetch(url, opts),
     new Promise((_, reject) =>
-      setTimeout(() => reject(new Error(`Timed out after ${timeout}ms`)), timeout)
+      setTimeout(() => reject(new Error('Request timed out')), timeout)
     ),
   ]);
 }

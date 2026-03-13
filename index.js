@@ -7,15 +7,22 @@ logAppLaunch();
 
 setTimeout(() => {
   const testUrl = 'https://raw.githubusercontent.com/seanKenkeremath/lords-and-lads/master/README.md';
-  logEvent('Connectivity', 'Diagnostic fetch starting (5s delay)', { url: testUrl });
+
+  logEvent('Diagnostic', 'fetch() test starting (5s delay)', { url: testUrl });
   const t0 = Date.now();
   fetch(testUrl)
-    .then(res => {
-      logEvent('Connectivity', `HTTP ${res.status} in ${Date.now() - t0}ms`, { url: testUrl });
-    })
-    .catch(err => {
-      logError('Connectivity', err, { elapsedMs: Date.now() - t0, errorName: err?.name, url: testUrl });
-    });
+    .then(res => logEvent('Diagnostic', `fetch() returned HTTP ${res.status}`, { elapsedMs: Date.now() - t0 }))
+    .catch(err => logError('Diagnostic', err, { elapsedMs: Date.now() - t0, errorName: err?.name, note: 'fetch() failed' }));
+
+  logEvent('Diagnostic', 'XMLHttpRequest test starting (5s delay)', { url: testUrl });
+  const t1 = Date.now();
+  const xhr = new XMLHttpRequest();
+  xhr.open('GET', testUrl);
+  xhr.onload = () => logEvent('Diagnostic', `XHR returned HTTP ${xhr.status}`, { elapsedMs: Date.now() - t1 });
+  xhr.onerror = () => logError('Diagnostic', `XHR error: ${xhr.statusText || 'unknown'}`, { elapsedMs: Date.now() - t1 });
+  xhr.ontimeout = () => logError('Diagnostic', 'XHR timed out', { elapsedMs: Date.now() - t1 });
+  xhr.timeout = 15000;
+  xhr.send();
 }, 5000);
 
 const defaultHandler = ErrorUtils.getGlobalHandler();

@@ -1440,7 +1440,7 @@ export default function MoreScreen({
                 activeOpacity={0.7}
               >
                 <View style={styles.versionHeader}>
-                  <CardIconTitle icon={<ErrorIcon width={20} height={20} fill="#FFB74D" />} title="Event Log" styles={styles} />
+                  <CardIconTitle icon={<ErrorIcon width={20} height={20} fill="#CE93D8" />} title="Event Log" styles={styles} />
                   <Animated.View style={{ transform: [{ rotate: animations['errorLog']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
                     <Text style={styles.versionArrow}>▶</Text>
                   </Animated.View>
@@ -1456,10 +1456,10 @@ export default function MoreScreen({
                             flexDirection: 'row',
                             alignItems: 'center',
                             alignSelf: 'center',
-                            gap: 5,
-                            marginBottom: 8,
-                            paddingHorizontal: 14,
-                            paddingVertical: 6,
+                            gap: 6,
+                            marginBottom: 10,
+                            paddingHorizontal: 16,
+                            paddingVertical: 7,
                             borderRadius: 6,
                             borderWidth: 1,
                             borderColor: accent,
@@ -1467,8 +1467,8 @@ export default function MoreScreen({
                           }}
                           onPress={() => { clearEventLog(); setErrorLogEntries([]); }}
                         >
-                          <TrashIcon width={12} height={12} fill={accent} />
-                          <Text style={[{ color: accent, fontSize: 12 }, bodyFontStyle]}>Clear Log</Text>
+                          <TrashIcon width={16} height={16} fill={accent} />
+                          <Text style={[{ color: accent, fontSize: 13 }, bodyFontStyle]}>Clear Log</Text>
                         </TouchableOpacity>
                         {errorLogEntries.map((entry, i) => {
                           const typeColor = entry.type === 'error' ? '#CF6679'
@@ -1478,52 +1478,53 @@ export default function MoreScreen({
                             : entry.type === 'success' ? 'SUCCESS'
                             : 'INFO';
                           const badgeIcon = entry.type === 'error'
-                            ? <CloseIcon width={8} height={8} stroke={typeColor} />
+                            ? <CloseIcon width={11} height={11} stroke="#CF6679" />
                             : entry.type === 'success'
-                            ? <CheckIcon width={8} height={8} fill={typeColor} />
-                            : <InfoIcon width={8} height={8} stroke={typeColor} />;
+                            ? <CheckIcon width={11} height={11} fill={typeColor} />
+                            : <InfoIcon width={11} height={11} stroke={typeColor} />;
+                          const usefulErrorName = entry.errorName && entry.errorName !== 'Error' ? entry.errorName : null;
                           return (
-                            <View key={i} style={[styles.debugMetaRow, { flexDirection: 'column', alignItems: 'flex-start', gap: 3, paddingVertical: 6 }]}>
-                              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                                <View style={{
-                                  flexDirection: 'row',
-                                  alignItems: 'center',
-                                  gap: 3,
-                                  borderWidth: 1,
-                                  borderColor: typeColor,
-                                  borderRadius: 3,
-                                  paddingHorizontal: 4,
-                                  paddingVertical: 1,
-                                }}>
-                                  {badgeIcon}
-                                  <Text style={[{
-                                    fontSize: 9,
-                                    color: typeColor,
-                                    fontWeight: 'bold',
-                                  }, bodyFontStyle]}>{typeLabel}</Text>
-                                </View>
-                                <Text style={[{ fontSize: 10, color: '#888' }, bodyFontStyle]}>{entry.ts}</Text>
+                            <View key={i} style={[styles.debugMetaRow, { flexDirection: 'column', alignItems: 'flex-start', gap: 4, paddingVertical: 8 }]}>
+                              <View style={{
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                gap: 4,
+                                borderWidth: 1,
+                                borderColor: typeColor,
+                                borderRadius: 4,
+                                paddingHorizontal: 6,
+                                paddingVertical: 2,
+                              }}>
+                                {badgeIcon}
+                                <Text style={[{
+                                  fontSize: 11,
+                                  color: typeColor,
+                                  fontWeight: 'bold',
+                                }, bodyFontStyle]}>{typeLabel}</Text>
                               </View>
-                              <View style={{ gap: 2, paddingLeft: 2 }}>
-                                <Text style={[{ fontSize: 10, color: '#AAA' }, bodyFontStyle]}>
-                                  <Text style={{ color: '#666' }}>Source: </Text>{entry.source}
+                              <View style={{ gap: 3, paddingLeft: 2, width: '100%' }}>
+                                <Text style={[{ fontSize: 11, color: '#CCC' }, bodyFontStyle]}>
+                                  <Text style={{ color: '#999' }}>Time:  </Text>{entry.ts}
                                 </Text>
-                                <Text style={[{ fontSize: 11, color: '#E0E0E0' }, bodyFontStyle]}>
-                                  <Text style={{ color: '#666' }}>Message: </Text>{entry.message}
+                                <Text style={[{ fontSize: 11, color: '#CCC' }, bodyFontStyle]}>
+                                  <Text style={{ color: '#999' }}>Source:  </Text>{entry.source}
+                                </Text>
+                                <Text style={[{ fontSize: 12, color: '#E0E0E0' }, bodyFontStyle]}>
+                                  <Text style={{ color: '#999' }}>Message:  </Text>{entry.message}
                                 </Text>
                                 {entry.url != null && (
-                                  <Text style={[{ fontSize: 10, color: '#AAA' }, bodyFontStyle]}>
-                                    <Text style={{ color: '#666' }}>URL: </Text>{entry.url}
+                                  <Text style={[{ fontSize: 11, color: '#CCC' }, bodyFontStyle]}>
+                                    <Text style={{ color: '#999' }}>URL:  </Text>{entry.url}
                                   </Text>
                                 )}
                                 {entry.elapsedMs != null && (
-                                  <Text style={[{ fontSize: 10, color: '#AAA' }, bodyFontStyle]}>
-                                    <Text style={{ color: '#666' }}>Elapsed: </Text>{entry.elapsedMs}ms
+                                  <Text style={[{ fontSize: 11, color: '#CCC' }, bodyFontStyle]}>
+                                    <Text style={{ color: '#999' }}>Elapsed:  </Text>{entry.elapsedMs}ms
                                   </Text>
                                 )}
-                                {entry.errorName != null && (
-                                  <Text style={[{ fontSize: 10, color: '#AAA' }, bodyFontStyle]}>
-                                    <Text style={{ color: '#666' }}>Error: </Text>{entry.errorName}
+                                {usefulErrorName != null && (
+                                  <Text style={[{ fontSize: 11, color: '#CCC' }, bodyFontStyle]}>
+                                    <Text style={{ color: '#999' }}>Error:  </Text>{usefulErrorName}
                                   </Text>
                                 )}
                               </View>
