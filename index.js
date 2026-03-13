@@ -11,14 +11,14 @@ setTimeout(() => {
   logEvent('Diagnostic', 'fetch() test starting (5s delay)', { url: testUrl });
   const t0 = Date.now();
   fetch(testUrl)
-    .then(res => logEvent('Diagnostic', `fetch() returned HTTP ${res.status}`, { elapsedMs: Date.now() - t0 }))
+    .then(res => logEvent('Diagnostic', `fetch() returned HTTP ${res.status}`, { elapsedMs: Date.now() - t0, url: testUrl }))
     .catch(err => logError('Diagnostic', err, { elapsedMs: Date.now() - t0, errorName: err?.name, note: 'fetch() failed' }));
 
   logEvent('Diagnostic', 'XMLHttpRequest test starting (5s delay)', { url: testUrl });
   const t1 = Date.now();
   const xhr = new XMLHttpRequest();
   xhr.open('GET', testUrl);
-  xhr.onload = () => logEvent('Diagnostic', `XHR returned HTTP ${xhr.status}`, { elapsedMs: Date.now() - t1 });
+  xhr.onload = () => logEvent('Diagnostic', `XHR returned HTTP ${xhr.status}`, { elapsedMs: Date.now() - t1, url: testUrl });
   xhr.onerror = () => logError('Diagnostic', `XHR error: ${xhr.statusText || 'unknown'}`, { elapsedMs: Date.now() - t1 });
   xhr.ontimeout = () => logError('Diagnostic', 'XHR timed out', { elapsedMs: Date.now() - t1 });
   xhr.timeout = 15000;

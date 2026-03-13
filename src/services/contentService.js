@@ -256,7 +256,7 @@ export async function fetchRules() {
     const rulesText = await response.text();
     await AsyncStorage.setItem(CACHE_KEYS.RULES_MARKDOWN, rulesText);
     const sections = parseMarkdownSections(rulesText);
-    logEvent('fetchRules', `Success in ${elapsed}ms`, { url: CONTENT_URL });
+    logEvent('fetchRules', 'Fetch successful', { url: CONTENT_URL, elapsedMs: elapsed });
     return { success: true, rulesText, sections };
   } catch (err) {
     const elapsed = Date.now() - t0;
@@ -317,7 +317,7 @@ export async function fetchExpansions() {
     ];
     await AsyncStorage.setItem(CACHE_KEYS.EXPANSION_TEXTS, JSON.stringify(cacheData));
 
-    logEvent('fetchExpansions', `Success in ${elapsed}ms (${expansionFolders.length} expansions)`, { url: GITHUB_API_URL });
+    logEvent('fetchExpansions', `Fetched ${expansionFolders.length} expansions`, { url: GITHUB_API_URL, elapsedMs: elapsed });
     return { success: true, mainContent, sections, allExpansionTexts };
   } catch (err) {
     const elapsed = Date.now() - t0;

@@ -1478,31 +1478,34 @@ export default function MoreScreen({
                             : entry.type === 'success' ? 'SUCCESS'
                             : 'INFO';
                           const badgeIcon = entry.type === 'error'
-                            ? <CloseIcon width={11} height={11} stroke="#CF6679" />
+                            ? <CloseIcon width={11} height={11} stroke={typeColor} />
                             : entry.type === 'success'
                             ? <CheckIcon width={11} height={11} fill={typeColor} />
-                            : <InfoIcon width={11} height={11} stroke={typeColor} />;
+                            : <InfoIcon width={11} height={11} stroke={typeColor} fill="none" />;
                           const usefulErrorName = entry.errorName && entry.errorName !== 'Error' ? entry.errorName : null;
                           return (
-                            <View key={i} style={[styles.debugMetaRow, { flexDirection: 'column', alignItems: 'flex-start', gap: 4, paddingVertical: 8 }]}>
+                            <View key={i} style={[styles.debugMetaRow, { flexDirection: 'column', alignItems: 'flex-start', gap: 3, paddingVertical: 8 }]}>
                               <View style={{
                                 flexDirection: 'row',
                                 alignItems: 'center',
+                                justifyContent: 'center',
                                 gap: 4,
                                 borderWidth: 1,
                                 borderColor: typeColor,
                                 borderRadius: 4,
                                 paddingHorizontal: 6,
-                                paddingVertical: 2,
+                                paddingVertical: 3,
                               }}>
                                 {badgeIcon}
                                 <Text style={[{
                                   fontSize: 11,
                                   color: typeColor,
                                   fontWeight: 'bold',
+                                  includeFontPadding: false,
+                                  textAlignVertical: 'center',
                                 }, bodyFontStyle]}>{typeLabel}</Text>
                               </View>
-                              <View style={{ gap: 3, paddingLeft: 2, width: '100%' }}>
+                              <View style={{ gap: 3, paddingLeft: 2, paddingTop: 3, width: '100%' }}>
                                 <Text style={[{ fontSize: 11, color: '#CCC' }, bodyFontStyle]}>
                                   <Text style={{ color: '#999' }}>Time:  </Text>{entry.ts}
                                 </Text>
@@ -1512,14 +1515,14 @@ export default function MoreScreen({
                                 <Text style={[{ fontSize: 12, color: '#E0E0E0' }, bodyFontStyle]}>
                                   <Text style={{ color: '#999' }}>Message:  </Text>{entry.message}
                                 </Text>
-                                {entry.url != null && (
-                                  <Text style={[{ fontSize: 11, color: '#CCC' }, bodyFontStyle]}>
-                                    <Text style={{ color: '#999' }}>URL:  </Text>{entry.url}
-                                  </Text>
-                                )}
                                 {entry.elapsedMs != null && (
                                   <Text style={[{ fontSize: 11, color: '#CCC' }, bodyFontStyle]}>
                                     <Text style={{ color: '#999' }}>Elapsed:  </Text>{entry.elapsedMs}ms
+                                  </Text>
+                                )}
+                                {entry.url != null && (
+                                  <Text style={[{ fontSize: 11, color: '#CCC' }, bodyFontStyle]}>
+                                    <Text style={{ color: '#999' }}>URL:  </Text>{entry.url}
                                   </Text>
                                 )}
                                 {usefulErrorName != null && (
