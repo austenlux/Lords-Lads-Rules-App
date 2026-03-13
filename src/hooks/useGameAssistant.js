@@ -67,6 +67,7 @@ export function useGameAssistant() {
   const [modelStatus, setModelStatus] = useState('unknown');
   // 'unknown' | 'granted' | 'not_granted'
   const [micPermissionStatus, setMicPermissionStatus] = useState('unknown');
+  const [speechPermissionError, setSpeechPermissionError] = useState(null);
   /** iOS only: parsed getModelDebugInfo() result; null on Android or when missing/failed */
   const [modelDebugInfo, setModelDebugInfo] = useState(null);
 
@@ -401,6 +402,7 @@ export function useGameAssistant() {
       isBusy.current = true;
       sentenceBufferRef.current = '';
       setError(null);
+      setSpeechPermissionError(null);
       setFullAnswer('');
       setPartialSpeech('');
 
@@ -463,6 +465,16 @@ export function useGameAssistant() {
         logEvent('Voice', `Error: code=${code} msg=${msg}`);
         if (msg === 'Assistant stopped by user') {
           // User pressed X — stopAssistant already reset state, nothing to do.
+        } else if (code === 'speech_denied' || code === 'speech_restricted' || code === 'speech_not_determined') {
+          setSpeechPermissionError({ code, message: msg });
+          if (activeUserMsgId.current) {
+            const staleId = activeUserMsgId.current;
+            activeUserMsgId.current = null;
+            setMessages((prev) => prev.filter((m) => m.id !== staleId));
+          }
+          setIsListening(false);
+          setIsThinking(false);
+          isBusy.current = false;
         } else if (code === 'insufficient_permissions' || msg.includes('permission denied')) {
           setMicPermissionStatus('not_granted');
           if (activeUserMsgId.current) {
@@ -529,6 +541,8 @@ export function useGameAssistant() {
     micPermissionStatus,
     /** triggers the OS-level mic permission prompt; returns 'granted'|'denied' */
     requestMicPermission,
+    /** non-null when speech recognition permission is denied/restricted; { code, message } */
+    speechPermissionError,
     /** re-runs the full model + mic setup flow; useful from the debug panel */
     retryModelSetup,
     /** iOS only: parsed getModelDebugInfo(); null on Android or when missing/failed */

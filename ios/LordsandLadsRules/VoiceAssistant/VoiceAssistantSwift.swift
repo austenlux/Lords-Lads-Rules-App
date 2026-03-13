@@ -175,8 +175,20 @@ class VoiceAssistantSwift: NSObject {
     ) {
         SFSpeechRecognizer.requestAuthorization { [weak self] status in
             guard let self = self else { return }
-            guard status == .authorized else {
-                reject("insufficient_permissions", "Speech recognition permission denied")
+            switch status {
+            case .authorized:
+                break
+            case .denied:
+                reject("speech_denied", "Speech recognition permission denied. Enable it in Settings > Privacy & Security > Speech Recognition.")
+                return
+            case .restricted:
+                reject("speech_restricted", "Siri & Dictation are disabled. Enable them in Settings > Apple Intelligence & Siri.")
+                return
+            case .notDetermined:
+                reject("speech_not_determined", "Speech recognition permission not yet granted.")
+                return
+            @unknown default:
+                reject("speech_unavailable", "Speech recognition is unavailable.")
                 return
             }
             self.requestMicPermission { granted in

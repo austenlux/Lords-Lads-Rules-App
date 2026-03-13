@@ -120,6 +120,7 @@ function AppContent() {
     modelStatus,
     micPermissionStatus,
     requestMicPermission,
+    speechPermissionError,
     retryModelSetup,
     modelDebugInfo,
   } = useGameAssistant();
@@ -509,13 +510,17 @@ function AppContent() {
         </Animated.View>
       )}
 
-      {showMicDialog && (
+      {(showMicDialog || speechPermissionError) && (
         <View style={micDialogStyles.overlay}>
           <View style={micDialogStyles.backdrop}>
             <View style={[micDialogStyles.card, { borderColor: `${accent}40` }]}>
-              <Text style={[micDialogStyles.title, { color: accent }, titleFontStyle]}>Microphone Access Required</Text>
+              <Text style={[micDialogStyles.title, { color: accent }, titleFontStyle]}>
+                {speechPermissionError ? 'Speech Recognition Required' : 'Microphone Access Required'}
+              </Text>
               <Text style={[micDialogStyles.body, bodyFontStyle]}>
-                Microphone permission was previously denied. You'll need to enable it manually in your device settings.
+                {speechPermissionError
+                  ? speechPermissionError.message
+                  : 'Microphone permission was previously denied. You\'ll need to enable it manually in your device settings.'}
               </Text>
               <TouchableOpacity
                 style={[micDialogStyles.settingsButton, { backgroundColor: accent }]}
