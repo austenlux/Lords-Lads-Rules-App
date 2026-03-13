@@ -838,7 +838,7 @@ export default function MoreScreen({
                 activeOpacity={0.7}
               >
                 <View style={styles.versionHeader}>
-                  <CardIconTitle icon={<MicIcon fill="#AB47BC" />} title="Voice Assistant" styles={styles} />
+                  <CardIconTitle icon={<MicIcon fill="#D4A054" />} title="Voice Assistant" styles={styles} />
                   <Animated.View style={{ transform: [{ rotate: animations['voiceParent']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
                     <Text style={styles.versionArrow}>▶</Text>
                   </Animated.View>
@@ -1265,7 +1265,7 @@ export default function MoreScreen({
                 activeOpacity={0.7}
               >
                 <View style={styles.versionHeader}>
-                  <CardIconTitle icon={<MicIcon fill="#AB47BC" />} title="Voice Assistant" styles={styles} />
+                  <CardIconTitle icon={<MicIcon fill="#D4A054" />} title="Voice Assistant" styles={styles} />
                   <Animated.View style={{ transform: [{ rotate: animations['vaDebug']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
                     <Text style={styles.versionArrow}>▶</Text>
                   </Animated.View>
@@ -1478,10 +1478,10 @@ export default function MoreScreen({
                             : entry.type === 'success' ? 'SUCCESS'
                             : 'INFO';
                           const badgeIcon = entry.type === 'error'
-                            ? <CloseIcon width={11} height={11} stroke={typeColor} />
+                            ? <CloseIcon width={15} height={15} stroke={typeColor} />
                             : entry.type === 'success'
-                            ? <CheckIcon width={11} height={11} fill={typeColor} />
-                            : <InfoIcon width={11} height={11} stroke={typeColor} />;
+                            ? <CheckIcon width={15} height={15} fill={typeColor} />
+                            : <InfoIcon width={15} height={15} stroke={typeColor} />;
                           const usefulErrorName = entry.errorName && entry.errorName !== 'Error' ? entry.errorName : null;
                           return (
                             <View key={i} style={[styles.debugMetaRow, { flexDirection: 'column', alignItems: 'flex-start', gap: 3, paddingVertical: 8 }]}>
@@ -1489,16 +1489,16 @@ export default function MoreScreen({
                                 flexDirection: 'row',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                gap: 3,
+                                gap: 4,
                                 borderWidth: 1,
                                 borderColor: typeColor,
-                                borderRadius: 4,
-                                paddingHorizontal: 6,
-                                paddingVertical: 3,
+                                borderRadius: 5,
+                                paddingHorizontal: 8,
+                                paddingVertical: 4,
                               }}>
                                 {badgeIcon}
                                 <Text style={[{
-                                  fontSize: 11,
+                                  fontSize: 13,
                                   color: typeColor,
                                   fontWeight: 'bold',
                                   includeFontPadding: false,
