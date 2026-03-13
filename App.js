@@ -532,6 +532,7 @@ function AppContent() {
                 onPress={() => {
                   setShowMicDialog(false);
                   clearSpeechPermissionError();
+                  setIsConvoOpen(false);
                   Linking.openURL('App-prefs:SIRI').catch(() => Linking.openSettings());
                 }}
               >
@@ -541,7 +542,7 @@ function AppContent() {
               </TouchableOpacity>
               <TouchableOpacity
                 style={micDialogStyles.dismissButton}
-                onPress={() => { setShowMicDialog(false); clearSpeechPermissionError(); }}
+                onPress={() => { setShowMicDialog(false); clearSpeechPermissionError(); setIsConvoOpen(false); }}
               >
                 <Text style={[micDialogStyles.dismissButtonText, bodyFontStyle]}>Dismiss</Text>
               </TouchableOpacity>
