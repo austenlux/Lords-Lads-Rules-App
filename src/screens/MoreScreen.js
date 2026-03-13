@@ -753,7 +753,7 @@ export default function MoreScreen({
 
           <CollapsibleSection
             title="Info"
-            icon={<InfoIcon width={24} height={24} stroke="#5C7CFA" />}
+            icon={<InfoIcon width={24} height={24} />}
             isExpanded={sectionsExpanded[SECTION_KEYS.INFO]}
             onToggle={() => toggleMoreSection(SECTION_KEYS.INFO)}
             styles={styles}
@@ -838,7 +838,7 @@ export default function MoreScreen({
                 activeOpacity={0.7}
               >
                 <View style={styles.versionHeader}>
-                  <CardIconTitle icon={<MicIcon fill="#D4A054" />} title="Voice Assistant" styles={styles} />
+                  <CardIconTitle icon={<MicIcon fill="#FF9800" />} title="Voice Assistant" styles={styles} />
                   <Animated.View style={{ transform: [{ rotate: animations['voiceParent']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
                     <Text style={styles.versionArrow}>▶</Text>
                   </Animated.View>
@@ -1178,7 +1178,7 @@ export default function MoreScreen({
                 activeOpacity={0.7}
               >
                 <View style={styles.versionHeader}>
-                  <CardIconTitle icon={<FlagIcon fill="#FF9800" />} title="Feature Flags" styles={styles} />
+                  <CardIconTitle icon={<FlagIcon fill="#E53935" />} title="Feature Flags" styles={styles} />
                   <Animated.View style={{ transform: [{ rotate: animations['featureFlags']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
                     <Text style={styles.versionArrow}>▶</Text>
                   </Animated.View>
@@ -1265,7 +1265,7 @@ export default function MoreScreen({
                 activeOpacity={0.7}
               >
                 <View style={styles.versionHeader}>
-                  <CardIconTitle icon={<MicIcon fill="#D4A054" />} title="Voice Assistant" styles={styles} />
+                  <CardIconTitle icon={<MicIcon fill="#FF9800" />} title="Voice Assistant" styles={styles} />
                   <Animated.View style={{ transform: [{ rotate: animations['vaDebug']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
                     <Text style={styles.versionArrow}>▶</Text>
                   </Animated.View>
@@ -1478,10 +1478,10 @@ export default function MoreScreen({
                             : entry.type === 'success' ? 'SUCCESS'
                             : 'INFO';
                           const badgeIcon = entry.type === 'error'
-                            ? <CloseIcon width={15} height={15} stroke={typeColor} />
+                            ? <CloseIcon width={18} height={18} stroke={typeColor} />
                             : entry.type === 'success'
-                            ? <CheckIcon width={15} height={15} fill={typeColor} />
-                            : <InfoIcon width={15} height={15} stroke={typeColor} />;
+                            ? <CheckIcon width={18} height={18} fill={typeColor} />
+                            : <InfoIcon width={18} height={18} />;
                           const usefulErrorName = entry.errorName && entry.errorName !== 'Error' ? entry.errorName : null;
                           return (
                             <View key={i} style={[styles.debugMetaRow, { flexDirection: 'column', alignItems: 'flex-start', gap: 3, paddingVertical: 8 }]}>
@@ -1505,7 +1505,7 @@ export default function MoreScreen({
                                   textAlignVertical: 'center',
                                 }, bodyFontStyle]}>{typeLabel}</Text>
                               </View>
-                              <View style={{ gap: 3, paddingLeft: 2, paddingTop: 3, width: '100%' }}>
+                              <View style={{ gap: 3, paddingLeft: 2, paddingTop: 6, width: '100%' }}>
                                 <Text style={[{ fontSize: 11, color: '#CCC' }, bodyFontStyle]}>
                                   <Text style={{ color: '#999' }}>Time:  </Text>{entry.ts}
                                 </Text>
