@@ -82,7 +82,6 @@ describe('useGameAssistant', () => {
     expect(result.current).toHaveProperty('availableVoices');
     expect(result.current).toHaveProperty('selectedVoiceId');
     expect(result.current).toHaveProperty('previewVoice');
-    expect(result.current).toHaveProperty('downloadProgressBytes');
     expect(result.current).toHaveProperty('retryModelSetup');
     expect(result.current).toHaveProperty('modelDebugInfo');
     expect(result.current).toHaveProperty('isRetryingModelSetup');

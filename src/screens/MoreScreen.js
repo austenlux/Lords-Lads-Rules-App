@@ -83,22 +83,7 @@ function CardIconTitle({ icon, title, styles, titleColor }) {
   );
 }
 
-function DownloadProgressBar({ color = '#BB86FC' }) {
-  const anim = useRef(new Animated.Value(0)).current;
-  useEffect(() => {
-    const loop = Animated.loop(
-      Animated.timing(anim, { toValue: 1, duration: 1500, useNativeDriver: false }),
-    );
-    loop.start();
-    return () => loop.stop();
-  }, [anim]);
-  const left = anim.interpolate({ inputRange: [0, 1], outputRange: ['0%', '70%'] });
-  return (
-    <View style={{ height: 4, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.1)', marginVertical: 8, overflow: 'hidden' }}>
-      <Animated.View style={{ position: 'absolute', top: 0, bottom: 0, width: '30%', left, backgroundColor: color, borderRadius: 2 }} />
-    </View>
-  );
-}
+
 
 const COLOR_GROUP_ICONS = {
   forge:    { Icon: AnvilIcon,    color: '#7B8C9E', stroke: false },
@@ -121,12 +106,12 @@ const VA_STATUS_LABEL = {
   modelDownload: {
     unknown:         'Checking…',
     available:       'Ready',
-    downloadable:    'Pending Download',
-    downloading:     'Downloading…',
+    downloadable:    'Not Enabled',
+    downloading:     'Not Enabled',
     unavailable:     'Not Supported',
-    not_ready:       'Preparing…',
-    ai_disabled:     'Apple Intelligence Off',
-    download_failed: 'Download Failed',
+    not_ready:       'Not Enabled',
+    ai_disabled:     'Not Enabled',
+    download_failed: 'Setup Failed',
   },
   mic: {
     unknown:       'Checking…',
@@ -146,10 +131,10 @@ const VA_STATUS_COLOR = {
     unknown:         '#888888',
     available:       '#4CAF50',
     downloadable:    '#FF9800',
-    downloading:     '#BB86FC',
+    downloading:     '#FF9800',
     unavailable:     '#CF6679',
     not_ready:       '#FF9800',
-    ai_disabled:     '#CF6679',
+    ai_disabled:     '#FF9800',
     download_failed: '#CF6679',
   },
   mic: {
@@ -204,7 +189,6 @@ export default function MoreScreen({
   onVoiceSelect,
   modelStatus = 'unknown',
   micPermissionStatus = 'unknown',
-  downloadProgressBytes = 0,
   onRetryModelSetup,
   isRetryingModelSetup = false,
   retryModelSetupError = null,
@@ -1301,8 +1285,9 @@ export default function MoreScreen({
                       const devicePending = deviceKey === 'unknown';
 
                       const modelOk = modelStatus === 'available';
-                      const modelFailed = modelStatus === 'unavailable' || modelStatus === 'download_failed' || modelStatus === 'ai_disabled';
-                      const modelPending = !modelOk && !modelFailed;
+                      const modelNeedsSetup = ['ai_disabled', 'not_ready', 'downloadable', 'downloading'].includes(modelStatus);
+                      const modelFailed = modelStatus === 'unavailable' || modelStatus === 'download_failed';
+                      const modelPending = !modelOk && !modelFailed && !modelNeedsSetup;
 
                       const micOk = micPermissionStatus === 'granted';
                       const micFailed = micPermissionStatus === 'not_granted';
@@ -1322,11 +1307,7 @@ export default function MoreScreen({
                         ? <BadgeErrorIcon size={22} color="#CF6679" />
                         : <BadgeWarningIcon size={22} color="#FFC107" />;
 
-                      const modelText = modelStatus === 'downloading'
-                        ? downloadProgressBytes > 0
-                          ? `Downloading… ${(downloadProgressBytes / 1_048_576).toFixed(1)} MB`
-                          : 'Downloading…'
-                        : VA_STATUS_LABEL.modelDownload[modelStatus] ?? modelStatus;
+                      const modelText = VA_STATUS_LABEL.modelDownload[modelStatus] ?? modelStatus;
 
                       return (
                         <>
@@ -1354,20 +1335,10 @@ export default function MoreScreen({
                               </Text>
                             </View>
                           </View>
-                          {(modelStatus === 'downloading' || modelStatus === 'not_ready') && (
-                            <>
-                              <DownloadProgressBar color={accent} />
-                              <Text style={[{ fontSize: 11, color: '#888', textAlign: 'center', marginBottom: 2 }, bodyFontStyle]}>
-                                {modelStatus === 'not_ready'
-                                  ? 'The OS is preparing the AI model. This can take a while.'
-                                  : 'Download continues in the background — you can leave and come back.'}
-                              </Text>
-                              {modelStatus === 'not_ready' && (
-                                <Text style={[{ fontSize: 10, color: '#666', textAlign: 'center', marginBottom: 6 }, bodyFontStyle]}>
-                                  Ensure Siri language is English (US) and you have 7 GB+ free storage.
-                                </Text>
-                              )}
-                            </>
+                          {modelNeedsSetup && (
+                            <Text style={[{ fontSize: 11, color: '#888', textAlign: 'center', marginTop: 4, marginBottom: 6 }, bodyFontStyle]}>
+                              Enable Apple Intelligence in your device Settings, then use Retry below.
+                            </Text>
                           )}
                           <View style={[styles.debugMetaRow, { borderBottomWidth: 0 }]}>
                             <Text style={[styles.debugMetaLabel, bodyFontStyle]}>Mic Permission</Text>
@@ -1386,24 +1357,18 @@ export default function MoreScreen({
                               <Text style={[vaReadinessStyles.actionButtonText, bodyFontStyle]}>Open Mic Settings</Text>
                             </TouchableOpacity>
                           )}
-                          {modelStatus === 'ai_disabled' && (
-                            <TouchableOpacity
-                              style={[vaReadinessStyles.actionButton, { marginTop: 12 }]}
-                              onPress={() => Linking.openURL('App-prefs:APPLE_INTELLIGENCE')}
-                            >
-                              <Text style={[vaReadinessStyles.actionButtonText, bodyFontStyle]}>Open Apple Intelligence Settings</Text>
-                            </TouchableOpacity>
-                          )}
-                          {(modelStatus === 'download_failed' || modelStatus === 'downloadable' || modelStatus === 'not_ready') && (
-                            <TouchableOpacity
-                              style={[vaReadinessStyles.actionButton, { marginTop: 12, backgroundColor: `${accent}26`, borderColor: `${accent}66` }, isRetryingModelSetup && { opacity: 0.7 }]}
-                              onPress={onRetryModelSetup}
-                              disabled={isRetryingModelSetup}
-                            >
-                              <Text style={[vaReadinessStyles.actionButtonText, { color: accent }, bodyFontStyle]}>
-                                {isRetryingModelSetup ? 'Retrying…' : 'Retry AI Model Setup'}
-                              </Text>
-                            </TouchableOpacity>
+                          {(modelNeedsSetup || modelStatus === 'download_failed') && (
+                            <>
+                              <TouchableOpacity
+                                style={[vaReadinessStyles.actionButton, { marginTop: 12, backgroundColor: `${accent}26`, borderColor: `${accent}66` }, isRetryingModelSetup && { opacity: 0.7 }]}
+                                onPress={onRetryModelSetup}
+                                disabled={isRetryingModelSetup}
+                              >
+                                <Text style={[vaReadinessStyles.actionButtonText, { color: accent }, bodyFontStyle]}>
+                                  {isRetryingModelSetup ? 'Checking…' : 'Retry AI Model Setup'}
+                                </Text>
+                              </TouchableOpacity>
+                            </>
                           )}
                         </>
                       );

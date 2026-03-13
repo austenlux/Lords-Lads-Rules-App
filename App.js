@@ -119,7 +119,6 @@ function AppContent() {
     messages,
     modelStatus,
     micPermissionStatus,
-    downloadProgressBytes,
     retryModelSetup,
     isRetryingModelSetup,
     retryModelSetupError,
@@ -276,7 +275,6 @@ function AppContent() {
         onVoiceSelect={previewVoice}
         modelStatus={modelStatus}
         micPermissionStatus={micPermissionStatus}
-        downloadProgressBytes={downloadProgressBytes}
         onRetryModelSetup={retryModelSetup}
         isRetryingModelSetup={isRetryingModelSetup}
         retryModelSetupError={retryModelSetupError}

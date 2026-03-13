@@ -29,7 +29,6 @@ import { buildGameAssistantPrompt } from '../constants';
 import { sanitizeTextForSpeech } from '../utils/sanitizeTextForSpeech';
 import { logError, logEvent } from '../services/errorLogger';
 
-const MODEL_POLL_INTERVAL_MS = 5000;
 
 const VOICE_STORAGE_KEY = '@lnl_voice_id';
 const VOICE_PREVIEW_TEXT = 'This is a preview of the selected voice.';
@@ -68,7 +67,6 @@ export function useGameAssistant() {
   const [modelStatus, setModelStatus] = useState('unknown');
   // 'unknown' | 'granted' | 'not_granted'
   const [micPermissionStatus, setMicPermissionStatus] = useState('unknown');
-  const [downloadProgressBytes, setDownloadProgressBytes] = useState(0);
   /** iOS only: parsed getModelDebugInfo() result; null on Android or when missing/failed */
   const [modelDebugInfo, setModelDebugInfo] = useState(null);
   const [isRetryingModelSetup, setIsRetryingModelSetup] = useState(false);
@@ -177,65 +175,15 @@ export function useGameAssistant() {
         return;
       }
 
-      if (status === 'ai_disabled') {
+      if (status === 'ai_disabled' || status === 'not_ready') {
         setIsSupported(false);
-        setRetryDone(false, 'Enable Apple Intelligence in Settings');
+        setRetryDone(false);
         return;
       }
 
-      if (status === 'downloadable') {
-        setModelStatus('downloading');
-        setDownloadProgressBytes(0);
-        logEvent('AI Model', 'Starting download...');
-        try {
-          await native.downloadModel();
-          logEvent('AI Model', 'Download complete');
-          setModelStatus('available');
-          setIsSupported(true);
-          setRetryDone(true);
-        } catch (dlErr) {
-          logError('AI Model Download', dlErr || 'Download failed', { phase: 'downloadModel' });
-          setModelStatus('download_failed');
-          setIsSupported(false);
-          setRetryDone(false, 'Download failed');
-        }
-        return;
-      }
-
-      const pollableStatuses = ['downloading', 'not_ready'];
-      if (pollableStatuses.includes(status)) {
-        logEvent('AI Model', `Model ${status}, polling for availability...`);
-        let attempts = 0;
-        const poll = async () => {
-          attempts += 1;
-          await new Promise((r) => setTimeout(r, MODEL_POLL_INTERVAL_MS));
-          try {
-            const latest = await native.checkModelStatus();
-            if (attempts % 10 === 1) {
-              logEvent('AI Model', `Poll #${attempts}: status=${latest}`);
-            }
-            setModelStatus(latest);
-            if (latest === 'available') {
-              logEvent('AI Model', 'Model is now available');
-              setIsSupported(true);
-              setRetryDone(true);
-            } else if (latest === 'unavailable') {
-              setIsSupported(false);
-              setRetryDone(false, 'Model not supported on this device');
-            } else if (latest === 'ai_disabled') {
-              setIsSupported(false);
-              setRetryDone(false, 'Enable Apple Intelligence in Settings');
-            } else {
-              poll();
-            }
-          } catch (pollErr) {
-            logError('AI Model', pollErr || 'Poll failed', { phase: 'poll', attempts });
-            setModelStatus('download_failed');
-            setIsSupported(false);
-            setRetryDone(false, 'Setup failed');
-          }
-        };
-        poll();
+      if (status === 'downloadable' || status === 'downloading') {
+        setIsSupported(false);
+        setRetryDone(false);
       }
     } catch (setupErr) {
       logError('AI Model Setup', setupErr || 'Setup failed', { phase: 'checkModelStatus' });
@@ -384,16 +332,11 @@ export function useGameAssistant() {
       isBusy.current = false;
     });
 
-    const downloadProgressSub = native.onDownloadProgress(
-      ({ bytesDownloaded }) => setDownloadProgressBytes(bytesDownloaded),
-    );
-
     return () => {
       partialSub?.remove();
       finalSub?.remove();
       chunkSub?.remove();
       ttsDoneSub?.remove();
-      downloadProgressSub?.remove();
     };
   }, []);
 
@@ -584,8 +527,6 @@ export function useGameAssistant() {
     modelStatus,
     /** mic permission status for the debug panel: 'unknown'|'granted'|'not_granted' */
     micPermissionStatus,
-    /** cumulative bytes downloaded during an active model download */
-    downloadProgressBytes,
     /** re-runs the full model + mic setup flow; useful from the debug panel */
     retryModelSetup,
     /** true while retryModelSetup is in progress */
