@@ -563,6 +563,8 @@ export function useGameAssistant() {
     speechPermissionStatus,
     /** non-null when speech recognition permission is denied/restricted; { code, message } */
     speechPermissionError,
+    /** clear the speech permission error (e.g. after the user dismisses the dialog) */
+    clearSpeechPermissionError: () => setSpeechPermissionError(null),
     /** re-runs the full model + mic setup flow; useful from the debug panel */
     retryModelSetup,
     /** iOS only: parsed getModelDebugInfo(); null on Android or when missing/failed */

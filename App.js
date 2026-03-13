@@ -122,6 +122,7 @@ function AppContent() {
     requestMicPermission,
     speechPermissionStatus,
     speechPermissionError,
+    clearSpeechPermissionError,
     retryModelSetup,
     modelDebugInfo,
   } = useGameAssistant();
@@ -520,19 +521,27 @@ function AppContent() {
                 {speechPermissionError ? 'Speech Recognition Required' : 'Microphone Access Required'}
               </Text>
               <Text style={[micDialogStyles.body, bodyFontStyle]}>
-                {speechPermissionError
-                  ? speechPermissionError.message
-                  : 'Microphone permission was previously denied. You\'ll need to enable it manually in your device settings.'}
+                {speechPermissionError?.code === 'siri_disabled'
+                  ? 'Siri & Dictation must be enabled for on-device speech recognition.\n\nGo to Settings → Apple Intelligence & Siri and enable Siri. Then check Settings → General → Keyboard and enable Dictation.'
+                  : speechPermissionError
+                    ? speechPermissionError.message
+                    : 'Microphone permission was previously denied. You\'ll need to enable it manually in your device settings.'}
               </Text>
               <TouchableOpacity
                 style={[micDialogStyles.settingsButton, { backgroundColor: accent }]}
-                onPress={() => { setShowMicDialog(false); Linking.openSettings(); }}
+                onPress={() => {
+                  setShowMicDialog(false);
+                  clearSpeechPermissionError();
+                  Linking.openURL('App-prefs:SIRI').catch(() => Linking.openSettings());
+                }}
               >
-                <Text style={[micDialogStyles.settingsButtonText, bodyFontStyle]}>Open Settings</Text>
+                <Text style={[micDialogStyles.settingsButtonText, bodyFontStyle]}>
+                  {speechPermissionError?.code === 'siri_disabled' ? 'Open Siri Settings' : 'Open Settings'}
+                </Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={micDialogStyles.dismissButton}
-                onPress={() => setShowMicDialog(false)}
+                onPress={() => { setShowMicDialog(false); clearSpeechPermissionError(); }}
               >
                 <Text style={[micDialogStyles.dismissButtonText, bodyFontStyle]}>Dismiss</Text>
               </TouchableOpacity>
