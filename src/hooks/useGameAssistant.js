@@ -177,6 +177,18 @@ export function useGameAssistant() {
         return;
       }
 
+      if (status === 'ai_disabled') {
+        setIsSupported(false);
+        setRetryDone(false, 'Enable Apple Intelligence in Settings');
+        return;
+      }
+
+      if (status === 'not_ready') {
+        setIsSupported(false);
+        setRetryDone(false, 'Model not ready — check Apple Intelligence settings');
+        return;
+      }
+
       if (status === 'downloadable') {
         setModelStatus('downloading');
         setDownloadProgressBytes(0);
@@ -197,7 +209,7 @@ export function useGameAssistant() {
       }
 
       if (status === 'downloading') {
-        logEvent('AI Model', 'Already downloading, polling for completion...');
+        logEvent('AI Model', 'Downloading (OS-managed), polling for completion...');
         let attempts = 0;
         const poll = async () => {
           attempts += 1;
@@ -209,9 +221,13 @@ export function useGameAssistant() {
             if (latest === 'available') {
               setIsSupported(true);
               setRetryDone(true);
-            } else if (latest === 'unavailable') {
+            } else if (latest === 'unavailable' || latest === 'ai_disabled' || latest === 'not_ready') {
               setIsSupported(false);
-              setRetryDone(false, 'Model not supported on this device');
+              setRetryDone(false, latest === 'ai_disabled'
+                ? 'Enable Apple Intelligence in Settings'
+                : latest === 'not_ready'
+                ? 'Model not ready — check Apple Intelligence settings'
+                : 'Model not supported on this device');
             } else {
               poll();
             }

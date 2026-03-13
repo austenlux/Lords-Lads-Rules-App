@@ -142,7 +142,18 @@ class VoiceAssistantSwift: NSObject {
         resolve: @escaping (String) -> Void,
         reject: @escaping (String, String) -> Void
     ) {
-        resolve("completed")
+        #if canImport(FoundationModels)
+        if #available(iOS 26, *) {
+            let status = mapModelAvailability()
+            if status == "available" {
+                resolve("completed")
+            } else {
+                reject("MODEL_NOT_READY", "Model is managed by the OS. Current status: \(status). Check Apple Intelligence settings.")
+            }
+            return
+        }
+        #endif
+        reject("UNAVAILABLE", "Foundation Models not available on this device")
     }
 
     // MARK: - Speech Recognition
@@ -474,8 +485,12 @@ private extension VoiceAssistantSwift {
         case .unavailable(let reason):
             switch reason {
             case .modelNotReady:
-                return "downloading"
-            default:
+                return "not_ready"
+            case .deviceNotEligible:
+                return "unavailable"
+            case .appleIntelligenceNotEnabled:
+                return "ai_disabled"
+            @unknown default:
                 return "unavailable"
             }
         @unknown default:

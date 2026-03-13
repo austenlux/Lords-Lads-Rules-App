@@ -123,7 +123,9 @@ const VA_STATUS_LABEL = {
     available:       'Ready',
     downloadable:    'Pending Download',
     downloading:     'Downloading…',
-    unavailable:     'N/A',
+    unavailable:     'Not Supported',
+    not_ready:       'Not Ready',
+    ai_disabled:     'Apple Intelligence Off',
     download_failed: 'Download Failed',
   },
   mic: {
@@ -145,7 +147,9 @@ const VA_STATUS_COLOR = {
     available:       '#4CAF50',
     downloadable:    '#FF9800',
     downloading:     '#BB86FC',
-    unavailable:     '#888888',
+    unavailable:     '#CF6679',
+    not_ready:       '#FF9800',
+    ai_disabled:     '#CF6679',
     download_failed: '#CF6679',
   },
   mic: {
@@ -492,7 +496,9 @@ export default function MoreScreen({
     animateSection(animations['errorLog'], isExpanded);
     if (isExpanded) {
       setErrorLogEntries(getEventLog());
-      errorLogUnsub.current = onEventLogChange((entries) => setErrorLogEntries(entries));
+      errorLogUnsub.current = onEventLogChange((entries) => {
+        setErrorLogEntries([...entries]);
+      });
     } else {
       if (errorLogUnsub.current) { errorLogUnsub.current(); errorLogUnsub.current = null; }
     }
@@ -782,7 +788,7 @@ export default function MoreScreen({
                 <Text style={[styles.infoLink, bodyFontStyle]}>{RULEBOOK_REPO_URL}</Text>
               </Pressable>
               <CardIconTitle icon={<SyncedIcon fill="#26C6DA" />} title="Rules Last Synced" styles={styles} />
-              <Text style={[styles.moreTimestamp, { marginTop: 4 }, bodyFontStyle]}>{rulesLastSynced || lastFetchDate || 'Never'}</Text>
+              <Text style={[styles.moreTimestamp, { marginTop: 4, marginBottom: 12 }, bodyFontStyle]}>{rulesLastSynced || lastFetchDate || 'Never'}</Text>
               <CardIconTitle icon={<SyncedIcon fill="#26C6DA" />} title="Expansions Last Synced" styles={styles} />
               <Text style={[styles.moreTimestamp, { marginTop: 4 }, bodyFontStyle]}>{expansionsLastSynced || lastFetchDate || 'Never'}</Text>
             </View>
@@ -1295,7 +1301,7 @@ export default function MoreScreen({
                       const devicePending = deviceKey === 'unknown';
 
                       const modelOk = modelStatus === 'available';
-                      const modelFailed = modelStatus === 'unavailable' || modelStatus === 'download_failed';
+                      const modelFailed = modelStatus === 'unavailable' || modelStatus === 'download_failed' || modelStatus === 'ai_disabled';
                       const modelPending = !modelOk && !modelFailed;
 
                       const micOk = micPermissionStatus === 'granted';
@@ -1373,7 +1379,15 @@ export default function MoreScreen({
                               <Text style={[vaReadinessStyles.actionButtonText, bodyFontStyle]}>Open Mic Settings</Text>
                             </TouchableOpacity>
                           )}
-                          {(modelStatus === 'download_failed' || modelStatus === 'downloadable') && (
+                          {modelStatus === 'ai_disabled' && (
+                            <TouchableOpacity
+                              style={[vaReadinessStyles.actionButton, { marginTop: 12 }]}
+                              onPress={() => Linking.openURL('App-prefs:APPLE_INTELLIGENCE')}
+                            >
+                              <Text style={[vaReadinessStyles.actionButtonText, bodyFontStyle]}>Open Apple Intelligence Settings</Text>
+                            </TouchableOpacity>
+                          )}
+                          {(modelStatus === 'download_failed' || modelStatus === 'downloadable' || modelStatus === 'not_ready') && (
                             <TouchableOpacity
                               style={[vaReadinessStyles.actionButton, { marginTop: 12, backgroundColor: `${accent}26`, borderColor: `${accent}66` }, isRetryingModelSetup && { opacity: 0.7 }]}
                               onPress={onRetryModelSetup}
