@@ -1,9 +1,15 @@
-import { AppRegistry, Text, TextInput } from 'react-native';
+import { AppRegistry, Text, TextInput, NativeModules, Platform } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import App from './App';
 import { logError, logEvent, logAppLaunch } from './src/services/errorLogger';
 
 logAppLaunch();
+
+logEvent('Diagnostic', `Platform: ${Platform.OS} ${Platform.Version}`);
+const networkingModule = NativeModules.Networking;
+logEvent('Diagnostic', `RCTNetworking module: ${networkingModule ? 'registered' : 'MISSING'}`, {
+  moduleKeys: networkingModule ? Object.keys(networkingModule).join(', ') : 'N/A',
+});
 
 setTimeout(() => {
   const testUrl = 'https://raw.githubusercontent.com/seanKenkeremath/lords-and-lads/master/README.md';

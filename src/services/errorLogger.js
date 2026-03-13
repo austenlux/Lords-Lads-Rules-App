@@ -50,7 +50,7 @@ export function logAppLaunch() {
  * @param {object} [meta] - Optional metadata
  */
 export function logEvent(source, message, meta = {}) {
-  const isSuccess = /success|complete|available/i.test(message);
+  const isSuccess = /success|complete|available|fetched|returned HTTP 2/i.test(message);
   const entry = {
     ts: new Date().toLocaleString(),
     type: isSuccess ? 'success' : 'info',

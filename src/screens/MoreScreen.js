@@ -1440,7 +1440,7 @@ export default function MoreScreen({
                 activeOpacity={0.7}
               >
                 <View style={styles.versionHeader}>
-                  <CardIconTitle icon={<ErrorIcon width={20} height={20} fill="#CE93D8" />} title="Event Log" styles={styles} />
+                  <CardIconTitle icon={<ErrorIcon width={20} height={20} fill="#4DB6AC" />} title="Event Log" styles={styles} />
                   <Animated.View style={{ transform: [{ rotate: animations['errorLog']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
                     <Text style={styles.versionArrow}>▶</Text>
                   </Animated.View>
@@ -1467,7 +1467,7 @@ export default function MoreScreen({
                           }}
                           onPress={() => { clearEventLog(); setErrorLogEntries([]); }}
                         >
-                          <TrashIcon width={16} height={16} fill={accent} />
+                          <TrashIcon width={18} height={18} color={accent} />
                           <Text style={[{ color: accent, fontSize: 13 }, bodyFontStyle]}>Clear Log</Text>
                         </TouchableOpacity>
                         {errorLogEntries.map((entry, i) => {
@@ -1478,10 +1478,10 @@ export default function MoreScreen({
                             : entry.type === 'success' ? 'SUCCESS'
                             : 'INFO';
                           const badgeIcon = entry.type === 'error'
-                            ? <CloseIcon width={11} height={11} stroke={typeColor} />
+                            ? <CloseIcon width={11} height={11} color={typeColor} />
                             : entry.type === 'success'
-                            ? <CheckIcon width={11} height={11} fill={typeColor} />
-                            : <InfoIcon width={11} height={11} stroke={typeColor} fill="none" />;
+                            ? <CheckIcon width={11} height={11} color={typeColor} />
+                            : <InfoIcon width={11} height={11} color={typeColor} />;
                           const usefulErrorName = entry.errorName && entry.errorName !== 'Error' ? entry.errorName : null;
                           return (
                             <View key={i} style={[styles.debugMetaRow, { flexDirection: 'column', alignItems: 'flex-start', gap: 3, paddingVertical: 8 }]}>
