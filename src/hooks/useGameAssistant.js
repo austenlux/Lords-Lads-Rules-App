@@ -118,11 +118,7 @@ export function useGameAssistant() {
       if (typeof native.getSpeechPermissionStatus === 'function') {
         try {
           const speechStatus = await native.getSpeechPermissionStatus();
-          setSpeechPermissionStatus(speechStatus === 'granted' ? 'granted'
-            : speechStatus === 'restricted' ? 'restricted'
-            : speechStatus === 'denied' ? 'denied'
-            : speechStatus === 'undetermined' ? 'undetermined'
-            : 'unknown');
+          setSpeechPermissionStatus(speechStatus);
         } catch {
           setSpeechPermissionStatus('unknown');
         }
@@ -209,11 +205,7 @@ export function useGameAssistant() {
         if (typeof native.getSpeechPermissionStatus === 'function') {
           try {
             const speechStatus = await native.getSpeechPermissionStatus();
-            setSpeechPermissionStatus(speechStatus === 'granted' ? 'granted'
-              : speechStatus === 'restricted' ? 'restricted'
-              : speechStatus === 'denied' ? 'denied'
-              : speechStatus === 'undetermined' ? 'undetermined'
-              : 'unknown');
+            setSpeechPermissionStatus(speechStatus);
           } catch {
             setSpeechPermissionStatus('unknown');
           }
@@ -490,8 +482,11 @@ export function useGameAssistant() {
         logEvent('Voice', `Error: code=${code} msg=${msg}`);
         if (msg === 'Assistant stopped by user') {
           // User pressed X — stopAssistant already reset state, nothing to do.
-        } else if (code === 'speech_denied' || code === 'speech_restricted' || code === 'speech_not_determined') {
+        } else if (['speech_denied', 'speech_restricted', 'speech_not_determined', 'siri_disabled', 'no_on_device'].includes(code)) {
           setSpeechPermissionError({ code, message: msg });
+          if (typeof native?.getSpeechPermissionStatus === 'function') {
+            native.getSpeechPermissionStatus().then(s => setSpeechPermissionStatus(s)).catch(() => {});
+          }
           if (activeUserMsgId.current) {
             const staleId = activeUserMsgId.current;
             activeUserMsgId.current = null;

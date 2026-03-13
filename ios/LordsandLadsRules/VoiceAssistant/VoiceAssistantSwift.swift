@@ -125,16 +125,19 @@ class VoiceAssistantSwift: NSObject {
     // MARK: - Mic Permission Status
 
     func getSpeechPermissionStatus() -> String {
-        let status = SFSpeechRecognizer.authorizationStatus()
-        switch status {
-        case .authorized:
-            return "granted"
+        let authStatus = SFSpeechRecognizer.authorizationStatus()
+        switch authStatus {
         case .denied:
             return "denied"
         case .restricted:
             return "restricted"
         case .notDetermined:
             return "undetermined"
+        case .authorized:
+            guard let recognizer = speechRecognizer else { return "unavailable" }
+            if !recognizer.isAvailable { return "siri_disabled" }
+            if !recognizer.supportsOnDeviceRecognition { return "no_on_device" }
+            return "granted"
         @unknown default:
             return "undetermined"
         }
@@ -189,6 +192,15 @@ class VoiceAssistantSwift: NSObject {
         resolve: @escaping (String) -> Void,
         reject: @escaping (String, String) -> Void
     ) {
+        guard let recognizer = speechRecognizer, recognizer.isAvailable else {
+            reject("siri_disabled", "Siri & Dictation are disabled. Enable them in Settings > Apple Intelligence & Siri.")
+            return
+        }
+        guard recognizer.supportsOnDeviceRecognition else {
+            reject("no_on_device", "On-device speech recognition is not available on this device.")
+            return
+        }
+
         SFSpeechRecognizer.requestAuthorization { [weak self] status in
             guard let self = self else { return }
             switch status {
@@ -198,7 +210,7 @@ class VoiceAssistantSwift: NSObject {
                 reject("speech_denied", "Speech recognition permission denied. Enable it in Settings > Privacy & Security > Speech Recognition.")
                 return
             case .restricted:
-                reject("speech_restricted", "Siri & Dictation are disabled. Enable them in Settings > Apple Intelligence & Siri.")
+                reject("speech_restricted", "Speech recognition restricted on this device.")
                 return
             case .notDetermined:
                 reject("speech_not_determined", "Speech recognition permission not yet granted.")
@@ -417,9 +429,7 @@ private extension VoiceAssistantSwift {
 
         let request = SFSpeechAudioBufferRecognitionRequest()
         request.shouldReportPartialResults = true
-        if recognizer.supportsOnDeviceRecognition {
-            request.requiresOnDeviceRecognition = true
-        }
+        request.requiresOnDeviceRecognition = true
         recognitionRequest = request
 
         recognitionTask = recognizer.recognitionTask(with: request) { [weak self] result, error in

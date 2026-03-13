@@ -120,11 +120,14 @@ const VA_STATUS_LABEL = {
     not_granted:   'Not Granted',
   },
   speech: {
-    unknown:       'Checking…',
-    undetermined:  'Not determined',
-    granted:       'Granted',
-    denied:        'Denied',
-    restricted:    'Disabled (Siri Off)',
+    unknown:        'Checking…',
+    undetermined:   'Not determined',
+    granted:        'Ready',
+    denied:         'Denied',
+    restricted:     'Restricted',
+    siri_disabled:  'Siri & Dictation Off',
+    no_on_device:   'On-Device Not Available',
+    unavailable:    'Unavailable',
   },
 };
 
@@ -151,11 +154,14 @@ const VA_STATUS_COLOR = {
     not_granted:  '#CF6679',
   },
   speech: {
-    unknown:      '#888888',
-    undetermined: '#FF9800',
-    granted:      '#4CAF50',
-    denied:       '#CF6679',
-    restricted:   '#CF6679',
+    unknown:        '#888888',
+    undetermined:   '#FF9800',
+    granted:        '#4CAF50',
+    denied:         '#CF6679',
+    restricted:     '#CF6679',
+    siri_disabled:  '#CF6679',
+    no_on_device:   '#CF6679',
+    unavailable:    '#CF6679',
   },
 };
 
@@ -1307,7 +1313,7 @@ export default function MoreScreen({
                       const micPending = !micOk && !micFailed;
 
                       const speechOk = speechPermissionStatus === 'granted';
-                      const speechFailed = speechPermissionStatus === 'denied' || speechPermissionStatus === 'restricted';
+                      const speechFailed = ['denied', 'restricted', 'siri_disabled', 'no_on_device', 'unavailable'].includes(speechPermissionStatus);
                       const speechPending = !speechOk && !speechFailed;
 
                       const anyFailed = !deviceOk && !devicePending || modelFailed || micFailed || speechFailed;
@@ -1390,7 +1396,9 @@ export default function MoreScreen({
                                   style={[vaReadinessStyles.actionButton, { backgroundColor: `${accent}26`, borderColor: `${accent}66` }]}
                                   onPress={() => Linking.openSettings()}
                                 >
-                                  <Text style={[vaReadinessStyles.actionButtonText, { color: accent }, bodyFontStyle]}>Open Speech Settings</Text>
+                                  <Text style={[vaReadinessStyles.actionButtonText, { color: accent }, bodyFontStyle]}>
+                                    {speechPermissionStatus === 'siri_disabled' ? 'Enable Siri & Dictation' : 'Open Speech Settings'}
+                                  </Text>
                                 </TouchableOpacity>
                               )}
                             </>
