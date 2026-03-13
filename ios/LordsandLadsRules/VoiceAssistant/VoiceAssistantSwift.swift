@@ -138,6 +138,17 @@ class VoiceAssistantSwift: NSObject {
         }
     }
 
+    func requestMicPermission(
+        resolve: @escaping (String) -> Void,
+        reject: @escaping (String, String) -> Void
+    ) {
+        AVAudioSession.sharedInstance().requestRecordPermission { granted in
+            DispatchQueue.main.async {
+                resolve(granted ? "granted" : "denied")
+            }
+        }
+    }
+
     func downloadModel(
         resolve: @escaping (String) -> Void,
         reject: @escaping (String, String) -> Void

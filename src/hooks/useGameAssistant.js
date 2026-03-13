@@ -208,6 +208,33 @@ export function useGameAssistant() {
     return () => sub.remove();
   }, []);
 
+  const requestMicPermission = useCallback(async () => {
+    if (isIOS) {
+      const native = NativeVoiceAssistantOptional;
+      if (!native || typeof native.requestMicPermission !== 'function') return 'denied';
+      try {
+        const result = await native.requestMicPermission();
+        setMicPermissionStatus(result === 'granted' ? 'granted' : 'not_granted');
+        return result;
+      } catch {
+        return 'denied';
+      }
+    }
+    if (isAndroid) {
+      try {
+        const result = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+        );
+        const granted = result === PermissionsAndroid.RESULTS.GRANTED;
+        setMicPermissionStatus(granted ? 'granted' : 'not_granted');
+        return granted ? 'granted' : 'denied';
+      } catch {
+        return 'denied';
+      }
+    }
+    return 'denied';
+  }, []);
+
   // ── Voice list + persisted selection (loads once, after TTS is ready) ───
 
   useEffect(() => {
@@ -497,6 +524,8 @@ export function useGameAssistant() {
     modelStatus,
     /** mic permission status for the debug panel: 'unknown'|'granted'|'not_granted' */
     micPermissionStatus,
+    /** triggers the OS-level mic permission prompt; returns 'granted'|'denied' */
+    requestMicPermission,
     /** re-runs the full model + mic setup flow; useful from the debug panel */
     retryModelSetup,
     /** iOS only: parsed getModelDebugInfo(); null on Android or when missing/failed */

@@ -119,6 +119,7 @@ function AppContent() {
     messages,
     modelStatus,
     micPermissionStatus,
+    requestMicPermission,
     retryModelSetup,
     modelDebugInfo,
   } = useGameAssistant();
@@ -461,13 +462,19 @@ function AppContent() {
               isThinking={isThinking}
               isActive={aiActive}
               hasConversation={isConvoOpen}
-              onPress={() => {
-                if (micPermissionStatus !== 'granted') {
-                  setShowMicDialog(true);
+              onPress={async () => {
+                if (micPermissionStatus === 'granted') {
+                  setIsConvoOpen(true);
+                  askTheRules(content, expansionsContent);
                   return;
                 }
-                setIsConvoOpen(true);
-                askTheRules(content, expansionsContent);
+                const result = await requestMicPermission();
+                if (result === 'granted') {
+                  setIsConvoOpen(true);
+                  askTheRules(content, expansionsContent);
+                } else {
+                  setShowMicDialog(true);
+                }
               }}
               onStop={() => {
                 setIsConvoOpen(false);
@@ -508,8 +515,7 @@ function AppContent() {
             <View style={[micDialogStyles.card, { borderColor: `${accent}40` }]}>
               <Text style={[micDialogStyles.title, { color: accent }, titleFontStyle]}>Microphone Access Required</Text>
               <Text style={[micDialogStyles.body, bodyFontStyle]}>
-                The Voice Assistant needs microphone access to hear your questions.
-                Please enable it in your device settings.
+                Microphone permission was previously denied. You'll need to enable it manually in your device settings.
               </Text>
               <TouchableOpacity
                 style={[micDialogStyles.settingsButton, { backgroundColor: accent }]}

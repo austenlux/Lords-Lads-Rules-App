@@ -47,6 +47,15 @@ RCT_EXPORT_MODULE(VoiceAssistant)
   resolve(status);
 }
 
+- (void)requestMicPermission:(RCTPromiseResolveBlock)resolve
+                      reject:(RCTPromiseRejectBlock)reject {
+  [_swiftModule requestMicPermissionWithResolve:^(NSString *result) {
+    resolve(result);
+  } reject:^(NSString *code, NSString *message) {
+    reject(code, message, nil);
+  }];
+}
+
 - (void)downloadModel:(RCTPromiseResolveBlock)resolve
                reject:(RCTPromiseRejectBlock)reject {
   [_swiftModule downloadModelWithResolve:^(NSString *result) {

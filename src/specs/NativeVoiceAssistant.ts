@@ -49,6 +49,12 @@ export interface Spec extends TurboModule {
    */
   getMicPermissionStatus(): Promise<string>;
 
+  /**
+   * Triggers the OS-level microphone permission prompt.
+   * Returns 'granted' | 'denied'
+   */
+  requestMicPermission(): Promise<string>;
+
   // ── Speech recognition (STT) ─────────────────────────────────────────────
 
   /**
