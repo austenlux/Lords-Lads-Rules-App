@@ -204,6 +204,7 @@ export function useGameAssistant() {
           await new Promise((r) => setTimeout(r, MODEL_POLL_INTERVAL_MS));
           try {
             const latest = await native.checkModelStatus();
+            logEvent('AI Model', `Poll #${attempts}: status=${latest}`);
             setModelStatus(latest);
             if (latest === 'available') {
               setIsSupported(true);
