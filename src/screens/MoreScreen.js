@@ -1349,7 +1349,12 @@ export default function MoreScreen({
                             </View>
                           </View>
                           {modelStatus === 'downloading' && (
-                            <DownloadProgressBar color={accent} />
+                            <>
+                              <DownloadProgressBar color={accent} />
+                              <Text style={[{ fontSize: 11, color: '#888', textAlign: 'center', marginBottom: 6 }, bodyFontStyle]}>
+                                Download continues in the background — you can leave and come back.
+                              </Text>
+                            </>
                           )}
                           <View style={[styles.debugMetaRow, { borderBottomWidth: 0 }]}>
                             <Text style={[styles.debugMetaLabel, bodyFontStyle]}>Mic Permission</Text>
