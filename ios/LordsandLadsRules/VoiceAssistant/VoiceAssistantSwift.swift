@@ -453,7 +453,12 @@ private extension VoiceAssistantSwift {
                 let nsError = error as NSError
                 let isCancellation = nsError.domain == "kAFAssistantErrorDomain" && nsError.code == 216
                 if !isCancellation {
-                    self.listeningReject?("SPEECH_ERROR", "\(nsError.domain) \(nsError.code): \(error.localizedDescription)")
+                    let isSiriDisabled = nsError.domain == "kLSRErrorDomain" && nsError.code == 201
+                    let code = isSiriDisabled ? "siri_disabled" : "SPEECH_ERROR"
+                    let msg = isSiriDisabled
+                        ? "Siri & Dictation are disabled. Enable them in Settings > Apple Intelligence & Siri."
+                        : "\(nsError.domain) \(nsError.code): \(error.localizedDescription)"
+                    self.listeningReject?(code, msg)
                     self.listeningResolve = nil
                     self.listeningReject = nil
                 }

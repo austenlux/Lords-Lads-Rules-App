@@ -484,9 +484,7 @@ export function useGameAssistant() {
           // User pressed X — stopAssistant already reset state, nothing to do.
         } else if (['speech_denied', 'speech_restricted', 'speech_not_determined', 'siri_disabled', 'no_on_device'].includes(code)) {
           setSpeechPermissionError({ code, message: msg });
-          if (typeof native?.getSpeechPermissionStatus === 'function') {
-            native.getSpeechPermissionStatus().then(s => setSpeechPermissionStatus(s)).catch(() => {});
-          }
+          setSpeechPermissionStatus(code);
           if (activeUserMsgId.current) {
             const staleId = activeUserMsgId.current;
             activeUserMsgId.current = null;
