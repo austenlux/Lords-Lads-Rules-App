@@ -1,4 +1,5 @@
 #import "RCTBridgeDelegateWithTurboModules.h"
+#import <objc/runtime.h>
 #import <React/RCTBridge.h>
 #import <React/RCTBridgeDelegate.h>
 #import <React/RCTCxxBridgeDelegate.h>
@@ -10,11 +11,6 @@
 #import <react/renderer/runtimescheduler/RuntimeSchedulerCallInvoker.h>
 
 #import <React-RCTAppDelegate/RCTAppSetupUtils.h>
-
-#import <React/RCTNetworking.h>
-#import <React/RCTHTTPRequestHandler.h>
-#import <React/RCTDataRequestHandler.h>
-#import <React/RCTFileRequestHandler.h>
 
 @interface RCTBridgeDelegateWithTurboModules () <RCTBridgeDelegate, RCTCxxBridgeDelegate, RCTTurboModuleManagerDelegate>
 @end
@@ -61,28 +57,29 @@
 }
 
 - (id<RCTTurboModule>)getModuleInstanceFromClass:(Class)moduleClass {
-  if (moduleClass == RCTNetworking.class) {
-    return [[moduleClass alloc]
-      initWithHandlersProvider:^NSArray<id<RCTURLRequestHandler>> *(RCTModuleRegistry *moduleRegistry) {
-        return @[
-          [RCTHTTPRequestHandler new],
-          [RCTDataRequestHandler new],
-          [RCTFileRequestHandler new],
-        ];
-      }];
-  }
-  return nil;
+  return RCTAppSetupDefaultModuleFromClass(moduleClass);
 }
 
 @end
 
 #pragma mark - Bridge factory (for Swift)
 
+static const void *kBridgeDelegateKey = &kBridgeDelegateKey;
+
 extern "C" RCTBridge *RCTCreateBridgeWithTurboModules(NSURL * _Nullable bundleURL, NSDictionary * _Nullable launchOptions) {
   RCTBridgeDelegateWithTurboModules *delegate =
       [[RCTBridgeDelegateWithTurboModules alloc] initWithBundleURLBlock:^NSURL * {
         return bundleURL ?: [[NSBundle mainBundle] URLForResource:@"main" withExtension:@"jsbundle"];
       }];
-  return [[RCTBridge alloc] initWithDelegate:delegate launchOptions:launchOptions];
+  RCTBridge *bridge = [[RCTBridge alloc] initWithDelegate:delegate launchOptions:launchOptions];
+
+  // RCTBridge.delegate is __weak and RCTTurboModuleManager._delegate is __weak.
+  // Without a strong reference, ARC deallocates the delegate after this scope,
+  // causing all TurboModule delegate callbacks (getModuleInstanceFromClass:, etc.)
+  // to become no-ops. Attaching the delegate to the bridge keeps it alive for
+  // the bridge's entire lifetime.
+  objc_setAssociatedObject(bridge, kBridgeDelegateKey, delegate, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+
+  return bridge;
 }
 
