@@ -1439,7 +1439,7 @@ export default function MoreScreen({
                 activeOpacity={0.7}
               >
                 <View style={styles.versionHeader}>
-                  <CardIconTitle icon={<ErrorIcon width={20} height={20} fill="#AED581" />} title="Event Log" styles={styles} />
+                  <CardIconTitle icon={<ErrorIcon width={20} height={20} fill="#C8D84B" />} title="Event Log" styles={styles} />
                   <Animated.View style={{ transform: [{ rotate: animations['errorLog']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
                     <Text style={styles.versionArrow}>▶</Text>
                   </Animated.View>
