@@ -432,11 +432,13 @@ export function useGameAssistant() {
   /**
    * Runs the full voice-to-AI-to-voice loop.
    *
-   * @param {string} rules       Raw Markdown from the Rules tab.
-   * @param {string} expansions  Raw Markdown from the Expansions tab.
+   * @param {string}      rules              Raw Markdown from the Rules tab.
+   * @param {string}      expansions         Raw Markdown from the Expansions tab.
+   * @param {string|null} [rulesSummary]     LLM-compressed rules (bypasses truncation when present).
+   * @param {string|null} [expansionsSummary] LLM-compressed expansions.
    */
   const askTheRules = useCallback(
-    async (rules = '', expansions = '') => {
+    async (rules = '', expansions = '', rulesSummary = null, expansionsSummary = null) => {
       const native = NativeVoiceAssistantOptional;
       if (!native) return;
       if (isBusy.current) return;
@@ -487,6 +489,7 @@ export function useGameAssistant() {
           expansions,
           historySnapshot,
           spokenQuestion,
+          { rulesSummary, expansionsSummary },
         );
 
         setIsThinking(true);

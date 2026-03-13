@@ -27,6 +27,7 @@ import { useGameAssistant } from './src/hooks/useGameAssistant';
 import { ContentScreen, MoreScreen, ToolsScreen } from './src/screens';
 import { VoiceAssistantFAB, VoiceAssistantModal } from './src/components';
 import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
+import { generateSummaries } from './src/services/summaryService';
 
 const SPLASH_MIN_MS = 1000;
 const SPLASH_FADE_MS = 400;
@@ -125,6 +126,7 @@ function AppContent() {
     clearSpeechPermissionError,
     retryModelSetup,
     modelDebugInfo,
+    askForSummary,
   } = useGameAssistant();
 
   const {
@@ -153,6 +155,14 @@ function AppContent() {
     renderSection,
   } = useContent(styles, markdownStyles);
 
+  // ── Summary state ────────────────────────────────────────────────────────
+  const [rulesSummary, setRulesSummary] = useState(null);
+  const [expansionsSummary, setExpansionsSummary] = useState(null);
+  const [summaryStatus, setSummaryStatus] = useState({
+    rules: { status: 'not_available', progress: null, originalSize: 0, summarySize: 0 },
+    expansions: { status: 'not_available', progress: null, originalSize: 0, summarySize: 0 },
+  });
+
   // Keep the latest content in a ref so the auto-continue effect can read it
   // without needing content/expansionsContent as effect dependencies.
   useEffect(() => {
@@ -165,6 +175,74 @@ function AppContent() {
     askTheRulesRef.current = askTheRules;
   }, [askTheRules]);
 
+  // Keep summary refs current for the auto-continue effect.
+  const summaryRef = useRef({ rules: null, expansions: null });
+  useEffect(() => {
+    summaryRef.current = { rules: rulesSummary, expansions: expansionsSummary };
+  }, [rulesSummary, expansionsSummary]);
+
+  // ── Summarization pipeline (rules then expansions, sequentially) ────────
+  useEffect(() => {
+    if (!content || modelStatus !== 'available') return;
+    let cancelled = false;
+
+    const run = async () => {
+      // --- Rules ---
+      if (content) {
+        setSummaryStatus(prev => ({ ...prev, rules: { ...prev.rules, status: 'generating', progress: null } }));
+        try {
+          const result = await generateSummaries(content, askForSummary, 'rules', (current, total, section) => {
+            if (!cancelled) {
+              setSummaryStatus(prev => ({
+                ...prev,
+                rules: { ...prev.rules, status: 'generating', progress: { current, total, section } },
+              }));
+            }
+          });
+          if (!cancelled) {
+            setRulesSummary(result.summary);
+            setSummaryStatus(prev => ({
+              ...prev,
+              rules: { status: 'ready', progress: null, originalSize: result.originalSize, summarySize: result.summarySize },
+            }));
+          }
+        } catch {
+          if (!cancelled) {
+            setSummaryStatus(prev => ({ ...prev, rules: { ...prev.rules, status: 'error' } }));
+          }
+        }
+      }
+
+      // --- Expansions (only after rules complete) ---
+      if (!cancelled && expansionsContent) {
+        setSummaryStatus(prev => ({ ...prev, expansions: { ...prev.expansions, status: 'generating', progress: null } }));
+        try {
+          const result = await generateSummaries(expansionsContent, askForSummary, 'expansions', (current, total, section) => {
+            if (!cancelled) {
+              setSummaryStatus(prev => ({
+                ...prev,
+                expansions: { ...prev.expansions, status: 'generating', progress: { current, total, section } },
+              }));
+            }
+          });
+          if (!cancelled) {
+            setExpansionsSummary(result.summary);
+            setSummaryStatus(prev => ({
+              ...prev,
+              expansions: { status: 'ready', progress: null, originalSize: result.originalSize, summarySize: result.summarySize },
+            }));
+          }
+        } catch {
+          if (!cancelled) {
+            setSummaryStatus(prev => ({ ...prev, expansions: { ...prev.expansions, status: 'error' } }));
+          }
+        }
+      }
+    };
+    run();
+    return () => { cancelled = true; };
+  }, [content, expansionsContent, modelStatus, askForSummary]);
+
   // Auto-start the next listening turn after the assistant finishes speaking.
   // Triggers only when isThinking transitions true→false while the convo is open.
   useEffect(() => {
@@ -175,6 +253,8 @@ function AppContent() {
         askTheRulesRef.current?.(
           convoContextRef.current.rules,
           convoContextRef.current.expansions,
+          summaryRef.current.rules,
+          summaryRef.current.expansions,
         );
       }, 600);
       return () => clearTimeout(timer);
@@ -280,6 +360,7 @@ function AppContent() {
         speechPermissionStatus={speechPermissionStatus}
         onRetryModelSetup={retryModelSetup}
         modelDebugInfo={modelDebugInfo}
+        summaryStatus={summaryStatus}
       />
     );
   };
@@ -469,13 +550,13 @@ function AppContent() {
               onPress={async () => {
                 if (micPermissionStatus === 'granted') {
                   setIsConvoOpen(true);
-                  askTheRules(content, expansionsContent);
+                  askTheRules(content, expansionsContent, rulesSummary, expansionsSummary);
                   return;
                 }
                 const result = await requestMicPermission();
                 if (result === 'granted') {
                   setIsConvoOpen(true);
-                  askTheRules(content, expansionsContent);
+                  askTheRules(content, expansionsContent, rulesSummary, expansionsSummary);
                 } else {
                   setShowMicDialog(true);
                 }
