@@ -1316,14 +1316,16 @@ export default function MoreScreen({
                         ? <BadgeErrorIcon size={22} color="#CF6679" />
                         : <BadgeWarningIcon size={22} color="#FFC107" />;
 
-                      const modelText = modelStatus === 'downloading' && downloadProgressBytes > 0
-                        ? `Downloading… ${(downloadProgressBytes / 1_048_576).toFixed(1)} MB`
+                      const modelText = modelStatus === 'downloading'
+                        ? downloadProgressBytes > 0
+                          ? `Downloading… ${(downloadProgressBytes / 1_048_576).toFixed(1)} MB`
+                          : 'Downloading…'
                         : VA_STATUS_LABEL.modelDownload[modelStatus] ?? modelStatus;
 
                       return (
                         <>
                           <View style={{ marginTop: 12, marginBottom: 12 }}>
-                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
                               <View style={{ width: 20, height: 20 }}>{overallIcon}</View>
                               <Text style={[styles.versionText, titleFontStyle]}>Status</Text>
                             </View>
