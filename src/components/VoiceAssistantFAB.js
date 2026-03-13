@@ -148,8 +148,7 @@ export default function VoiceAssistantFAB({ isListening, isThinking, isActive, h
           <CloseIcon
             width={36}
             height={36}
-            fill={COLORS.stopIcon}
-            color={COLORS.stopIcon}
+            stroke={COLORS.stopIcon}
           />
         ) : (
           <MicIcon

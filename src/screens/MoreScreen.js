@@ -753,7 +753,7 @@ export default function MoreScreen({
 
           <CollapsibleSection
             title="Info"
-            icon={<InfoIcon width={24} height={24} />}
+            icon={<InfoIcon width={24} height={24} stroke="#5C7CFA" />}
             isExpanded={sectionsExpanded[SECTION_KEYS.INFO]}
             onToggle={() => toggleMoreSection(SECTION_KEYS.INFO)}
             styles={styles}
@@ -838,7 +838,7 @@ export default function MoreScreen({
                 activeOpacity={0.7}
               >
                 <View style={styles.versionHeader}>
-                  <CardIconTitle icon={<MicIcon fill="#4FC3F7" />} title="Voice Assistant" styles={styles} />
+                  <CardIconTitle icon={<MicIcon fill="#AB47BC" />} title="Voice Assistant" styles={styles} />
                   <Animated.View style={{ transform: [{ rotate: animations['voiceParent']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
                     <Text style={styles.versionArrow}>▶</Text>
                   </Animated.View>
@@ -1265,7 +1265,7 @@ export default function MoreScreen({
                 activeOpacity={0.7}
               >
                 <View style={styles.versionHeader}>
-                  <CardIconTitle icon={<MicIcon fill="#4FC3F7" />} title="Voice Assistant" styles={styles} />
+                  <CardIconTitle icon={<MicIcon fill="#AB47BC" />} title="Voice Assistant" styles={styles} />
                   <Animated.View style={{ transform: [{ rotate: animations['vaDebug']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
                     <Text style={styles.versionArrow}>▶</Text>
                   </Animated.View>
@@ -1277,7 +1277,7 @@ export default function MoreScreen({
                       <CardIconTitle
                         icon={modelStatus === 'available' && micPermissionStatus === 'granted'
                           ? <CheckIcon fill="#4CAF50" />
-                          : <CloseIcon fill="#CF6679" />
+                          : <CloseIcon stroke="#CF6679" />
                         }
                         title="Status"
                         styles={styles}
@@ -1440,7 +1440,7 @@ export default function MoreScreen({
                 activeOpacity={0.7}
               >
                 <View style={styles.versionHeader}>
-                  <CardIconTitle icon={<ErrorIcon width={20} height={20} fill="#4DB6AC" />} title="Event Log" styles={styles} />
+                  <CardIconTitle icon={<ErrorIcon width={20} height={20} fill="#AED581" />} title="Event Log" styles={styles} />
                   <Animated.View style={{ transform: [{ rotate: animations['errorLog']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
                     <Text style={styles.versionArrow}>▶</Text>
                   </Animated.View>
@@ -1477,8 +1477,11 @@ export default function MoreScreen({
                           const typeLabel = entry.type === 'error' ? 'ERROR'
                             : entry.type === 'success' ? 'SUCCESS'
                             : 'INFO';
-                          const badgeChar = entry.type === 'error' ? '✕'
-                            : entry.type === 'success' ? '✓' : 'ⓘ';
+                          const badgeIcon = entry.type === 'error'
+                            ? <CloseIcon width={11} height={11} stroke={typeColor} />
+                            : entry.type === 'success'
+                            ? <CheckIcon width={11} height={11} fill={typeColor} />
+                            : <InfoIcon width={11} height={11} stroke={typeColor} />;
                           const usefulErrorName = entry.errorName && entry.errorName !== 'Error' ? entry.errorName : null;
                           return (
                             <View key={i} style={[styles.debugMetaRow, { flexDirection: 'column', alignItems: 'flex-start', gap: 3, paddingVertical: 8 }]}>
@@ -1493,7 +1496,7 @@ export default function MoreScreen({
                                 paddingHorizontal: 6,
                                 paddingVertical: 3,
                               }}>
-                                <Text style={{ fontSize: 11, color: typeColor, includeFontPadding: false }}>{badgeChar}</Text>
+                                {badgeIcon}
                                 <Text style={[{
                                   fontSize: 11,
                                   color: typeColor,
