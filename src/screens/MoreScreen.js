@@ -887,7 +887,7 @@ export default function MoreScreen({
                                       isLast && styles.voiceRadioItemLast,
                                       pressed && styles.voiceRadioItemPressed,
                                     ]}
-                                    android_ripple={{ color: 'rgba(187, 134, 252, 0.2)', borderless: false }}
+                                    android_ripple={{ color: `${accent}33`, borderless: false }}
                                   >
                                     <View style={[styles.voiceRadioOuter, isSelected && styles.voiceRadioOuterSelected]}>
                                       {isSelected && <View style={styles.voiceRadioInner} />}
@@ -1121,7 +1121,7 @@ export default function MoreScreen({
                       <Pressable
                         style={({ pressed }) => [styles.nailButton, pressed && styles.nailButtonPressed]}
                         onPress={() => Linking.openURL(getVenmoPayUrl(item.amount))}
-                        android_ripple={{ color: 'rgba(187, 134, 252, 0.4)', borderless: false }}
+                        android_ripple={{ color: `${accent}66`, borderless: false }}
                       >
                         <Image
                           source={item.image}
@@ -1141,7 +1141,7 @@ export default function MoreScreen({
                       <Pressable
                         style={({ pressed }) => [styles.nailButton, pressed && styles.nailButtonPressed]}
                         onPress={() => Linking.openURL(getVenmoPayUrl(item.amount))}
-                        android_ripple={{ color: 'rgba(187, 134, 252, 0.4)', borderless: false }}
+                        android_ripple={{ color: `${accent}66`, borderless: false }}
                       >
                         <Image
                           source={item.image}
@@ -1349,10 +1349,10 @@ export default function MoreScreen({
                           </View>
                           {micPermissionStatus === 'not_granted' && (
                             <TouchableOpacity
-                              style={vaReadinessStyles.actionButton}
+                              style={[vaReadinessStyles.actionButton, { backgroundColor: `${accent}26`, borderColor: `${accent}66` }]}
                               onPress={() => Linking.openSettings()}
                             >
-                              <Text style={[vaReadinessStyles.actionButtonText, bodyFontStyle]}>Open Mic Settings</Text>
+                              <Text style={[vaReadinessStyles.actionButtonText, { color: accent }, bodyFontStyle]}>Open Mic Settings</Text>
                             </TouchableOpacity>
                           )}
                           {(modelNeedsSetup || modelStatus === 'download_failed') && (

@@ -505,7 +505,7 @@ function AppContent() {
       {showMicDialog && (
         <View style={micDialogStyles.overlay}>
           <View style={micDialogStyles.backdrop}>
-            <View style={micDialogStyles.card}>
+            <View style={[micDialogStyles.card, { borderColor: `${accent}40` }]}>
               <Text style={[micDialogStyles.title, { color: accent }, titleFontStyle]}>Microphone Access Required</Text>
               <Text style={[micDialogStyles.body, bodyFontStyle]}>
                 The Voice Assistant needs microphone access to hear your questions.
@@ -550,7 +550,7 @@ const micDialogStyles = StyleSheet.create({
     padding: 24,
     width: '100%',
     borderWidth: 1,
-    borderColor: 'rgba(187,134,252,0.25)',
+    borderColor: 'rgba(255,255,255,0.15)',
   },
   title: {
     fontSize: 18,

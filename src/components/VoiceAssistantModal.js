@@ -30,15 +30,17 @@ const BUBBLE_RADIUS = 16;
 
 const BASE_MODAL_COLORS = {
   backdrop:        'rgba(18, 18, 18, 0.92)',
-  border:          'rgba(187, 134, 252, 0.25)',
-  userBubble:      '#2D1F47',
-  userBorder:      'rgba(187, 134, 252, 0.5)',
-  userText:        '#E8DCFF',
   assistantBubble: '#1E1E1E',
   assistantBorder: 'rgba(255, 255, 255, 0.08)',
   assistantText:   '#E0E0E0',
+  userText:        '#E8DCFF',
   roleLabelAI:     '#888888',
 };
+
+function hexToRgb(hex) {
+  const n = parseInt(hex.replace('#', ''), 16);
+  return `${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}`;
+}
 
 const BASE_MD_STYLES = {
   body:       { color: BASE_MODAL_COLORS.assistantText, fontSize: 14, lineHeight: 22 },
@@ -63,12 +65,12 @@ function ThinkingText({ style }) {
   return <Text style={style}>{'Thinking' + '.'.repeat(DOT_SEQUENCE[frame])}</Text>;
 }
 
-function UserBubble({ text, bodyFontStyle }) {
+function UserBubble({ text, bodyFontStyle, colors }) {
   const isEmpty = !text?.trim();
   return (
     <View style={styles.bubbleRow}>
-      <View style={[styles.bubble, styles.userBubble]}>
-        <Text style={[styles.roleLabel, bodyFontStyle]}>You</Text>
+      <View style={[styles.bubble, styles.userBubble, { backgroundColor: colors.userBubble, borderColor: colors.userBorder }]}>
+        <Text style={[styles.roleLabel, { color: colors.roleLabelUser }, bodyFontStyle]}>You</Text>
         {isEmpty
           ? <Text style={[styles.listeningText, bodyFontStyle]}>Listening…</Text>
           : <Text style={[styles.userText, bodyFontStyle]}>{text}</Text>
@@ -105,7 +107,15 @@ const STATUS_BAR  = Platform.OS === 'android' ? (StatusBar.currentHeight ?? 24) 
 
 export default function VoiceAssistantModal({ messages, isOpen, fabBottom = 96 }) {
   const { accent, titleFontStyle, bodyFontStyle } = useTheme();
-  const COLORS = { ...BASE_MODAL_COLORS, roleLabelUser: accent, cursor: accent };
+  const rgb = hexToRgb(accent);
+  const COLORS = {
+    ...BASE_MODAL_COLORS,
+    border:         `rgba(${rgb}, 0.25)`,
+    userBubble:     `rgba(${rgb}, 0.12)`,
+    userBorder:     `rgba(${rgb}, 0.5)`,
+    roleLabelUser:  accent,
+    cursor:         accent,
+  };
   const mdStyles = {
     ...BASE_MD_STYLES,
     body: { ...BASE_MD_STYLES.body, ...bodyFontStyle },
@@ -184,7 +194,7 @@ export default function VoiceAssistantModal({ messages, isOpen, fabBottom = 96 }
       style={[styles.container, { opacity: mountOpacity, bottom: panelBottom }]}
       pointerEvents={isOpen || isMounted.current ? 'box-none' : 'none'}
     >
-      <View style={[styles.panel, { maxHeight: maxPanelHeight }]}>
+      <View style={[styles.panel, { maxHeight: maxPanelHeight, borderColor: COLORS.border }]}>
         <FlatList
           ref={listRef}
           data={messages}
@@ -193,7 +203,7 @@ export default function VoiceAssistantModal({ messages, isOpen, fabBottom = 96 }
           showsVerticalScrollIndicator={false}
           renderItem={({ item }) =>
             item.role === 'user' ? (
-              <UserBubble text={item.text} bodyFontStyle={bodyFontStyle} />
+              <UserBubble text={item.text} bodyFontStyle={bodyFontStyle} colors={COLORS} />
             ) : (
               <AssistantBubble text={item.text} bodyFontStyle={bodyFontStyle} mdStyles={mdStyles} />
             )
@@ -222,7 +232,7 @@ const styles = StyleSheet.create({
     backgroundColor: BASE_MODAL_COLORS.backdrop,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: BASE_MODAL_COLORS.border,
+    borderColor: 'rgba(255,255,255,0.15)',
     overflow: 'hidden',
   },
   listContent: {
@@ -247,8 +257,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   userBubble: {
-    backgroundColor: BASE_MODAL_COLORS.userBubble,
-    borderColor: BASE_MODAL_COLORS.userBorder,
     borderBottomRightRadius: 4,
   },
   assistantBubble: {
@@ -259,7 +267,6 @@ const styles = StyleSheet.create({
   roleLabel: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#BB86FC',
     marginBottom: 4,
     textTransform: 'uppercase',
     letterSpacing: 0.8,
