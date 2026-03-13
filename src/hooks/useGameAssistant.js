@@ -465,7 +465,9 @@ export function useGameAssistant() {
         );
 
         setIsThinking(true);
+        logEvent('Voice', `askQuestion called (prompt length: ${fullPrompt.length})`);
         await native.askQuestion(fullPrompt);
+        logEvent('Voice', 'askQuestion resolved');
         activeAssistantMsgId.current = null;
 
         const remaining = sentenceBufferRef.current.trim();
@@ -504,6 +506,11 @@ export function useGameAssistant() {
           setIsThinking(false);
           isBusy.current = false;
         } else if (code === 'MODEL_NOT_AVAILABLE') {
+          if (activeAssistantMsgId.current) {
+            const staleId = activeAssistantMsgId.current;
+            activeAssistantMsgId.current = null;
+            setMessages((prev) => prev.filter((m) => m.id !== staleId));
+          }
           setError('Apple Intelligence is not enabled. Enable it in Settings → Apple Intelligence & Siri.');
           setIsListening(false);
           setIsThinking(false);
@@ -518,6 +525,11 @@ export function useGameAssistant() {
           setIsThinking(false);
           isBusy.current = false;
         } else {
+          if (activeAssistantMsgId.current) {
+            const staleId = activeAssistantMsgId.current;
+            activeAssistantMsgId.current = null;
+            setMessages((prev) => prev.filter((m) => m.id !== staleId));
+          }
           logError('Voice Assistant', err, { phase: 'askTheRules' });
           setError(msg || ERRORS.UNEXPECTED);
           setIsListening(false);
