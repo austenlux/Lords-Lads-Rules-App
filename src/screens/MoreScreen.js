@@ -1467,7 +1467,7 @@ export default function MoreScreen({
                           }}
                           onPress={() => { clearEventLog(); setErrorLogEntries([]); }}
                         >
-                          <TrashIcon width={18} height={18} color={accent} />
+                          <TrashIcon width={18} height={18} fill={accent} />
                           <Text style={[{ color: accent, fontSize: 13 }, bodyFontStyle]}>Clear Log</Text>
                         </TouchableOpacity>
                         {errorLogEntries.map((entry, i) => {
@@ -1477,11 +1477,8 @@ export default function MoreScreen({
                           const typeLabel = entry.type === 'error' ? 'ERROR'
                             : entry.type === 'success' ? 'SUCCESS'
                             : 'INFO';
-                          const badgeIcon = entry.type === 'error'
-                            ? <CloseIcon width={11} height={11} color={typeColor} />
-                            : entry.type === 'success'
-                            ? <CheckIcon width={11} height={11} color={typeColor} />
-                            : <InfoIcon width={11} height={11} color={typeColor} />;
+                          const badgeChar = entry.type === 'error' ? '✕'
+                            : entry.type === 'success' ? '✓' : 'ⓘ';
                           const usefulErrorName = entry.errorName && entry.errorName !== 'Error' ? entry.errorName : null;
                           return (
                             <View key={i} style={[styles.debugMetaRow, { flexDirection: 'column', alignItems: 'flex-start', gap: 3, paddingVertical: 8 }]}>
@@ -1489,14 +1486,14 @@ export default function MoreScreen({
                                 flexDirection: 'row',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                gap: 4,
+                                gap: 3,
                                 borderWidth: 1,
                                 borderColor: typeColor,
                                 borderRadius: 4,
                                 paddingHorizontal: 6,
                                 paddingVertical: 3,
                               }}>
-                                {badgeIcon}
+                                <Text style={{ fontSize: 11, color: typeColor, includeFontPadding: false }}>{badgeChar}</Text>
                                 <Text style={[{
                                   fontSize: 11,
                                   color: typeColor,
