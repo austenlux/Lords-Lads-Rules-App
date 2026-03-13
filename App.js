@@ -17,6 +17,7 @@ import {
 import PagerView from 'react-native-pager-view';
 import RulesIcon from './assets/icons/rules.svg';
 import ExpansionsIcon from './assets/icons/expansions.svg';
+import StatsIcon from './assets/icons/stats.svg';
 import ToolsIcon from './assets/icons/tools.svg';
 import AboutIcon from './assets/icons/about.svg';
 import SearchIcon from './assets/icons/search.svg';
@@ -24,11 +25,10 @@ import { createStyles, createMarkdownStyles } from './src/styles';
 import { ThemeProvider, useTheme } from './src/context/ThemeContext';
 import { useContent } from './src/hooks/useContent';
 import { useGameAssistant } from './src/hooks/useGameAssistant';
-import { ContentScreen, MoreScreen, ToolsScreen } from './src/screens';
+import { ContentScreen, MoreScreen, SummaryScreen, ToolsScreen } from './src/screens';
 import { VoiceAssistantFAB, VoiceAssistantModal } from './src/components';
 import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { parseMarkdownSections } from './src/services/contentService';
 import { generateSummaries } from './src/services/summaryService';
 
 const SPLASH_MIN_MS = 1000;
@@ -39,8 +39,13 @@ const LOGO_SIZE_RATIO = 0.9;
 const BG_LOGO_IOS = { uri: 'BgLogo' };
 const BG_LOGO_ANDROID = require('./assets/logo_dark_greyscale.png');
 
-const TABS = ['rules', 'expansions', 'tools', 'more'];
-const tabToIndex = (tab) => TABS.indexOf(tab);
+const TAB_CONFIG = {
+  rules: { Icon: RulesIcon, label: 'Rules' },
+  expansions: { Icon: ExpansionsIcon, label: 'Expansions' },
+  summary: { Icon: StatsIcon, label: 'Summary' },
+  tools: { Icon: ToolsIcon, label: 'Tools' },
+  more: { Icon: AboutIcon, label: 'More' },
+};
 
 /** Tab bar height; used for explicit PagerView height on iOS to fix child layout. */
 const TAB_BAR_HEIGHT = 68;
@@ -179,6 +184,22 @@ function AppContent() {
     await AsyncStorage.setItem('@lnl_show_summary_enabled', enabled ? 'true' : 'false');
   }, []);
 
+  // ── Dynamic tab list (Summary tab appears only when feature flag is ON) ──
+  const tabs = useMemo(() => {
+    const base = ['rules', 'expansions'];
+    if (showSummaryEnabled) base.push('summary');
+    base.push('tools', 'more');
+    return base;
+  }, [showSummaryEnabled]);
+
+  const tabToIndex = useCallback((tab) => tabs.indexOf(tab), [tabs]);
+
+  useEffect(() => {
+    if (!showSummaryEnabled && activeTab === 'summary') {
+      setActiveTab('rules');
+    }
+  }, [showSummaryEnabled, activeTab, setActiveTab]);
+
   // Keep the latest content in a ref so the auto-continue effect can read it
   // without needing content/expansionsContent as effect dependencies.
   useEffect(() => {
@@ -298,14 +319,14 @@ function AppContent() {
     if (index >= 0 && pagerRef.current?.setPage) {
       pagerRef.current.setPage(index);
     }
-    if (isIOS && iosScrollRef.current != null && typeof index === 'number') {
+    if (isIOS && iosScrollRef.current != null && typeof index === 'number' && index >= 0) {
       iosScrollRef.current.scrollTo({ x: index * windowWidth, animated: true });
     }
-  }, [activeTab]);
+  }, [activeTab, tabs, tabToIndex]);
 
   const handlePageSelected = (e) => {
     const index = e.nativeEvent.position;
-    if (TABS[index]) setActiveTab(TABS[index]);
+    if (tabs[index]) setActiveTab(tabs[index]);
   };
 
   const goToTab = (tab) => setActiveTab(tab);
@@ -314,16 +335,12 @@ function AppContent() {
   const IOS_HEADER_BAR_HEIGHT = 72;
 
   const renderPage = (tab) => {
-    const isActive = activeTab === tab;
     const contentHeight = Platform.OS === 'ios' ? effectivePageHeight : undefined;
     if (tab === 'rules') {
-      const effectiveRulesSections = (showSummaryEnabled && rulesSummary)
-        ? parseMarkdownSections(rulesSummary)
-        : sections;
       return (
         <ContentScreen
           key="rules"
-          sections={effectiveRulesSections}
+          sections={sections}
           searchQuery={searchQuery}
           renderSection={renderSection}
           scrollViewRef={rulesScrollViewRef}
@@ -339,13 +356,10 @@ function AppContent() {
       );
     }
     if (tab === 'expansions') {
-      const effectiveExpansionSections = (showSummaryEnabled && expansionsSummary)
-        ? parseMarkdownSections(expansionsSummary)
-        : expansionSections;
       return (
         <ContentScreen
           key="expansions"
-          sections={effectiveExpansionSections}
+          sections={expansionSections}
           searchQuery={searchQuery}
           renderSection={renderSection}
           scrollViewRef={expansionsScrollViewRef}
@@ -358,6 +372,20 @@ function AppContent() {
           rateLimited={expansionsRateLimited}
           onRetry={retryFetchContent}
           emptyStateContentLabel="expansions"
+        />
+      );
+    }
+    if (tab === 'summary') {
+      return (
+        <SummaryScreen
+          key="summary"
+          rulesSummary={rulesSummary}
+          expansionsSummary={expansionsSummary}
+          summaryStatus={summaryStatus}
+          styles={styles}
+          markdownStyles={markdownStyles}
+          contentHeight={contentHeight}
+          contentPaddingTop={isIOS ? insets.top + IOS_HEADER_BAR_HEIGHT : undefined}
         />
       );
     }
@@ -396,7 +424,7 @@ function AppContent() {
         <View
           style={[
             styles.globalSearchHeader,
-            (activeTab === 'tools' || activeTab === 'more' || (rulesEmpty && expansionsEmpty)) && { opacity: 0, pointerEvents: 'none' },
+            (activeTab === 'tools' || activeTab === 'more' || activeTab === 'summary' || (rulesEmpty && expansionsEmpty)) && { opacity: 0, pointerEvents: 'none' },
             isIOS && { paddingTop: insets.top + 10, minHeight: insets.top + IOS_HEADER_BAR_HEIGHT, height: insets.top + IOS_HEADER_BAR_HEIGHT },
           ]}
         >
@@ -432,14 +460,15 @@ function AppContent() {
             showsHorizontalScrollIndicator={false}
             onMomentumScrollEnd={(e) => {
               const index = Math.round(e.nativeEvent.contentOffset.x / windowWidth);
-              if (TABS[index]) setActiveTab(TABS[index]);
+              if (tabs[index]) setActiveTab(tabs[index]);
             }}
             style={{ flex: 1, backgroundColor: 'transparent' }}
           >
-            <View style={[effectivePageStyle, { width: windowWidth, backgroundColor: 'transparent' }]}>{renderPage('rules')}</View>
-            <View style={[effectivePageStyle, { width: windowWidth, backgroundColor: 'transparent' }]}>{renderPage('expansions')}</View>
-            <View style={[effectivePageStyle, { width: windowWidth, backgroundColor: 'transparent' }]}>{renderPage('tools')}</View>
-            <View style={[effectivePageStyle, { width: windowWidth, backgroundColor: 'transparent' }]}>{renderPage('more')}</View>
+            {tabs.map((tab) => (
+              <View key={tab} style={[effectivePageStyle, { width: windowWidth, backgroundColor: 'transparent' }]}>
+                {renderPage(tab)}
+              </View>
+            ))}
           </ScrollView>
         ) : (
         <PagerView
@@ -448,66 +477,33 @@ function AppContent() {
           initialPage={tabToIndex(activeTab)}
           onPageSelected={handlePageSelected}
         >
-          <View key="0" style={effectivePageStyle} collapsable={false}>
-            {renderPage('rules')}
-          </View>
-          <View key="1" style={effectivePageStyle} collapsable={false}>
-            {renderPage('expansions')}
-          </View>
-          <View key="2" style={effectivePageStyle} collapsable={false}>
-            {renderPage('tools')}
-          </View>
-          <View key="3" style={effectivePageStyle} collapsable={false}>
-            {renderPage('more')}
-          </View>
+          {tabs.map((tab) => (
+            <View key={tab} style={effectivePageStyle} collapsable={false}>
+              {renderPage(tab)}
+            </View>
+          ))}
         </PagerView>
         )}
       </View>
       <View style={[styles.tabBar, { height: 68 + tabBarBottomInset, paddingBottom: tabBarBottomInset }]}>
-        <TouchableOpacity
-          style={[styles.tabButton, activeTab === 'rules' && styles.activeTabButton]}
-          onPress={() => goToTab('rules')}
-        >
-          <View style={[styles.tabButtonInner, activeTab === 'rules' && styles.activeTabButtonInner]}>
-            <View style={[styles.tabIconContainer, activeTab === 'rules' && styles.activeTabIconContainer]}>
-              <RulesIcon width={32} height={32} color={activeTab === 'rules' ? '#121212' : '#E1E1E1'} fill={activeTab === 'rules' ? '#121212' : '#E1E1E1'} style={styles.tabIcon} />
-            </View>
-            <Text style={[styles.tabButtonText, bodyFontStyle, activeTab === 'rules' && styles.activeTabButtonText]}>Rules</Text>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tabButton, activeTab === 'expansions' && styles.activeTabButton]}
-          onPress={() => goToTab('expansions')}
-        >
-          <View style={[styles.tabButtonInner, activeTab === 'expansions' && styles.activeTabButtonInner]}>
-            <View style={[styles.tabIconContainer, activeTab === 'expansions' && styles.activeTabIconContainer]}>
-              <ExpansionsIcon width={32} height={32} color={activeTab === 'expansions' ? '#121212' : '#E1E1E1'} fill={activeTab === 'expansions' ? '#121212' : '#E1E1E1'} style={styles.tabIcon} />
-            </View>
-            <Text style={[styles.tabButtonText, bodyFontStyle, activeTab === 'expansions' && styles.activeTabButtonText]}>Expansions</Text>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tabButton, activeTab === 'tools' && styles.activeTabButton]}
-          onPress={() => goToTab('tools')}
-        >
-          <View style={[styles.tabButtonInner, activeTab === 'tools' && styles.activeTabButtonInner]}>
-            <View style={[styles.tabIconContainer, activeTab === 'tools' && styles.activeTabIconContainer]}>
-              <ToolsIcon width={32} height={32} color={activeTab === 'tools' ? '#121212' : '#E1E1E1'} fill={activeTab === 'tools' ? '#121212' : '#E1E1E1'} style={styles.tabIcon} />
-            </View>
-            <Text style={[styles.tabButtonText, bodyFontStyle, activeTab === 'tools' && styles.activeTabButtonText]}>Tools</Text>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tabButton, activeTab === 'more' && styles.activeTabButton]}
-          onPress={() => goToTab('more')}
-        >
-          <View style={[styles.tabButtonInner, activeTab === 'more' && styles.activeTabButtonInner]}>
-            <View style={[styles.tabIconContainer, activeTab === 'more' && styles.activeTabIconContainer]}>
-              <AboutIcon width={32} height={32} color={activeTab === 'more' ? '#121212' : '#E1E1E1'} fill={activeTab === 'more' ? '#121212' : '#E1E1E1'} style={styles.tabIcon} />
-            </View>
-            <Text style={[styles.tabButtonText, bodyFontStyle, activeTab === 'more' && styles.activeTabButtonText]}>More</Text>
-          </View>
-        </TouchableOpacity>
+        {tabs.map((tab) => {
+          const { Icon, label } = TAB_CONFIG[tab];
+          const isActive = activeTab === tab;
+          return (
+            <TouchableOpacity
+              key={tab}
+              style={[styles.tabButton, isActive && styles.activeTabButton]}
+              onPress={() => goToTab(tab)}
+            >
+              <View style={[styles.tabButtonInner, isActive && styles.activeTabButtonInner]}>
+                <View style={[styles.tabIconContainer, isActive && styles.activeTabIconContainer]}>
+                  <Icon width={32} height={32} color={isActive ? '#121212' : '#E1E1E1'} fill={isActive ? '#121212' : '#E1E1E1'} style={styles.tabIcon} />
+                </View>
+                <Text style={[styles.tabButtonText, bodyFontStyle, isActive && styles.activeTabButtonText]}>{label}</Text>
+              </View>
+            </TouchableOpacity>
+          );
+        })}
       </View>
     </>
   );
