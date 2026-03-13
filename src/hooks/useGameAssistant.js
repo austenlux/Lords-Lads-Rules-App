@@ -409,7 +409,9 @@ export function useGameAssistant() {
         activeUserMsgId.current = userMsgId;
         setMessages((prev) => [...prev, { id: userMsgId, role: 'user', text: '' }]);
         setIsListening(true);
+        logEvent('Voice', 'startListening called');
         const spokenQuestion = await native.startListening();
+        logEvent('Voice', `startListening resolved: "${spokenQuestion?.substring(0, 50) ?? ''}"`);
         setIsListening(false);
 
         activeUserMsgId.current = null;
@@ -457,10 +459,11 @@ export function useGameAssistant() {
 
       } catch (err) {
         const msg = err?.message ?? '';
+        const code = err?.code ?? '';
+        logEvent('Voice', `Error: code=${code} msg=${msg}`);
         if (msg === 'Assistant stopped by user') {
           // User pressed X — stopAssistant already reset state, nothing to do.
-        } else if (msg === 'insufficient_permissions') {
-          // iOS native denied — surface the permission dialog.
+        } else if (code === 'insufficient_permissions' || msg.includes('permission denied')) {
           setMicPermissionStatus('not_granted');
           if (activeUserMsgId.current) {
             const staleId = activeUserMsgId.current;
