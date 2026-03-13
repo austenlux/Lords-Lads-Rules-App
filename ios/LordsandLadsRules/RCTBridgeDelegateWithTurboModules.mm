@@ -11,6 +11,11 @@
 
 #import <React-RCTAppDelegate/RCTAppSetupUtils.h>
 
+#import <React/RCTNetworking.h>
+#import <React/RCTHTTPRequestHandler.h>
+#import <React/RCTDataRequestHandler.h>
+#import <React/RCTFileRequestHandler.h>
+
 @interface RCTBridgeDelegateWithTurboModules () <RCTBridgeDelegate, RCTCxxBridgeDelegate, RCTTurboModuleManagerDelegate>
 @end
 
@@ -56,6 +61,16 @@
 }
 
 - (id<RCTTurboModule>)getModuleInstanceFromClass:(Class)moduleClass {
+  if (moduleClass == RCTNetworking.class) {
+    return [[moduleClass alloc]
+      initWithHandlersProvider:^NSArray<id<RCTURLRequestHandler>> *(RCTModuleRegistry *moduleRegistry) {
+        return @[
+          [RCTHTTPRequestHandler new],
+          [RCTDataRequestHandler new],
+          [RCTFileRequestHandler new],
+        ];
+      }];
+  }
   return nil;
 }
 
