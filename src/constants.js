@@ -108,7 +108,16 @@ const sanitizeRulebookContent = (text) => {
  *                               Only the last HISTORY_TURNS exchanges are included.
  * @param {string}   question    The user's current transcribed question.
  */
-const HISTORY_TURNS = 3; // number of back-and-forth exchanges to keep (user+assistant = 1 turn)
+const HISTORY_TURNS = 3;
+const MAX_RULES_CHARS = 10000;
+const MAX_EXPANSIONS_CHARS = 4000;
+
+const truncateToLastHeading = (text, maxChars) => {
+  if (!text || text.length <= maxChars) return text;
+  const cut = text.slice(0, maxChars);
+  const lastHeading = cut.lastIndexOf('\n#');
+  return (lastHeading > maxChars * 0.5 ? cut.slice(0, lastHeading) : cut).trimEnd() + '\n\n[Content truncated to fit model context window]';
+};
 
 export const buildGameAssistantPrompt = (rules, expansions, history, question) => {
   const recentHistory = history?.slice(-(HISTORY_TURNS * 2)) ?? [];
@@ -116,9 +125,12 @@ export const buildGameAssistantPrompt = (rules, expansions, history, question) =
     ? recentHistory.map((m) => `${m.role === 'user' ? 'User' : 'Assistant'}: ${sanitizeUserInput(m.text)}`).join('\n')
     : 'No previous conversation.';
 
+  const cleanRules = truncateToLastHeading(sanitizeRulebookContent(rules), MAX_RULES_CHARS);
+  const cleanExpansions = truncateToLastHeading(sanitizeRulebookContent(expansions), MAX_EXPANSIONS_CHARS);
+
   return GAME_ASSISTANT_SYSTEM_PROMPT
-    .replace(P.RULES,      sanitizeRulebookContent(rules)      || 'Not available.')
-    .replace(P.EXPANSIONS, sanitizeRulebookContent(expansions) || 'Not available.')
+    .replace(P.RULES,      cleanRules      || 'Not available.')
+    .replace(P.EXPANSIONS, cleanExpansions || 'Not available.')
     .replace(P.HISTORY,    historyText)
     .replace(P.QUESTION,   sanitizeUserInput(question));
 };
