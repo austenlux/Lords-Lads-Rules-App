@@ -1310,7 +1310,7 @@ export default function MoreScreen({
                           </View>
                           <View style={styles.debugMetaRow}>
                             <Text style={[styles.debugMetaLabel, bodyFontStyle]}>Device Support</Text>
-                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1 }}>
                               {statusIcon(deviceOk, !deviceOk && !devicePending)}
                               <Text style={[styles.debugMetaValue, { color: VA_STATUS_COLOR.deviceSupport[deviceKey] }]}>
                                 {VA_STATUS_LABEL.deviceSupport[deviceKey]}
@@ -1319,7 +1319,7 @@ export default function MoreScreen({
                           </View>
                           <View style={styles.debugMetaRow}>
                             <Text style={[styles.debugMetaLabel, bodyFontStyle]}>AI Model</Text>
-                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1 }}>
                               {statusIcon(modelOk, modelFailed)}
                               <Text style={[styles.debugMetaValue, { color: VA_STATUS_COLOR.modelDownload[modelStatus] ?? '#888' }]}>
                                 {modelText}
@@ -1328,7 +1328,7 @@ export default function MoreScreen({
                           </View>
                           <View style={[styles.debugMetaRow, { borderBottomWidth: 0 }]}>
                             <Text style={[styles.debugMetaLabel, bodyFontStyle]}>Mic Permission</Text>
-                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1 }}>
                               {statusIcon(micOk, micFailed)}
                               <Text style={[styles.debugMetaValue, { color: VA_STATUS_COLOR.mic[micPermissionStatus] ?? '#888' }]}>
                                 {VA_STATUS_LABEL.mic[micPermissionStatus] ?? micPermissionStatus}
