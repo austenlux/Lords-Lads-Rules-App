@@ -37,6 +37,8 @@ class VoiceAssistantSwift: NSObject {
     }()
     private var listeningResolve: ((String) -> Void)?
     private var listeningReject: ((String, String) -> Void)?
+    private var silenceTimer: Timer?
+    private var lastTranscription: String = ""
 
     // MARK: TTS (lazy to avoid init-time crashes)
 
@@ -432,6 +434,7 @@ private extension VoiceAssistantSwift {
 
         listeningResolve = resolve
         listeningReject = reject
+        lastTranscription = ""
 
         let request = SFSpeechAudioBufferRecognitionRequest()
         request.shouldReportPartialResults = true
@@ -444,17 +447,23 @@ private extension VoiceAssistantSwift {
             if let result = result {
                 let text = result.bestTranscription.formattedString
                 if result.isFinal {
+                    self.silenceTimer?.invalidate()
+                    self.silenceTimer = nil
                     self.eventDelegate?.onSpeechFinalResults(text)
                     self.stopAudioEngine()
                     self.listeningResolve?(text)
                     self.listeningResolve = nil
                     self.listeningReject = nil
                 } else {
+                    self.lastTranscription = text
                     self.eventDelegate?.onSpeechPartialResults(text)
+                    self.resetSilenceTimer()
                 }
             }
 
             if let error = error {
+                self.silenceTimer?.invalidate()
+                self.silenceTimer = nil
                 self.stopAudioEngine()
                 let nsError = error as NSError
                 let isCancellation = nsError.domain == "kAFAssistantErrorDomain" && nsError.code == 216
@@ -490,7 +499,17 @@ private extension VoiceAssistantSwift {
         }
     }
 
+    private func resetSilenceTimer() {
+        silenceTimer?.invalidate()
+        silenceTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: false) { [weak self] _ in
+            guard let self = self else { return }
+            self.recognitionRequest?.endAudio()
+        }
+    }
+
     func stopAudioEngine() {
+        silenceTimer?.invalidate()
+        silenceTimer = nil
         audioEngine.stop()
         audioEngine.inputNode.removeTap(onBus: 0)
         recognitionRequest?.endAudio()
