@@ -83,6 +83,23 @@ function CardIconTitle({ icon, title, styles, titleColor }) {
   );
 }
 
+function DownloadProgressBar({ color = '#BB86FC' }) {
+  const anim = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.timing(anim, { toValue: 1, duration: 1500, useNativeDriver: false }),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [anim]);
+  const left = anim.interpolate({ inputRange: [0, 1], outputRange: ['0%', '70%'] });
+  return (
+    <View style={{ height: 4, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.1)', marginVertical: 8, overflow: 'hidden' }}>
+      <Animated.View style={{ position: 'absolute', top: 0, bottom: 0, width: '30%', left, backgroundColor: color, borderRadius: 2 }} />
+    </View>
+  );
+}
+
 const COLOR_GROUP_ICONS = {
   forge:    { Icon: AnvilIcon,    color: '#7B8C9E', stroke: false },
   timber:   { Icon: LogIcon,      color: '#A0522D', stroke: false },
@@ -1305,8 +1322,11 @@ export default function MoreScreen({
 
                       return (
                         <>
-                          <View style={{ marginTop: 8, marginBottom: 8 }}>
-                            <CardIconTitle icon={overallIcon} title="Status" styles={styles} />
+                          <View style={{ marginTop: 12, marginBottom: 12 }}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                              <View style={{ width: 20, height: 20 }}>{overallIcon}</View>
+                              <Text style={[styles.versionText, titleFontStyle]}>Status</Text>
+                            </View>
                           </View>
                           <View style={styles.debugMetaRow}>
                             <Text style={[styles.debugMetaLabel, bodyFontStyle]}>Device Support</Text>
@@ -1317,7 +1337,7 @@ export default function MoreScreen({
                               </Text>
                             </View>
                           </View>
-                          <View style={styles.debugMetaRow}>
+                          <View style={modelStatus === 'downloading' ? [styles.debugMetaRow, { borderBottomWidth: 0 }] : styles.debugMetaRow}>
                             <Text style={[styles.debugMetaLabel, bodyFontStyle]}>AI Model</Text>
                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1 }}>
                               {statusIcon(modelOk, modelFailed)}
@@ -1326,6 +1346,9 @@ export default function MoreScreen({
                               </Text>
                             </View>
                           </View>
+                          {modelStatus === 'downloading' && (
+                            <DownloadProgressBar color={accent} />
+                          )}
                           <View style={[styles.debugMetaRow, { borderBottomWidth: 0 }]}>
                             <Text style={[styles.debugMetaLabel, bodyFontStyle]}>Mic Permission</Text>
                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1 }}>
