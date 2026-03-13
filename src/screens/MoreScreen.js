@@ -1345,11 +1345,6 @@ export default function MoreScreen({
                             {isRetryingModelSetup ? 'Retrying…' : 'Retry AI Model Setup'}
                           </Text>
                         </TouchableOpacity>
-                        {retryModelSetupError != null && retryModelSetupError !== '' && (
-                          <Text style={[styles.debugMetaValue, { color: '#CF6679', marginTop: 4, marginBottom: 8 }]}>
-                            {retryModelSetupError}
-                          </Text>
-                        )}
                       </>
                     )}
 

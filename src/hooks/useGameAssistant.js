@@ -30,7 +30,6 @@ import { sanitizeTextForSpeech } from '../utils/sanitizeTextForSpeech';
 import { logError, logEvent } from '../services/errorLogger';
 
 const MODEL_POLL_INTERVAL_MS = 5000;
-const MODEL_POLL_MAX_ATTEMPTS = 24; // 2 minutes total
 
 const VOICE_STORAGE_KEY = '@lnl_voice_id';
 const VOICE_PREVIEW_TEXT = 'This is a preview of the selected voice.';
@@ -201,13 +200,6 @@ export function useGameAssistant() {
         logEvent('AI Model', 'Already downloading, polling for completion...');
         let attempts = 0;
         const poll = async () => {
-          if (attempts >= MODEL_POLL_MAX_ATTEMPTS) {
-            logError('AI Model Download', 'Polling timed out after max attempts', { phase: 'poll', attempts });
-            setModelStatus('download_failed');
-            setIsSupported(false);
-            setRetryDone(false, 'Download failed');
-            return;
-          }
           attempts += 1;
           await new Promise((r) => setTimeout(r, MODEL_POLL_INTERVAL_MS));
           try {
