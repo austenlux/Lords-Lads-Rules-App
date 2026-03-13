@@ -73,6 +73,7 @@ import BeerIcon from '../../assets/icons/beer.svg';
 import RainbowIcon from '../../assets/icons/rainbow.svg';
 import CheckIcon from '../../assets/icons/check.svg';
 import CloseIcon from '../../assets/icons/close.svg';
+import { BadgeInfoIcon, BadgeErrorIcon, BadgeSuccessIcon } from '../components/BadgeIcons';
 
 function CardIconTitle({ icon, title, styles, titleColor }) {
   const { titleFontStyle } = useTheme();
@@ -1478,10 +1479,10 @@ export default function MoreScreen({
                             : entry.type === 'success' ? 'SUCCESS'
                             : 'INFO';
                           const badgeIcon = entry.type === 'error'
-                            ? <CloseIcon width={18} height={18} stroke={typeColor} />
+                            ? <BadgeErrorIcon size={18} color={typeColor} />
                             : entry.type === 'success'
-                            ? <CheckIcon width={18} height={18} fill={typeColor} />
-                            : <InfoIcon width={18} height={18} />;
+                            ? <BadgeSuccessIcon size={18} color={typeColor} />
+                            : <BadgeInfoIcon size={18} color={typeColor} />;
                           const usefulErrorName = entry.errorName && entry.errorName !== 'Error' ? entry.errorName : null;
                           return (
                             <View key={i} style={[styles.debugMetaRow, { flexDirection: 'column', alignItems: 'flex-start', gap: 3, paddingVertical: 8 }]}>
