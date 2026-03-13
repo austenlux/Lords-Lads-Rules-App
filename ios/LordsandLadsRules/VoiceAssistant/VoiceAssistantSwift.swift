@@ -503,7 +503,16 @@ private extension VoiceAssistantSwift {
         silenceTimer?.invalidate()
         silenceTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: false) { [weak self] _ in
             guard let self = self else { return }
-            self.recognitionRequest?.endAudio()
+            let finalText = self.lastTranscription
+            self.stopAudioEngine()
+            if !finalText.isEmpty {
+                self.eventDelegate?.onSpeechFinalResults(finalText)
+                self.listeningResolve?(finalText)
+            } else {
+                self.listeningReject?("no_match", "No speech detected")
+            }
+            self.listeningResolve = nil
+            self.listeningReject = nil
         }
     }
 
