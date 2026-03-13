@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -27,6 +27,7 @@ import { useGameAssistant } from './src/hooks/useGameAssistant';
 import { ContentScreen, MoreScreen, ToolsScreen } from './src/screens';
 import { VoiceAssistantFAB, VoiceAssistantModal } from './src/components';
 import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { generateSummaries } from './src/services/summaryService';
 
 const SPLASH_MIN_MS = 1000;
@@ -162,6 +163,20 @@ function AppContent() {
     rules: { status: 'not_available', progress: null, originalSize: 0, summarySize: 0 },
     expansions: { status: 'not_available', progress: null, originalSize: 0, summarySize: 0 },
   });
+
+  // ── Show Summary feature flag ──────────────────────────────────────────
+  const [showSummaryEnabled, setShowSummaryEnabled] = useState(false);
+
+  useEffect(() => {
+    AsyncStorage.getItem('@lnl_show_summary_enabled').then(v => {
+      if (v === 'true') setShowSummaryEnabled(true);
+    });
+  }, []);
+
+  const handleShowSummaryToggle = useCallback(async (enabled) => {
+    setShowSummaryEnabled(enabled);
+    await AsyncStorage.setItem('@lnl_show_summary_enabled', enabled ? 'true' : 'false');
+  }, []);
 
   // Keep the latest content in a ref so the auto-continue effect can read it
   // without needing content/expansionsContent as effect dependencies.
@@ -361,6 +376,8 @@ function AppContent() {
         onRetryModelSetup={retryModelSetup}
         modelDebugInfo={modelDebugInfo}
         summaryStatus={summaryStatus}
+        showSummaryEnabled={showSummaryEnabled}
+        onShowSummaryToggle={handleShowSummaryToggle}
       />
     );
   };

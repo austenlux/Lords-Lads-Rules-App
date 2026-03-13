@@ -41,6 +41,7 @@ const SETTINGS_KEYS = {
   EXPAND_RULES_DEFAULT: '@lnl_expand_rules_default',
   EXPAND_EXPANSIONS_DEFAULT: '@lnl_expand_expansions_default',
   THINKING_SOUNDS_ENABLED: '@lnl_thinking_sounds_enabled',
+  SHOW_SUMMARY_ENABLED: '@lnl_show_summary_enabled',
 };
 import { getVenmoPayUrl } from '../constants';
 import { useTheme, COLOR_GROUPS, FONT_PAIRINGS } from '../context/ThemeContext';
@@ -213,6 +214,8 @@ export default function MoreScreen({
   onRetryModelSetup,
   modelDebugInfo = null,
   summaryStatus = { rules: { status: 'not_available' }, expansions: { status: 'not_available' } },
+  showSummaryEnabled = false,
+  onShowSummaryToggle,
 }) {
   const [releaseNotes, setReleaseNotes] = useState([]);
   const [expandedVersions, setExpandedVersions] = useState({});
@@ -1211,13 +1214,24 @@ export default function MoreScreen({
                 </View>
                 {featureFlagsExpanded && (
                   <View style={styles.versionContent}>
-                    <View style={[styles.settingsRow, styles.settingsRowLast, { marginBottom: 8 }]}>
+                    <View style={[styles.settingsRow, { marginBottom: 0 }]}>
                       <View style={styles.settingsRowLabel}>
                         <Text style={[styles.settingsRowText, bodyFontStyle]}>Thinking Sounds</Text>
                       </View>
                       <Switch
                         value={thinkingSoundsEnabled}
                         onValueChange={setThinkingSoundsEnabledAndSave}
+                        trackColor={{ false: '#555', true: accent }}
+                        thumbColor="#E1E1E1"
+                      />
+                    </View>
+                    <View style={[styles.settingsRow, styles.settingsRowLast, { marginBottom: 8 }]}>
+                      <View style={styles.settingsRowLabel}>
+                        <Text style={[styles.settingsRowText, bodyFontStyle]}>Show Summary</Text>
+                      </View>
+                      <Switch
+                        value={showSummaryEnabled}
+                        onValueChange={(val) => onShowSummaryToggle?.(val)}
                         trackColor={{ false: '#555', true: accent }}
                         thumbColor="#E1E1E1"
                       />
