@@ -22,7 +22,7 @@ import {
   View,
 } from 'react-native';
 import MicIcon   from '../../assets/icons/mic.svg';
-import CloseIcon from '../../assets/icons/close.svg';
+import { BadgeErrorIcon } from './BadgeIcons';
 import { useTheme } from '../context/ThemeContext';
 
 // ─────────────────────────────────────────────── Constants ──
@@ -145,11 +145,7 @@ export default function VoiceAssistantFAB({ isListening, isThinking, isActive, h
         accessibilityLabel={isStoppable ? 'Stop assistant' : 'Ask the rules'}
       >
         {isStoppable ? (
-          <CloseIcon
-            width={36}
-            height={36}
-            stroke={COLORS.stopIcon}
-          />
+          <BadgeErrorIcon size={36} color={COLORS.stopIcon} />
         ) : (
           <MicIcon
             width={28}

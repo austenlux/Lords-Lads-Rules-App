@@ -71,8 +71,6 @@ import MountainIcon from '../../assets/icons/mountain.svg';
 import SkyIcon from '../../assets/icons/sky.svg';
 import BeerIcon from '../../assets/icons/beer.svg';
 import RainbowIcon from '../../assets/icons/rainbow.svg';
-import CheckIcon from '../../assets/icons/check.svg';
-import CloseIcon from '../../assets/icons/close.svg';
 import { BadgeInfoIcon, BadgeErrorIcon, BadgeSuccessIcon } from '../components/BadgeIcons';
 
 function CardIconTitle({ icon, title, styles, titleColor }) {
@@ -1277,8 +1275,8 @@ export default function MoreScreen({
                     <View style={{ marginTop: 8, marginBottom: 8 }}>
                       <CardIconTitle
                         icon={modelStatus === 'available' && micPermissionStatus === 'granted'
-                          ? <CheckIcon fill="#4CAF50" />
-                          : <CloseIcon stroke="#CF6679" />
+                          ? <BadgeSuccessIcon size={22} color="#4CAF50" />
+                          : <BadgeErrorIcon size={22} color="#CF6679" />
                         }
                         title="Status"
                         styles={styles}
