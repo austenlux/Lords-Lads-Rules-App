@@ -84,8 +84,6 @@ describe('useGameAssistant', () => {
     expect(result.current).toHaveProperty('previewVoice');
     expect(result.current).toHaveProperty('retryModelSetup');
     expect(result.current).toHaveProperty('modelDebugInfo');
-    expect(result.current).toHaveProperty('isRetryingModelSetup');
-    expect(result.current).toHaveProperty('retryModelSetupError');
   });
 
   it('sets isSupported=true when model is available (Android)', async () => {
@@ -215,7 +213,7 @@ describe('useGameAssistant', () => {
     expect(result.current.modelDebugInfo).toBeNull();
   });
 
-  it('retryModelSetup sets retryModelSetupError on failure and clears loading state', async () => {
+  it('retryModelSetup re-checks model status', async () => {
     mockNativeModule.checkModelStatus.mockResolvedValue('unavailable');
 
     const { result } = renderHook(() => useGameAssistant());
@@ -224,14 +222,14 @@ describe('useGameAssistant', () => {
       await flushTimersAndMicrotasks();
     });
 
-    expect(result.current.isRetryingModelSetup).toBe(false);
-    expect(result.current.retryModelSetupError).toBeNull();
+    expect(result.current.modelStatus).toBe('unavailable');
+
+    mockNativeModule.checkModelStatus.mockResolvedValue('available');
 
     await act(async () => {
       await result.current.retryModelSetup();
     });
 
-    expect(result.current.isRetryingModelSetup).toBe(false);
-    expect(result.current.retryModelSetupError).toBe('Model not supported on this device');
+    expect(result.current.modelStatus).toBe('available');
   });
 });

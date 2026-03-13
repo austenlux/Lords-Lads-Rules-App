@@ -190,8 +190,6 @@ export default function MoreScreen({
   modelStatus = 'unknown',
   micPermissionStatus = 'unknown',
   onRetryModelSetup,
-  isRetryingModelSetup = false,
-  retryModelSetupError = null,
   modelDebugInfo = null,
 }) {
   const [releaseNotes, setReleaseNotes] = useState([]);
@@ -1360,12 +1358,11 @@ export default function MoreScreen({
                           {(modelNeedsSetup || modelStatus === 'download_failed') && (
                             <>
                               <TouchableOpacity
-                                style={[vaReadinessStyles.actionButton, { marginTop: 12, backgroundColor: `${accent}26`, borderColor: `${accent}66` }, isRetryingModelSetup && { opacity: 0.7 }]}
+                                style={[vaReadinessStyles.actionButton, { marginTop: 12, backgroundColor: `${accent}26`, borderColor: `${accent}66` }]}
                                 onPress={onRetryModelSetup}
-                                disabled={isRetryingModelSetup}
                               >
                                 <Text style={[vaReadinessStyles.actionButtonText, { color: accent }, bodyFontStyle]}>
-                                  {isRetryingModelSetup ? 'Checking…' : 'Retry AI Model Setup'}
+                                  Retry AI Model Setup
                                 </Text>
                               </TouchableOpacity>
                             </>

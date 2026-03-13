@@ -120,8 +120,6 @@ function AppContent() {
     modelStatus,
     micPermissionStatus,
     retryModelSetup,
-    isRetryingModelSetup,
-    retryModelSetupError,
     modelDebugInfo,
   } = useGameAssistant();
 
@@ -276,8 +274,6 @@ function AppContent() {
         modelStatus={modelStatus}
         micPermissionStatus={micPermissionStatus}
         onRetryModelSetup={retryModelSetup}
-        isRetryingModelSetup={isRetryingModelSetup}
-        retryModelSetupError={retryModelSetupError}
         modelDebugInfo={modelDebugInfo}
       />
     );
