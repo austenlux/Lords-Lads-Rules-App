@@ -4,8 +4,10 @@
 import React from 'react';
 import Markdown from 'react-native-markdown-display';
 import { normalizeSearchQuery, highlightMatches } from '../utils/searchUtils';
+import { useTheme } from '../context/ThemeContext';
 
 export default function HighlightedMarkdown({ content, searchQuery, style, onLinkPress }) {
+  const { accent } = useTheme();
   if (!content) {
     return null;
   }
@@ -30,7 +32,7 @@ export default function HighlightedMarkdown({ content, searchQuery, style, onLin
       marginTop: 0,
     },
     strong: {
-      backgroundColor: 'rgba(187, 134, 252, 0.3)',
+      backgroundColor: `${accent}4D`,
       color: '#ffffff',
       fontWeight: 'bold',
     },

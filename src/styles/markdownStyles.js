@@ -121,7 +121,7 @@ const createMarkdownStyles = (ACCENT_COLOR, titleFontStyle, bodyFontStyle) => ({
     ...bodyFontStyle,
   },
   mark: {
-    backgroundColor: 'rgba(187, 134, 252, 0.3)',
+    backgroundColor: `${ACCENT_COLOR}4D`,
     color: '#ffffff',
     borderRadius: 2,
   },

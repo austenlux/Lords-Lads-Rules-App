@@ -374,7 +374,7 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
     flexDirection: 'row',
     paddingVertical: 5,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(187, 134, 252, 0.1)',
+    borderBottomColor: `${ACCENT_COLOR}1A`,
   },
   debugMetaLabel: {
     fontSize: 12,
@@ -546,7 +546,7 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
   },
   toolDescriptionCode: {
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
-    backgroundColor: 'rgba(187, 134, 252, 0.15)',
+    backgroundColor: `${ACCENT_COLOR}26`,
     paddingHorizontal: 4,
     borderRadius: 4,
   },
@@ -598,7 +598,7 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
     fontSize: 18,
     color: '#E1E1E1',
     borderWidth: 1,
-    borderColor: 'rgba(187, 134, 252, 0.4)',
+    borderColor: `${ACCENT_COLOR}66`,
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 10,
@@ -623,7 +623,7 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
   },
   toolOutputBox: {
     borderWidth: 1,
-    borderColor: 'rgba(187, 134, 252, 0.4)',
+    borderColor: `${ACCENT_COLOR}66`,
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 10,
@@ -653,14 +653,14 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
   },
   toolTableWrap: {
     borderWidth: 1,
-    borderColor: 'rgba(187, 134, 252, 0.35)',
+    borderColor: `${ACCENT_COLOR}59`,
     borderRadius: 8,
     overflow: 'hidden',
   },
   toolTableRow: {
     flexDirection: 'row',
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(187, 134, 252, 0.25)',
+    borderBottomColor: `${ACCENT_COLOR}40`,
   },
   toolTableRowLast: {
     borderBottomWidth: 0,
@@ -732,7 +732,7 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(187, 134, 252, 0.2)',
+    borderBottomColor: `${ACCENT_COLOR}33`,
   },
   settingsRowLabel: {
     flexDirection: 'row',
@@ -754,7 +754,7 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
     paddingTop: 14,
     paddingBottom: 6,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(187, 134, 252, 0.2)',
+    borderBottomColor: `${ACCENT_COLOR}33`,
     marginBottom: 4,
   },
   voiceGenderLabel: {
@@ -777,7 +777,7 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 4,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(187, 134, 252, 0.15)',
+    borderBottomColor: `${ACCENT_COLOR}26`,
   },
   voiceRadioItemLast: {
     borderBottomWidth: 0,
