@@ -1374,22 +1374,26 @@ export default function MoreScreen({
                               <Text style={[vaReadinessStyles.actionButtonText, { color: accent }, bodyFontStyle]}>Open Mic Settings</Text>
                             </TouchableOpacity>
                           )}
-                          <View style={[styles.debugMetaRow, { borderBottomWidth: 0 }]}>
-                            <Text style={[styles.debugMetaLabel, bodyFontStyle]}>Speech Recognition</Text>
-                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1 }}>
-                              {statusIcon(speechOk, speechFailed)}
-                              <Text style={[styles.debugMetaValue, { color: VA_STATUS_COLOR.speech[speechPermissionStatus] ?? '#888' }]}>
-                                {VA_STATUS_LABEL.speech[speechPermissionStatus] ?? speechPermissionStatus}
-                              </Text>
-                            </View>
-                          </View>
-                          {speechFailed && (
-                            <TouchableOpacity
-                              style={[vaReadinessStyles.actionButton, { backgroundColor: `${accent}26`, borderColor: `${accent}66` }]}
-                              onPress={() => Linking.openSettings()}
-                            >
-                              <Text style={[vaReadinessStyles.actionButtonText, { color: accent }, bodyFontStyle]}>Open Speech Settings</Text>
-                            </TouchableOpacity>
+                          {Platform.OS === 'ios' && (
+                            <>
+                              <View style={[styles.debugMetaRow, { borderBottomWidth: 0 }]}>
+                                <Text style={[styles.debugMetaLabel, bodyFontStyle]}>Speech Recognition</Text>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1 }}>
+                                  {statusIcon(speechOk, speechFailed)}
+                                  <Text style={[styles.debugMetaValue, { color: VA_STATUS_COLOR.speech[speechPermissionStatus] ?? '#888' }]}>
+                                    {VA_STATUS_LABEL.speech[speechPermissionStatus] ?? speechPermissionStatus}
+                                  </Text>
+                                </View>
+                              </View>
+                              {speechFailed && (
+                                <TouchableOpacity
+                                  style={[vaReadinessStyles.actionButton, { backgroundColor: `${accent}26`, borderColor: `${accent}66` }]}
+                                  onPress={() => Linking.openSettings()}
+                                >
+                                  <Text style={[vaReadinessStyles.actionButtonText, { color: accent }, bodyFontStyle]}>Open Speech Settings</Text>
+                                </TouchableOpacity>
+                              )}
+                            </>
                           )}
                           {(modelNeedsSetup || modelStatus === 'download_failed') && (
                             <>

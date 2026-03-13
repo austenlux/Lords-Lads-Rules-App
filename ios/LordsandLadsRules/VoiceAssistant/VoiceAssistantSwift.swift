@@ -407,15 +407,22 @@ private extension VoiceAssistantSwift {
         resolve: @escaping (String) -> Void,
         reject: @escaping (String, String) -> Void
     ) {
+        guard let recognizer = speechRecognizer, recognizer.isAvailable else {
+            reject("SPEECH_UNAVAILABLE", "Speech recognizer is not available on this device")
+            return
+        }
+
         listeningResolve = resolve
         listeningReject = reject
 
         let request = SFSpeechAudioBufferRecognitionRequest()
         request.shouldReportPartialResults = true
-        request.requiresOnDeviceRecognition = true
+        if recognizer.supportsOnDeviceRecognition {
+            request.requiresOnDeviceRecognition = true
+        }
         recognitionRequest = request
 
-        recognitionTask = speechRecognizer?.recognitionTask(with: request) { [weak self] result, error in
+        recognitionTask = recognizer.recognitionTask(with: request) { [weak self] result, error in
             guard let self = self else { return }
 
             if let result = result {
@@ -436,7 +443,7 @@ private extension VoiceAssistantSwift {
                 let nsError = error as NSError
                 let isCancellation = nsError.domain == "kAFAssistantErrorDomain" && nsError.code == 216
                 if !isCancellation {
-                    self.listeningReject?("SPEECH_ERROR", error.localizedDescription)
+                    self.listeningReject?("SPEECH_ERROR", "\(nsError.domain) \(nsError.code): \(error.localizedDescription)")
                     self.listeningResolve = nil
                     self.listeningReject = nil
                 }
