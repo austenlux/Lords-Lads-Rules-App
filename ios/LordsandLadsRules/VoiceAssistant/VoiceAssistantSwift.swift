@@ -257,6 +257,12 @@ class VoiceAssistantSwift: NSObject {
 
         #if canImport(FoundationModels)
         if #available(iOS 26, *) {
+            let availability = SystemLanguageModel.default.availability
+            guard case .available = availability else {
+                let status = mapModelAvailability()
+                reject("MODEL_NOT_AVAILABLE", "AI model is not available (status: \(status)). Enable Apple Intelligence in Settings.")
+                return
+            }
             performAskQuestion(fullPrompt: fullPrompt, resolve: resolve, reject: reject)
             return
         }

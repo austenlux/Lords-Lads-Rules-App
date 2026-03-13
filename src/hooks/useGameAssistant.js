@@ -503,6 +503,11 @@ export function useGameAssistant() {
           setIsListening(false);
           setIsThinking(false);
           isBusy.current = false;
+        } else if (code === 'MODEL_NOT_AVAILABLE') {
+          setError('Apple Intelligence is not enabled. Enable it in Settings → Apple Intelligence & Siri.');
+          setIsListening(false);
+          setIsThinking(false);
+          isBusy.current = false;
         } else if (msg === 'speech_timeout' || msg === 'no_match') {
           if (activeUserMsgId.current) {
             const staleId = activeUserMsgId.current;

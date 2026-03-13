@@ -533,7 +533,7 @@ function AppContent() {
                   setShowMicDialog(false);
                   clearSpeechPermissionError();
                   setIsConvoOpen(false);
-                  Linking.openURL('App-prefs:SIRI').catch(() => Linking.openSettings());
+                  Linking.openURL('App-prefs:General&path=Keyboard').catch(() => Linking.openSettings());
                 }}
               >
                 <Text style={[micDialogStyles.settingsButtonText, bodyFontStyle]}>
