@@ -71,7 +71,7 @@ import MountainIcon from '../../assets/icons/mountain.svg';
 import SkyIcon from '../../assets/icons/sky.svg';
 import BeerIcon from '../../assets/icons/beer.svg';
 import RainbowIcon from '../../assets/icons/rainbow.svg';
-import { BadgeInfoIcon, BadgeErrorIcon, BadgeSuccessIcon } from '../components/BadgeIcons';
+import { BadgeInfoIcon, BadgeErrorIcon, BadgeSuccessIcon, BadgeWarningIcon } from '../components/BadgeIcons';
 
 function CardIconTitle({ icon, title, styles, titleColor }) {
   const { titleFontStyle } = useTheme();
@@ -1272,81 +1272,91 @@ export default function MoreScreen({
                 {vaDebugExpanded && (
                   <View style={[styles.versionContent, { paddingTop: 4, paddingLeft: 0, paddingRight: 0 }]}>
                     {/* Status subsection */}
-                    <View style={{ marginTop: 8, marginBottom: 8 }}>
-                      <CardIconTitle
-                        icon={modelStatus === 'available' && micPermissionStatus === 'granted'
-                          ? <BadgeSuccessIcon size={22} color="#4CAF50" />
-                          : <BadgeErrorIcon size={22} color="#CF6679" />
-                        }
-                        title="Status"
-                        styles={styles}
-                      />
-                    </View>
-                    <View style={styles.debugMetaRow}>
-                      <Text style={[styles.debugMetaLabel, bodyFontStyle]}>Device Support</Text>
-                      <Text style={[styles.debugMetaValue, { color: VA_STATUS_COLOR.deviceSupport[modelStatus === 'unavailable' ? 'unavailable' : modelStatus === 'unknown' ? 'unknown' : 'supported'] }]}>
-                        {VA_STATUS_LABEL.deviceSupport[modelStatus === 'unavailable' ? 'unavailable' : modelStatus === 'unknown' ? 'unknown' : 'supported']}
-                      </Text>
-                    </View>
-                    <View style={styles.debugMetaRow}>
-                      <Text style={[styles.debugMetaLabel, bodyFontStyle]}>AI Model</Text>
-                      <Text style={[styles.debugMetaValue, { color: VA_STATUS_COLOR.modelDownload[modelStatus] ?? '#888' }]}>
-                        {modelStatus === 'downloading' && downloadProgressBytes > 0
-                          ? `Downloading… ${(downloadProgressBytes / 1_048_576).toFixed(1)} MB`
-                          : VA_STATUS_LABEL.modelDownload[modelStatus] ?? modelStatus}
-                      </Text>
-                    </View>
-                    <View style={[styles.debugMetaRow, (Platform.OS !== 'ios' || !modelDebugInfo) && { borderBottomWidth: 0 }]}>
-                      <Text style={[styles.debugMetaLabel, bodyFontStyle]}>Mic Permission</Text>
-                      <Text style={[styles.debugMetaValue, { color: VA_STATUS_COLOR.mic[micPermissionStatus] ?? '#888' }]}>
-                        {VA_STATUS_LABEL.mic[micPermissionStatus] ?? micPermissionStatus}
-                      </Text>
-                    </View>
-                    {Platform.OS === 'ios' && modelDebugInfo != null && (
-                      <>
-                        {modelDebugInfo.iosVersion != null && (
-                          <View style={[styles.debugMetaRow, modelDebugInfo.modelAvailability == null && !(modelDebugInfo.unavailableReason != null && modelDebugInfo.unavailableReason !== '') && { borderBottomWidth: 0 }]}>
-                            <Text style={[styles.debugMetaLabel, bodyFontStyle]}>iOS Version</Text>
-                            <Text style={[styles.debugMetaValue, { fontFamily: Platform.OS === 'android' ? 'monospace' : 'Menlo', flexShrink: 1 }]}>
-                              {String(modelDebugInfo.iosVersion)}
-                            </Text>
+                    {(() => {
+                      const deviceKey = modelStatus === 'unavailable' ? 'unavailable' : modelStatus === 'unknown' ? 'unknown' : 'supported';
+                      const deviceOk = deviceKey === 'supported';
+                      const devicePending = deviceKey === 'unknown';
+
+                      const modelOk = modelStatus === 'available';
+                      const modelFailed = modelStatus === 'unavailable' || modelStatus === 'download_failed';
+                      const modelPending = !modelOk && !modelFailed;
+
+                      const micOk = micPermissionStatus === 'granted';
+                      const micFailed = micPermissionStatus === 'not_granted';
+                      const micPending = !micOk && !micFailed;
+
+                      const anyFailed = !deviceOk && !devicePending || modelFailed || micFailed;
+                      const allGood = deviceOk && modelOk && micOk;
+
+                      const statusIcon = (ok, failed) =>
+                        ok ? <BadgeSuccessIcon size={16} color="#4CAF50" />
+                        : failed ? <BadgeErrorIcon size={16} color="#CF6679" />
+                        : <BadgeWarningIcon size={16} color="#FFC107" />;
+
+                      const overallIcon = allGood
+                        ? <BadgeSuccessIcon size={22} color="#4CAF50" />
+                        : anyFailed
+                        ? <BadgeErrorIcon size={22} color="#CF6679" />
+                        : <BadgeWarningIcon size={22} color="#FFC107" />;
+
+                      const modelText = modelStatus === 'downloading' && downloadProgressBytes > 0
+                        ? `Downloading… ${(downloadProgressBytes / 1_048_576).toFixed(1)} MB`
+                        : VA_STATUS_LABEL.modelDownload[modelStatus] ?? modelStatus;
+
+                      return (
+                        <>
+                          <View style={{ marginTop: 8, marginBottom: 8 }}>
+                            <CardIconTitle icon={overallIcon} title="Status" styles={styles} />
                           </View>
-                        )}
-                        {modelDebugInfo.modelAvailability != null && (
-                          <View style={[styles.debugMetaRow, !(modelDebugInfo.unavailableReason != null && modelDebugInfo.unavailableReason !== '') && { borderBottomWidth: 0 }]}>
-                            <Text style={[styles.debugMetaLabel, bodyFontStyle]}>Model Availability</Text>
-                            <Text style={styles.debugMetaValue}>{String(modelDebugInfo.modelAvailability)}</Text>
+                          <View style={styles.debugMetaRow}>
+                            <Text style={[styles.debugMetaLabel, bodyFontStyle]}>Device Support</Text>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                              {statusIcon(deviceOk, !deviceOk && !devicePending)}
+                              <Text style={[styles.debugMetaValue, { color: VA_STATUS_COLOR.deviceSupport[deviceKey] }]}>
+                                {VA_STATUS_LABEL.deviceSupport[deviceKey]}
+                              </Text>
+                            </View>
                           </View>
-                        )}
-                        {modelDebugInfo.unavailableReason != null && modelDebugInfo.unavailableReason !== '' && (
+                          <View style={styles.debugMetaRow}>
+                            <Text style={[styles.debugMetaLabel, bodyFontStyle]}>AI Model</Text>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                              {statusIcon(modelOk, modelFailed)}
+                              <Text style={[styles.debugMetaValue, { color: VA_STATUS_COLOR.modelDownload[modelStatus] ?? '#888' }]}>
+                                {modelText}
+                              </Text>
+                            </View>
+                          </View>
                           <View style={[styles.debugMetaRow, { borderBottomWidth: 0 }]}>
-                            <Text style={[styles.debugMetaLabel, bodyFontStyle]}>Unavailable Reason</Text>
-                            <Text style={styles.debugMetaValue}>{String(modelDebugInfo.unavailableReason)}</Text>
+                            <Text style={[styles.debugMetaLabel, bodyFontStyle]}>Mic Permission</Text>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                              {statusIcon(micOk, micFailed)}
+                              <Text style={[styles.debugMetaValue, { color: VA_STATUS_COLOR.mic[micPermissionStatus] ?? '#888' }]}>
+                                {VA_STATUS_LABEL.mic[micPermissionStatus] ?? micPermissionStatus}
+                              </Text>
+                            </View>
                           </View>
-                        )}
-                      </>
-                    )}
-                    {micPermissionStatus === 'not_granted' && (
-                      <TouchableOpacity
-                        style={vaReadinessStyles.actionButton}
-                        onPress={() => Linking.openSettings()}
-                      >
-                        <Text style={[vaReadinessStyles.actionButtonText, bodyFontStyle]}>Open Mic Settings</Text>
-                      </TouchableOpacity>
-                    )}
-                    {(modelStatus === 'download_failed' || modelStatus === 'downloadable') && (
-                      <>
-                        <TouchableOpacity
-                          style={[vaReadinessStyles.actionButton, { marginTop: 12, backgroundColor: `${accent}26`, borderColor: `${accent}66` }, isRetryingModelSetup && { opacity: 0.7 }]}
-                          onPress={onRetryModelSetup}
-                          disabled={isRetryingModelSetup}
-                        >
-                          <Text style={[vaReadinessStyles.actionButtonText, { color: accent }, bodyFontStyle]}>
-                            {isRetryingModelSetup ? 'Retrying…' : 'Retry AI Model Setup'}
-                          </Text>
-                        </TouchableOpacity>
-                      </>
-                    )}
+                          {micPermissionStatus === 'not_granted' && (
+                            <TouchableOpacity
+                              style={vaReadinessStyles.actionButton}
+                              onPress={() => Linking.openSettings()}
+                            >
+                              <Text style={[vaReadinessStyles.actionButtonText, bodyFontStyle]}>Open Mic Settings</Text>
+                            </TouchableOpacity>
+                          )}
+                          {(modelStatus === 'download_failed' || modelStatus === 'downloadable') && (
+                            <TouchableOpacity
+                              style={[vaReadinessStyles.actionButton, { marginTop: 12, backgroundColor: `${accent}26`, borderColor: `${accent}66` }, isRetryingModelSetup && { opacity: 0.7 }]}
+                              onPress={onRetryModelSetup}
+                              disabled={isRetryingModelSetup}
+                            >
+                              <Text style={[vaReadinessStyles.actionButtonText, { color: accent }, bodyFontStyle]}>
+                                {isRetryingModelSetup ? 'Retrying…' : 'Retry AI Model Setup'}
+                              </Text>
+                            </TouchableOpacity>
+                          )}
+                        </>
+                      );
+                    })()}
 
                     {/* Models subsection */}
                     <TouchableOpacity
