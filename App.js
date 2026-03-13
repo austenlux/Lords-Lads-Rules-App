@@ -28,6 +28,7 @@ import { ContentScreen, MoreScreen, ToolsScreen } from './src/screens';
 import { VoiceAssistantFAB, VoiceAssistantModal } from './src/components';
 import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { parseMarkdownSections } from './src/services/contentService';
 import { generateSummaries } from './src/services/summaryService';
 
 const SPLASH_MIN_MS = 1000;
@@ -316,10 +317,13 @@ function AppContent() {
     const isActive = activeTab === tab;
     const contentHeight = Platform.OS === 'ios' ? effectivePageHeight : undefined;
     if (tab === 'rules') {
+      const effectiveRulesSections = (showSummaryEnabled && rulesSummary)
+        ? parseMarkdownSections(rulesSummary)
+        : sections;
       return (
         <ContentScreen
           key="rules"
-          sections={sections}
+          sections={effectiveRulesSections}
           searchQuery={searchQuery}
           renderSection={renderSection}
           scrollViewRef={rulesScrollViewRef}
@@ -335,10 +339,13 @@ function AppContent() {
       );
     }
     if (tab === 'expansions') {
+      const effectiveExpansionSections = (showSummaryEnabled && expansionsSummary)
+        ? parseMarkdownSections(expansionsSummary)
+        : expansionSections;
       return (
         <ContentScreen
           key="expansions"
-          sections={expansionSections}
+          sections={effectiveExpansionSections}
           searchQuery={searchQuery}
           renderSection={renderSection}
           scrollViewRef={expansionsScrollViewRef}
