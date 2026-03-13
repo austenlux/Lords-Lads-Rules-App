@@ -119,6 +119,13 @@ const VA_STATUS_LABEL = {
     granted:       'Granted',
     not_granted:   'Not Granted',
   },
+  speech: {
+    unknown:       'Checking…',
+    undetermined:  'Not determined',
+    granted:       'Granted',
+    denied:        'Denied',
+    restricted:    'Disabled (Siri Off)',
+  },
 };
 
 const VA_STATUS_COLOR = {
@@ -142,6 +149,13 @@ const VA_STATUS_COLOR = {
     undetermined: '#FF9800',
     granted:      '#4CAF50',
     not_granted:  '#CF6679',
+  },
+  speech: {
+    unknown:      '#888888',
+    undetermined: '#FF9800',
+    granted:      '#4CAF50',
+    denied:       '#CF6679',
+    restricted:   '#CF6679',
   },
 };
 
@@ -189,6 +203,7 @@ export default function MoreScreen({
   onVoiceSelect,
   modelStatus = 'unknown',
   micPermissionStatus = 'unknown',
+  speechPermissionStatus = 'unknown',
   onRetryModelSetup,
   modelDebugInfo = null,
 }) {
@@ -1291,8 +1306,12 @@ export default function MoreScreen({
                       const micFailed = micPermissionStatus === 'not_granted';
                       const micPending = !micOk && !micFailed;
 
-                      const anyFailed = !deviceOk && !devicePending || modelFailed || micFailed;
-                      const allGood = deviceOk && modelOk && micOk;
+                      const speechOk = speechPermissionStatus === 'granted';
+                      const speechFailed = speechPermissionStatus === 'denied' || speechPermissionStatus === 'restricted';
+                      const speechPending = !speechOk && !speechFailed;
+
+                      const anyFailed = !deviceOk && !devicePending || modelFailed || micFailed || speechFailed;
+                      const allGood = deviceOk && modelOk && micOk && speechOk;
 
                       const statusIcon = (ok, failed) =>
                         ok ? <BadgeSuccessIcon size={16} color="#4CAF50" />
@@ -1338,7 +1357,7 @@ export default function MoreScreen({
                               Enable Apple Intelligence in your device Settings, then use Retry below.
                             </Text>
                           )}
-                          <View style={[styles.debugMetaRow, { borderBottomWidth: 0 }]}>
+                          <View style={styles.debugMetaRow}>
                             <Text style={[styles.debugMetaLabel, bodyFontStyle]}>Mic Permission</Text>
                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1 }}>
                               {statusIcon(micOk, micFailed)}
@@ -1353,6 +1372,23 @@ export default function MoreScreen({
                               onPress={() => Linking.openSettings()}
                             >
                               <Text style={[vaReadinessStyles.actionButtonText, { color: accent }, bodyFontStyle]}>Open Mic Settings</Text>
+                            </TouchableOpacity>
+                          )}
+                          <View style={[styles.debugMetaRow, { borderBottomWidth: 0 }]}>
+                            <Text style={[styles.debugMetaLabel, bodyFontStyle]}>Speech Recognition</Text>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1 }}>
+                              {statusIcon(speechOk, speechFailed)}
+                              <Text style={[styles.debugMetaValue, { color: VA_STATUS_COLOR.speech[speechPermissionStatus] ?? '#888' }]}>
+                                {VA_STATUS_LABEL.speech[speechPermissionStatus] ?? speechPermissionStatus}
+                              </Text>
+                            </View>
+                          </View>
+                          {speechFailed && (
+                            <TouchableOpacity
+                              style={[vaReadinessStyles.actionButton, { backgroundColor: `${accent}26`, borderColor: `${accent}66` }]}
+                              onPress={() => Linking.openSettings()}
+                            >
+                              <Text style={[vaReadinessStyles.actionButtonText, { color: accent }, bodyFontStyle]}>Open Speech Settings</Text>
                             </TouchableOpacity>
                           )}
                           {(modelNeedsSetup || modelStatus === 'download_failed') && (

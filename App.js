@@ -120,6 +120,7 @@ function AppContent() {
     modelStatus,
     micPermissionStatus,
     requestMicPermission,
+    speechPermissionStatus,
     speechPermissionError,
     retryModelSetup,
     modelDebugInfo,
@@ -275,6 +276,7 @@ function AppContent() {
         onVoiceSelect={previewVoice}
         modelStatus={modelStatus}
         micPermissionStatus={micPermissionStatus}
+        speechPermissionStatus={speechPermissionStatus}
         onRetryModelSetup={retryModelSetup}
         modelDebugInfo={modelDebugInfo}
       />

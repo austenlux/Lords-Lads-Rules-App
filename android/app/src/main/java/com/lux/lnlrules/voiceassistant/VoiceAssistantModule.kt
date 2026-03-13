@@ -185,6 +185,10 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
         promise.resolve(result)
     }
 
+    override fun getSpeechPermissionStatus(promise: Promise) {
+        promise.resolve("granted")
+    }
+
     override fun requestMicPermission(promise: Promise) {
         promise.resolve("denied")
     }

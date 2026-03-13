@@ -124,6 +124,22 @@ class VoiceAssistantSwift: NSObject {
 
     // MARK: - Mic Permission Status
 
+    func getSpeechPermissionStatus() -> String {
+        let status = SFSpeechRecognizer.authorizationStatus()
+        switch status {
+        case .authorized:
+            return "granted"
+        case .denied:
+            return "denied"
+        case .restricted:
+            return "restricted"
+        case .notDetermined:
+            return "undetermined"
+        @unknown default:
+            return "undetermined"
+        }
+    }
+
     func getMicPermissionStatus() -> String {
         let status = AVAudioSession.sharedInstance().recordPermission
         switch status {

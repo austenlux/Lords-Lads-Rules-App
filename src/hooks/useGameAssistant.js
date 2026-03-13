@@ -67,6 +67,7 @@ export function useGameAssistant() {
   const [modelStatus, setModelStatus] = useState('unknown');
   // 'unknown' | 'granted' | 'not_granted'
   const [micPermissionStatus, setMicPermissionStatus] = useState('unknown');
+  const [speechPermissionStatus, setSpeechPermissionStatus] = useState('unknown');
   const [speechPermissionError, setSpeechPermissionError] = useState(null);
   /** iOS only: parsed getModelDebugInfo() result; null on Android or when missing/failed */
   const [modelDebugInfo, setModelDebugInfo] = useState(null);
@@ -113,6 +114,18 @@ export function useGameAssistant() {
         }
       } catch {
         setMicPermissionStatus('unknown');
+      }
+      if (typeof native.getSpeechPermissionStatus === 'function') {
+        try {
+          const speechStatus = await native.getSpeechPermissionStatus();
+          setSpeechPermissionStatus(speechStatus === 'granted' ? 'granted'
+            : speechStatus === 'restricted' ? 'restricted'
+            : speechStatus === 'denied' ? 'denied'
+            : speechStatus === 'undetermined' ? 'undetermined'
+            : 'unknown');
+        } catch {
+          setSpeechPermissionStatus('unknown');
+        }
       }
     }
 
@@ -192,6 +205,18 @@ export function useGameAssistant() {
           }
         } catch {
           setMicPermissionStatus('unknown');
+        }
+        if (typeof native.getSpeechPermissionStatus === 'function') {
+          try {
+            const speechStatus = await native.getSpeechPermissionStatus();
+            setSpeechPermissionStatus(speechStatus === 'granted' ? 'granted'
+              : speechStatus === 'restricted' ? 'restricted'
+              : speechStatus === 'denied' ? 'denied'
+              : speechStatus === 'undetermined' ? 'undetermined'
+              : 'unknown');
+          } catch {
+            setSpeechPermissionStatus('unknown');
+          }
         }
       }
 
@@ -541,6 +566,8 @@ export function useGameAssistant() {
     micPermissionStatus,
     /** triggers the OS-level mic permission prompt; returns 'granted'|'denied' */
     requestMicPermission,
+    /** speech recognition permission: 'unknown'|'granted'|'denied'|'restricted'|'undetermined' */
+    speechPermissionStatus,
     /** non-null when speech recognition permission is denied/restricted; { code, message } */
     speechPermissionError,
     /** re-runs the full model + mic setup flow; useful from the debug panel */

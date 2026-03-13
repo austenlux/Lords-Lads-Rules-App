@@ -41,6 +41,12 @@ RCT_EXPORT_MODULE(VoiceAssistant)
   resolve(info);
 }
 
+- (void)getSpeechPermissionStatus:(RCTPromiseResolveBlock)resolve
+                           reject:(RCTPromiseRejectBlock)reject {
+  NSString *status = [_swiftModule getSpeechPermissionStatus];
+  resolve(status);
+}
+
 - (void)getMicPermissionStatus:(RCTPromiseResolveBlock)resolve
                         reject:(RCTPromiseRejectBlock)reject {
   NSString *status = [_swiftModule getMicPermissionStatus];
