@@ -499,3 +499,108 @@ export function filterAndMerge(selectedChunks) {
 
   return { chunks: cappedChunks, log: logData };
 }
+
+// ── Sentence-Level Extractive Compression ─────────────────────────────────
+
+const SENTENCE_SPLIT_RE = /(?<=[a-z)])\. /;
+
+/**
+ * Compress each chunk by extracting only the sentences that overlap with the
+ * user's query tokens. Headings are always preserved. When no body sentence
+ * matches, the single highest-scoring sentence is kept as a fallback.
+ *
+ * @param {Array<{ heading, content, source, score, originalIndex }>} chunks
+ * @param {string} query  Raw user question string.
+ * @returns {{ chunks: Array, log: Array<{ heading, originalChars, extractedChars, sentenceCount, extractedCount, sentences }> }}
+ */
+export function extractRelevantSentences(chunks, query) {
+  const queryTokens = new Set(tokenize(query));
+  const compressedChunks = [];
+  const extractionLog = [];
+
+  for (const chunk of chunks) {
+    let content = chunk.content;
+    let hasBridge = false;
+
+    if (content.startsWith(CROSS_REF_BRIDGE)) {
+      hasBridge = true;
+      content = content.slice(CROSS_REF_BRIDGE.length);
+    }
+
+    const paragraphs = content.split('\n\n');
+    const processed = [];
+    const allSentences = [];
+
+    for (const rawPara of paragraphs) {
+      const para = rawPara.trim();
+      if (!para) continue;
+
+      if (para.startsWith('#')) {
+        processed.push({ isHeading: true, text: para });
+        allSentences.push({ text: para, score: Infinity, kept: true });
+        continue;
+      }
+
+      const sentenceTexts = para.split(SENTENCE_SPLIT_RE);
+      const sentences = sentenceTexts.map(s => {
+        const sentTokens = new Set(tokenize(s));
+        let score = 0;
+        for (const qt of queryTokens) {
+          if (sentTokens.has(qt)) score++;
+        }
+        return { text: s, score, kept: score > 0 };
+      });
+
+      processed.push({ isHeading: false, sentences });
+      allSentences.push(...sentences);
+    }
+
+    const nonHeadingSentences = allSentences.filter(s => s.score !== Infinity);
+    const anyKept = nonHeadingSentences.some(s => s.kept);
+
+    if (!anyKept && nonHeadingSentences.length > 0) {
+      let best = nonHeadingSentences[0];
+      for (const s of nonHeadingSentences) {
+        if (s.score > best.score) best = s;
+      }
+      best.kept = true;
+    }
+
+    const outputParts = [];
+    for (const p of processed) {
+      if (p.isHeading) {
+        outputParts.push(p.text);
+      } else {
+        const kept = p.sentences.filter(s => s.kept);
+        if (kept.length > 0) {
+          outputParts.push(kept.map(s => s.text).join('. '));
+        }
+      }
+    }
+
+    let extractedContent = outputParts.join('\n\n');
+    if (hasBridge) {
+      extractedContent = CROSS_REF_BRIDGE + extractedContent;
+    }
+
+    compressedChunks.push({ ...chunk, content: extractedContent });
+
+    extractionLog.push({
+      heading: chunk.heading,
+      score: chunk.score,
+      source: chunk.source,
+      originalChars: chunk.content.length,
+      extractedChars: extractedContent.length,
+      extractedContent,
+      sentenceCount: nonHeadingSentences.length,
+      extractedCount: nonHeadingSentences.filter(s => s.kept).length,
+      sentences: allSentences.map(s => ({
+        text: s.text.substring(0, 80),
+        score: s.score === Infinity ? '∞' : s.score,
+        kept: s.kept,
+      })),
+    });
+  }
+
+  return { chunks: compressedChunks, log: extractionLog };
+}

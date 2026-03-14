@@ -80,6 +80,16 @@ export function logFinalChunks(chunks) {
 }
 
 /**
+ * Record the sentence-level extraction step for the most recent retrieval.
+ * @param {Array<{ heading, score, source, originalChars, extractedChars, extractedContent, sentenceCount, extractedCount, sentences }>} data
+ */
+export function logSentenceExtraction(data) {
+  if (retrievalLogs.length === 0) return;
+  retrievalLogs[0].sentenceExtraction = data;
+  notifyListeners();
+}
+
+/**
  * Patch the most recent retrieval entry with additional data
  * (e.g. prompt length, total context chars computed after retrieval).
  * @param {object} data Fields to merge into the latest retrieval entry.
@@ -206,6 +216,26 @@ export function formatRagLogAsText() {
         entry.finalChunks.forEach((c, i) => {
           lines.push(`  ┌── Chunk ${i + 1}: ${c.heading} (score ${c.score.toFixed(4)}, ${c.source}, ${c.charCount} chars)`);
           c.content.split('\n').forEach(l => lines.push(`  │ ${l}`));
+          lines.push('  └──');
+          lines.push('');
+        });
+      }
+
+      if (entry.sentenceExtraction?.length) {
+        lines.push('Sentence Extraction:');
+        entry.sentenceExtraction.forEach((se, i) => {
+          lines.push(`  Chunk ${i + 1}: "${se.heading}" (${se.originalChars} → ${se.extractedChars} chars)`);
+          se.sentences.forEach(s => {
+            const tag = s.score === '∞' ? 'H' : (s.kept ? '✓' : '✗');
+            lines.push(`    [${tag}] "${s.text}${s.text.length >= 80 ? '…' : ''}" (score: ${s.score})`);
+          });
+        });
+        lines.push('');
+
+        lines.push('Final extracted chunks sent to LLM:');
+        entry.sentenceExtraction.forEach((se, i) => {
+          lines.push(`  ┌── Chunk ${i + 1}: ${se.heading} (score ${se.score?.toFixed(4) ?? 'N/A'}, ${se.source}, ${se.extractedChars} chars)`);
+          se.extractedContent?.split('\n').forEach(l => lines.push(`  │ ${l}`));
           lines.push('  └──');
           lines.push('');
         });

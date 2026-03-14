@@ -26,10 +26,10 @@ import { AppState, PermissionsAndroid, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NativeVoiceAssistantOptional from '../specs/NativeVoiceAssistantOptional';
 import { buildGameAssistantPrompt } from '../constants';
-import { retrieveRelevantChunks, filterAndMerge } from '../services/ragService';
+import { retrieveRelevantChunks, filterAndMerge, extractRelevantSentences } from '../services/ragService';
 import { sanitizeTextForSpeech } from '../utils/sanitizeTextForSpeech';
 import { logError, logEvent } from '../services/errorLogger';
-import { logRetrieval, updateLatestRetrieval, logPostProcessing, logFinalChunks } from '../services/ragLogger';
+import { logRetrieval, updateLatestRetrieval, logPostProcessing, logFinalChunks, logSentenceExtraction } from '../services/ragLogger';
 
 
 const VOICE_STORAGE_KEY = '@lnl_voice_id';
@@ -481,11 +481,15 @@ export function useGameAssistant() {
           chunks: rawChunks.map(c => ({ heading: c.heading, score: Math.round(c.score * 100) / 100 })),
         });
 
-        const { chunks, log: postProcessLog } = filterAndMerge(rawChunks);
+        const { chunks: mergedChunks, log: postProcessLog } = filterAndMerge(rawChunks);
         logPostProcessing(postProcessLog);
-        logFinalChunks(chunks);
+        logFinalChunks(mergedChunks);
+
+        const { chunks, log: extractionLog } = extractRelevantSentences(mergedChunks, searchQuery);
+        logSentenceExtraction(extractionLog);
+
         const totalContextChars = chunks.reduce((s, c) => s + c.content.length, 0);
-        logEvent('RAG', `Post-processed: ${rawChunks.length} → ${chunks.length} chunks (${totalContextChars} chars)`);
+        logEvent('RAG', `Post-processed: ${rawChunks.length} → ${mergedChunks.length} merged → ${chunks.length} extracted (${totalContextChars} chars)`);
 
         setMessages((prev) => [...prev, { id: assistantMsgId, role: 'assistant', text: '' }]);
 
