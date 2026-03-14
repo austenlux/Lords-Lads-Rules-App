@@ -178,7 +178,7 @@ export function buildIndex(rulesMarkdown, expansionsMarkdown) {
  * @param {number} [topK=5]  Number of chunks to retrieve.
  * @returns {Array<{ heading: string, content: string, source: string, score: number }>}
  */
-export function retrieveRelevantChunks(index, query, topK = 3) {
+export function retrieveRelevantChunks(index, query, topK = 5) {
   if (!index || !index.chunks.length || !query?.trim()) return [];
 
   const queryTokens = tokenize(query);
