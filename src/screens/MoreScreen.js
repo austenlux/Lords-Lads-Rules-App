@@ -29,6 +29,7 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import TrashIcon from '../../assets/icons/trash.svg';
 import BenderIcon from '../../assets/icons/bender.svg';
 import CopyIcon from '../../assets/icons/copy.svg';
+import ExportIcon from '../../assets/icons/export.svg';
 import { getRagLog, clearRagLog, onRagLogChange, formatRagLogAsText } from '../services/ragLogger';
 import { HEADER_HEIGHT } from '../styles';
 import NativeVoiceAssistantOptional from '../specs/NativeVoiceAssistantOptional';
@@ -1612,11 +1613,11 @@ export default function MoreScreen({
                       <Text style={[styles.debugMetaValue, { paddingHorizontal: 12, paddingVertical: 8 }]}>No events recorded.</Text>
                     ) : (
                       <>
-                        <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 10, marginBottom: 10 }}>
+                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 8, marginBottom: 10 }}>
                           <TouchableOpacity
                             style={{
                               flexDirection: 'row', alignItems: 'center', gap: 6,
-                              paddingHorizontal: 16, paddingVertical: 7, borderRadius: 6,
+                              paddingHorizontal: 14, paddingVertical: 7, borderRadius: 6,
                               borderWidth: 1,
                               borderColor: eventCopied ? '#4CAF50' : accent,
                               backgroundColor: eventCopied ? 'rgba(76,175,80,0.1)' : `${accent}1A`,
@@ -1627,35 +1628,36 @@ export default function MoreScreen({
                               setTimeout(() => setEventCopied(false), 2000);
                             }}
                           >
-                            <CopyIcon width={16} height={16} fill={eventCopied ? '#4CAF50' : accent} />
-                            <Text style={[{ color: eventCopied ? '#4CAF50' : accent, fontSize: 13 }, bodyFontStyle]}>
-                              {eventCopied ? 'Copied!' : 'Copy All'}
+                            <CopyIcon width={15} height={15} fill={eventCopied ? '#4CAF50' : accent} />
+                            <Text style={[{ color: eventCopied ? '#4CAF50' : accent, fontSize: 12 }, bodyFontStyle]}>
+                              {eventCopied ? 'Copied!' : 'Copy'}
                             </Text>
                           </TouchableOpacity>
                           <TouchableOpacity
                             style={{
                               flexDirection: 'row', alignItems: 'center', gap: 6,
-                              paddingHorizontal: 16, paddingVertical: 7, borderRadius: 6,
+                              paddingHorizontal: 14, paddingVertical: 7, borderRadius: 6,
                               borderWidth: 1,
                               borderColor: eventExported ? '#4CAF50' : accent,
                               backgroundColor: eventExported ? 'rgba(76,175,80,0.1)' : `${accent}1A`,
                             }}
                             onPress={handleExportEventLog}
                           >
-                            <Text style={[{ color: eventExported ? '#4CAF50' : accent, fontSize: 13 }, bodyFontStyle]}>
+                            <ExportIcon width={15} height={15} fill={eventExported ? '#4CAF50' : accent} />
+                            <Text style={[{ color: eventExported ? '#4CAF50' : accent, fontSize: 12 }, bodyFontStyle]}>
                               {eventExported ? 'Exported!' : 'Export'}
                             </Text>
                           </TouchableOpacity>
                           <TouchableOpacity
                             style={{
                               flexDirection: 'row', alignItems: 'center', gap: 6,
-                              paddingHorizontal: 16, paddingVertical: 7, borderRadius: 6,
+                              paddingHorizontal: 14, paddingVertical: 7, borderRadius: 6,
                               borderWidth: 1, borderColor: accent, backgroundColor: `${accent}1A`,
                             }}
                             onPress={() => { clearEventLog(); setErrorLogEntries([]); }}
                           >
-                            <TrashIcon width={18} height={18} fill={accent} />
-                            <Text style={[{ color: accent, fontSize: 13 }, bodyFontStyle]}>Clear Log</Text>
+                            <TrashIcon width={15} height={15} fill={accent} />
+                            <Text style={[{ color: accent, fontSize: 12 }, bodyFontStyle]}>Clear</Text>
                           </TouchableOpacity>
                         </View>
                         {errorLogEntries.map((entry, i) => {
@@ -1744,45 +1746,46 @@ export default function MoreScreen({
                 {ragLogExpanded && (
                   <View style={[styles.versionContent, { paddingLeft: 0, paddingRight: 0 }]}>
                     {/* Action buttons */}
-                    <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 10, marginBottom: 12 }}>
+                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 8, marginBottom: 12 }}>
                       <TouchableOpacity
                         style={{
                           flexDirection: 'row', alignItems: 'center', gap: 6,
-                          paddingHorizontal: 16, paddingVertical: 7, borderRadius: 6,
+                          paddingHorizontal: 14, paddingVertical: 7, borderRadius: 6,
                           borderWidth: 1, borderColor: ragCopied ? '#4CAF50' : accent,
                           backgroundColor: ragCopied ? 'rgba(76,175,80,0.1)' : `${accent}1A`,
                         }}
                         onPress={handleCopyRagLog}
                       >
-                        <CopyIcon width={16} height={16} fill={ragCopied ? '#4CAF50' : accent} />
-                        <Text style={[{ color: ragCopied ? '#4CAF50' : accent, fontSize: 13 }, bodyFontStyle]}>
-                          {ragCopied ? 'Copied!' : 'Copy All'}
+                        <CopyIcon width={15} height={15} fill={ragCopied ? '#4CAF50' : accent} />
+                        <Text style={[{ color: ragCopied ? '#4CAF50' : accent, fontSize: 12 }, bodyFontStyle]}>
+                          {ragCopied ? 'Copied!' : 'Copy'}
                         </Text>
                       </TouchableOpacity>
                       <TouchableOpacity
                         style={{
                           flexDirection: 'row', alignItems: 'center', gap: 6,
-                          paddingHorizontal: 16, paddingVertical: 7, borderRadius: 6,
+                          paddingHorizontal: 14, paddingVertical: 7, borderRadius: 6,
                           borderWidth: 1,
                           borderColor: ragExported ? '#4CAF50' : accent,
                           backgroundColor: ragExported ? 'rgba(76,175,80,0.1)' : `${accent}1A`,
                         }}
                         onPress={handleExportRagLog}
                       >
-                        <Text style={[{ color: ragExported ? '#4CAF50' : accent, fontSize: 13 }, bodyFontStyle]}>
+                        <ExportIcon width={15} height={15} fill={ragExported ? '#4CAF50' : accent} />
+                        <Text style={[{ color: ragExported ? '#4CAF50' : accent, fontSize: 12 }, bodyFontStyle]}>
                           {ragExported ? 'Exported!' : 'Export'}
                         </Text>
                       </TouchableOpacity>
                       <TouchableOpacity
                         style={{
                           flexDirection: 'row', alignItems: 'center', gap: 6,
-                          paddingHorizontal: 16, paddingVertical: 7, borderRadius: 6,
+                          paddingHorizontal: 14, paddingVertical: 7, borderRadius: 6,
                           borderWidth: 1, borderColor: accent, backgroundColor: `${accent}1A`,
                         }}
                         onPress={handleClearRagLog}
                       >
-                        <TrashIcon width={16} height={16} fill={accent} />
-                        <Text style={[{ color: accent, fontSize: 13 }, bodyFontStyle]}>Clear Log</Text>
+                        <TrashIcon width={15} height={15} fill={accent} />
+                        <Text style={[{ color: accent, fontSize: 12 }, bodyFontStyle]}>Clear</Text>
                       </TouchableOpacity>
                     </View>
 
