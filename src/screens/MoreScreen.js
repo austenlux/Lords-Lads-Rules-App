@@ -867,6 +867,7 @@ export default function MoreScreen({
     <ScrollView
       style={[styles.scrollView, contentHeight != null && (Platform.OS === 'ios' ? { minHeight: contentHeight } : { height: contentHeight, minHeight: contentHeight })]}
       contentInsetAdjustmentBehavior={Platform.OS === 'ios' ? 'never' : undefined}
+      keyboardShouldPersistTaps="handled"
     >
       <View style={[styles.contentContainer, { paddingTop: contentPaddingTop ?? HEADER_HEIGHT }]}>
         <View style={styles.moreContainer}>
@@ -1855,25 +1856,28 @@ export default function MoreScreen({
                         if (!ragRetrievalAnims[entry.id]) ragRetrievalAnims[entry.id] = { rotation: new Animated.Value(0) };
                         const isOpen = expandedRetrievals[entry.id];
                         return (
-                          <TouchableOpacity
+                          <View
                             key={entry.id}
                             style={[styles.versionContainer, { marginBottom: 6 }]}
-                            onPress={() => toggleRetrieval(entry.id)}
-                            activeOpacity={0.7}
                           >
-                            <View style={styles.versionHeader}>
-                              <View style={{ flex: 1, marginRight: 8 }}>
-                                <Text style={[{ fontSize: 13, color: '#E0E0E0', fontWeight: '600' }, bodyFontStyle]}>
-                                  "{entry.question}"
-                                </Text>
-                                <Text style={[{ fontSize: 10, color: '#888', marginTop: 2 }, bodyFontStyle]}>
-                                  {entry.timestamp}
-                                </Text>
+                            <TouchableOpacity
+                              onPress={() => toggleRetrieval(entry.id)}
+                              activeOpacity={0.7}
+                            >
+                              <View style={styles.versionHeader}>
+                                <View style={{ flex: 1, marginRight: 8 }}>
+                                  <Text style={[{ fontSize: 13, color: '#E0E0E0', fontWeight: '600' }, bodyFontStyle]}>
+                                    "{entry.question}"
+                                  </Text>
+                                  <Text style={[{ fontSize: 10, color: '#888', marginTop: 2 }, bodyFontStyle]}>
+                                    {entry.timestamp}
+                                  </Text>
+                                </View>
+                                <Animated.View style={{ transform: [{ rotate: ragRetrievalAnims[entry.id]?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
+                                  <Text style={styles.versionArrow}>▶</Text>
+                                </Animated.View>
                               </View>
-                              <Animated.View style={{ transform: [{ rotate: ragRetrievalAnims[entry.id]?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
-                                <Text style={styles.versionArrow}>▶</Text>
-                              </Animated.View>
-                            </View>
+                            </TouchableOpacity>
                             {isOpen && (
                               <View style={{ paddingTop: 8 }}>
                                 {entry.noIndex && (
@@ -2041,7 +2045,7 @@ export default function MoreScreen({
                                 )}
                               </View>
                             )}
-                          </TouchableOpacity>
+                          </View>
                         );
                       })
                     )}

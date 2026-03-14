@@ -304,6 +304,7 @@ export function retrieveRelevantChunks(index, query, topK = 8) {
 // ── Post-Retrieval Processing ─────────────────────────────────────────────
 
 const MERGE_SIZE_CAP = 5000;
+const CROSS_REF_BRIDGE = 'The following rules all apply to the same game event:\n\n';
 
 /**
  * Three-stage post-retrieval processing: smart filtering (top-3 + siblings +
@@ -363,8 +364,8 @@ export function filterAndMerge(selectedChunks) {
       const b = survivors[j];
       if (!a.crossRefs?.includes(b.sectionName) && !b.crossRefs?.includes(a.sectionName)) continue;
 
-      const [first, second] = a.originalIndex < b.originalIndex ? [a, b] : [b, a];
-      const combined = `${first.content}\n\n${second.content}`;
+      const [first, second] = a.content.length <= b.content.length ? [a, b] : [b, a];
+      const combined = `${CROSS_REF_BRIDGE}${first.content}\n\n${second.content}`;
       if (combined.length > MERGE_SIZE_CAP) continue;
 
       logData.crossRefMerges.push({
@@ -391,11 +392,15 @@ export function filterAndMerge(selectedChunks) {
   survivors = survivors.filter((_, i) => !mergedIndices.has(i));
 
   // ── Stage 3: Same-Parent Merging ───────────────────────────────────────
+  // Chunks already combined by cross-ref merge are excluded — they form
+  // focused, high-signal pairs that same-parent merging would dilute.
   const parentGroups = new Map();
   const noParent = [];
 
   for (const chunk of survivors) {
-    if (chunk.parentSection) {
+    if (chunk.merged) {
+      noParent.push(chunk);
+    } else if (chunk.parentSection) {
       const key = chunk.parentSection;
       if (!parentGroups.has(key)) parentGroups.set(key, []);
       parentGroups.get(key).push(chunk);
