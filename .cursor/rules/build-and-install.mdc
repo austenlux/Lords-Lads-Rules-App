@@ -22,7 +22,8 @@ When the user says **"install it"**, asks to install after changes, or **any cod
 4. **Launch:**
    - **Android:** `adb shell am start -n com.lux.lnlrules/.MainActivity`
    - **iOS:** launches automatically via ios-deploy
-5. **Push** — `git push`
+5. **Report the commit hash** — After installing, always tell the user the short commit hash (from `git rev-parse --short HEAD`) so they can verify the correct build in the app's debug menu.
+6. **Push** — `git push`
 
 ## Other rules
 
