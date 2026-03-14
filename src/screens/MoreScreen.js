@@ -1258,17 +1258,15 @@ export default function MoreScreen({
               style={styles.moreSectionWrapper}
             >
               {/* ── Feature Flags ── */}
-              <TouchableOpacity
-                style={[styles.versionContainer, { paddingHorizontal: 10 }]}
-                onPress={toggleFeatureFlags}
-                activeOpacity={0.7}
-              >
-                <View style={styles.versionHeader}>
-                  <CardIconTitle icon={<FlagIcon fill="#E53935" />} title="Feature Flags" styles={styles} />
-                  <Animated.View style={{ transform: [{ rotate: animations['featureFlags']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
-                    <Text style={styles.versionArrow}>▶</Text>
-                  </Animated.View>
-                </View>
+              <View style={[styles.versionContainer, { paddingHorizontal: 10 }]}>
+                <TouchableOpacity onPress={toggleFeatureFlags} activeOpacity={0.7}>
+                  <View style={styles.versionHeader}>
+                    <CardIconTitle icon={<FlagIcon fill="#E53935" />} title="Feature Flags" styles={styles} />
+                    <Animated.View style={{ transform: [{ rotate: animations['featureFlags']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
+                      <Text style={styles.versionArrow}>▶</Text>
+                    </Animated.View>
+                  </View>
+                </TouchableOpacity>
                 {featureFlagsExpanded && (
                   <View style={styles.versionContent}>
                     <View style={[styles.settingsRow, styles.settingsRowLast, { marginBottom: 8 }]}>
@@ -1284,20 +1282,18 @@ export default function MoreScreen({
                     </View>
                   </View>
                 )}
-              </TouchableOpacity>
+              </View>
 
               {/* ── Build & Device Info ── */}
-              <TouchableOpacity
-                style={[styles.versionContainer, { paddingHorizontal: 10 }]}
-                onPress={toggleBuildInfo}
-                activeOpacity={0.7}
-              >
-                <View style={styles.versionHeader}>
-                  <CardIconTitle icon={<DeviceIcon fill="#64B5F6" />} title="Build & Device Info" styles={styles} />
-                  <Animated.View style={{ transform: [{ rotate: animations['buildInfo']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
-                    <Text style={styles.versionArrow}>▶</Text>
-                  </Animated.View>
-                </View>
+              <View style={[styles.versionContainer, { paddingHorizontal: 10 }]}>
+                <TouchableOpacity onPress={toggleBuildInfo} activeOpacity={0.7}>
+                  <View style={styles.versionHeader}>
+                    <CardIconTitle icon={<DeviceIcon fill="#64B5F6" />} title="Build & Device Info" styles={styles} />
+                    <Animated.View style={{ transform: [{ rotate: animations['buildInfo']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
+                      <Text style={styles.versionArrow}>▶</Text>
+                    </Animated.View>
+                  </View>
+                </TouchableOpacity>
                 {buildInfoExpanded && (
                   <View style={[styles.versionContent, { paddingTop: 12 }]}>
                     {[
@@ -1342,20 +1338,18 @@ export default function MoreScreen({
                     })}
                   </View>
                 )}
-              </TouchableOpacity>
+              </View>
 
               {/* ── Voice Assistant ── */}
-              <TouchableOpacity
-                style={[styles.versionContainer, { paddingHorizontal: 10 }]}
-                onPress={toggleVaDebug}
-                activeOpacity={0.7}
-              >
-                <View style={styles.versionHeader}>
-                  <CardIconTitle icon={<MicIcon fill="#FF9800" />} title="Voice Assistant" styles={styles} />
-                  <Animated.View style={{ transform: [{ rotate: animations['vaDebug']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
-                    <Text style={styles.versionArrow}>▶</Text>
-                  </Animated.View>
-                </View>
+              <View style={[styles.versionContainer, { paddingHorizontal: 10 }]}>
+                <TouchableOpacity onPress={toggleVaDebug} activeOpacity={0.7}>
+                  <View style={styles.versionHeader}>
+                    <CardIconTitle icon={<MicIcon fill="#FF9800" />} title="Voice Assistant" styles={styles} />
+                    <Animated.View style={{ transform: [{ rotate: animations['vaDebug']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
+                      <Text style={styles.versionArrow}>▶</Text>
+                    </Animated.View>
+                  </View>
+                </TouchableOpacity>
                 {vaDebugExpanded && (
                   <View style={[styles.versionContent, { paddingTop: 4, paddingLeft: 0, paddingRight: 0 }]}>
                     {/* Status subsection */}
@@ -1571,19 +1565,17 @@ export default function MoreScreen({
                     </TouchableOpacity>
                   </View>
                 )}
-              </TouchableOpacity>
+              </View>
               {/* ── Event Log ── */}
-              <TouchableOpacity
-                style={[styles.versionContainer, { paddingHorizontal: 10 }]}
-                onPress={toggleErrorLog}
-                activeOpacity={0.7}
-              >
-                <View style={styles.versionHeader}>
-                  <CardIconTitle icon={<ErrorIcon width={20} height={20} fill="#FFC107" />} title="Event Log" styles={styles} />
-                  <Animated.View style={{ transform: [{ rotate: animations['errorLog']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
-                    <Text style={styles.versionArrow}>▶</Text>
-                  </Animated.View>
-                </View>
+              <View style={[styles.versionContainer, { paddingHorizontal: 10 }]}>
+                <TouchableOpacity onPress={toggleErrorLog} activeOpacity={0.7}>
+                  <View style={styles.versionHeader}>
+                    <CardIconTitle icon={<ErrorIcon width={20} height={20} fill="#FFC107" />} title="Event Log" styles={styles} />
+                    <Animated.View style={{ transform: [{ rotate: animations['errorLog']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
+                      <Text style={styles.versionArrow}>▶</Text>
+                    </Animated.View>
+                  </View>
+                </TouchableOpacity>
                 {errorLogExpanded && (
                   <View style={[styles.versionContent, { paddingLeft: 0, paddingRight: 0 }]}>
                     {errorLogEntries.length === 0 ? (
@@ -1690,23 +1682,21 @@ export default function MoreScreen({
                     )}
                   </View>
                 )}
-              </TouchableOpacity>
+              </View>
 
               {/* ── RAG Log ── */}
-              <TouchableOpacity
-                style={[styles.versionContainer, { paddingHorizontal: 10 }]}
-                onPress={toggleRagLog}
-                activeOpacity={0.7}
-              >
-                <View style={styles.versionHeader}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1, flexShrink: 1 }}>
-                      <BenderIcon width={24} height={24} fill="#7B8D9E" />
-                      <Text style={[styles.versionText, { flexShrink: 1 }, titleFontStyle]}>RAG Log</Text>
-                    </View>
-                  <Animated.View style={{ transform: [{ rotate: animations['ragLog']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
-                    <Text style={styles.versionArrow}>▶</Text>
-                  </Animated.View>
-                </View>
+              <View style={[styles.versionContainer, { paddingHorizontal: 10 }]}>
+                <TouchableOpacity onPress={toggleRagLog} activeOpacity={0.7}>
+                  <View style={styles.versionHeader}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1, flexShrink: 1 }}>
+                        <BenderIcon width={24} height={24} fill="#7B8D9E" />
+                        <Text style={[styles.versionText, { flexShrink: 1 }, titleFontStyle]}>RAG Log</Text>
+                      </View>
+                    <Animated.View style={{ transform: [{ rotate: animations['ragLog']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
+                      <Text style={styles.versionArrow}>▶</Text>
+                    </Animated.View>
+                  </View>
+                </TouchableOpacity>
                 {ragLogExpanded && (
                   <View style={[styles.versionContent, { paddingLeft: 0, paddingRight: 0 }]}>
                     {/* Action buttons */}
@@ -1879,7 +1869,7 @@ export default function MoreScreen({
                     )}
                   </View>
                 )}
-              </TouchableOpacity>
+              </View>
             </CollapsibleSection>
             </Animated.View>
           )}
