@@ -230,6 +230,10 @@ export function retrieveRelevantChunks(index, query, topK = 8) {
   const selected = scoredWithIdx.filter(e => e.score > 0).slice(0, topK);
   const selectedIdxSet = new Set(selected.map(e => e.idx));
 
+  // Re-sort selected chunks by original document order so the LLM reads
+  // rules in their natural sequence rather than by relevance score.
+  selected.sort((a, b) => a.idx - b.idx);
+
   logRetrieval({
     question: query,
     keywords: queryTokens,
@@ -247,6 +251,7 @@ export function retrieveRelevantChunks(index, query, topK = 8) {
       content: e.chunk.content,
       score: e.score,
       source: e.chunk.source,
+      originalIndex: e.idx,
     })),
   });
 

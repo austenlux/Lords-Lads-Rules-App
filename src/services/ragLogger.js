@@ -140,9 +140,10 @@ export function formatRagLogAsText() {
       });
       lines.push('');
 
-      lines.push('Selected chunks sent to LLM:');
+      lines.push('Selected chunks sent to LLM (document order):');
       entry.selectedChunks?.forEach((c, i) => {
-        lines.push(`  ┌── Chunk ${i + 1}: ${c.heading} (score ${c.score.toFixed(4)}, ${c.source})`);
+        const idxLabel = c.originalIndex != null ? `, docIdx ${c.originalIndex}` : '';
+        lines.push(`  ┌── Chunk ${i + 1}: ${c.heading} (score ${c.score.toFixed(4)}, ${c.source}${idxLabel})`);
         c.content.split('\n').forEach(l => lines.push(`  │ ${l}`));
         lines.push('  └──');
         lines.push('');
