@@ -130,25 +130,24 @@ function chunkMarkdown(markdown, source) {
   return chunks;
 }
 
-// ── Cross-Reference Keyword Extraction ───────────────────────────────────
+// ── Phase-Specific Cross-Reference ───────────────────────────────────────
+
+const PHASE_KEYWORDS = [
+  'flip', 'strike', 'drink', 'hammer test', 'demotions',
+  'uprising', 'penalties', 'resetting nails', 'sparks',
+];
 
 /**
- * Extract meaningful keywords from a section name for cross-reference matching.
- * Strips roman numerals, numbering prefixes, and common filler words,
- * returning lowercase keywords that represent the section's topic.
+ * Extract the game-phase keyword from a section name, if it matches one of
+ * the known phase headings. Returns null for non-phase sections.
  *
- * @param {string} sectionName  e.g. "IV.A - Flip" → ["flip"]
- * @returns {string[]}
+ * @param {string} sectionName  e.g. "IV.A - Flip" → "flip"
+ * @returns {string|null}
  */
-function extractKeywords(sectionName) {
-  if (!sectionName) return [];
-  const cleaned = sectionName
-    .replace(/^[IVXLCDM]+(\.[A-Z])?\s*[-–—]\s*/i, '')
-    .replace(/^[\d.]+\s*[-–—]\s*/, '');
-  return cleaned
-    .toLowerCase()
-    .split(/\s+/)
-    .filter(w => w.length > 2 && !STOPWORDS.has(w));
+function extractPhaseKeyword(sectionName) {
+  if (!sectionName) return null;
+  const lower = sectionName.toLowerCase();
+  return PHASE_KEYWORDS.find(phase => lower.includes(phase)) || null;
 }
 
 // ── BM25 Index ───────────────────────────────────────────────────────────────
@@ -172,19 +171,17 @@ export function buildIndex(rulesMarkdown, expansionsMarkdown) {
     return { chunks: [], idf: new Map(), avgDl: 0, chunkTokens: [], totalChunks: 0 };
   }
 
-  // Extract keywords from each chunk's sectionName for cross-referencing.
-  const sectionKeywords = chunks.map(c => extractKeywords(c.sectionName));
+  // Build cross-references using only recognised game-phase keywords.
+  const sectionPhases = chunks.map(c => extractPhaseKeyword(c.sectionName));
 
   for (let i = 0; i < chunks.length; i++) {
     const bodyLower = chunks[i].content.toLowerCase();
     const refs = [];
     for (let j = 0; j < chunks.length; j++) {
       if (i === j) continue;
-      for (const kw of sectionKeywords[j]) {
-        if (bodyLower.includes(kw)) {
-          refs.push(chunks[j].sectionName);
-          break;
-        }
+      const phase = sectionPhases[j];
+      if (phase && bodyLower.includes(phase)) {
+        refs.push(chunks[j].sectionName);
       }
     }
     chunks[i].crossRefs = refs;
@@ -307,12 +304,11 @@ export function retrieveRelevantChunks(index, query, topK = 8) {
 // ── Post-Retrieval Processing ─────────────────────────────────────────────
 
 const MERGE_SIZE_CAP = 5000;
-const SCORE_THRESHOLD_RATIO = 0.35;
-const MIN_SURVIVING_CHUNKS = 2;
 
 /**
- * Two-stage post-retrieval processing: score-gated filtering, cross-reference
- * merging, and same-parent merging.
+ * Three-stage post-retrieval processing: smart filtering (top-3 + siblings +
+ * cross-ref affinity), phase-specific cross-reference merging (no cascading),
+ * and same-parent merging.
  *
  * @param {Array<{ heading, content, source, score, originalIndex, sectionName, parentSection, crossRefs }>} selectedChunks
  * @returns {{ chunks: Array, log: { filtered: Array, crossRefMerges: Array, parentMerges: Array, finalCount: number } }}
@@ -324,90 +320,74 @@ export function filterAndMerge(selectedChunks) {
 
   const logData = { filtered: [], crossRefMerges: [], parentMerges: [], finalCount: 0 };
 
-  // ── Stage 1: Score-Gated Filtering ─────────────────────────────────────
-  const maxScore = Math.max(...selectedChunks.map(c => c.score));
-  const threshold = maxScore * SCORE_THRESHOLD_RATIO;
+  // ── Stage 1: Smart Filtering ──────────────────────────────────────────
+  // Keep: top-3 by score, siblings (same parentSection) of any top-3
+  // chunk, and any chunk with a direct phase cross-ref to a top-3 chunk.
+  const TOP_N = 3;
+  const byScore = [...selectedChunks].sort((a, b) => b.score - a.score);
+  const top3 = byScore.slice(0, TOP_N);
+  const top3Indices = new Set(top3.map(c => c.originalIndex));
+  const top3Parents = new Set(top3.map(c => c.parentSection).filter(Boolean));
+  const top3Names = new Set(top3.map(c => c.sectionName));
 
   let survivors = [];
-  const belowThreshold = [];
   for (const chunk of selectedChunks) {
-    if (chunk.score >= threshold) {
+    const isTop = top3Indices.has(chunk.originalIndex);
+    const isSibling = chunk.parentSection && top3Parents.has(chunk.parentSection);
+    const hasXrefToTop = chunk.crossRefs?.some(ref => top3Names.has(ref))
+      || top3.some(t => t.crossRefs?.includes(chunk.sectionName));
+
+    if (isTop || isSibling || hasXrefToTop) {
       survivors.push({ ...chunk });
     } else {
-      belowThreshold.push(chunk);
+      logData.filtered.push({
+        heading: chunk.heading,
+        score: chunk.score,
+        reason: 'No top-3 affinity (not top-3, no shared parent, no direct cross-ref)',
+      });
     }
   }
 
-  // Guarantee minimum 2 chunks survive.
-  if (survivors.length < MIN_SURVIVING_CHUNKS) {
-    const sorted = [...selectedChunks].sort((a, b) => b.score - a.score);
-    const survivorSet = new Set(survivors.map(c => c.originalIndex));
-    for (const chunk of sorted) {
-      if (survivors.length >= MIN_SURVIVING_CHUNKS) break;
-      if (!survivorSet.has(chunk.originalIndex)) {
-        survivors.push({ ...chunk });
-        survivorSet.add(chunk.originalIndex);
-      }
-    }
-  }
-
-  logData.filtered = belowThreshold
-    .filter(c => !survivors.some(s => s.originalIndex === c.originalIndex))
-    .map(c => ({ heading: c.heading, score: c.score, reason: `Below threshold (${threshold.toFixed(4)})` }));
-
-  // ── Stage 2: Cross-Reference Merging ───────────────────────────────────
-  const merged = new Set();
-
-  const sharesCrossRef = (a, b) => {
-    const aKeywords = extractKeywords(a.sectionName);
-    const bKeywords = extractKeywords(b.sectionName);
-
-    // A's sectionName keyword appears in B's crossRefs
-    if (b.crossRefs?.some(ref => aKeywords.some(kw => ref.toLowerCase().includes(kw)))) return true;
-    // B's sectionName keyword appears in A's crossRefs
-    if (a.crossRefs?.some(ref => bKeywords.some(kw => ref.toLowerCase().includes(kw)))) return true;
-
-    // Both reference the same phase/section
-    if (a.crossRefs?.length && b.crossRefs?.length) {
-      const aRefSet = new Set(a.crossRefs.map(r => r.toLowerCase()));
-      for (const ref of b.crossRefs) {
-        if (aRefSet.has(ref.toLowerCase())) return true;
-      }
-    }
-    return false;
-  };
+  // ── Stage 2: Cross-Reference Merging (phase-specific, no cascading) ──
+  // Merge only when one chunk's crossRefs contain the other's exact
+  // sectionName. Each chunk participates in at most one merge (break
+  // after the first match prevents transitive chaining).
+  const mergedIndices = new Set();
 
   for (let i = 0; i < survivors.length; i++) {
-    if (merged.has(i)) continue;
+    if (mergedIndices.has(i)) continue;
     for (let j = i + 1; j < survivors.length; j++) {
-      if (merged.has(j)) continue;
-      if (sharesCrossRef(survivors[i], survivors[j])) {
-        const [first, second] = survivors[i].originalIndex < survivors[j].originalIndex
-          ? [survivors[i], survivors[j]]
-          : [survivors[j], survivors[i]];
+      if (mergedIndices.has(j)) continue;
+      const a = survivors[i];
+      const b = survivors[j];
+      if (!a.crossRefs?.includes(b.sectionName) && !b.crossRefs?.includes(a.sectionName)) continue;
 
-        logData.crossRefMerges.push({
-          from: [first.heading, second.heading],
-          reason: 'Shared cross-reference',
-        });
+      const [first, second] = a.originalIndex < b.originalIndex ? [a, b] : [b, a];
+      const combined = `${first.content}\n\n${second.content}`;
+      if (combined.length > MERGE_SIZE_CAP) continue;
 
-        survivors[i] = {
-          heading: `${first.heading} + ${second.heading}`,
-          content: `${first.content}\n\n${second.content}`,
-          source: first.source,
-          score: Math.max(first.score, second.score),
-          originalIndex: Math.min(first.originalIndex, second.originalIndex),
-          sectionName: `${first.sectionName} + ${second.sectionName}`,
-          parentSection: first.parentSection || second.parentSection,
-          crossRefs: [...(first.crossRefs || []), ...(second.crossRefs || [])],
-          merged: true,
-        };
-        merged.add(j);
-      }
+      logData.crossRefMerges.push({
+        from: [first.heading, second.heading],
+        reason: 'Shared phase cross-reference',
+      });
+
+      survivors[i] = {
+        heading: `${first.heading} + ${second.heading}`,
+        content: combined,
+        source: first.source,
+        score: Math.max(first.score, second.score),
+        originalIndex: Math.min(first.originalIndex, second.originalIndex),
+        sectionName: `${first.sectionName} + ${second.sectionName}`,
+        parentSection: first.parentSection || second.parentSection,
+        crossRefs: [...(first.crossRefs || []), ...(second.crossRefs || [])],
+        merged: true,
+      };
+      mergedIndices.add(j);
+      break;
     }
   }
 
-  survivors = survivors.filter((_, i) => !merged.has(i));
+  survivors = survivors.filter((_, i) => !mergedIndices.has(i));
 
   // ── Stage 3: Same-Parent Merging ───────────────────────────────────────
   const parentGroups = new Map();
