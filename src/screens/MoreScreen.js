@@ -1684,7 +1684,10 @@ export default function MoreScreen({
                 activeOpacity={0.7}
               >
                 <View style={styles.versionHeader}>
-                  <CardIconTitle icon={<BenderIcon width={20} height={20} fill="#7B8D9E" />} title="RAG Log" styles={styles} />
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1, flexShrink: 1 }}>
+                      <BenderIcon width={24} height={24} fill="#7B8D9E" />
+                      <Text style={[styles.versionText, { flexShrink: 1 }, titleFontStyle]}>RAG Log</Text>
+                    </View>
                   <Animated.View style={{ transform: [{ rotate: animations['ragLog']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
                     <Text style={styles.versionArrow}>▶</Text>
                   </Animated.View>
