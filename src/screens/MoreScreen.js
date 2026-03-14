@@ -258,6 +258,7 @@ export default function MoreScreen({
   const [expandedRetrievals, setExpandedRetrievals] = useState({});
   const [ragCopied, setRagCopied] = useState(false);
   const [eventCopied, setEventCopied] = useState(false);
+  const [ragChunksExpanded, setRagChunksExpanded] = useState(false);
   const ragLogUnsub = useRef(null);
   const ragRetrievalAnims = useRef({}).current;
 
@@ -1733,7 +1734,7 @@ export default function MoreScreen({
                         onPress={handleClearRagLog}
                       >
                         <TrashIcon width={16} height={16} fill={accent} />
-                        <Text style={[{ color: accent, fontSize: 13 }, bodyFontStyle]}>Clear</Text>
+                        <Text style={[{ color: accent, fontSize: 13 }, bodyFontStyle]}>Clear Log</Text>
                       </TouchableOpacity>
                     </View>
 
@@ -1753,10 +1754,20 @@ export default function MoreScreen({
                               <Text style={styles.debugMetaValue}>{value}</Text>
                             </View>
                           ))}
-                          <Text style={[{ fontSize: 11, color: '#999', marginTop: 8, marginBottom: 4 }, bodyFontStyle]}>
-                            Chunks ({ragLog.indexBuild.totalChunks}):
-                          </Text>
-                          {ragLog.indexBuild.chunks.map((c, i) => (
+                          <TouchableOpacity
+                            onPress={() => {
+                              LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+                              setRagChunksExpanded(prev => !prev);
+                            }}
+                            style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8, marginBottom: 4 }}
+                            activeOpacity={0.7}
+                          >
+                            <Text style={[{ fontSize: 11, color: '#999', flex: 1 }, bodyFontStyle]}>
+                              Chunks ({ragLog.indexBuild.totalChunks})
+                            </Text>
+                            <Text style={{ fontSize: 10, color: '#999' }}>{ragChunksExpanded ? '▼' : '▶'}</Text>
+                          </TouchableOpacity>
+                          {ragChunksExpanded && ragLog.indexBuild.chunks.map((c, i) => (
                             <View key={i} style={[styles.debugMetaRow, { flexDirection: 'column', gap: 2, paddingVertical: 4 }]}>
                               <Text style={[{ fontSize: 11, color: '#E0E0E0', fontWeight: '600' }, bodyFontStyle]} numberOfLines={1}>
                                 {i + 1}. {c.heading}
