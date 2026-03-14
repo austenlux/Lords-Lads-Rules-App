@@ -62,7 +62,7 @@ function tokenize(text) {
  *
  * @param {string} markdown  Raw markdown content.
  * @param {string} source    Label for the chunk source ('rules' | 'expansions').
- * @returns {Array<{ heading: string, content: string, source: string }>}
+ * @returns {Array<{ heading: string, content: string, source: string, parentSection: string, sectionName: string }>}
  */
 function chunkMarkdown(markdown, source) {
   if (!markdown?.trim()) return [];
@@ -86,10 +86,16 @@ function chunkMarkdown(markdown, source) {
       } else {
         headingContext = currentHeading;
       }
+
+      const sectionName = currentH3 || currentH2 || currentH1;
+      const parentSection = currentH3 ? currentH2 : (currentH2 ? currentH1 : '');
+
       chunks.push({
         heading: headingContext,
         content: `${currentHeading}\n${body}`,
         source,
+        sectionName,
+        parentSection,
       });
     }
     currentLines = [];
@@ -124,6 +130,27 @@ function chunkMarkdown(markdown, source) {
   return chunks;
 }
 
+// ── Cross-Reference Keyword Extraction ───────────────────────────────────
+
+/**
+ * Extract meaningful keywords from a section name for cross-reference matching.
+ * Strips roman numerals, numbering prefixes, and common filler words,
+ * returning lowercase keywords that represent the section's topic.
+ *
+ * @param {string} sectionName  e.g. "IV.A - Flip" → ["flip"]
+ * @returns {string[]}
+ */
+function extractKeywords(sectionName) {
+  if (!sectionName) return [];
+  const cleaned = sectionName
+    .replace(/^[IVXLCDM]+(\.[A-Z])?\s*[-–—]\s*/i, '')
+    .replace(/^[\d.]+\s*[-–—]\s*/, '');
+  return cleaned
+    .toLowerCase()
+    .split(/\s+/)
+    .filter(w => w.length > 2 && !STOPWORDS.has(w));
+}
+
 // ── BM25 Index ───────────────────────────────────────────────────────────────
 
 /**
@@ -143,6 +170,24 @@ export function buildIndex(rulesMarkdown, expansionsMarkdown) {
   if (chunks.length === 0) {
     logEvent(LOG_SOURCE, 'Index built with 0 chunks (no content)');
     return { chunks: [], idf: new Map(), avgDl: 0, chunkTokens: [], totalChunks: 0 };
+  }
+
+  // Extract keywords from each chunk's sectionName for cross-referencing.
+  const sectionKeywords = chunks.map(c => extractKeywords(c.sectionName));
+
+  for (let i = 0; i < chunks.length; i++) {
+    const bodyLower = chunks[i].content.toLowerCase();
+    const refs = [];
+    for (let j = 0; j < chunks.length; j++) {
+      if (i === j) continue;
+      for (const kw of sectionKeywords[j]) {
+        if (bodyLower.includes(kw)) {
+          refs.push(chunks[j].sectionName);
+          break;
+        }
+      }
+    }
+    chunks[i].crossRefs = refs;
   }
 
   const chunkTokens = chunks.map(c => tokenize(c.content));
@@ -177,6 +222,7 @@ export function buildIndex(rulesMarkdown, expansionsMarkdown) {
       charCount: c.content.length,
       wordCount: c.content.split(/\s+/).filter(Boolean).length,
       tokenEstimate: Math.ceil(c.content.length / 4),
+      crossRefs: c.crossRefs,
     })),
   });
 
@@ -255,5 +301,187 @@ export function retrieveRelevantChunks(index, query, topK = 8) {
     })),
   });
 
-  return selected.map(e => ({ ...e.chunk, score: e.score }));
+  return selected.map(e => ({ ...e.chunk, score: e.score, originalIndex: e.idx }));
+}
+
+// ── Post-Retrieval Processing ─────────────────────────────────────────────
+
+const MERGE_SIZE_CAP = 5000;
+const SCORE_THRESHOLD_RATIO = 0.35;
+const MIN_SURVIVING_CHUNKS = 2;
+
+/**
+ * Two-stage post-retrieval processing: score-gated filtering, cross-reference
+ * merging, and same-parent merging.
+ *
+ * @param {Array<{ heading, content, source, score, originalIndex, sectionName, parentSection, crossRefs }>} selectedChunks
+ * @returns {{ chunks: Array, log: { filtered: Array, crossRefMerges: Array, parentMerges: Array, finalCount: number } }}
+ */
+export function filterAndMerge(selectedChunks) {
+  if (!selectedChunks?.length) {
+    return { chunks: [], log: { filtered: [], crossRefMerges: [], parentMerges: [], finalCount: 0 } };
+  }
+
+  const logData = { filtered: [], crossRefMerges: [], parentMerges: [], finalCount: 0 };
+
+  // ── Stage 1: Score-Gated Filtering ─────────────────────────────────────
+  const maxScore = Math.max(...selectedChunks.map(c => c.score));
+  const threshold = maxScore * SCORE_THRESHOLD_RATIO;
+
+  let survivors = [];
+  const belowThreshold = [];
+  for (const chunk of selectedChunks) {
+    if (chunk.score >= threshold) {
+      survivors.push({ ...chunk });
+    } else {
+      belowThreshold.push(chunk);
+    }
+  }
+
+  // Guarantee minimum 2 chunks survive.
+  if (survivors.length < MIN_SURVIVING_CHUNKS) {
+    const sorted = [...selectedChunks].sort((a, b) => b.score - a.score);
+    const survivorSet = new Set(survivors.map(c => c.originalIndex));
+    for (const chunk of sorted) {
+      if (survivors.length >= MIN_SURVIVING_CHUNKS) break;
+      if (!survivorSet.has(chunk.originalIndex)) {
+        survivors.push({ ...chunk });
+        survivorSet.add(chunk.originalIndex);
+      }
+    }
+  }
+
+  logData.filtered = belowThreshold
+    .filter(c => !survivors.some(s => s.originalIndex === c.originalIndex))
+    .map(c => ({ heading: c.heading, score: c.score, reason: `Below threshold (${threshold.toFixed(4)})` }));
+
+  // ── Stage 2: Cross-Reference Merging ───────────────────────────────────
+  const merged = new Set();
+
+  const sharesCrossRef = (a, b) => {
+    const aKeywords = extractKeywords(a.sectionName);
+    const bKeywords = extractKeywords(b.sectionName);
+
+    // A's sectionName keyword appears in B's crossRefs
+    if (b.crossRefs?.some(ref => aKeywords.some(kw => ref.toLowerCase().includes(kw)))) return true;
+    // B's sectionName keyword appears in A's crossRefs
+    if (a.crossRefs?.some(ref => bKeywords.some(kw => ref.toLowerCase().includes(kw)))) return true;
+
+    // Both reference the same phase/section
+    if (a.crossRefs?.length && b.crossRefs?.length) {
+      const aRefSet = new Set(a.crossRefs.map(r => r.toLowerCase()));
+      for (const ref of b.crossRefs) {
+        if (aRefSet.has(ref.toLowerCase())) return true;
+      }
+    }
+    return false;
+  };
+
+  for (let i = 0; i < survivors.length; i++) {
+    if (merged.has(i)) continue;
+    for (let j = i + 1; j < survivors.length; j++) {
+      if (merged.has(j)) continue;
+      if (sharesCrossRef(survivors[i], survivors[j])) {
+        const [first, second] = survivors[i].originalIndex < survivors[j].originalIndex
+          ? [survivors[i], survivors[j]]
+          : [survivors[j], survivors[i]];
+
+        logData.crossRefMerges.push({
+          from: [first.heading, second.heading],
+          reason: 'Shared cross-reference',
+        });
+
+        survivors[i] = {
+          heading: `${first.heading} + ${second.heading}`,
+          content: `${first.content}\n\n${second.content}`,
+          source: first.source,
+          score: Math.max(first.score, second.score),
+          originalIndex: Math.min(first.originalIndex, second.originalIndex),
+          sectionName: `${first.sectionName} + ${second.sectionName}`,
+          parentSection: first.parentSection || second.parentSection,
+          crossRefs: [...(first.crossRefs || []), ...(second.crossRefs || [])],
+          merged: true,
+        };
+        merged.add(j);
+      }
+    }
+  }
+
+  survivors = survivors.filter((_, i) => !merged.has(i));
+
+  // ── Stage 3: Same-Parent Merging ───────────────────────────────────────
+  const parentGroups = new Map();
+  const noParent = [];
+
+  for (const chunk of survivors) {
+    if (chunk.parentSection) {
+      const key = chunk.parentSection;
+      if (!parentGroups.has(key)) parentGroups.set(key, []);
+      parentGroups.get(key).push(chunk);
+    } else {
+      noParent.push(chunk);
+    }
+  }
+
+  const finalChunks = [...noParent];
+  for (const [parent, group] of parentGroups) {
+    if (group.length < 2) {
+      finalChunks.push(...group);
+      continue;
+    }
+
+    group.sort((a, b) => a.originalIndex - b.originalIndex);
+    const combinedContent = group.map(c => c.content).join('\n\n');
+
+    if (combinedContent.length <= MERGE_SIZE_CAP) {
+      logData.parentMerges.push({
+        parent,
+        merged: group.map(c => c.heading),
+      });
+      finalChunks.push({
+        heading: group.map(c => c.heading).join(' + '),
+        content: combinedContent,
+        source: group[0].source,
+        score: Math.max(...group.map(c => c.score)),
+        originalIndex: Math.min(...group.map(c => c.originalIndex)),
+        sectionName: group.map(c => c.sectionName).join(' + '),
+        parentSection: parent,
+        crossRefs: group.flatMap(c => c.crossRefs || []),
+        merged: true,
+      });
+    } else {
+      // Exceeds size cap — keep only the highest-scoring sub-chunks within budget.
+      group.sort((a, b) => b.score - a.score);
+      let budget = MERGE_SIZE_CAP;
+      const kept = [];
+      for (const chunk of group) {
+        if (chunk.content.length <= budget) {
+          kept.push(chunk);
+          budget -= chunk.content.length;
+        }
+      }
+      if (kept.length >= 2) {
+        kept.sort((a, b) => a.originalIndex - b.originalIndex);
+        logData.parentMerges.push({ parent, merged: kept.map(c => c.heading) });
+        finalChunks.push({
+          heading: kept.map(c => c.heading).join(' + '),
+          content: kept.map(c => c.content).join('\n\n'),
+          source: kept[0].source,
+          score: Math.max(...kept.map(c => c.score)),
+          originalIndex: Math.min(...kept.map(c => c.originalIndex)),
+          sectionName: kept.map(c => c.sectionName).join(' + '),
+          parentSection: parent,
+          crossRefs: kept.flatMap(c => c.crossRefs || []),
+          merged: true,
+        });
+      } else {
+        finalChunks.push(...kept.length ? kept : [group[0]]);
+      }
+    }
+  }
+
+  finalChunks.sort((a, b) => a.originalIndex - b.originalIndex);
+  logData.finalCount = finalChunks.length;
+
+  return { chunks: finalChunks, log: logData };
 }

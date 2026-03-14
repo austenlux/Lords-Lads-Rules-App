@@ -125,8 +125,8 @@ export const buildGameAssistantPrompt = (retrievedChunks, history, question) => 
     .filter(c => c.source === 'expansions')
     .map(c => sanitizeRulebookContent(c.content));
 
-  const rulesContent = rulesChunks.length > 0 ? rulesChunks.join('\n\n---\n\n') : 'Not available.';
-  const expansionsContent = expansionsChunks.length > 0 ? expansionsChunks.join('\n\n---\n\n') : 'Not available.';
+  const rulesContent = rulesChunks.length > 0 ? rulesChunks.join('\n\n') : 'Not available.';
+  const expansionsContent = expansionsChunks.length > 0 ? expansionsChunks.join('\n\n') : 'Not available.';
 
   return GAME_ASSISTANT_SYSTEM_PROMPT
     .replace(P.RULES,      rulesContent)

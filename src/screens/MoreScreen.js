@@ -1969,6 +1969,59 @@ export default function MoreScreen({
                                   </>
                                 )}
 
+                                {/* Post-Processing */}
+                                {entry.postProcessing && (
+                                  <View style={{ marginTop: 10 }}>
+                                    <Text style={[{ fontSize: 11, color: '#CE93D8', fontWeight: '700', marginBottom: 4 }, bodyFontStyle]}>
+                                      Post-Processing
+                                    </Text>
+                                    {/* Filtered out */}
+                                    {entry.postProcessing.filtered?.length > 0 ? (
+                                      <View style={{ marginBottom: 6, padding: 6, borderRadius: 4, backgroundColor: 'rgba(255,152,0,0.06)', borderWidth: 1, borderColor: 'rgba(255,152,0,0.2)' }}>
+                                        <Text style={[{ fontSize: 10, color: '#FFB74D', fontWeight: '600', marginBottom: 2 }, bodyFontStyle]}>
+                                          Filtered out ({entry.postProcessing.filtered.length}):
+                                        </Text>
+                                        {entry.postProcessing.filtered.map((f, fi) => (
+                                          <Text key={fi} style={[{ fontSize: 10, color: '#FFCC80' }, bodyFontStyle]}>
+                                            • {f.heading} — score {f.score.toFixed(4)} — {f.reason}
+                                          </Text>
+                                        ))}
+                                      </View>
+                                    ) : (
+                                      <Text style={[{ fontSize: 10, color: '#777', marginBottom: 4 }, bodyFontStyle]}>No chunks filtered out</Text>
+                                    )}
+                                    {/* Cross-ref merges */}
+                                    {entry.postProcessing.crossRefMerges?.length > 0 && (
+                                      <View style={{ marginBottom: 6, padding: 6, borderRadius: 4, backgroundColor: 'rgba(206,147,216,0.06)', borderWidth: 1, borderColor: 'rgba(206,147,216,0.2)' }}>
+                                        <Text style={[{ fontSize: 10, color: '#CE93D8', fontWeight: '600', marginBottom: 2 }, bodyFontStyle]}>
+                                          Cross-ref merges ({entry.postProcessing.crossRefMerges.length}):
+                                        </Text>
+                                        {entry.postProcessing.crossRefMerges.map((m, mi) => (
+                                          <Text key={mi} style={[{ fontSize: 10, color: '#E1BEE7' }, bodyFontStyle]}>
+                                            • {m.from.join(' + ')} — {m.reason}
+                                          </Text>
+                                        ))}
+                                      </View>
+                                    )}
+                                    {/* Same-parent merges */}
+                                    {entry.postProcessing.parentMerges?.length > 0 && (
+                                      <View style={{ marginBottom: 6, padding: 6, borderRadius: 4, backgroundColor: 'rgba(129,212,250,0.06)', borderWidth: 1, borderColor: 'rgba(129,212,250,0.2)' }}>
+                                        <Text style={[{ fontSize: 10, color: '#81D4FA', fontWeight: '600', marginBottom: 2 }, bodyFontStyle]}>
+                                          Same-parent merges ({entry.postProcessing.parentMerges.length}):
+                                        </Text>
+                                        {entry.postProcessing.parentMerges.map((m, mi) => (
+                                          <Text key={mi} style={[{ fontSize: 10, color: '#B3E5FC' }, bodyFontStyle]}>
+                                            • [{m.parent}] {m.merged.join(' + ')}
+                                          </Text>
+                                        ))}
+                                      </View>
+                                    )}
+                                    <Text style={[{ fontSize: 10, color: '#CE93D8', fontWeight: '600' }, bodyFontStyle]}>
+                                      Final chunks → LLM: {entry.postProcessing.finalCount}
+                                    </Text>
+                                  </View>
+                                )}
+
                                 {/* AI Response */}
                                 {entry.aiResponse != null && (
                                   <View style={{ marginTop: 10 }}>

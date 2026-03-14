@@ -26,10 +26,10 @@ import { AppState, PermissionsAndroid, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NativeVoiceAssistantOptional from '../specs/NativeVoiceAssistantOptional';
 import { buildGameAssistantPrompt } from '../constants';
-import { retrieveRelevantChunks } from '../services/ragService';
+import { retrieveRelevantChunks, filterAndMerge } from '../services/ragService';
 import { sanitizeTextForSpeech } from '../utils/sanitizeTextForSpeech';
 import { logError, logEvent } from '../services/errorLogger';
-import { logRetrieval, updateLatestRetrieval } from '../services/ragLogger';
+import { logRetrieval, updateLatestRetrieval, logPostProcessing } from '../services/ragLogger';
 
 
 const VOICE_STORAGE_KEY = '@lnl_voice_id';
@@ -459,8 +459,7 @@ export function useGameAssistant() {
           .filter((m) => m.text?.trim())
           .map((m) => ({ role: m.role, text: m.text }));
 
-        const chunks = ragIndex ? retrieveRelevantChunks(ragIndex, spokenQuestion) : [];
-        const totalContextChars = chunks.reduce((s, c) => s + c.content.length, 0);
+        const rawChunks = ragIndex ? retrieveRelevantChunks(ragIndex, spokenQuestion) : [];
         if (!ragIndex) {
           logRetrieval({
             question: spokenQuestion,
@@ -471,10 +470,15 @@ export function useGameAssistant() {
             noIndex: true,
           });
         }
-        logEvent('RAG', `Retrieved ${chunks.length} chunks (${totalContextChars} chars)${ragIndex ? '' : ' [index not ready]'}`, {
+        logEvent('RAG', `Retrieved ${rawChunks.length} raw chunks${ragIndex ? '' : ' [index not ready]'}`, {
           query: spokenQuestion.substring(0, 80),
-          chunks: chunks.map(c => ({ heading: c.heading, score: Math.round(c.score * 100) / 100 })),
+          chunks: rawChunks.map(c => ({ heading: c.heading, score: Math.round(c.score * 100) / 100 })),
         });
+
+        const { chunks, log: postProcessLog } = filterAndMerge(rawChunks);
+        logPostProcessing(postProcessLog);
+        const totalContextChars = chunks.reduce((s, c) => s + c.content.length, 0);
+        logEvent('RAG', `Post-processed: ${rawChunks.length} → ${chunks.length} chunks (${totalContextChars} chars)`);
 
         setMessages((prev) => [...prev, { id: assistantMsgId, role: 'assistant', text: '' }]);
 
@@ -487,6 +491,7 @@ export function useGameAssistant() {
         updateLatestRetrieval({
           totalContextChars: totalContextChars,
           promptLength: fullPrompt.length,
+          postProcessing: postProcessLog,
         });
 
         setIsThinking(true);

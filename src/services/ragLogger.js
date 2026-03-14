@@ -53,6 +53,16 @@ export function logRetrieval(data) {
 }
 
 /**
+ * Record the post-processing (filter + merge) step for the most recent retrieval.
+ * @param {{ filtered: Array, crossRefMerges: Array, parentMerges: Array, finalCount: number }} data
+ */
+export function logPostProcessing(data) {
+  if (retrievalLogs.length === 0) return;
+  retrievalLogs[0].postProcessing = { timestamp: new Date().toLocaleString(), ...data };
+  notifyListeners();
+}
+
+/**
  * Patch the most recent retrieval entry with additional data
  * (e.g. prompt length, total context chars computed after retrieval).
  * @param {object} data Fields to merge into the latest retrieval entry.
@@ -148,6 +158,27 @@ export function formatRagLogAsText() {
         lines.push('  └──');
         lines.push('');
       });
+
+      if (entry.postProcessing) {
+        const pp = entry.postProcessing;
+        lines.push('Post-Processing:');
+        if (pp.filtered?.length) {
+          lines.push(`  Filtered out (${pp.filtered.length}):`);
+          pp.filtered.forEach(f => lines.push(`    - ${f.heading} (score ${f.score.toFixed(4)}) — ${f.reason}`));
+        } else {
+          lines.push('  Filtered out: none');
+        }
+        if (pp.crossRefMerges?.length) {
+          lines.push(`  Cross-ref merges (${pp.crossRefMerges.length}):`);
+          pp.crossRefMerges.forEach(m => lines.push(`    - ${m.from.join(' + ')} — ${m.reason}`));
+        }
+        if (pp.parentMerges?.length) {
+          lines.push(`  Same-parent merges (${pp.parentMerges.length}):`);
+          pp.parentMerges.forEach(m => lines.push(`    - [${m.parent}] ${m.merged.join(' + ')}`));
+        }
+        lines.push(`  Final chunk count: ${pp.finalCount}`);
+        lines.push('');
+      }
 
       lines.push('AI Response:');
       if (entry.aiResponse) {
