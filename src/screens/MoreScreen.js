@@ -1409,8 +1409,9 @@ export default function MoreScreen({
                       const speechFailed = ['denied', 'restricted', 'siri_disabled', 'no_on_device', 'unavailable'].includes(speechPermissionStatus);
                       const speechPending = !speechOk && !speechFailed;
 
-                      const anyFailed = !deviceOk && !devicePending || modelFailed || micFailed || speechFailed;
-                      const allGood = deviceOk && modelOk && micOk && speechOk;
+                      const isAndroidPlatform = Platform.OS === 'android';
+                      const anyFailed = (!deviceOk && !devicePending) || modelFailed || micFailed || (!isAndroidPlatform && speechFailed);
+                      const allGood = deviceOk && modelOk && micOk && (isAndroidPlatform || speechOk);
 
                       const statusIcon = (ok, failed) =>
                         ok ? <BadgeSuccessIcon size={16} color="#4CAF50" />
@@ -1526,34 +1527,59 @@ export default function MoreScreen({
                     </View>
 
                     {/* Cloud LLM status */}
-                    <View style={{ marginTop: 12, marginBottom: 4 }}>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-                        <Text style={[styles.versionText, titleFontStyle]}>Cloud LLM</Text>
-                      </View>
-                    </View>
-                    <View style={styles.debugMetaRow}>
-                      <Text style={[styles.debugMetaLabel, bodyFontStyle]}>API Key</Text>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1 }}>
-                        {cloudLlmStatus.keyConfigured
-                          ? <BadgeSuccessIcon size={16} color="#4CAF50" />
-                          : <BadgeErrorIcon size={16} color="#CF6679" />}
-                        <Text style={[styles.debugMetaValue, { color: cloudLlmStatus.keyConfigured ? '#4CAF50' : '#CF6679' }]}>
-                          {cloudLlmStatus.keyConfigured ? 'Configured' : 'Not Set'}
-                        </Text>
-                      </View>
-                    </View>
-                    <View style={styles.debugMetaRow}>
-                      <Text style={[styles.debugMetaLabel, bodyFontStyle]}>Last Cloud Response</Text>
-                      <Text style={[styles.debugMetaValue, { color: '#888' }]}>
-                        {cloudLlmStatus.lastCloudResponse ?? '—'}
-                      </Text>
-                    </View>
-                    <View style={styles.debugMetaRow}>
-                      <Text style={[styles.debugMetaLabel, bodyFontStyle]}>Fallback Count</Text>
-                      <Text style={[styles.debugMetaValue, { color: cloudLlmStatus.fallbackCount > 0 ? '#FFC107' : '#888' }]}>
-                        {cloudLlmStatus.fallbackCount ?? 0}
-                      </Text>
-                    </View>
+                    {(() => {
+                      const cloudKeyOk = !!cloudLlmStatus.keyConfigured;
+                      const cloudHasResponse = !!cloudLlmStatus.lastCloudResponse;
+                      const cloudHasFallbacks = (cloudLlmStatus.fallbackCount ?? 0) > 0;
+                      const cloudOverallIcon = cloudKeyOk
+                        ? (cloudHasFallbacks
+                          ? <BadgeWarningIcon size={22} color="#FFC107" />
+                          : <BadgeSuccessIcon size={22} color="#4CAF50" />)
+                        : <BadgeErrorIcon size={22} color="#CF6679" />;
+                      return (
+                        <>
+                          <View style={{ marginTop: 12, marginBottom: 4 }}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                              <View style={{ width: 20, height: 20 }}>{cloudOverallIcon}</View>
+                              <Text style={[styles.versionText, titleFontStyle]}>Cloud LLM</Text>
+                            </View>
+                          </View>
+                          <View style={styles.debugMetaRow}>
+                            <Text style={[styles.debugMetaLabel, bodyFontStyle]}>API Key</Text>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1 }}>
+                              {cloudKeyOk
+                                ? <BadgeSuccessIcon size={16} color="#4CAF50" />
+                                : <BadgeErrorIcon size={16} color="#CF6679" />}
+                              <Text style={[styles.debugMetaValue, { color: cloudKeyOk ? '#4CAF50' : '#CF6679' }]}>
+                                {cloudKeyOk ? 'Configured' : 'Not Set'}
+                              </Text>
+                            </View>
+                          </View>
+                          <View style={styles.debugMetaRow}>
+                            <Text style={[styles.debugMetaLabel, bodyFontStyle]}>Last Cloud Response</Text>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1 }}>
+                              {cloudHasResponse
+                                ? <BadgeSuccessIcon size={16} color="#4CAF50" />
+                                : <BadgeWarningIcon size={16} color="#FFC107" />}
+                              <Text style={[styles.debugMetaValue, { color: cloudHasResponse ? '#4CAF50' : '#888' }]}>
+                                {cloudLlmStatus.lastCloudResponse ?? '—'}
+                              </Text>
+                            </View>
+                          </View>
+                          <View style={styles.debugMetaRow}>
+                            <Text style={[styles.debugMetaLabel, bodyFontStyle]}>Fallback Count</Text>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1 }}>
+                              {cloudHasFallbacks
+                                ? <BadgeWarningIcon size={16} color="#FFC107" />
+                                : <BadgeSuccessIcon size={16} color="#4CAF50" />}
+                              <Text style={[styles.debugMetaValue, { color: cloudHasFallbacks ? '#FFC107' : '#888' }]}>
+                                {cloudLlmStatus.fallbackCount ?? 0}
+                              </Text>
+                            </View>
+                          </View>
+                        </>
+                      );
+                    })()}
 
                     {/* Models subsection */}
                     <TouchableOpacity

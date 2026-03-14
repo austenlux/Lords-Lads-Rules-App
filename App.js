@@ -182,6 +182,8 @@ function AppContent() {
   useEffect(() => {
     if (!content && !expansionsContent) return;
     const index = buildIndex(content || '', expansionsContent || '');
+    index.rawRules = content || '';
+    index.rawExpansions = expansionsContent || '';
     ragIndexRef.current = index;
     setRagChunkCount(index.totalChunks);
     setRagIndexReady(index.totalChunks > 0);

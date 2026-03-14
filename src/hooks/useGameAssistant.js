@@ -25,9 +25,9 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { AppState, PermissionsAndroid, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NativeVoiceAssistantOptional from '../specs/NativeVoiceAssistantOptional';
-import { buildGameAssistantPrompt, buildGeminiPrompt } from '../constants';
+import { buildGameAssistantPrompt, buildGeminiFullContextPrompt } from '../constants';
 import { retrieveRelevantChunks, filterAndMerge, extractRelevantSentences } from '../services/ragService';
-import { askGemini, isGeminiConfigured } from '../services/geminiService';
+import { askGemini, isGeminiConfigured, GEMINI_MODEL } from '../services/geminiService';
 import { sanitizeTextForSpeech } from '../utils/sanitizeTextForSpeech';
 import { logError, logEvent } from '../services/errorLogger';
 import { logRetrieval, updateLatestRetrieval, logPostProcessing, logFinalChunks, logSentenceExtraction } from '../services/ragLogger';
@@ -457,7 +457,7 @@ export function useGameAssistant() {
           prev.map((m) => (m.id === userMsgId ? { ...m, text: spokenQuestion } : m)),
         );
 
-        // 2. Retrieve relevant chunks and build prompt ─────────────────────
+        // 2. Build prompt and query ────────────────────────────────────────
         const assistantMsgId = nextId();
         activeAssistantMsgId.current = assistantMsgId;
 
@@ -465,54 +465,34 @@ export function useGameAssistant() {
           .filter((m) => m.text?.trim())
           .map((m) => ({ role: m.role, text: m.text }));
 
-        let searchQuery = spokenQuestion;
-        const lastUserMsg = [...historySnapshot].reverse().find(m => m.role === 'user');
-        if (lastUserMsg?.text) {
-          searchQuery = `${lastUserMsg.text} ${spokenQuestion}`;
-        }
-
-        const rawChunks = ragIndex ? retrieveRelevantChunks(ragIndex, searchQuery) : [];
-        if (!ragIndex) {
-          logRetrieval({
-            question: spokenQuestion,
-            keywords: [],
-            topK: 0,
-            allScoredChunks: [],
-            selectedChunks: [],
-            noIndex: true,
-          });
-        }
-        logEvent('RAG', `Retrieved ${rawChunks.length} raw chunks${ragIndex ? '' : ' [index not ready]'}`, {
-          query: spokenQuestion.substring(0, 80),
-          chunks: rawChunks.map(c => ({ heading: c.heading, score: Math.round(c.score * 100) / 100 })),
-        });
-
-        const { chunks: mergedChunks, log: postProcessLog } = filterAndMerge(rawChunks);
-        logPostProcessing(postProcessLog);
-        logFinalChunks(mergedChunks);
-
-        const { chunks, log: extractionLog } = extractRelevantSentences(mergedChunks, searchQuery);
-        logSentenceExtraction(extractionLog);
-
-        const totalContextChars = chunks.reduce((s, c) => s + c.content.length, 0);
-        logEvent('RAG', `Post-processed: ${rawChunks.length} → ${mergedChunks.length} merged → ${chunks.length} extracted (${totalContextChars} chars)`);
-
         setMessages((prev) => [...prev, { id: assistantMsgId, role: 'assistant', text: '' }]);
         setIsThinking(true);
 
-        // ── Cloud-first: try Gemini, fall back to on-device ───────────
+        // ── Cloud-first: skip RAG entirely, send full rules to Gemini ──
         let usedCloud = false;
 
         if (isGeminiConfigured()) {
           try {
-            logEvent('Voice', 'Gemini API call started');
+            const rawRules = ragIndex?.rawRules || '';
+            const rawExpansions = ragIndex?.rawExpansions || '';
+            const totalChars = rawRules.length + rawExpansions.length;
+
+            logRetrieval({
+              question: spokenQuestion,
+              keywords: [],
+              topK: 0,
+              allScoredChunks: [],
+              selectedChunks: [],
+              cloudFullContext: true,
+            });
+
+            logEvent('Voice', `Gemini API call started (full context: ${totalChars} chars)`);
             const geminiT0 = Date.now();
 
-            const geminiPrompt = buildGeminiPrompt(mergedChunks, historySnapshot, spokenQuestion);
+            const geminiPrompt = buildGeminiFullContextPrompt(rawRules, rawExpansions, historySnapshot, spokenQuestion);
             updateLatestRetrieval({
-              totalContextChars: mergedChunks.reduce((s, c) => s + c.content.length, 0),
+              totalContextChars: totalChars,
               promptLength: geminiPrompt.length,
-              postProcessing: postProcessLog,
             });
 
             const geminiResponse = await askGemini(geminiPrompt);
@@ -527,7 +507,7 @@ export function useGameAssistant() {
             updateLatestRetrieval({
               aiResponse: geminiResponse,
               responseSource: 'cloud',
-              modelName: 'gemini-2.0-flash',
+              modelName: GEMINI_MODEL,
             });
 
             setCloudLlmStatus(prev => ({
@@ -549,7 +529,39 @@ export function useGameAssistant() {
         }
 
         if (!usedCloud) {
-          // On-device fallback: use sentence-extracted chunks.
+          // On-device fallback: run full RAG pipeline (tiny context window).
+          let searchQuery = spokenQuestion;
+          const lastUserMsg = [...historySnapshot].reverse().find(m => m.role === 'user');
+          if (lastUserMsg?.text) {
+            searchQuery = `${lastUserMsg.text} ${spokenQuestion}`;
+          }
+
+          const rawChunks = ragIndex ? retrieveRelevantChunks(ragIndex, searchQuery) : [];
+          if (!ragIndex) {
+            logRetrieval({
+              question: spokenQuestion,
+              keywords: [],
+              topK: 0,
+              allScoredChunks: [],
+              selectedChunks: [],
+              noIndex: true,
+            });
+          }
+          logEvent('RAG', `Retrieved ${rawChunks.length} raw chunks${ragIndex ? '' : ' [index not ready]'}`, {
+            query: spokenQuestion.substring(0, 80),
+            chunks: rawChunks.map(c => ({ heading: c.heading, score: Math.round(c.score * 100) / 100 })),
+          });
+
+          const { chunks: mergedChunks, log: postProcessLog } = filterAndMerge(rawChunks);
+          logPostProcessing(postProcessLog);
+          logFinalChunks(mergedChunks);
+
+          const { chunks, log: extractionLog } = extractRelevantSentences(mergedChunks, searchQuery);
+          logSentenceExtraction(extractionLog);
+
+          const totalContextChars = chunks.reduce((s, c) => s + c.content.length, 0);
+          logEvent('RAG', `Post-processed: ${rawChunks.length} → ${mergedChunks.length} merged → ${chunks.length} extracted (${totalContextChars} chars)`);
+
           const fullPrompt = buildGameAssistantPrompt(chunks, historySnapshot, spokenQuestion);
 
           updateLatestRetrieval({

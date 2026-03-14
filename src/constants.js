@@ -150,27 +150,35 @@ export const GEMINI_SYSTEM_PROMPT =
   'If the rules don\'t cover the question, say so.';
 
 /**
- * Builds the full prompt string sent to the Gemini cloud API.
- * Uses the merged (pre-extraction) chunks for richer context.
+ * Builds the full-context prompt for the Gemini cloud API.
+ * Sends the complete rulebook + expansions instead of RAG chunks — Gemini's
+ * 1M-token context window makes this trivially small (~5,400 tokens).
  *
- * @param {Array<{ content: string, source: string }>} mergedChunks
- * @param {Array}  history   Settled {role, text} messages (most-recent last).
- * @param {string} question  Current user question.
+ * @param {string} rawRules       Full rules markdown.
+ * @param {string} rawExpansions  Full expansions markdown.
+ * @param {Array}  history        Settled {role, text} messages (most-recent last).
+ * @param {string} question       Current user question.
  */
-export const buildGeminiPrompt = (mergedChunks, history, question) => {
-  const contextParts = mergedChunks.map(c => sanitizeRulebookContent(c.content));
-  const context = contextParts.join('\n\n');
+export const buildGeminiFullContextPrompt = (rawRules, rawExpansions, history, question) => {
+  const rules = sanitizeRulebookContent(rawRules || '') || 'Not available.';
+  const expansions = sanitizeRulebookContent(rawExpansions || '') || 'Not available.';
 
   const recentHistory = history?.slice(-(HISTORY_TURNS * 2)) ?? [];
   const historyText = recentHistory.length
     ? recentHistory.map(m => `${m.role === 'user' ? 'User' : 'Assistant'}: ${sanitizeUserInput(m.text)}`).join('\n')
     : '';
 
-  const parts = [GEMINI_SYSTEM_PROMPT, '', `Context:\n${context}`];
+  const parts = [
+    GEMINI_SYSTEM_PROMPT,
+    '',
+    `Here are the complete game rules:\n${rules}`,
+    '',
+    `Here are the expansion rules:\n${expansions}`,
+  ];
   if (historyText) {
-    parts.push('', `Conversation History:\n${historyText}`);
+    parts.push('', `Conversation so far:\n${historyText}`);
   }
-  parts.push('', `Question: ${sanitizeUserInput(question)}`);
+  parts.push('', `Current question: ${sanitizeUserInput(question)}`);
 
   return parts.join('\n');
 };

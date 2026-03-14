@@ -155,12 +155,16 @@ export function formatRagLogAsText() {
       lines.push(`RETRIEVAL #${ri + 1}`);
       lines.push('──────────────────────────────────────');
       lines.push(`Timestamp:  ${entry.timestamp}`);
-      if (entry.noIndex) {
+      if (entry.cloudFullContext) {
+        lines.push('☁ Cloud mode — full rules sent (no RAG)');
+      } else if (entry.noIndex) {
         lines.push('⚠ RAG index was not ready — no chunks retrieved');
       }
       lines.push(`Question:   ${entry.question}`);
-      lines.push(`Keywords:   ${entry.keywords?.join(', ') || 'none'}`);
-      lines.push(`Top-K:      ${entry.topK}`);
+      if (!entry.cloudFullContext) {
+        lines.push(`Keywords:   ${entry.keywords?.join(', ') || 'none'}`);
+        lines.push(`Top-K:      ${entry.topK}`);
+      }
       if (entry.totalContextChars != null) {
         lines.push(`Context →LLM: ${entry.totalContextChars} chars`);
       }
@@ -169,76 +173,78 @@ export function formatRagLogAsText() {
       }
       lines.push('');
 
-      lines.push('All chunks scored (sorted by BM25 score):');
-      entry.allScoredChunks?.forEach((c, i) => {
-        const tag = c.selected ? ' ★ SELECTED' : '';
-        lines.push(`  [${String(i + 1).padStart(2)}] ${c.heading}${tag}`);
-        lines.push(`       Score: ${c.score.toFixed(4)} | Source: ${c.source} | Chars: ${c.charCount} | Words: ${c.wordCount}`);
-      });
-      lines.push('');
-
-      lines.push('Selected chunks sent to LLM (document order):');
-      entry.selectedChunks?.forEach((c, i) => {
-        const idxLabel = c.originalIndex != null ? `, docIdx ${c.originalIndex}` : '';
-        lines.push(`  ┌── Chunk ${i + 1}: ${c.heading} (score ${c.score.toFixed(4)}, ${c.source}${idxLabel})`);
-        c.content.split('\n').forEach(l => lines.push(`  │ ${l}`));
-        lines.push('  └──');
+      if (!entry.cloudFullContext) {
+        lines.push('All chunks scored (sorted by BM25 score):');
+        entry.allScoredChunks?.forEach((c, i) => {
+          const tag = c.selected ? ' ★ SELECTED' : '';
+          lines.push(`  [${String(i + 1).padStart(2)}] ${c.heading}${tag}`);
+          lines.push(`       Score: ${c.score.toFixed(4)} | Source: ${c.source} | Chars: ${c.charCount} | Words: ${c.wordCount}`);
+        });
         lines.push('');
-      });
 
-      if (entry.postProcessing) {
-        const pp = entry.postProcessing;
-        lines.push('Post-Processing:');
-        if (pp.filtered?.length) {
-          lines.push(`  Filtered out (${pp.filtered.length}):`);
-          pp.filtered.forEach(f => lines.push(`    - ${f.heading} (score ${f.score.toFixed(4)}) — ${f.reason}`));
-        } else {
-          lines.push('  Filtered out: none');
-        }
-        if (pp.crossRefMerges?.length) {
-          lines.push(`  Cross-ref merges (${pp.crossRefMerges.length}):`);
-          pp.crossRefMerges.forEach(m => lines.push(`    - ${m.from.join(' + ')} — ${m.reason}`));
-        }
-        if (pp.parentMerges?.length) {
-          lines.push(`  Same-parent merges (${pp.parentMerges.length}):`);
-          pp.parentMerges.forEach(m => lines.push(`    - [${m.parent}] ${m.merged.join(' + ')}`));
-        }
-        if (pp.contextCapDropped?.length) {
-          lines.push(`  Context cap dropped (${pp.contextCapDropped.length}):`);
-          pp.contextCapDropped.forEach(d => lines.push(`    - ${d.heading} (score ${d.score.toFixed(4)}) — ${d.reason}`));
-        }
-        lines.push(`  Final chunk count: ${pp.finalCount}`);
-        lines.push('');
-      }
-
-      if (entry.finalChunks?.length) {
-        lines.push('Final merged chunks sent to LLM:');
-        entry.finalChunks.forEach((c, i) => {
-          lines.push(`  ┌── Chunk ${i + 1}: ${c.heading} (score ${c.score.toFixed(4)}, ${c.source}, ${c.charCount} chars)`);
+        lines.push('Selected chunks sent to LLM (document order):');
+        entry.selectedChunks?.forEach((c, i) => {
+          const idxLabel = c.originalIndex != null ? `, docIdx ${c.originalIndex}` : '';
+          lines.push(`  ┌── Chunk ${i + 1}: ${c.heading} (score ${c.score.toFixed(4)}, ${c.source}${idxLabel})`);
           c.content.split('\n').forEach(l => lines.push(`  │ ${l}`));
           lines.push('  └──');
           lines.push('');
         });
-      }
 
-      if (entry.sentenceExtraction?.length) {
-        lines.push('Sentence Extraction:');
-        entry.sentenceExtraction.forEach((se, i) => {
-          lines.push(`  Chunk ${i + 1}: "${se.heading}" (${se.originalChars} → ${se.extractedChars} chars)`);
-          se.sentences.forEach(s => {
-            const tag = s.score === '∞' ? 'H' : (s.kept ? '✓' : '✗');
-            lines.push(`    [${tag}] "${s.text}${s.text.length >= 80 ? '…' : ''}" (score: ${s.score})`);
-          });
-        });
-        lines.push('');
-
-        lines.push('Final extracted chunks sent to LLM:');
-        entry.sentenceExtraction.forEach((se, i) => {
-          lines.push(`  ┌── Chunk ${i + 1}: ${se.heading} (score ${se.score?.toFixed(4) ?? 'N/A'}, ${se.source}, ${se.extractedChars} chars)`);
-          se.extractedContent?.split('\n').forEach(l => lines.push(`  │ ${l}`));
-          lines.push('  └──');
+        if (entry.postProcessing) {
+          const pp = entry.postProcessing;
+          lines.push('Post-Processing:');
+          if (pp.filtered?.length) {
+            lines.push(`  Filtered out (${pp.filtered.length}):`);
+            pp.filtered.forEach(f => lines.push(`    - ${f.heading} (score ${f.score.toFixed(4)}) — ${f.reason}`));
+          } else {
+            lines.push('  Filtered out: none');
+          }
+          if (pp.crossRefMerges?.length) {
+            lines.push(`  Cross-ref merges (${pp.crossRefMerges.length}):`);
+            pp.crossRefMerges.forEach(m => lines.push(`    - ${m.from.join(' + ')} — ${m.reason}`));
+          }
+          if (pp.parentMerges?.length) {
+            lines.push(`  Same-parent merges (${pp.parentMerges.length}):`);
+            pp.parentMerges.forEach(m => lines.push(`    - [${m.parent}] ${m.merged.join(' + ')}`));
+          }
+          if (pp.contextCapDropped?.length) {
+            lines.push(`  Context cap dropped (${pp.contextCapDropped.length}):`);
+            pp.contextCapDropped.forEach(d => lines.push(`    - ${d.heading} (score ${d.score.toFixed(4)}) — ${d.reason}`));
+          }
+          lines.push(`  Final chunk count: ${pp.finalCount}`);
           lines.push('');
-        });
+        }
+
+        if (entry.finalChunks?.length) {
+          lines.push('Final merged chunks sent to LLM:');
+          entry.finalChunks.forEach((c, i) => {
+            lines.push(`  ┌── Chunk ${i + 1}: ${c.heading} (score ${c.score.toFixed(4)}, ${c.source}, ${c.charCount} chars)`);
+            c.content.split('\n').forEach(l => lines.push(`  │ ${l}`));
+            lines.push('  └──');
+            lines.push('');
+          });
+        }
+
+        if (entry.sentenceExtraction?.length) {
+          lines.push('Sentence Extraction:');
+          entry.sentenceExtraction.forEach((se, i) => {
+            lines.push(`  Chunk ${i + 1}: "${se.heading}" (${se.originalChars} → ${se.extractedChars} chars)`);
+            se.sentences.forEach(s => {
+              const tag = s.score === '∞' ? 'H' : (s.kept ? '✓' : '✗');
+              lines.push(`    [${tag}] "${s.text}${s.text.length >= 80 ? '…' : ''}" (score: ${s.score})`);
+            });
+          });
+          lines.push('');
+
+          lines.push('Final extracted chunks sent to LLM:');
+          entry.sentenceExtraction.forEach((se, i) => {
+            lines.push(`  ┌── Chunk ${i + 1}: ${se.heading} (score ${se.score?.toFixed(4) ?? 'N/A'}, ${se.source}, ${se.extractedChars} chars)`);
+            se.extractedContent?.split('\n').forEach(l => lines.push(`  │ ${l}`));
+            lines.push('  └──');
+            lines.push('');
+          });
+        }
       }
 
       lines.push('AI Response:');
