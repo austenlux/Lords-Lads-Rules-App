@@ -41,7 +41,6 @@ const SETTINGS_KEYS = {
   EXPAND_RULES_DEFAULT: '@lnl_expand_rules_default',
   EXPAND_EXPANSIONS_DEFAULT: '@lnl_expand_expansions_default',
   THINKING_SOUNDS_ENABLED: '@lnl_thinking_sounds_enabled',
-  SHOW_SUMMARY_ENABLED: '@lnl_show_summary_enabled',
 };
 import { getVenmoPayUrl } from '../constants';
 import { useTheme, COLOR_GROUPS, FONT_PAIRINGS } from '../context/ThemeContext';
@@ -213,9 +212,6 @@ export default function MoreScreen({
   speechPermissionStatus = 'unknown',
   onRetryModelSetup,
   modelDebugInfo = null,
-  summaryStatus = { rules: { status: 'not_available' }, expansions: { status: 'not_available' } },
-  showSummaryEnabled = false,
-  onShowSummaryToggle,
 }) {
   const [releaseNotes, setReleaseNotes] = useState([]);
   const [expandedVersions, setExpandedVersions] = useState({});
@@ -1214,24 +1210,13 @@ export default function MoreScreen({
                 </View>
                 {featureFlagsExpanded && (
                   <View style={styles.versionContent}>
-                    <View style={[styles.settingsRow, { marginBottom: 0 }]}>
+                    <View style={[styles.settingsRow, styles.settingsRowLast, { marginBottom: 8 }]}>
                       <View style={styles.settingsRowLabel}>
                         <Text style={[styles.settingsRowText, bodyFontStyle]}>Thinking Sounds</Text>
                       </View>
                       <Switch
                         value={thinkingSoundsEnabled}
                         onValueChange={setThinkingSoundsEnabledAndSave}
-                        trackColor={{ false: '#555', true: accent }}
-                        thumbColor="#E1E1E1"
-                      />
-                    </View>
-                    <View style={[styles.settingsRow, styles.settingsRowLast, { marginBottom: 8 }]}>
-                      <View style={styles.settingsRowLabel}>
-                        <Text style={[styles.settingsRowText, bodyFontStyle]}>Show Summary</Text>
-                      </View>
-                      <Switch
-                        value={showSummaryEnabled}
-                        onValueChange={(val) => onShowSummaryToggle?.(val)}
                         trackColor={{ false: '#555', true: accent }}
                         thumbColor="#E1E1E1"
                       />
@@ -1433,48 +1418,6 @@ export default function MoreScreen({
                         </>
                       );
                     })()}
-
-                    {/* Summary Status subsection */}
-                    {[
-                      { key: 'rules', label: 'Rules Summary', data: summaryStatus.rules },
-                      { key: 'expansions', label: 'Expansions Summary', data: summaryStatus.expansions },
-                    ].map(({ key, label, data }) => {
-                      const s = data || { status: 'not_available' };
-                      const statusLabel =
-                        s.status === 'ready' ? 'Ready'
-                        : s.status === 'generating' && s.progress ? `Generating (${s.progress.current}/${s.progress.total} sections)...`
-                        : s.status === 'generating' ? 'Generating...'
-                        : s.status === 'error' ? 'Error'
-                        : 'Not Available';
-                      const statusColor =
-                        s.status === 'ready' ? '#4CAF50'
-                        : s.status === 'generating' ? '#FF9800'
-                        : s.status === 'error' ? '#CF6679'
-                        : '#888888';
-                      const StatusIcon =
-                        s.status === 'ready' ? <BadgeSuccessIcon size={16} color="#4CAF50" />
-                        : s.status === 'generating' ? <BadgeWarningIcon size={16} color="#FF9800" />
-                        : s.status === 'error' ? <BadgeErrorIcon size={16} color="#CF6679" />
-                        : <BadgeInfoIcon size={16} color="#888888" />;
-                      const showSize = s.status === 'ready' && s.originalSize > 0;
-                      const reduction = showSize ? Math.round((1 - s.summarySize / s.originalSize) * 100) : 0;
-                      return (
-                        <View key={key}>
-                          <View style={styles.debugMetaRow}>
-                            <Text style={[styles.debugMetaLabel, bodyFontStyle]}>{label}</Text>
-                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1 }}>
-                              {StatusIcon}
-                              <Text style={[styles.debugMetaValue, { color: statusColor }]}>{statusLabel}</Text>
-                            </View>
-                          </View>
-                          {showSize && (
-                            <Text style={[{ fontSize: 11, color: '#AAA', paddingHorizontal: 12, paddingBottom: 6 }, bodyFontStyle]}>
-                              {s.originalSize.toLocaleString()} → {s.summarySize.toLocaleString()} chars ({reduction}% reduction)
-                            </Text>
-                          )}
-                        </View>
-                      );
-                    })}
 
                     {/* Models subsection */}
                     <TouchableOpacity

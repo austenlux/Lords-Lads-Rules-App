@@ -17,7 +17,6 @@ import {
 import PagerView from 'react-native-pager-view';
 import RulesIcon from './assets/icons/rules.svg';
 import ExpansionsIcon from './assets/icons/expansions.svg';
-import StatsIcon from './assets/icons/stats.svg';
 import ToolsIcon from './assets/icons/tools.svg';
 import AboutIcon from './assets/icons/about.svg';
 import SearchIcon from './assets/icons/search.svg';
@@ -25,11 +24,18 @@ import { createStyles, createMarkdownStyles } from './src/styles';
 import { ThemeProvider, useTheme } from './src/context/ThemeContext';
 import { useContent } from './src/hooks/useContent';
 import { useGameAssistant } from './src/hooks/useGameAssistant';
-import { ContentScreen, MoreScreen, SummaryScreen, ToolsScreen } from './src/screens';
+import { ContentScreen, MoreScreen, ToolsScreen } from './src/screens';
 import { VoiceAssistantFAB, VoiceAssistantModal } from './src/components';
 import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { generateSummaries } from './src/services/summaryService';
+
+const LEGACY_SUMMARY_KEYS = [
+  '@cache_rules_summary',
+  '@cache_expansions_summary',
+  '@cache_rules_summary_hash',
+  '@cache_expansions_summary_hash',
+  '@lnl_show_summary_enabled',
+];
 
 const SPLASH_MIN_MS = 1000;
 const SPLASH_FADE_MS = 400;
@@ -42,7 +48,6 @@ const BG_LOGO_ANDROID = require('./assets/logo_dark_greyscale.png');
 const TAB_CONFIG = {
   rules: { Icon: RulesIcon, label: 'Rules' },
   expansions: { Icon: ExpansionsIcon, label: 'Expansions' },
-  summary: { Icon: StatsIcon, label: 'Summary' },
   tools: { Icon: ToolsIcon, label: 'Tools' },
   more: { Icon: AboutIcon, label: 'More' },
 };
@@ -113,6 +118,10 @@ function AppContent() {
     return () => clearTimeout(t);
   }, []);
 
+  useEffect(() => {
+    AsyncStorage.multiRemove(LEGACY_SUMMARY_KEYS).catch(() => {});
+  }, []);
+
   const {
     isSupported: aiSupported,
     isListening,
@@ -133,7 +142,6 @@ function AppContent() {
     clearSpeechPermissionError,
     retryModelSetup,
     modelDebugInfo,
-    askForSummary,
   } = useGameAssistant();
 
   const {
@@ -162,43 +170,8 @@ function AppContent() {
     renderSection,
   } = useContent(styles, markdownStyles);
 
-  // ── Summary state ────────────────────────────────────────────────────────
-  const [rulesSummary, setRulesSummary] = useState(null);
-  const [expansionsSummary, setExpansionsSummary] = useState(null);
-  const [summaryStatus, setSummaryStatus] = useState({
-    rules: { status: 'not_available', progress: null, originalSize: 0, summarySize: 0 },
-    expansions: { status: 'not_available', progress: null, originalSize: 0, summarySize: 0 },
-  });
-
-  // ── Show Summary feature flag ──────────────────────────────────────────
-  const [showSummaryEnabled, setShowSummaryEnabled] = useState(false);
-
-  useEffect(() => {
-    AsyncStorage.getItem('@lnl_show_summary_enabled').then(v => {
-      if (v === 'true') setShowSummaryEnabled(true);
-    });
-  }, []);
-
-  const handleShowSummaryToggle = useCallback(async (enabled) => {
-    setShowSummaryEnabled(enabled);
-    await AsyncStorage.setItem('@lnl_show_summary_enabled', enabled ? 'true' : 'false');
-  }, []);
-
-  // ── Dynamic tab list (Summary tab appears only when feature flag is ON) ──
-  const tabs = useMemo(() => {
-    const base = ['rules', 'expansions'];
-    if (showSummaryEnabled) base.push('summary');
-    base.push('tools', 'more');
-    return base;
-  }, [showSummaryEnabled]);
-
+  const tabs = useMemo(() => ['rules', 'expansions', 'tools', 'more'], []);
   const tabToIndex = useCallback((tab) => tabs.indexOf(tab), [tabs]);
-
-  useEffect(() => {
-    if (!showSummaryEnabled && activeTab === 'summary') {
-      setActiveTab('rules');
-    }
-  }, [showSummaryEnabled, activeTab, setActiveTab]);
 
   // Keep the latest content in a ref so the auto-continue effect can read it
   // without needing content/expansionsContent as effect dependencies.
@@ -212,74 +185,6 @@ function AppContent() {
     askTheRulesRef.current = askTheRules;
   }, [askTheRules]);
 
-  // Keep summary refs current for the auto-continue effect.
-  const summaryRef = useRef({ rules: null, expansions: null });
-  useEffect(() => {
-    summaryRef.current = { rules: rulesSummary, expansions: expansionsSummary };
-  }, [rulesSummary, expansionsSummary]);
-
-  // ── Summarization pipeline (rules then expansions, sequentially) ────────
-  useEffect(() => {
-    if (!content || modelStatus !== 'available') return;
-    let cancelled = false;
-
-    const run = async () => {
-      // --- Rules ---
-      if (content) {
-        setSummaryStatus(prev => ({ ...prev, rules: { ...prev.rules, status: 'generating', progress: null } }));
-        try {
-          const result = await generateSummaries(content, askForSummary, 'rules', (current, total, section) => {
-            if (!cancelled) {
-              setSummaryStatus(prev => ({
-                ...prev,
-                rules: { ...prev.rules, status: 'generating', progress: { current, total, section } },
-              }));
-            }
-          });
-          if (!cancelled) {
-            setRulesSummary(result.summary);
-            setSummaryStatus(prev => ({
-              ...prev,
-              rules: { status: 'ready', progress: null, originalSize: result.originalSize, summarySize: result.summarySize },
-            }));
-          }
-        } catch {
-          if (!cancelled) {
-            setSummaryStatus(prev => ({ ...prev, rules: { ...prev.rules, status: 'error' } }));
-          }
-        }
-      }
-
-      // --- Expansions (only after rules complete) ---
-      if (!cancelled && expansionsContent) {
-        setSummaryStatus(prev => ({ ...prev, expansions: { ...prev.expansions, status: 'generating', progress: null } }));
-        try {
-          const result = await generateSummaries(expansionsContent, askForSummary, 'expansions', (current, total, section) => {
-            if (!cancelled) {
-              setSummaryStatus(prev => ({
-                ...prev,
-                expansions: { ...prev.expansions, status: 'generating', progress: { current, total, section } },
-              }));
-            }
-          });
-          if (!cancelled) {
-            setExpansionsSummary(result.summary);
-            setSummaryStatus(prev => ({
-              ...prev,
-              expansions: { status: 'ready', progress: null, originalSize: result.originalSize, summarySize: result.summarySize },
-            }));
-          }
-        } catch {
-          if (!cancelled) {
-            setSummaryStatus(prev => ({ ...prev, expansions: { ...prev.expansions, status: 'error' } }));
-          }
-        }
-      }
-    };
-    run();
-    return () => { cancelled = true; };
-  }, [content, expansionsContent, modelStatus, askForSummary]);
-
   // Auto-start the next listening turn after the assistant finishes speaking.
   // Triggers only when isThinking transitions true→false while the convo is open.
   useEffect(() => {
@@ -290,8 +195,6 @@ function AppContent() {
         askTheRulesRef.current?.(
           convoContextRef.current.rules,
           convoContextRef.current.expansions,
-          summaryRef.current.rules,
-          summaryRef.current.expansions,
         );
       }, 600);
       return () => clearTimeout(timer);
@@ -375,20 +278,6 @@ function AppContent() {
         />
       );
     }
-    if (tab === 'summary') {
-      return (
-        <SummaryScreen
-          key="summary"
-          rulesSummary={rulesSummary}
-          expansionsSummary={expansionsSummary}
-          summaryStatus={summaryStatus}
-          styles={styles}
-          markdownStyles={markdownStyles}
-          contentHeight={contentHeight}
-          contentPaddingTop={isIOS ? insets.top + IOS_HEADER_BAR_HEIGHT : undefined}
-        />
-      );
-    }
     if (tab === 'tools') {
       return <ToolsScreen key="tools" styles={styles} contentHeight={contentHeight} contentPaddingTop={isIOS ? insets.top + IOS_HEADER_BAR_HEIGHT : undefined} />;
     }
@@ -410,9 +299,6 @@ function AppContent() {
         speechPermissionStatus={speechPermissionStatus}
         onRetryModelSetup={retryModelSetup}
         modelDebugInfo={modelDebugInfo}
-        summaryStatus={summaryStatus}
-        showSummaryEnabled={showSummaryEnabled}
-        onShowSummaryToggle={handleShowSummaryToggle}
       />
     );
   };
@@ -424,7 +310,7 @@ function AppContent() {
         <View
           style={[
             styles.globalSearchHeader,
-            (activeTab === 'tools' || activeTab === 'more' || activeTab === 'summary' || (rulesEmpty && expansionsEmpty)) && { opacity: 0, pointerEvents: 'none' },
+            (activeTab === 'tools' || activeTab === 'more' || (rulesEmpty && expansionsEmpty)) && { opacity: 0, pointerEvents: 'none' },
             isIOS && { paddingTop: insets.top + 10, minHeight: insets.top + IOS_HEADER_BAR_HEIGHT, height: insets.top + IOS_HEADER_BAR_HEIGHT },
           ]}
         >
@@ -548,7 +434,7 @@ function AppContent() {
         {mainContent}
       </Animated.View>
 
-      {aiSupported && (rulesSummary || expansionsSummary) && (
+      {aiSupported && (
         <View
           pointerEvents="box-none"
           style={{ position: 'absolute', left: 0, right: 0, bottom: 0, top: 0, zIndex: 10 }}
@@ -570,13 +456,13 @@ function AppContent() {
               onPress={async () => {
                 if (micPermissionStatus === 'granted') {
                   setIsConvoOpen(true);
-                  askTheRules(content, expansionsContent, rulesSummary, expansionsSummary);
+                  askTheRules(content, expansionsContent);
                   return;
                 }
                 const result = await requestMicPermission();
                 if (result === 'granted') {
                   setIsConvoOpen(true);
-                  askTheRules(content, expansionsContent, rulesSummary, expansionsSummary);
+                  askTheRules(content, expansionsContent);
                 } else {
                   setShowMicDialog(true);
                 }

@@ -20,10 +20,6 @@ export const CACHE_KEYS = {
   LAST_FETCH_DATE: '@cache_last_fetch_date',
   RULES_LAST_SYNCED: '@cache_rules_last_synced',
   EXPANSIONS_LAST_SYNCED: '@cache_expansions_last_synced',
-  RULES_SUMMARY: '@cache_rules_summary',
-  EXPANSIONS_SUMMARY: '@cache_expansions_summary',
-  RULES_SUMMARY_HASH: '@cache_rules_summary_hash',
-  EXPANSIONS_SUMMARY_HASH: '@cache_expansions_summary_hash',
 };
 
 /**
@@ -123,19 +119,14 @@ const truncateToLastHeading = (text, maxChars) => {
   return (lastHeading > maxChars * 0.5 ? cut.slice(0, lastHeading) : cut).trimEnd() + '\n\n[Content truncated to fit model context window]';
 };
 
-export const buildGameAssistantPrompt = (rules, expansions, history, question, { rulesSummary, expansionsSummary } = {}) => {
+export const buildGameAssistantPrompt = (rules, expansions, history, question) => {
   const recentHistory = history?.slice(-(HISTORY_TURNS * 2)) ?? [];
   const historyText = recentHistory.length
     ? recentHistory.map((m) => `${m.role === 'user' ? 'User' : 'Assistant'}: ${sanitizeUserInput(m.text)}`).join('\n')
     : 'No previous conversation.';
 
-  const cleanRules = rulesSummary
-    ? sanitizeRulebookContent(rulesSummary)
-    : truncateToLastHeading(sanitizeRulebookContent(rules), MAX_RULES_CHARS);
-
-  const cleanExpansions = expansionsSummary
-    ? sanitizeRulebookContent(expansionsSummary)
-    : truncateToLastHeading(sanitizeRulebookContent(expansions), MAX_EXPANSIONS_CHARS);
+  const cleanRules = truncateToLastHeading(sanitizeRulebookContent(rules), MAX_RULES_CHARS);
+  const cleanExpansions = truncateToLastHeading(sanitizeRulebookContent(expansions), MAX_EXPANSIONS_CHARS);
 
   return GAME_ASSISTANT_SYSTEM_PROMPT
     .replace(P.RULES,      cleanRules      || 'Not available.')
