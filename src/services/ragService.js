@@ -14,7 +14,7 @@ const LOG_SOURCE = 'RAG';
 // ── BM25 tuning parameters ──────────────────────────────────────────────────
 
 const BM25_K1 = 1.2;
-const BM25_B = 0.75;
+const BM25_B = 0.3;
 
 // ── Stopwords (common English words that add noise to keyword matching) ─────
 
@@ -36,13 +36,19 @@ const STOPWORDS = new Set([
 
 // ── Tokenization ─────────────────────────────────────────────────────────────
 
+function stem(word) {
+  if (word.length <= 3) return word;
+  return word.replace(/(ing|ed|s)$/, '');
+}
+
 function tokenize(text) {
   if (!text) return [];
   return text
     .toLowerCase()
     .replace(/[^a-z0-9\s]/g, ' ')
     .split(/\s+/)
-    .filter(t => t.length > 1 && !STOPWORDS.has(t));
+    .filter(t => t.length > 1 && !STOPWORDS.has(t))
+    .map(stem);
 }
 
 // ── Chunking ─────────────────────────────────────────────────────────────────
@@ -172,7 +178,7 @@ export function buildIndex(rulesMarkdown, expansionsMarkdown) {
  * @param {number} [topK=5]  Number of chunks to retrieve.
  * @returns {Array<{ heading: string, content: string, source: string, score: number }>}
  */
-export function retrieveRelevantChunks(index, query, topK = 5) {
+export function retrieveRelevantChunks(index, query, topK = 3) {
   if (!index || !index.chunks.length || !query?.trim()) return [];
 
   const queryTokens = tokenize(query);

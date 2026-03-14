@@ -23,7 +23,7 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 }
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import RNFS from 'react-native-fs';
-import { getEventLog, clearEventLog, onEventLogChange, formatEventLogAsText, logError } from '../services/errorLogger';
+import { getEventLog, clearEventLog, onEventLogChange, formatEventLogAsText, logError, logEvent } from '../services/errorLogger';
 import ErrorIcon from '../../assets/icons/error.svg';
 import Clipboard from '@react-native-clipboard/clipboard';
 import TrashIcon from '../../assets/icons/trash.svg';
@@ -558,6 +558,7 @@ export default function MoreScreen({
 
   const handleCopyRagLog = () => {
     Clipboard.setString(formatRagLogAsText());
+    logEvent('RAG Log', 'Copied to clipboard');
     setRagCopied(true);
     setTimeout(() => setRagCopied(false), 2000);
   };
@@ -569,6 +570,7 @@ export default function MoreScreen({
     setRagScoredChunksExpanded({});
     setRagSelectedChunkExpanded({});
     Object.values(ragRetrievalAnims).forEach(a => animateSection(a, false, 0));
+    logEvent('RAG Log', 'Cleared');
   };
 
   const handleExportRagLog = async () => {
@@ -578,6 +580,7 @@ export default function MoreScreen({
       const filename = `rag_log_${new Date().toISOString().replace(/[:.]/g, '-')}.txt`;
       const path = `${dir}/${filename}`;
       await RNFS.writeFile(path, text, 'utf8');
+      logEvent('RAG Log', `Exported to ${filename}`);
       setRagExported(true);
       setTimeout(() => setRagExported(false), 3000);
     } catch (e) {
@@ -592,6 +595,7 @@ export default function MoreScreen({
       const filename = `event_log_${new Date().toISOString().replace(/[:.]/g, '-')}.txt`;
       const path = `${dir}/${filename}`;
       await RNFS.writeFile(path, text, 'utf8');
+      logEvent('Event Log', `Exported to ${filename}`);
       setEventExported(true);
       setTimeout(() => setEventExported(false), 3000);
     } catch (e) {
@@ -1624,14 +1628,15 @@ export default function MoreScreen({
                         <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 8, marginBottom: 10 }}>
                           <TouchableOpacity
                             style={{
-                              flexDirection: 'row', alignItems: 'center', gap: 6,
-                              paddingHorizontal: 14, paddingVertical: 7, borderRadius: 6,
+                              flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+                              minWidth: 95, paddingHorizontal: 14, paddingVertical: 7, borderRadius: 6,
                               borderWidth: 1,
                               borderColor: eventCopied ? '#4CAF50' : accent,
                               backgroundColor: eventCopied ? 'rgba(76,175,80,0.1)' : `${accent}1A`,
                             }}
                             onPress={() => {
                               Clipboard.setString(formatEventLogAsText());
+                              logEvent('Event Log', 'Copied to clipboard');
                               setEventCopied(true);
                               setTimeout(() => setEventCopied(false), 2000);
                             }}
@@ -1643,8 +1648,8 @@ export default function MoreScreen({
                           </TouchableOpacity>
                           <TouchableOpacity
                             style={{
-                              flexDirection: 'row', alignItems: 'center', gap: 6,
-                              paddingHorizontal: 14, paddingVertical: 7, borderRadius: 6,
+                              flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+                              minWidth: 95, paddingHorizontal: 14, paddingVertical: 7, borderRadius: 6,
                               borderWidth: 1,
                               borderColor: eventExported ? '#4CAF50' : accent,
                               backgroundColor: eventExported ? 'rgba(76,175,80,0.1)' : `${accent}1A`,
@@ -1662,7 +1667,7 @@ export default function MoreScreen({
                               paddingHorizontal: 14, paddingVertical: 7, borderRadius: 6,
                               borderWidth: 1, borderColor: accent, backgroundColor: `${accent}1A`,
                             }}
-                            onPress={() => { clearEventLog(); setErrorLogEntries([]); }}
+                            onPress={() => { clearEventLog(); setErrorLogEntries([]); logEvent('Event Log', 'Cleared'); }}
                           >
                             <TrashIcon width={15} height={15} fill={accent} />
                             <Text style={[{ color: accent, fontSize: 12 }, bodyFontStyle]}>Clear</Text>
@@ -1757,8 +1762,8 @@ export default function MoreScreen({
                     <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 8, marginBottom: 12 }}>
                       <TouchableOpacity
                         style={{
-                          flexDirection: 'row', alignItems: 'center', gap: 6,
-                          paddingHorizontal: 14, paddingVertical: 7, borderRadius: 6,
+                          flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+                          minWidth: 95, paddingHorizontal: 14, paddingVertical: 7, borderRadius: 6,
                           borderWidth: 1, borderColor: ragCopied ? '#4CAF50' : accent,
                           backgroundColor: ragCopied ? 'rgba(76,175,80,0.1)' : `${accent}1A`,
                         }}
@@ -1771,8 +1776,8 @@ export default function MoreScreen({
                       </TouchableOpacity>
                       <TouchableOpacity
                         style={{
-                          flexDirection: 'row', alignItems: 'center', gap: 6,
-                          paddingHorizontal: 14, paddingVertical: 7, borderRadius: 6,
+                          flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+                          minWidth: 95, paddingHorizontal: 14, paddingVertical: 7, borderRadius: 6,
                           borderWidth: 1,
                           borderColor: ragExported ? '#4CAF50' : accent,
                           backgroundColor: ragExported ? 'rgba(76,175,80,0.1)' : `${accent}1A`,
