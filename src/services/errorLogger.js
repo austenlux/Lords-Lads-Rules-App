@@ -103,3 +103,18 @@ export function clearEventLog() {
 
 /** @deprecated Use clearEventLog */
 export const clearErrorLog = clearEventLog;
+
+/**
+ * Format the entire event log as plain text for clipboard export.
+ */
+export function formatEventLogAsText() {
+  if (entries.length === 0) return 'No events recorded.';
+  return entries.map((e) => {
+    const type = (e.type || 'info').toUpperCase();
+    const parts = [`[${type}] ${e.ts}`, `Source: ${e.source}`, `Message: ${e.message}`];
+    if (e.elapsedMs != null) parts.push(`Elapsed: ${e.elapsedMs}ms`);
+    if (e.url != null) parts.push(`URL: ${e.url}`);
+    if (e.errorName && e.errorName !== 'Error') parts.push(`Error: ${e.errorName}`);
+    return parts.join('\n');
+  }).join('\n\n---\n\n');
+}

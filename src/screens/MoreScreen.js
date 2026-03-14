@@ -23,7 +23,7 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 }
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import RNFS from 'react-native-fs';
-import { getEventLog, clearEventLog, onEventLogChange } from '../services/errorLogger';
+import { getEventLog, clearEventLog, onEventLogChange, formatEventLogAsText } from '../services/errorLogger';
 import ErrorIcon from '../../assets/icons/error.svg';
 import Clipboard from '@react-native-clipboard/clipboard';
 import TrashIcon from '../../assets/icons/trash.svg';
@@ -257,6 +257,7 @@ export default function MoreScreen({
   const [ragLog, setRagLog] = useState({ indexBuild: null, retrievals: [] });
   const [expandedRetrievals, setExpandedRetrievals] = useState({});
   const [ragCopied, setRagCopied] = useState(false);
+  const [eventCopied, setEventCopied] = useState(false);
   const ragLogUnsub = useRef(null);
   const ragRetrievalAnims = useRef({}).current;
 
@@ -1588,25 +1589,38 @@ export default function MoreScreen({
                       <Text style={[styles.debugMetaValue, { paddingHorizontal: 12, paddingVertical: 8 }]}>No events recorded.</Text>
                     ) : (
                       <>
-                        <TouchableOpacity
-                          style={{
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            alignSelf: 'center',
-                            gap: 6,
-                            marginBottom: 10,
-                            paddingHorizontal: 16,
-                            paddingVertical: 7,
-                            borderRadius: 6,
-                            borderWidth: 1,
-                            borderColor: accent,
-                            backgroundColor: `${accent}1A`,
-                          }}
-                          onPress={() => { clearEventLog(); setErrorLogEntries([]); }}
-                        >
-                          <TrashIcon width={18} height={18} fill={accent} />
-                          <Text style={[{ color: accent, fontSize: 13 }, bodyFontStyle]}>Clear Log</Text>
-                        </TouchableOpacity>
+                        <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 10, marginBottom: 10 }}>
+                          <TouchableOpacity
+                            style={{
+                              flexDirection: 'row', alignItems: 'center', gap: 6,
+                              paddingHorizontal: 16, paddingVertical: 7, borderRadius: 6,
+                              borderWidth: 1,
+                              borderColor: eventCopied ? '#4CAF50' : accent,
+                              backgroundColor: eventCopied ? 'rgba(76,175,80,0.1)' : `${accent}1A`,
+                            }}
+                            onPress={() => {
+                              Clipboard.setString(formatEventLogAsText());
+                              setEventCopied(true);
+                              setTimeout(() => setEventCopied(false), 2000);
+                            }}
+                          >
+                            <CopyIcon width={16} height={16} fill={eventCopied ? '#4CAF50' : accent} />
+                            <Text style={[{ color: eventCopied ? '#4CAF50' : accent, fontSize: 13 }, bodyFontStyle]}>
+                              {eventCopied ? 'Copied!' : 'Copy All'}
+                            </Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity
+                            style={{
+                              flexDirection: 'row', alignItems: 'center', gap: 6,
+                              paddingHorizontal: 16, paddingVertical: 7, borderRadius: 6,
+                              borderWidth: 1, borderColor: accent, backgroundColor: `${accent}1A`,
+                            }}
+                            onPress={() => { clearEventLog(); setErrorLogEntries([]); }}
+                          >
+                            <TrashIcon width={18} height={18} fill={accent} />
+                            <Text style={[{ color: accent, fontSize: 13 }, bodyFontStyle]}>Clear Log</Text>
+                          </TouchableOpacity>
+                        </View>
                         {errorLogEntries.map((entry, i) => {
                           const typeColor = entry.type === 'error' ? '#CF6679'
                             : entry.type === 'success' ? '#66BB6A'
