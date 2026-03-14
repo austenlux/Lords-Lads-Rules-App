@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 import { parseMarkdownSections } from '../services/contentService';
 import { useTheme } from '../context/ThemeContext';
-import { TitleSection, Section } from '../components';
+import { TitleSection, Section, HighlightedMarkdown } from '../components';
 
 const SEGMENTS = [
   { key: 'rules', label: 'Rules' },
@@ -48,6 +48,7 @@ export default function SummaryScreen({
   }, [expansionsSummary]);
 
   const sections = activeSegment === 'rules' ? rulesSections : expansionsSections;
+  const rawSummary = activeSegment === 'rules' ? rulesSummary : expansionsSummary;
   const status = activeSegment === 'rules' ? summaryStatus.rules : summaryStatus.expansions;
 
   const toggleSection = useCallback((path) => {
@@ -177,6 +178,11 @@ export default function SummaryScreen({
           </View>
         ) : hasContent ? (
           sections.map((section, index) => renderSection(section, index))
+        ) : rawSummary ? (
+          <HighlightedMarkdown
+            content={rawSummary}
+            style={markdownStyles}
+          />
         ) : null}
       </View>
     </ScrollView>
