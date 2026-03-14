@@ -25,7 +25,7 @@
 		90F7890C86A34A5AB878A393 /* PublicSans.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 23DF9121162C4A1F9E6FE269 /* PublicSans.ttf */; };
 		944F4BAEF17B4C3688FDBB51 /* Rubik-Black.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9DFE79A48512402EAEEEF273 /* Rubik-Black.ttf */; };
 		981F81AAF0EA40C2B9CCA2CB /* GermaniaOne.ttf in Resources */ = {isa = PBXBuildFile; fileRef = DA4B5B55EA084C37BB34481C /* GermaniaOne.ttf */; };
-		9A9B9C9D1E1F202122232426 /* release_notes.md in Resources */ = {isa = PBXBuildFile; fileRef = 9A9B9C9D1E1F202122232425 /* release_notes.md */; };
+		9A9B9C9D1E1F202122232426 /* ../release_notes.md in Resources */ = {isa = PBXBuildFile; fileRef = 9A9B9C9D1E1F202122232425 /* ../release_notes.md */; };
 		9C918601C52945D98A86266E /* CinzelDecorative.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3E2FDC47817342558E45D7E3 /* CinzelDecorative.ttf */; };
 		BD00010000000000BD000001 /* RCTBridgeDelegateWithTurboModules.mm in Sources */ = {isa = PBXBuildFile; fileRef = BD00030000000000BD000003 /* RCTBridgeDelegateWithTurboModules.mm */; };
 		D71748A78CEA4C8FB0C8EC25 /* Montserrat.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AD990132037E4832B490719E /* Montserrat.ttf */; };
@@ -60,7 +60,7 @@
 		8E54FA6BBE604DDCA3561E02 /* PirataOne.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = PirataOne.ttf; path = ../assets/fonts/PirataOne.ttf; sourceTree = "<group>"; };
 		92FC20EBE7CC44C1BB15188A /* Lora.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Lora.ttf; path = ../assets/fonts/Lora.ttf; sourceTree = "<group>"; };
 		986BF7A3E1C149588B5B323B /* RobotoMono.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = RobotoMono.ttf; path = ../assets/fonts/RobotoMono.ttf; sourceTree = "<group>"; };
-		9A9B9C9D1E1F202122232425 /* release_notes.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = ../release_notes.md; sourceTree = SOURCE_ROOT; };
+		9A9B9C9D1E1F202122232425 /* ../release_notes.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = ../release_notes.md; sourceTree = SOURCE_ROOT; };
 		9DFE79A48512402EAEEEF273 /* Rubik-Black.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Rubik-Black.ttf"; path = "../assets/fonts/Rubik-Black.ttf"; sourceTree = "<group>"; };
 		AD990132037E4832B490719E /* Montserrat.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Montserrat.ttf; path = ../assets/fonts/Montserrat.ttf; sourceTree = "<group>"; };
 		B92192ADEC0440438CE215BD /* AlfaSlabOne.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = AlfaSlabOne.ttf; path = ../assets/fonts/AlfaSlabOne.ttf; sourceTree = "<group>"; };
@@ -104,7 +104,7 @@
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
 				13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */,
-				9A9B9C9D1E1F202122232425 /* release_notes.md */,
+				9A9B9C9D1E1F202122232425 /* ../release_notes.md */,
 				VA00010000000000VA000001 /* VoiceAssistant */,
 				VA00060000000000VA000006 /* LordsandLadsRules-Bridging-Header.h */,
 				VA00070000000000VA000007 /* ThinkingSounds */,
@@ -271,7 +271,7 @@
 			files = (
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
-				9A9B9C9D1E1F202122232426 /* release_notes.md in Resources */,
+				9A9B9C9D1E1F202122232426 /* ../release_notes.md in Resources */,
 				1DF4F06F11F719F3F0CC2F35 /* PrivacyInfo.xcprivacy in Resources */,
 				VA000B0000000000VA00000B /* ThinkingSounds in Resources */,
 				90F7890C86A34A5AB878A393 /* PublicSans.ttf in Resources */,
@@ -322,9 +322,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-LordsandLadsRules/Pods-LordsandLadsRules-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-LordsandLadsRules/Pods-LordsandLadsRules-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -361,9 +365,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-LordsandLadsRules/Pods-LordsandLadsRules-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-LordsandLadsRules/Pods-LordsandLadsRules-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -525,10 +533,7 @@
 				);
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				OTHER_CFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_CFLAGS = "$(inherited)  ";
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
 					"-DFOLLY_NO_CONFIG",
@@ -537,10 +542,7 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
@@ -605,10 +607,7 @@
 					"\"$(inherited)\"",
 				);
 				MTL_ENABLE_DEBUG_INFO = NO;
-				OTHER_CFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_CFLAGS = "$(inherited)  ";
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
 					"-DFOLLY_NO_CONFIG",
@@ -617,10 +616,7 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				USE_HERMES = true;

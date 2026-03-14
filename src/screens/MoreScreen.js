@@ -1789,7 +1789,7 @@ export default function MoreScreen({
                           >
                             <View style={styles.versionHeader}>
                               <View style={{ flex: 1, marginRight: 8 }}>
-                                <Text style={[{ fontSize: 13, color: '#E0E0E0', fontWeight: '600' }, bodyFontStyle]} numberOfLines={1}>
+                                <Text style={[{ fontSize: 13, color: '#E0E0E0', fontWeight: '600' }, bodyFontStyle]}>
                                   "{entry.question}"
                                 </Text>
                                 <Text style={[{ fontSize: 10, color: '#888', marginTop: 2 }, bodyFontStyle]}>
@@ -1860,6 +1860,24 @@ export default function MoreScreen({
                                       </View>
                                     ))}
                                   </>
+                                )}
+
+                                {/* AI Response */}
+                                {entry.aiResponse != null && (
+                                  <View style={{ marginTop: 10 }}>
+                                    <Text style={[{ fontSize: 11, color: '#999', marginBottom: 4 }, bodyFontStyle]}>
+                                      AI Response:
+                                    </Text>
+                                    <View style={{
+                                      padding: 8, borderRadius: 6,
+                                      backgroundColor: 'rgba(76,175,80,0.06)',
+                                      borderWidth: 1, borderColor: 'rgba(76,175,80,0.2)',
+                                    }}>
+                                      <Text style={[{ fontSize: 11, color: '#C8E6C9', fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace' }]} selectable>
+                                        {entry.aiResponse}
+                                      </Text>
+                                    </View>
+                                  </View>
                                 )}
                               </View>
                             )}

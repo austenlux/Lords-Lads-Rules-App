@@ -144,6 +144,14 @@ export function formatRagLogAsText() {
         lines.push('  └──');
         lines.push('');
       });
+
+      lines.push('AI Response:');
+      if (entry.aiResponse) {
+        entry.aiResponse.split('\n').forEach(l => lines.push(`  ${l}`));
+      } else {
+        lines.push('  (no response recorded)');
+      }
+      lines.push('');
     });
   }
 

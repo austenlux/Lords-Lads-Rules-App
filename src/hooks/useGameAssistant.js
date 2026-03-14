@@ -84,6 +84,7 @@ export function useGameAssistant() {
   // then speaks the segment sanitized. Mirrors the sentence-buffer logic that
   // previously lived in Kotlin's accumulateAndSpeak().
   const sentenceBufferRef = useRef('');
+  const fullAnswerRef = useRef('');
 
   const nextId = () => {
     msgCounter.current += 1;
@@ -311,6 +312,7 @@ export function useGameAssistant() {
 
     const chunkSub = native.onAIChunkReceived(({ chunk }) => {
       // UI update — raw Markdown is preserved for display.
+      fullAnswerRef.current += chunk;
       setFullAnswer((prev) => prev + chunk);
       const id = activeAssistantMsgId.current;
       if (id) {
@@ -422,6 +424,7 @@ export function useGameAssistant() {
       setError(null);
       setSpeechPermissionError(null);
       setFullAnswer('');
+      fullAnswerRef.current = '';
       setPartialSpeech('');
 
       try {
@@ -480,6 +483,7 @@ export function useGameAssistant() {
         logEvent('Voice', `askQuestion called (prompt length: ${fullPrompt.length})`);
         await native.askQuestion(fullPrompt);
         logEvent('Voice', 'askQuestion resolved');
+        updateLatestRetrieval({ aiResponse: fullAnswerRef.current });
         activeAssistantMsgId.current = null;
 
         const remaining = sentenceBufferRef.current.trim();
