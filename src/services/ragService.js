@@ -190,10 +190,10 @@ export function buildIndex(rulesMarkdown, expansionsMarkdown) {
  *
  * @param {{ chunks, idf, avgDl, chunkTokens, totalChunks }} index
  * @param {string} query     The user's question.
- * @param {number} [topK=5]  Number of chunks to retrieve.
+ * @param {number} [topK=8]  Number of chunks to retrieve.
  * @returns {Array<{ heading: string, content: string, source: string, score: number }>}
  */
-export function retrieveRelevantChunks(index, query, topK = 5) {
+export function retrieveRelevantChunks(index, query, topK = 8) {
   if (!index || !index.chunks.length || !query?.trim()) return [];
 
   const queryTokens = tokenize(query);
