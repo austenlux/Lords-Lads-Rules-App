@@ -54,9 +54,11 @@ function tokenize(text) {
 // ── Chunking ─────────────────────────────────────────────────────────────────
 
 /**
- * Split markdown into semantic chunks by `##` headings.
- * Each chunk includes its heading hierarchy for context — if a `###` subsection
- * exists, its parent `##` heading is prepended so the LLM knows the context.
+ * Split markdown into semantic chunks by `##` and `###` headings.
+ * Each chunk includes its heading hierarchy for context so the LLM knows
+ * which section each snippet belongs to (e.g. "IV - Taking a Turn > IV.A - Flip").
+ *
+ * Sections without `###` sub-headings remain as single `##` chunks.
  *
  * @param {string} markdown  Raw markdown content.
  * @param {string} source    Label for the chunk source ('rules' | 'expansions').
@@ -69,15 +71,21 @@ function chunkMarkdown(markdown, source) {
   const chunks = [];
   let currentH1 = '';
   let currentH2 = '';
+  let currentH3 = '';
   let currentLines = [];
   let currentHeading = '';
 
   const flush = () => {
     const body = currentLines.join('\n').trim();
     if (currentHeading && body) {
-      const headingContext = currentH1 && currentH2 && currentHeading === currentH2
-        ? `${currentH1} > ${currentH2}`
-        : currentHeading;
+      let headingContext;
+      if (currentH3 && currentH2) {
+        headingContext = `${currentH2} > ${currentH3}`;
+      } else if (currentH1 && currentH2) {
+        headingContext = `${currentH1} > ${currentH2}`;
+      } else {
+        headingContext = currentHeading;
+      }
       chunks.push({
         heading: headingContext,
         content: `${currentHeading}\n${body}`,
@@ -90,15 +98,22 @@ function chunkMarkdown(markdown, source) {
   for (const line of lines) {
     const isH1 = /^# /.test(line) && !/^## /.test(line);
     const isH2 = /^## /.test(line) && !/^### /.test(line);
+    const isH3 = /^### /.test(line) && !/^#### /.test(line);
 
     if (isH1) {
       flush();
       currentH1 = line.replace(/^# /, '').trim();
       currentH2 = '';
+      currentH3 = '';
       currentHeading = line;
     } else if (isH2) {
       flush();
       currentH2 = line.replace(/^## /, '').trim();
+      currentH3 = '';
+      currentHeading = line;
+    } else if (isH3) {
+      flush();
+      currentH3 = line.replace(/^### /, '').trim();
       currentHeading = line;
     } else {
       currentLines.push(line);
