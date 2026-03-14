@@ -29,6 +29,7 @@ import { buildGameAssistantPrompt } from '../constants';
 import { retrieveRelevantChunks } from '../services/ragService';
 import { sanitizeTextForSpeech } from '../utils/sanitizeTextForSpeech';
 import { logError, logEvent } from '../services/errorLogger';
+import { updateLatestRetrieval } from '../services/ragLogger';
 
 
 const VOICE_STORAGE_KEY = '@lnl_voice_id';
@@ -469,6 +470,11 @@ export function useGameAssistant() {
           historySnapshot,
           spokenQuestion,
         );
+
+        updateLatestRetrieval({
+          totalContextChars: totalContextChars,
+          promptLength: fullPrompt.length,
+        });
 
         setIsThinking(true);
         logEvent('Voice', `askQuestion called (prompt length: ${fullPrompt.length})`);

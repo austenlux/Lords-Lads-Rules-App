@@ -7,6 +7,7 @@
  */
 
 import { logEvent } from './errorLogger';
+import { logIndexBuild, logRetrieval } from './ragLogger';
 
 const LOG_SOURCE = 'RAG';
 
@@ -145,6 +146,19 @@ export function buildIndex(rulesMarkdown, expansionsMarkdown) {
   const elapsed = Date.now() - t0;
   logEvent(LOG_SOURCE, `Index built: ${chunks.length} chunks in ${elapsed}ms`);
 
+  logIndexBuild({
+    totalChunks: chunks.length,
+    buildTimeMs: elapsed,
+    totalContentSize: chunks.reduce((sum, c) => sum + c.content.length, 0),
+    chunks: chunks.map(c => ({
+      heading: c.heading,
+      source: c.source,
+      charCount: c.content.length,
+      wordCount: c.content.split(/\s+/).filter(Boolean).length,
+      tokenEstimate: Math.ceil(c.content.length / 4),
+    })),
+  });
+
   return { chunks, idf, avgDl, chunkTokens, totalChunks: chunks.length };
 }
 
@@ -188,12 +202,32 @@ export function retrieveRelevantChunks(index, query, topK = 5) {
     scores[i] = score;
   }
 
-  // Rank and select top K with score > 0.
-  const ranked = chunks
-    .map((chunk, i) => ({ ...chunk, score: scores[i] }))
-    .filter(c => c.score > 0)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, topK);
+  // Rank all chunks by score for logging, then select top-K with score > 0.
+  const scoredWithIdx = chunks.map((chunk, i) => ({ chunk, score: scores[i], idx: i }));
+  scoredWithIdx.sort((a, b) => b.score - a.score);
 
-  return ranked;
+  const selected = scoredWithIdx.filter(e => e.score > 0).slice(0, topK);
+  const selectedIdxSet = new Set(selected.map(e => e.idx));
+
+  logRetrieval({
+    question: query,
+    keywords: queryTokens,
+    topK,
+    allScoredChunks: scoredWithIdx.map(e => ({
+      heading: e.chunk.heading,
+      score: e.score,
+      selected: selectedIdxSet.has(e.idx),
+      charCount: e.chunk.content.length,
+      wordCount: e.chunk.content.split(/\s+/).filter(Boolean).length,
+      source: e.chunk.source,
+    })),
+    selectedChunks: selected.map(e => ({
+      heading: e.chunk.heading,
+      content: e.chunk.content,
+      score: e.score,
+      source: e.chunk.source,
+    })),
+  });
+
+  return selected.map(e => ({ ...e.chunk, score: e.score }));
 }

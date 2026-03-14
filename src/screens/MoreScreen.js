@@ -25,7 +25,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import RNFS from 'react-native-fs';
 import { getEventLog, clearEventLog, onEventLogChange } from '../services/errorLogger';
 import ErrorIcon from '../../assets/icons/error.svg';
+import Clipboard from '@react-native-clipboard/clipboard';
 import TrashIcon from '../../assets/icons/trash.svg';
+import StatsIcon from '../../assets/icons/stats.svg';
+import { getRagLog, clearRagLog, onRagLogChange, formatRagLogAsText } from '../services/ragLogger';
 import { HEADER_HEIGHT } from '../styles';
 import NativeVoiceAssistantOptional from '../specs/NativeVoiceAssistantOptional';
 import {
@@ -249,6 +252,12 @@ export default function MoreScreen({
   const [errorLogExpanded, setErrorLogExpanded] = useState(false);
   const [errorLogEntries, setErrorLogEntries] = useState([]);
   const errorLogUnsub = useRef(null);
+  const [ragLogExpanded, setRagLogExpanded] = useState(false);
+  const [ragLog, setRagLog] = useState({ indexBuild: null, retrievals: [] });
+  const [expandedRetrievals, setExpandedRetrievals] = useState({});
+  const [ragCopied, setRagCopied] = useState(false);
+  const ragLogUnsub = useRef(null);
+  const ragRetrievalAnims = useRef({}).current;
 
   // Initialise rotation animations for settings cards and debug sections.
   useEffect(() => {
@@ -266,6 +275,7 @@ export default function MoreScreen({
     if (!animations['vaDebug'])        animations['vaDebug']        = { rotation: new Animated.Value(0) };
     if (!animations['buildInfo'])      animations['buildInfo']      = { rotation: new Animated.Value(0) };
     if (!animations['errorLog'])      animations['errorLog']      = { rotation: new Animated.Value(0) };
+    if (!animations['ragLog'])        animations['ragLog']        = { rotation: new Animated.Value(0) };
   }, []);
 
   useEffect(() => {
@@ -382,6 +392,9 @@ export default function MoreScreen({
     setVaDebugExpanded(false);
     animateSection(animations['buildInfo'], false, 150);
     setBuildInfoExpanded(false);
+    animateSection(animations['ragLog'], false, 150);
+    setRagLogExpanded(false);
+    if (ragLogUnsub.current) { ragLogUnsub.current(); ragLogUnsub.current = null; }
   };
 
   // ── Toggle functions ─────────────────────────────────────────────────────
@@ -510,8 +523,47 @@ export default function MoreScreen({
     setErrorLogExpanded(isExpanded);
   };
 
+  const toggleRagLog = () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    const isExpanded = !ragLogExpanded;
+    animateSection(animations['ragLog'], isExpanded);
+    if (isExpanded) {
+      setRagLog(getRagLog());
+      ragLogUnsub.current = onRagLogChange(data => setRagLog(data));
+    } else {
+      if (ragLogUnsub.current) { ragLogUnsub.current(); ragLogUnsub.current = null; }
+      setExpandedRetrievals({});
+      Object.values(ragRetrievalAnims).forEach(a => animateSection(a, false, 0));
+    }
+    setRagLogExpanded(isExpanded);
+  };
+
+  const toggleRetrieval = (id) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    if (!ragRetrievalAnims[id]) ragRetrievalAnims[id] = { rotation: new Animated.Value(0) };
+    const isExpanded = !expandedRetrievals[id];
+    animateSection(ragRetrievalAnims[id], isExpanded);
+    setExpandedRetrievals(prev => ({ ...prev, [id]: isExpanded }));
+  };
+
+  const handleCopyRagLog = () => {
+    Clipboard.setString(formatRagLogAsText());
+    setRagCopied(true);
+    setTimeout(() => setRagCopied(false), 2000);
+  };
+
+  const handleClearRagLog = () => {
+    clearRagLog();
+    setRagLog({ indexBuild: null, retrievals: [] });
+    setExpandedRetrievals({});
+    Object.values(ragRetrievalAnims).forEach(a => animateSection(a, false, 0));
+  };
+
   useEffect(() => {
-    return () => { if (errorLogUnsub.current) errorLogUnsub.current(); };
+    return () => {
+      if (errorLogUnsub.current) errorLogUnsub.current();
+      if (ragLogUnsub.current) ragLogUnsub.current();
+    };
   }, []);
 
   const toggleDebugVoice = (voiceId) => {
@@ -548,9 +600,13 @@ export default function MoreScreen({
     setCommitMsgExpanded(false);
     setErrorLogExpanded(false);
     setErrorLogEntries([]);
+    setRagLogExpanded(false);
+    setRagLog({ indexBuild: null, retrievals: [] });
+    setExpandedRetrievals({});
     Object.values(animations).forEach(a => animateSection(a, false, 0));
     Object.values(voiceLocaleAnims).forEach(a => animateSection(a, false, 0));
     Object.values(debugVoiceAnims).forEach(a => animateSection(a, false, 0));
+    Object.values(ragRetrievalAnims).forEach(a => animateSection(a, false, 0));
   };
 
   const handleMoreTitleLongPress = () => {
@@ -1513,6 +1569,181 @@ export default function MoreScreen({
                   </View>
                 )}
               </TouchableOpacity>
+              {/* ── RAG Log ── */}
+              <TouchableOpacity
+                style={[styles.versionContainer, { paddingHorizontal: 10 }]}
+                onPress={toggleRagLog}
+                activeOpacity={0.7}
+              >
+                <View style={styles.versionHeader}>
+                  <CardIconTitle icon={<StatsIcon fill="#26C6DA" />} title="RAG Log" styles={styles} />
+                  <Animated.View style={{ transform: [{ rotate: animations['ragLog']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
+                    <Text style={styles.versionArrow}>▶</Text>
+                  </Animated.View>
+                </View>
+                {ragLogExpanded && (
+                  <View style={[styles.versionContent, { paddingLeft: 0, paddingRight: 0 }]}>
+                    {/* Action buttons */}
+                    <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 10, marginBottom: 12 }}>
+                      <TouchableOpacity
+                        style={{
+                          flexDirection: 'row', alignItems: 'center', gap: 6,
+                          paddingHorizontal: 16, paddingVertical: 7, borderRadius: 6,
+                          borderWidth: 1, borderColor: ragCopied ? '#4CAF50' : accent,
+                          backgroundColor: ragCopied ? 'rgba(76,175,80,0.1)' : `${accent}1A`,
+                        }}
+                        onPress={handleCopyRagLog}
+                      >
+                        <Text style={[{ color: ragCopied ? '#4CAF50' : accent, fontSize: 13 }, bodyFontStyle]}>
+                          {ragCopied ? 'Copied!' : 'Copy All'}
+                        </Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={{
+                          flexDirection: 'row', alignItems: 'center', gap: 6,
+                          paddingHorizontal: 16, paddingVertical: 7, borderRadius: 6,
+                          borderWidth: 1, borderColor: accent, backgroundColor: `${accent}1A`,
+                        }}
+                        onPress={handleClearRagLog}
+                      >
+                        <TrashIcon width={16} height={16} fill={accent} />
+                        <Text style={[{ color: accent, fontSize: 13 }, bodyFontStyle]}>Clear</Text>
+                      </TouchableOpacity>
+                    </View>
+
+                    {/* Index Build Summary */}
+                    <View style={[styles.versionContainer, { marginBottom: 8 }]}>
+                      <CardIconTitle icon={<BadgeInfoIcon size={18} color="#26C6DA" />} title="Index Build" styles={styles} />
+                      {ragLog.indexBuild ? (
+                        <View style={{ paddingTop: 8 }}>
+                          {[
+                            { label: 'Built at', value: ragLog.indexBuild.timestamp },
+                            { label: 'Total chunks', value: String(ragLog.indexBuild.totalChunks) },
+                            { label: 'Build time', value: `${ragLog.indexBuild.buildTimeMs}ms` },
+                            { label: 'Content size', value: `${ragLog.indexBuild.totalContentSize.toLocaleString()} chars` },
+                          ].map(({ label, value }) => (
+                            <View key={label} style={styles.debugMetaRow}>
+                              <Text style={[styles.debugMetaLabel, bodyFontStyle]}>{label}</Text>
+                              <Text style={styles.debugMetaValue}>{value}</Text>
+                            </View>
+                          ))}
+                          <Text style={[{ fontSize: 11, color: '#999', marginTop: 8, marginBottom: 4 }, bodyFontStyle]}>
+                            Chunks ({ragLog.indexBuild.totalChunks}):
+                          </Text>
+                          {ragLog.indexBuild.chunks.map((c, i) => (
+                            <View key={i} style={[styles.debugMetaRow, { flexDirection: 'column', gap: 2, paddingVertical: 4 }]}>
+                              <Text style={[{ fontSize: 11, color: '#E0E0E0', fontWeight: '600' }, bodyFontStyle]} numberOfLines={1}>
+                                {i + 1}. {c.heading}
+                              </Text>
+                              <Text style={[{ fontSize: 10, color: '#999' }, bodyFontStyle]}>
+                                {c.source} · {c.charCount} chars · {c.wordCount} words · ~{c.tokenEstimate} tokens
+                              </Text>
+                            </View>
+                          ))}
+                        </View>
+                      ) : (
+                        <Text style={[styles.debugMetaValue, { paddingTop: 8 }]}>No index build recorded yet.</Text>
+                      )}
+                    </View>
+
+                    {/* Retrieval entries */}
+                    {ragLog.retrievals.length === 0 ? (
+                      <Text style={[styles.debugMetaValue, { paddingHorizontal: 12, paddingVertical: 8 }]}>No retrievals recorded yet.</Text>
+                    ) : (
+                      ragLog.retrievals.map(entry => {
+                        if (!ragRetrievalAnims[entry.id]) ragRetrievalAnims[entry.id] = { rotation: new Animated.Value(0) };
+                        const isOpen = expandedRetrievals[entry.id];
+                        return (
+                          <TouchableOpacity
+                            key={entry.id}
+                            style={[styles.versionContainer, { marginBottom: 6 }]}
+                            onPress={() => toggleRetrieval(entry.id)}
+                            activeOpacity={0.7}
+                          >
+                            <View style={styles.versionHeader}>
+                              <View style={{ flex: 1, marginRight: 8 }}>
+                                <Text style={[{ fontSize: 13, color: '#E0E0E0', fontWeight: '600' }, bodyFontStyle]} numberOfLines={1}>
+                                  "{entry.question}"
+                                </Text>
+                                <Text style={[{ fontSize: 10, color: '#888', marginTop: 2 }, bodyFontStyle]}>
+                                  {entry.timestamp}
+                                </Text>
+                              </View>
+                              <Animated.View style={{ transform: [{ rotate: ragRetrievalAnims[entry.id]?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
+                                <Text style={styles.versionArrow}>▶</Text>
+                              </Animated.View>
+                            </View>
+                            {isOpen && (
+                              <View style={{ paddingTop: 8 }}>
+                                {/* Retrieval metadata */}
+                                {[
+                                  { label: 'Keywords', value: entry.keywords?.join(', ') || 'none' },
+                                  { label: 'Top-K', value: String(entry.topK) },
+                                  ...(entry.totalContextChars != null ? [{ label: 'Context → LLM', value: `${entry.totalContextChars.toLocaleString()} chars` }] : []),
+                                  ...(entry.promptLength != null ? [{ label: 'Prompt length', value: `${entry.promptLength.toLocaleString()} chars` }] : []),
+                                ].map(({ label, value }) => (
+                                  <View key={label} style={styles.debugMetaRow}>
+                                    <Text style={[styles.debugMetaLabel, bodyFontStyle]}>{label}</Text>
+                                    <Text style={styles.debugMetaValue}>{value}</Text>
+                                  </View>
+                                ))}
+
+                                {/* All scored chunks */}
+                                <Text style={[{ fontSize: 11, color: '#999', marginTop: 10, marginBottom: 4 }, bodyFontStyle]}>
+                                  All chunks scored ({entry.allScoredChunks?.length ?? 0}):
+                                </Text>
+                                {entry.allScoredChunks?.map((c, i) => (
+                                  <View key={i} style={[styles.debugMetaRow, {
+                                    flexDirection: 'column', gap: 2, paddingVertical: 3,
+                                    backgroundColor: c.selected ? 'rgba(76,175,80,0.08)' : 'transparent',
+                                    borderLeftWidth: c.selected ? 2 : 0,
+                                    borderLeftColor: '#4CAF50',
+                                    paddingLeft: c.selected ? 6 : 0,
+                                  }]}>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                                      {c.selected && <BadgeSuccessIcon size={12} color="#4CAF50" />}
+                                      <Text style={[{ fontSize: 11, color: c.selected ? '#4CAF50' : '#CCC', fontWeight: c.selected ? '700' : '400', flex: 1 }, bodyFontStyle]} numberOfLines={1}>
+                                        {i + 1}. {c.heading}
+                                      </Text>
+                                    </View>
+                                    <Text style={[{ fontSize: 10, color: c.score > 0 ? '#AAA' : '#666' }, bodyFontStyle]}>
+                                      Score: {c.score.toFixed(4)} · {c.source} · {c.charCount} chars · {c.wordCount} words
+                                    </Text>
+                                  </View>
+                                ))}
+
+                                {/* Selected chunks with full text */}
+                                {entry.selectedChunks?.length > 0 && (
+                                  <>
+                                    <Text style={[{ fontSize: 11, color: '#999', marginTop: 10, marginBottom: 4 }, bodyFontStyle]}>
+                                      Selected chunks sent to LLM ({entry.selectedChunks.length}):
+                                    </Text>
+                                    {entry.selectedChunks.map((c, i) => (
+                                      <View key={i} style={{
+                                        marginBottom: 6, padding: 8, borderRadius: 6,
+                                        backgroundColor: 'rgba(38,198,218,0.06)',
+                                        borderWidth: 1, borderColor: 'rgba(38,198,218,0.2)',
+                                      }}>
+                                        <Text style={[{ fontSize: 11, color: '#26C6DA', fontWeight: '700', marginBottom: 4 }, bodyFontStyle]}>
+                                          {c.heading} (score {c.score.toFixed(4)}, {c.source})
+                                        </Text>
+                                        <Text style={[{ fontSize: 10, color: '#BBB', fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace' }]} selectable>
+                                          {c.content}
+                                        </Text>
+                                      </View>
+                                    ))}
+                                  </>
+                                )}
+                              </View>
+                            )}
+                          </TouchableOpacity>
+                        );
+                      })
+                    )}
+                  </View>
+                )}
+              </TouchableOpacity>
+
               {/* ── Event Log ── */}
               <TouchableOpacity
                 style={[styles.versionContainer, { paddingHorizontal: 10 }]}
