@@ -459,7 +459,13 @@ export function useGameAssistant() {
           .filter((m) => m.text?.trim())
           .map((m) => ({ role: m.role, text: m.text }));
 
-        const rawChunks = ragIndex ? retrieveRelevantChunks(ragIndex, spokenQuestion) : [];
+        let searchQuery = spokenQuestion;
+        const lastUserMsg = [...historySnapshot].reverse().find(m => m.role === 'user');
+        if (lastUserMsg?.text) {
+          searchQuery = `${lastUserMsg.text} ${spokenQuestion}`;
+        }
+
+        const rawChunks = ragIndex ? retrieveRelevantChunks(ragIndex, searchQuery) : [];
         if (!ragIndex) {
           logRetrieval({
             question: spokenQuestion,

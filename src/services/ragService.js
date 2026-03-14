@@ -349,9 +349,10 @@ export function filterAndMerge(selectedChunks) {
   }
 
   // ── Stage 2: Cross-Reference Merging (phase-specific, no cascading) ──
-  // Merge only when one chunk's crossRefs contain the other's exact
-  // sectionName. Each chunk participates in at most one merge (break
-  // after the first match prevents transitive chaining).
+  // Sort by BM25 score descending so the highest-scored chunk claims its
+  // cross-ref partner first, preventing lower-scored chunks from consuming
+  // a partner that a higher-scored chunk needs.
+  survivors.sort((a, b) => b.score - a.score);
   const mergedIndices = new Set();
 
   for (let i = 0; i < survivors.length; i++) {
