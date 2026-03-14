@@ -26,6 +26,7 @@ import { AppState, PermissionsAndroid, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NativeVoiceAssistantOptional from '../specs/NativeVoiceAssistantOptional';
 import { buildGameAssistantPrompt } from '../constants';
+import { retrieveRelevantChunks } from '../services/ragService';
 import { sanitizeTextForSpeech } from '../utils/sanitizeTextForSpeech';
 import { logError, logEvent } from '../services/errorLogger';
 
@@ -407,11 +408,10 @@ export function useGameAssistant() {
   /**
    * Runs the full voice-to-AI-to-voice loop.
    *
-   * @param {string} rules      Raw Markdown from the Rules tab.
-   * @param {string} expansions Raw Markdown from the Expansions tab.
+   * @param {object} ragIndex  The index object returned by ragService.buildIndex().
    */
   const askTheRules = useCallback(
-    async (rules = '', expansions = '') => {
+    async (ragIndex) => {
       const native = NativeVoiceAssistantOptional;
       if (!native) return;
       if (isBusy.current) return;
@@ -447,7 +447,7 @@ export function useGameAssistant() {
           prev.map((m) => (m.id === userMsgId ? { ...m, text: spokenQuestion } : m)),
         );
 
-        // 2. Ask the AI model ─────────────────────────────────────────────
+        // 2. Retrieve relevant chunks and build prompt ─────────────────────
         const assistantMsgId = nextId();
         activeAssistantMsgId.current = assistantMsgId;
 
@@ -455,11 +455,17 @@ export function useGameAssistant() {
           .filter((m) => m.text?.trim())
           .map((m) => ({ role: m.role, text: m.text }));
 
+        const chunks = ragIndex ? retrieveRelevantChunks(ragIndex, spokenQuestion) : [];
+        const totalContextChars = chunks.reduce((s, c) => s + c.content.length, 0);
+        logEvent('RAG', `Retrieved ${chunks.length} chunks (${totalContextChars} chars)`, {
+          query: spokenQuestion.substring(0, 80),
+          chunks: chunks.map(c => ({ heading: c.heading, score: Math.round(c.score * 100) / 100 })),
+        });
+
         setMessages((prev) => [...prev, { id: assistantMsgId, role: 'assistant', text: '' }]);
 
         const fullPrompt = buildGameAssistantPrompt(
-          rules,
-          expansions,
+          chunks,
           historySnapshot,
           spokenQuestion,
         );

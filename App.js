@@ -28,6 +28,7 @@ import { ContentScreen, MoreScreen, ToolsScreen } from './src/screens';
 import { VoiceAssistantFAB, VoiceAssistantModal } from './src/components';
 import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { buildIndex } from './src/services/ragService';
 
 const LEGACY_SUMMARY_KEYS = [
   '@cache_rules_summary',
@@ -90,7 +91,6 @@ function AppContent() {
   const [isConvoOpen, setIsConvoOpen] = useState(false);
   const [showMicDialog, setShowMicDialog] = useState(false);
   const prevIsThinkingRef = useRef(false);
-  const convoContextRef = useRef({ rules: '', expansions: '' });
   const askTheRulesRef = useRef(null);
   const isIOS = Platform.OS === 'ios';
   const splashOpacity = useRef(new Animated.Value(1)).current;
@@ -173,10 +173,17 @@ function AppContent() {
   const tabs = useMemo(() => ['rules', 'expansions', 'tools', 'more'], []);
   const tabToIndex = useCallback((tab) => tabs.indexOf(tab), [tabs]);
 
-  // Keep the latest content in a ref so the auto-continue effect can read it
-  // without needing content/expansionsContent as effect dependencies.
+  // ── RAG index ───────────────────────────────────────────────────────────
+  const [ragIndexReady, setRagIndexReady] = useState(false);
+  const [ragChunkCount, setRagChunkCount] = useState(0);
+  const ragIndexRef = useRef(null);
+
   useEffect(() => {
-    convoContextRef.current = { rules: content, expansions: expansionsContent };
+    if (!content && !expansionsContent) return;
+    const index = buildIndex(content || '', expansionsContent || '');
+    ragIndexRef.current = index;
+    setRagChunkCount(index.totalChunks);
+    setRagIndexReady(index.totalChunks > 0);
   }, [content, expansionsContent]);
 
   // Keep askTheRulesRef current so the auto-continue timeout always calls
@@ -192,10 +199,7 @@ function AppContent() {
     prevIsThinkingRef.current = isThinking;
     if (wasThinking && !isThinking && isConvoOpen && !isListening) {
       const timer = setTimeout(() => {
-        askTheRulesRef.current?.(
-          convoContextRef.current.rules,
-          convoContextRef.current.expansions,
-        );
+        askTheRulesRef.current?.(ragIndexRef.current);
       }, 600);
       return () => clearTimeout(timer);
     }
@@ -299,6 +303,8 @@ function AppContent() {
         speechPermissionStatus={speechPermissionStatus}
         onRetryModelSetup={retryModelSetup}
         modelDebugInfo={modelDebugInfo}
+        ragIndexReady={ragIndexReady}
+        ragChunkCount={ragChunkCount}
       />
     );
   };
@@ -434,7 +440,7 @@ function AppContent() {
         {mainContent}
       </Animated.View>
 
-      {aiSupported && (
+      {aiSupported && ragIndexReady && (
         <View
           pointerEvents="box-none"
           style={{ position: 'absolute', left: 0, right: 0, bottom: 0, top: 0, zIndex: 10 }}
@@ -456,13 +462,13 @@ function AppContent() {
               onPress={async () => {
                 if (micPermissionStatus === 'granted') {
                   setIsConvoOpen(true);
-                  askTheRules(content, expansionsContent);
+                  askTheRules(ragIndexRef.current);
                   return;
                 }
                 const result = await requestMicPermission();
                 if (result === 'granted') {
                   setIsConvoOpen(true);
-                  askTheRules(content, expansionsContent);
+                  askTheRules(ragIndexRef.current);
                 } else {
                   setShowMicDialog(true);
                 }

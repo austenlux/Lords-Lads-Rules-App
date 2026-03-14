@@ -100,37 +100,35 @@ const sanitizeRulebookContent = (text) => {
 };
 
 /**
- * Builds the complete, ready-to-send prompt for Gemini Nano.
+ * Builds the complete, ready-to-send prompt for Gemini Nano using
+ * RAG-retrieved chunks instead of the full rulebook.
  *
- * @param {string}   rules       Raw Markdown from the Rules tab.
- * @param {string}   expansions  Raw Markdown from the Expansions tab.
- * @param {Array}    history     Array of settled {role, text} message objects (most-recent last).
- *                               Only the last HISTORY_TURNS exchanges are included.
- * @param {string}   question    The user's current transcribed question.
+ * @param {Array<{ content: string, source: string }>} retrievedChunks
+ *   Chunks returned by ragService.retrieveRelevantChunks().
+ * @param {Array}  history   Array of settled {role, text} message objects (most-recent last).
+ * @param {string} question  The user's current transcribed question.
  */
 const HISTORY_TURNS = 3;
-const MAX_RULES_CHARS = 10000;
-const MAX_EXPANSIONS_CHARS = 4000;
 
-const truncateToLastHeading = (text, maxChars) => {
-  if (!text || text.length <= maxChars) return text;
-  const cut = text.slice(0, maxChars);
-  const lastHeading = cut.lastIndexOf('\n#');
-  return (lastHeading > maxChars * 0.5 ? cut.slice(0, lastHeading) : cut).trimEnd() + '\n\n[Content truncated to fit model context window]';
-};
-
-export const buildGameAssistantPrompt = (rules, expansions, history, question) => {
+export const buildGameAssistantPrompt = (retrievedChunks, history, question) => {
   const recentHistory = history?.slice(-(HISTORY_TURNS * 2)) ?? [];
   const historyText = recentHistory.length
     ? recentHistory.map((m) => `${m.role === 'user' ? 'User' : 'Assistant'}: ${sanitizeUserInput(m.text)}`).join('\n')
     : 'No previous conversation.';
 
-  const cleanRules = truncateToLastHeading(sanitizeRulebookContent(rules), MAX_RULES_CHARS);
-  const cleanExpansions = truncateToLastHeading(sanitizeRulebookContent(expansions), MAX_EXPANSIONS_CHARS);
+  const rulesChunks = retrievedChunks
+    .filter(c => c.source === 'rules')
+    .map(c => sanitizeRulebookContent(c.content));
+  const expansionsChunks = retrievedChunks
+    .filter(c => c.source === 'expansions')
+    .map(c => sanitizeRulebookContent(c.content));
+
+  const rulesContent = rulesChunks.length > 0 ? rulesChunks.join('\n\n---\n\n') : 'Not available.';
+  const expansionsContent = expansionsChunks.length > 0 ? expansionsChunks.join('\n\n---\n\n') : 'Not available.';
 
   return GAME_ASSISTANT_SYSTEM_PROMPT
-    .replace(P.RULES,      cleanRules      || 'Not available.')
-    .replace(P.EXPANSIONS, cleanExpansions || 'Not available.')
+    .replace(P.RULES,      rulesContent)
+    .replace(P.EXPANSIONS, expansionsContent)
     .replace(P.HISTORY,    historyText)
     .replace(P.QUESTION,   sanitizeUserInput(question));
 };
