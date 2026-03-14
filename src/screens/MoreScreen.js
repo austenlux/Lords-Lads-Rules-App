@@ -23,7 +23,7 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 }
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import RNFS from 'react-native-fs';
-import { getEventLog, clearEventLog, onEventLogChange, formatEventLogAsText } from '../services/errorLogger';
+import { getEventLog, clearEventLog, onEventLogChange, formatEventLogAsText, logError } from '../services/errorLogger';
 import ErrorIcon from '../../assets/icons/error.svg';
 import Clipboard from '@react-native-clipboard/clipboard';
 import TrashIcon from '../../assets/icons/trash.svg';
@@ -258,6 +258,8 @@ export default function MoreScreen({
   const [expandedRetrievals, setExpandedRetrievals] = useState({});
   const [ragCopied, setRagCopied] = useState(false);
   const [eventCopied, setEventCopied] = useState(false);
+  const [ragExported, setRagExported] = useState(false);
+  const [eventExported, setEventExported] = useState(false);
   const [ragChunksExpanded, setRagChunksExpanded] = useState(false);
   const ragLogUnsub = useRef(null);
   const ragRetrievalAnims = useRef({}).current;
@@ -560,6 +562,34 @@ export default function MoreScreen({
     setRagLog({ indexBuild: null, retrievals: [] });
     setExpandedRetrievals({});
     Object.values(ragRetrievalAnims).forEach(a => animateSection(a, false, 0));
+  };
+
+  const handleExportRagLog = async () => {
+    try {
+      const text = formatRagLogAsText();
+      const dir = Platform.OS === 'android' ? RNFS.DownloadDirectoryPath : RNFS.DocumentDirectoryPath;
+      const filename = `rag_log_${new Date().toISOString().replace(/[:.]/g, '-')}.txt`;
+      const path = `${dir}/${filename}`;
+      await RNFS.writeFile(path, text, 'utf8');
+      setRagExported(true);
+      setTimeout(() => setRagExported(false), 3000);
+    } catch (e) {
+      logError('RAG Export', e);
+    }
+  };
+
+  const handleExportEventLog = async () => {
+    try {
+      const text = formatEventLogAsText();
+      const dir = Platform.OS === 'android' ? RNFS.DownloadDirectoryPath : RNFS.DocumentDirectoryPath;
+      const filename = `event_log_${new Date().toISOString().replace(/[:.]/g, '-')}.txt`;
+      const path = `${dir}/${filename}`;
+      await RNFS.writeFile(path, text, 'utf8');
+      setEventExported(true);
+      setTimeout(() => setEventExported(false), 3000);
+    } catch (e) {
+      logError('Event Export', e);
+    }
   };
 
   useEffect(() => {
@@ -1606,6 +1636,20 @@ export default function MoreScreen({
                             style={{
                               flexDirection: 'row', alignItems: 'center', gap: 6,
                               paddingHorizontal: 16, paddingVertical: 7, borderRadius: 6,
+                              borderWidth: 1,
+                              borderColor: eventExported ? '#4CAF50' : accent,
+                              backgroundColor: eventExported ? 'rgba(76,175,80,0.1)' : `${accent}1A`,
+                            }}
+                            onPress={handleExportEventLog}
+                          >
+                            <Text style={[{ color: eventExported ? '#4CAF50' : accent, fontSize: 13 }, bodyFontStyle]}>
+                              {eventExported ? 'Exported!' : 'Export'}
+                            </Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity
+                            style={{
+                              flexDirection: 'row', alignItems: 'center', gap: 6,
+                              paddingHorizontal: 16, paddingVertical: 7, borderRadius: 6,
                               borderWidth: 1, borderColor: accent, backgroundColor: `${accent}1A`,
                             }}
                             onPress={() => { clearEventLog(); setErrorLogEntries([]); }}
@@ -1713,6 +1757,20 @@ export default function MoreScreen({
                         <CopyIcon width={16} height={16} fill={ragCopied ? '#4CAF50' : accent} />
                         <Text style={[{ color: ragCopied ? '#4CAF50' : accent, fontSize: 13 }, bodyFontStyle]}>
                           {ragCopied ? 'Copied!' : 'Copy All'}
+                        </Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={{
+                          flexDirection: 'row', alignItems: 'center', gap: 6,
+                          paddingHorizontal: 16, paddingVertical: 7, borderRadius: 6,
+                          borderWidth: 1,
+                          borderColor: ragExported ? '#4CAF50' : accent,
+                          backgroundColor: ragExported ? 'rgba(76,175,80,0.1)' : `${accent}1A`,
+                        }}
+                        onPress={handleExportRagLog}
+                      >
+                        <Text style={[{ color: ragExported ? '#4CAF50' : accent, fontSize: 13 }, bodyFontStyle]}>
+                          {ragExported ? 'Exported!' : 'Export'}
                         </Text>
                       </TouchableOpacity>
                       <TouchableOpacity
