@@ -55,6 +55,10 @@
 	<false/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>UIFileSharingEnabled</key>
+	<true/>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>The Voice Assistant uses speech recognition to understand your questions about the game rules.</string>
 	<key>NSMicrophoneUsageDescription</key>

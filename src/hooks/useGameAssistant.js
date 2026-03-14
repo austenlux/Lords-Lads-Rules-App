@@ -29,7 +29,7 @@ import { buildGameAssistantPrompt } from '../constants';
 import { retrieveRelevantChunks } from '../services/ragService';
 import { sanitizeTextForSpeech } from '../utils/sanitizeTextForSpeech';
 import { logError, logEvent } from '../services/errorLogger';
-import { updateLatestRetrieval } from '../services/ragLogger';
+import { logRetrieval, updateLatestRetrieval } from '../services/ragLogger';
 
 
 const VOICE_STORAGE_KEY = '@lnl_voice_id';
@@ -461,7 +461,17 @@ export function useGameAssistant() {
 
         const chunks = ragIndex ? retrieveRelevantChunks(ragIndex, spokenQuestion) : [];
         const totalContextChars = chunks.reduce((s, c) => s + c.content.length, 0);
-        logEvent('RAG', `Retrieved ${chunks.length} chunks (${totalContextChars} chars)`, {
+        if (!ragIndex) {
+          logRetrieval({
+            question: spokenQuestion,
+            keywords: [],
+            topK: 0,
+            allScoredChunks: [],
+            selectedChunks: [],
+            noIndex: true,
+          });
+        }
+        logEvent('RAG', `Retrieved ${chunks.length} chunks (${totalContextChars} chars)${ragIndex ? '' : ' [index not ready]'}`, {
           query: spokenQuestion.substring(0, 80),
           chunks: chunks.map(c => ({ heading: c.heading, score: Math.round(c.score * 100) / 100 })),
         });

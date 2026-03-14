@@ -262,6 +262,8 @@ export default function MoreScreen({
   const [ragExported, setRagExported] = useState(false);
   const [eventExported, setEventExported] = useState(false);
   const [ragChunksExpanded, setRagChunksExpanded] = useState(false);
+  const [ragScoredChunksExpanded, setRagScoredChunksExpanded] = useState({});
+  const [ragSelectedChunkExpanded, setRagSelectedChunkExpanded] = useState({});
   const ragLogUnsub = useRef(null);
   const ragRetrievalAnims = useRef({}).current;
 
@@ -539,6 +541,8 @@ export default function MoreScreen({
     } else {
       if (ragLogUnsub.current) { ragLogUnsub.current(); ragLogUnsub.current = null; }
       setExpandedRetrievals({});
+      setRagScoredChunksExpanded({});
+      setRagSelectedChunkExpanded({});
       Object.values(ragRetrievalAnims).forEach(a => animateSection(a, false, 0));
     }
     setRagLogExpanded(isExpanded);
@@ -562,6 +566,8 @@ export default function MoreScreen({
     clearRagLog();
     setRagLog({ indexBuild: null, retrievals: [] });
     setExpandedRetrievals({});
+    setRagScoredChunksExpanded({});
+    setRagSelectedChunkExpanded({});
     Object.values(ragRetrievalAnims).forEach(a => animateSection(a, false, 0));
   };
 
@@ -637,6 +643,8 @@ export default function MoreScreen({
     setRagLogExpanded(false);
     setRagLog({ indexBuild: null, retrievals: [] });
     setExpandedRetrievals({});
+    setRagScoredChunksExpanded({});
+    setRagSelectedChunkExpanded({});
     Object.values(animations).forEach(a => animateSection(a, false, 0));
     Object.values(voiceLocaleAnims).forEach(a => animateSection(a, false, 0));
     Object.values(debugVoiceAnims).forEach(a => animateSection(a, false, 0));
@@ -1863,6 +1871,12 @@ export default function MoreScreen({
                             </View>
                             {isOpen && (
                               <View style={{ paddingTop: 8 }}>
+                                {entry.noIndex && (
+                                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, padding: 8, marginBottom: 8, borderRadius: 6, backgroundColor: 'rgba(255,152,0,0.1)', borderWidth: 1, borderColor: 'rgba(255,152,0,0.3)' }}>
+                                    <BadgeWarningIcon size={16} color="#FF9800" />
+                                    <Text style={[{ fontSize: 11, color: '#FF9800' }, bodyFontStyle]}>RAG index was not ready — no chunks retrieved</Text>
+                                  </View>
+                                )}
                                 {/* Retrieval metadata */}
                                 {[
                                   { label: 'Keywords', value: entry.keywords?.join(', ') || 'none' },
@@ -1877,10 +1891,20 @@ export default function MoreScreen({
                                 ))}
 
                                 {/* All scored chunks */}
-                                <Text style={[{ fontSize: 11, color: '#999', marginTop: 10, marginBottom: 4 }, bodyFontStyle]}>
-                                  All chunks scored ({entry.allScoredChunks?.length ?? 0}):
-                                </Text>
-                                {entry.allScoredChunks?.map((c, i) => (
+                                <TouchableOpacity
+                                  onPress={() => {
+                                    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+                                    setRagScoredChunksExpanded(prev => ({ ...prev, [entry.id]: !prev[entry.id] }));
+                                  }}
+                                  style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10, marginBottom: 4 }}
+                                  activeOpacity={0.7}
+                                >
+                                  <Text style={[{ fontSize: 11, color: '#999', flex: 1 }, bodyFontStyle]}>
+                                    All chunks scored ({entry.allScoredChunks?.length ?? 0})
+                                  </Text>
+                                  <Text style={{ fontSize: 10, color: '#999' }}>{ragScoredChunksExpanded[entry.id] ? '▼' : '▶'}</Text>
+                                </TouchableOpacity>
+                                {ragScoredChunksExpanded[entry.id] && entry.allScoredChunks?.map((c, i) => (
                                   <View key={i} style={[styles.debugMetaRow, {
                                     flexDirection: 'column', gap: 2, paddingVertical: 3,
                                     backgroundColor: c.selected ? 'rgba(76,175,80,0.08)' : 'transparent',
@@ -1906,20 +1930,37 @@ export default function MoreScreen({
                                     <Text style={[{ fontSize: 11, color: '#999', marginTop: 10, marginBottom: 4 }, bodyFontStyle]}>
                                       Selected chunks sent to LLM ({entry.selectedChunks.length}):
                                     </Text>
-                                    {entry.selectedChunks.map((c, i) => (
-                                      <View key={i} style={{
-                                        marginBottom: 6, padding: 8, borderRadius: 6,
-                                        backgroundColor: 'rgba(38,198,218,0.06)',
-                                        borderWidth: 1, borderColor: 'rgba(38,198,218,0.2)',
-                                      }}>
-                                        <Text style={[{ fontSize: 11, color: '#26C6DA', fontWeight: '700', marginBottom: 4 }, bodyFontStyle]}>
-                                          {c.heading} (score {c.score.toFixed(4)}, {c.source})
-                                        </Text>
-                                        <Text style={[{ fontSize: 10, color: '#BBB', fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace' }]} selectable>
-                                          {c.content}
-                                        </Text>
-                                      </View>
-                                    ))}
+                                    {entry.selectedChunks.map((c, i) => {
+                                      const chunkKey = `${entry.id}_${i}`;
+                                      const isChunkOpen = !!ragSelectedChunkExpanded[chunkKey];
+                                      return (
+                                        <TouchableOpacity
+                                          key={i}
+                                          onPress={() => {
+                                            LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+                                            setRagSelectedChunkExpanded(prev => ({ ...prev, [chunkKey]: !prev[chunkKey] }));
+                                          }}
+                                          activeOpacity={0.7}
+                                          style={{
+                                            marginBottom: 6, padding: 8, borderRadius: 6,
+                                            backgroundColor: 'rgba(38,198,218,0.06)',
+                                            borderWidth: 1, borderColor: 'rgba(38,198,218,0.2)',
+                                          }}
+                                        >
+                                          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                            <Text style={[{ fontSize: 11, color: '#26C6DA', fontWeight: '700', flex: 1 }, bodyFontStyle]}>
+                                              {c.heading} (score {c.score.toFixed(4)}, {c.source})
+                                            </Text>
+                                            <Text style={{ fontSize: 10, color: '#26C6DA', marginLeft: 6 }}>{isChunkOpen ? '▼' : '▶'}</Text>
+                                          </View>
+                                          {isChunkOpen && (
+                                            <Text style={[{ fontSize: 10, color: '#BBB', fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace', marginTop: 4 }]} selectable>
+                                              {c.content}
+                                            </Text>
+                                          )}
+                                        </TouchableOpacity>
+                                      );
+                                    })}
                                   </>
                                 )}
 

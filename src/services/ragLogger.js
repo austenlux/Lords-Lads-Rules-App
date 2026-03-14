@@ -118,6 +118,9 @@ export function formatRagLogAsText() {
       lines.push(`RETRIEVAL #${ri + 1}`);
       lines.push('──────────────────────────────────────');
       lines.push(`Timestamp:  ${entry.timestamp}`);
+      if (entry.noIndex) {
+        lines.push('⚠ RAG index was not ready — no chunks retrieved');
+      }
       lines.push(`Question:   ${entry.question}`);
       lines.push(`Keywords:   ${entry.keywords?.join(', ') || 'none'}`);
       lines.push(`Top-K:      ${entry.topK}`);
