@@ -1,24 +1,32 @@
 ---
-description: "Install" means commit, build release, install on device, launch, and push — not npm install. Direct conversations only.
+description: "Install" means commit, build release, install on device, launch, and push — not npm install. Applies to ALL workflows.
 alwaysApply: true
 ---
 
-# Build and Install (Direct Conversations Only)
+# Build and Install
 
-This rule applies when you are working **directly with the user** — not when operating as part of the subagent workflow (agents handle their own build/test pipeline).
+This rule applies to **all workflows** — direct conversations AND subagent workflows (orchestrator, engineer, etc.).
 
-When the user says **"install it"**, asks to install after changes, or you make **any code change** the user will need to test:
+When the user says **"install it"**, asks to install after changes, or **any code change** is made that the user will need to test:
 
 ## Required order — NEVER deviate
 
 1. **Commit first** — `git add -A && git commit` before any build command. The build script (`sync:build-info`) captures `git rev-parse --short HEAD` at build time. Building before committing embeds the wrong commit hash.
-2. **Build** — `npm run build:android` (release-signed APK). For iOS: build a release archive via Xcode or `run-ios --configuration Release`.
-3. **Install** — `npm run install:android:release`
-4. **Launch** — `adb shell am start -n com.lordsandladsrulesapp/.MainActivity` to open the app on the device immediately.
+2. **Build BOTH platforms:**
+   - **Android:** `npm run build:android` (release-signed APK)
+   - **iOS:** `cd ios && xcodebuild -workspace LordsandLadsRules.xcworkspace -scheme LordsandLadsRules -configuration Release -destination 'generic/platform=iOS' -derivedDataPath build archive -archivePath build/LordsandLadsRules.xcarchive`
+3. **Install on BOTH physical devices** (no simulators, ever):
+   - **Android:** `npm run install:android:release`
+   - **iOS:** `ios-deploy --bundle ios/build/LordsandLadsRules.xcarchive/Products/Applications/LordsandLadsRules.app`
+   - If a device is **not connected**, skip that install and inform the user the build is ready to install next time the device is attached.
+4. **Launch:**
+   - **Android:** `adb shell am start -n com.lux.lnlrules/.MainActivity`
+   - **iOS:** launches automatically via ios-deploy
 5. **Push** — `git push`
 
 ## Other rules
 
 - **Do not** run `npm install` as the default response to "install it." The user means **install the app**, not install npm packages. Run `npm install` only when `package.json` or `package-lock.json` actually change.
 - All builds delivered to the user must be **release, signed, standalone** artifacts — no Metro or JS server required at runtime.
-- Do not wait for the user to ask — if you changed code in a direct conversation, automatically run the full sequence above when you're done.
+- Do not wait for the user to ask — if you changed code, automatically run the full sequence above when you're done.
+- **Always build and install on BOTH platforms.** Never skip one unless the user explicitly says to.
