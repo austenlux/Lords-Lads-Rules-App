@@ -1430,7 +1430,7 @@ export default function MoreScreen({
                           <View style={{ marginTop: 12, marginBottom: 12 }}>
                             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
                               <View style={{ width: 20, height: 20 }}>{overallIcon}</View>
-                              <Text style={[styles.versionText, titleFontStyle]}>Status</Text>
+                              <Text style={[styles.versionText, titleFontStyle]}>Local LLM</Text>
                             </View>
                           </View>
                           <View style={styles.debugMetaRow}>

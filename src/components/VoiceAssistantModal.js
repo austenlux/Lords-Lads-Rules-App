@@ -22,6 +22,8 @@ import {
   View,
 } from 'react-native';
 import Markdown from 'react-native-markdown-display';
+import WifiIcon from '../../assets/icons/wifi.svg';
+import NoWifiIcon from './NoWifiIcon';
 import { useTheme } from '../context/ThemeContext';
 
 // ─────────────────────────────────────────────────── Constants ──
@@ -81,20 +83,24 @@ function UserBubble({ text, bodyFontStyle, colors }) {
 }
 
 
-function AssistantBubble({ text, source, bodyFontStyle, mdStyles }) {
+function SourceIcon({ source, accent }) {
+  if (!source) return null;
+  if (source === 'cloud') {
+    return <WifiIcon width={12} height={12} fill={accent} />;
+  }
+  return <NoWifiIcon width={12} height={12} wifiColor="#666666" xColor="#666666" />;
+}
+
+function AssistantBubble({ text, source, accent, bodyFontStyle, mdStyles }) {
   return (
     <View style={[styles.bubbleRow, styles.bubbleRowAssistant]}>
       <View style={[styles.bubble, styles.assistantBubble]}>
-        <Text style={[styles.roleLabelAI, bodyFontStyle]}>Assistant</Text>
+        <View style={styles.assistantHeader}>
+          <Text style={[styles.roleLabelAI, bodyFontStyle]}>Assistant</Text>
+          <SourceIcon source={source} accent={accent} />
+        </View>
         {text ? (
-          <>
-            <Markdown style={mdStyles}>{text}</Markdown>
-            {source && (
-              <Text style={styles.sourceIndicator}>
-                {source === 'cloud' ? 'via Gemini' : 'offline mode'}
-              </Text>
-            )}
-          </>
+          <Markdown style={mdStyles}>{text}</Markdown>
         ) : (
           <ThinkingText style={[styles.thinkingText, bodyFontStyle]} />
         )}
@@ -212,7 +218,7 @@ export default function VoiceAssistantModal({ messages, isOpen, fabBottom = 96 }
             item.role === 'user' ? (
               <UserBubble text={item.text} bodyFontStyle={bodyFontStyle} colors={COLORS} />
             ) : (
-              <AssistantBubble text={item.text} source={item.source} bodyFontStyle={bodyFontStyle} mdStyles={mdStyles} />
+              <AssistantBubble text={item.text} source={item.source} accent={accent} bodyFontStyle={bodyFontStyle} mdStyles={mdStyles} />
             )
           }
           onContentSizeChange={(_, h) => {
@@ -278,11 +284,16 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.8,
   },
+  assistantHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    marginBottom: 4,
+  },
   roleLabelAI: {
     fontSize: 11,
     fontWeight: '600',
     color: BASE_MODAL_COLORS.roleLabelAI,
-    marginBottom: 4,
     textTransform: 'uppercase',
     letterSpacing: 0.8,
   },
@@ -300,12 +311,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#888888',
     fontStyle: 'italic',
-  },
-  sourceIndicator: {
-    fontSize: 10,
-    color: '#666666',
-    fontStyle: 'italic',
-    marginTop: 6,
-    textAlign: 'right',
   },
 });
