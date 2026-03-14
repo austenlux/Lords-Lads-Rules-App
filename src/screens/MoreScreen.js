@@ -212,6 +212,8 @@ export default function MoreScreen({
   speechPermissionStatus = 'unknown',
   onRetryModelSetup,
   modelDebugInfo = null,
+  ragIndexReady = false,
+  ragChunkCount = 0,
 }) {
   const [releaseNotes, setReleaseNotes] = useState([]);
   const [expandedVersions, setExpandedVersions] = useState({});
@@ -1418,6 +1420,19 @@ export default function MoreScreen({
                         </>
                       );
                     })()}
+
+                    {/* RAG Index status */}
+                    <View style={styles.debugMetaRow}>
+                      <Text style={[styles.debugMetaLabel, bodyFontStyle]}>RAG Index</Text>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1 }}>
+                        {ragIndexReady
+                          ? <BadgeSuccessIcon size={16} color="#4CAF50" />
+                          : <BadgeInfoIcon size={16} color="#888888" />}
+                        <Text style={[styles.debugMetaValue, { color: ragIndexReady ? '#4CAF50' : '#888888' }]}>
+                          {ragIndexReady ? `Ready (${ragChunkCount} chunks)` : 'Not Available'}
+                        </Text>
+                      </View>
+                    </View>
 
                     {/* Models subsection */}
                     <TouchableOpacity
