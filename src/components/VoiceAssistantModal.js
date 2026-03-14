@@ -81,13 +81,20 @@ function UserBubble({ text, bodyFontStyle, colors }) {
 }
 
 
-function AssistantBubble({ text, bodyFontStyle, mdStyles }) {
+function AssistantBubble({ text, source, bodyFontStyle, mdStyles }) {
   return (
     <View style={[styles.bubbleRow, styles.bubbleRowAssistant]}>
       <View style={[styles.bubble, styles.assistantBubble]}>
         <Text style={[styles.roleLabelAI, bodyFontStyle]}>Assistant</Text>
         {text ? (
-          <Markdown style={mdStyles}>{text}</Markdown>
+          <>
+            <Markdown style={mdStyles}>{text}</Markdown>
+            {source && (
+              <Text style={styles.sourceIndicator}>
+                {source === 'cloud' ? 'via Gemini' : 'offline mode'}
+              </Text>
+            )}
+          </>
         ) : (
           <ThinkingText style={[styles.thinkingText, bodyFontStyle]} />
         )}
@@ -205,7 +212,7 @@ export default function VoiceAssistantModal({ messages, isOpen, fabBottom = 96 }
             item.role === 'user' ? (
               <UserBubble text={item.text} bodyFontStyle={bodyFontStyle} colors={COLORS} />
             ) : (
-              <AssistantBubble text={item.text} bodyFontStyle={bodyFontStyle} mdStyles={mdStyles} />
+              <AssistantBubble text={item.text} source={item.source} bodyFontStyle={bodyFontStyle} mdStyles={mdStyles} />
             )
           }
           onContentSizeChange={(_, h) => {
@@ -293,5 +300,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#888888',
     fontStyle: 'italic',
+  },
+  sourceIndicator: {
+    fontSize: 10,
+    color: '#666666',
+    fontStyle: 'italic',
+    marginTop: 6,
+    textAlign: 'right',
   },
 });

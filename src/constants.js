@@ -136,6 +136,45 @@ export const buildGameAssistantPrompt = (retrievedChunks, history, question) => 
     .replace(P.QUESTION,   sanitizeUserInput(question));
 };
 
+// ─────────────────────────────────────── Gemini Cloud Prompt ──
+
+/**
+ * System prompt for the cloud Gemini model.
+ * Richer than the on-device prompt because Gemini can synthesise multiple rules.
+ */
+export const GEMINI_SYSTEM_PROMPT =
+  'You are a rules assistant for a drinking game called Lords & Lads. ' +
+  'Answer questions using ONLY the provided rules context. Be concise but complete — ' +
+  'if multiple rules apply to the question, include ALL of them. ' +
+  'Never reference section numbers or citations. ' +
+  'If the rules don\'t cover the question, say so.';
+
+/**
+ * Builds the full prompt string sent to the Gemini cloud API.
+ * Uses the merged (pre-extraction) chunks for richer context.
+ *
+ * @param {Array<{ content: string, source: string }>} mergedChunks
+ * @param {Array}  history   Settled {role, text} messages (most-recent last).
+ * @param {string} question  Current user question.
+ */
+export const buildGeminiPrompt = (mergedChunks, history, question) => {
+  const contextParts = mergedChunks.map(c => sanitizeRulebookContent(c.content));
+  const context = contextParts.join('\n\n');
+
+  const recentHistory = history?.slice(-(HISTORY_TURNS * 2)) ?? [];
+  const historyText = recentHistory.length
+    ? recentHistory.map(m => `${m.role === 'user' ? 'User' : 'Assistant'}: ${sanitizeUserInput(m.text)}`).join('\n')
+    : '';
+
+  const parts = [GEMINI_SYSTEM_PROMPT, '', `Context:\n${context}`];
+  if (historyText) {
+    parts.push('', `Conversation History:\n${historyText}`);
+  }
+  parts.push('', `Question: ${sanitizeUserInput(question)}`);
+
+  return parts.join('\n');
+};
+
 /** Venmo username for "Buy me coffee" links (no @). */
 export const VENMO_USERNAME = 'AustenLux';
 

@@ -242,6 +242,9 @@ export function formatRagLogAsText() {
       }
 
       lines.push('AI Response:');
+      if (entry.responseSource) {
+        lines.push(`  Source: ${entry.responseSource}${entry.modelName ? ` (${entry.modelName})` : ''}`);
+      }
       if (entry.aiResponse) {
         entry.aiResponse.split('\n').forEach(l => lines.push(`  ${l}`));
       } else {

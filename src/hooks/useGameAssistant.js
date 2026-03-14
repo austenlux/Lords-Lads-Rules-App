@@ -25,8 +25,9 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { AppState, PermissionsAndroid, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NativeVoiceAssistantOptional from '../specs/NativeVoiceAssistantOptional';
-import { buildGameAssistantPrompt } from '../constants';
+import { buildGameAssistantPrompt, buildGeminiPrompt } from '../constants';
 import { retrieveRelevantChunks, filterAndMerge, extractRelevantSentences } from '../services/ragService';
+import { askGemini, isGeminiConfigured } from '../services/geminiService';
 import { sanitizeTextForSpeech } from '../utils/sanitizeTextForSpeech';
 import { logError, logEvent } from '../services/errorLogger';
 import { logRetrieval, updateLatestRetrieval, logPostProcessing, logFinalChunks, logSentenceExtraction } from '../services/ragLogger';
@@ -65,6 +66,11 @@ export function useGameAssistant() {
   const [availableVoices, setAvailableVoices] = useState([]);
   const [selectedVoiceId, setSelectedVoiceId] = useState(null);
   const [messages, setMessages] = useState([]);
+  const [cloudLlmStatus, setCloudLlmStatus] = useState({
+    keyConfigured: isGeminiConfigured(),
+    lastCloudResponse: null,
+    fallbackCount: 0,
+  });
   // 'unknown' | 'available' | 'downloadable' | 'downloading' | 'unavailable' | 'download_failed'
   const [modelStatus, setModelStatus] = useState('unknown');
   // 'unknown' | 'granted' | 'not_granted'
@@ -492,36 +498,86 @@ export function useGameAssistant() {
         logEvent('RAG', `Post-processed: ${rawChunks.length} → ${mergedChunks.length} merged → ${chunks.length} extracted (${totalContextChars} chars)`);
 
         setMessages((prev) => [...prev, { id: assistantMsgId, role: 'assistant', text: '' }]);
-
-        const fullPrompt = buildGameAssistantPrompt(
-          chunks,
-          historySnapshot,
-          spokenQuestion,
-        );
-
-        updateLatestRetrieval({
-          totalContextChars: totalContextChars,
-          promptLength: fullPrompt.length,
-          postProcessing: postProcessLog,
-        });
-
         setIsThinking(true);
-        logEvent('Voice', `askQuestion called (prompt length: ${fullPrompt.length})`);
-        await native.askQuestion(fullPrompt);
-        const aiResponse = fullAnswerRef.current;
-        logEvent('Voice', aiResponse
-          ? `askQuestion resolved (${aiResponse.length} chars)`
-          : 'askQuestion resolved with EMPTY response — model returned no content');
-        updateLatestRetrieval({ aiResponse });
-        activeAssistantMsgId.current = null;
 
-        const remaining = sentenceBufferRef.current.trim();
-        sentenceBufferRef.current = '';
-        if (remaining) {
-          const cleaned = sanitizeTextForSpeech(remaining);
-          if (cleaned) native.speak(cleaned);
+        // ── Cloud-first: try Gemini, fall back to on-device ───────────
+        let usedCloud = false;
+
+        if (isGeminiConfigured()) {
+          try {
+            logEvent('Voice', 'Gemini API call started');
+            const geminiT0 = Date.now();
+
+            const geminiPrompt = buildGeminiPrompt(mergedChunks, historySnapshot, spokenQuestion);
+            updateLatestRetrieval({
+              totalContextChars: mergedChunks.reduce((s, c) => s + c.content.length, 0),
+              promptLength: geminiPrompt.length,
+              postProcessing: postProcessLog,
+            });
+
+            const geminiResponse = await askGemini(geminiPrompt);
+            const geminiElapsed = Date.now() - geminiT0;
+            logEvent('Voice', `Gemini API response received (${geminiElapsed}ms)`);
+
+            fullAnswerRef.current = geminiResponse;
+            setFullAnswer(geminiResponse);
+            setMessages((prev) =>
+              prev.map((m) => (m.id === assistantMsgId ? { ...m, text: geminiResponse, source: 'cloud' } : m)),
+            );
+            updateLatestRetrieval({
+              aiResponse: geminiResponse,
+              responseSource: 'cloud',
+              modelName: 'gemini-2.0-flash',
+            });
+
+            setCloudLlmStatus(prev => ({
+              ...prev,
+              lastCloudResponse: new Date().toLocaleString(),
+            }));
+
+            const cleaned = sanitizeTextForSpeech(geminiResponse);
+            if (cleaned) native.speak(cleaned);
+            native.markSpeechQueueComplete();
+            usedCloud = true;
+          } catch (geminiErr) {
+            logEvent('Voice', `Gemini API failed — falling back to on-device: ${geminiErr.message}`);
+            setCloudLlmStatus(prev => ({
+              ...prev,
+              fallbackCount: prev.fallbackCount + 1,
+            }));
+          }
         }
-        native.markSpeechQueueComplete();
+
+        if (!usedCloud) {
+          // On-device fallback: use sentence-extracted chunks.
+          const fullPrompt = buildGameAssistantPrompt(chunks, historySnapshot, spokenQuestion);
+
+          updateLatestRetrieval({
+            totalContextChars,
+            promptLength: fullPrompt.length,
+            postProcessing: postProcessLog,
+          });
+
+          logEvent('Voice', `askQuestion called — on-device (prompt length: ${fullPrompt.length})`);
+          await native.askQuestion(fullPrompt);
+          const aiResponse = fullAnswerRef.current;
+          logEvent('Voice', aiResponse
+            ? `askQuestion resolved (${aiResponse.length} chars)`
+            : 'askQuestion resolved with EMPTY response — model returned no content');
+          updateLatestRetrieval({ aiResponse, responseSource: 'on-device' });
+
+          setMessages((prev) =>
+            prev.map((m) => (m.id === assistantMsgId ? { ...m, source: 'on-device' } : m)),
+          );
+
+          const remaining = sentenceBufferRef.current.trim();
+          sentenceBufferRef.current = '';
+          if (remaining) {
+            const cleaned = sanitizeTextForSpeech(remaining);
+            if (cleaned) native.speak(cleaned);
+          }
+          native.markSpeechQueueComplete();
+        }
 
       } catch (err) {
         const msg = err?.message ?? '';
@@ -631,5 +687,7 @@ export function useGameAssistant() {
     retryModelSetup,
     /** iOS only: parsed getModelDebugInfo(); null on Android or when missing/failed */
     modelDebugInfo,
+    /** Cloud LLM status for the debug panel */
+    cloudLlmStatus,
   };
 }

@@ -214,6 +214,7 @@ export default function MoreScreen({
   modelDebugInfo = null,
   ragIndexReady = false,
   ragChunkCount = 0,
+  cloudLlmStatus = {},
 }) {
   const [releaseNotes, setReleaseNotes] = useState([]);
   const [expandedVersions, setExpandedVersions] = useState({});
@@ -1522,6 +1523,36 @@ export default function MoreScreen({
                           {ragIndexReady ? `Ready (${ragChunkCount} chunks)` : 'Not Available'}
                         </Text>
                       </View>
+                    </View>
+
+                    {/* Cloud LLM status */}
+                    <View style={{ marginTop: 12, marginBottom: 4 }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                        <Text style={[styles.versionText, titleFontStyle]}>Cloud LLM</Text>
+                      </View>
+                    </View>
+                    <View style={styles.debugMetaRow}>
+                      <Text style={[styles.debugMetaLabel, bodyFontStyle]}>API Key</Text>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1 }}>
+                        {cloudLlmStatus.keyConfigured
+                          ? <BadgeSuccessIcon size={16} color="#4CAF50" />
+                          : <BadgeErrorIcon size={16} color="#CF6679" />}
+                        <Text style={[styles.debugMetaValue, { color: cloudLlmStatus.keyConfigured ? '#4CAF50' : '#CF6679' }]}>
+                          {cloudLlmStatus.keyConfigured ? 'Configured' : 'Not Set'}
+                        </Text>
+                      </View>
+                    </View>
+                    <View style={styles.debugMetaRow}>
+                      <Text style={[styles.debugMetaLabel, bodyFontStyle]}>Last Cloud Response</Text>
+                      <Text style={[styles.debugMetaValue, { color: '#888' }]}>
+                        {cloudLlmStatus.lastCloudResponse ?? '—'}
+                      </Text>
+                    </View>
+                    <View style={styles.debugMetaRow}>
+                      <Text style={[styles.debugMetaLabel, bodyFontStyle]}>Fallback Count</Text>
+                      <Text style={[styles.debugMetaValue, { color: cloudLlmStatus.fallbackCount > 0 ? '#FFC107' : '#888' }]}>
+                        {cloudLlmStatus.fallbackCount ?? 0}
+                      </Text>
                     </View>
 
                     {/* Models subsection */}

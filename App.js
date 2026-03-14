@@ -142,6 +142,7 @@ function AppContent() {
     clearSpeechPermissionError,
     retryModelSetup,
     modelDebugInfo,
+    cloudLlmStatus,
   } = useGameAssistant();
 
   const {
@@ -305,6 +306,7 @@ function AppContent() {
         modelDebugInfo={modelDebugInfo}
         ragIndexReady={ragIndexReady}
         ragChunkCount={ragChunkCount}
+        cloudLlmStatus={cloudLlmStatus}
       />
     );
   };
