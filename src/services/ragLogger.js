@@ -63,6 +63,23 @@ export function logPostProcessing(data) {
 }
 
 /**
+ * Record the final merged chunks (with actual content) sent to the LLM.
+ * Called after filterAndMerge so the export shows what the model actually sees.
+ * @param {Array<{ heading: string, content: string, score: number, source: string }>} chunks
+ */
+export function logFinalChunks(chunks) {
+  if (retrievalLogs.length === 0) return;
+  retrievalLogs[0].finalChunks = chunks.map(c => ({
+    heading: c.heading,
+    content: c.content,
+    score: c.score,
+    source: c.source,
+    charCount: c.content.length,
+  }));
+  notifyListeners();
+}
+
+/**
  * Patch the most recent retrieval entry with additional data
  * (e.g. prompt length, total context chars computed after retrieval).
  * @param {object} data Fields to merge into the latest retrieval entry.
@@ -176,8 +193,22 @@ export function formatRagLogAsText() {
           lines.push(`  Same-parent merges (${pp.parentMerges.length}):`);
           pp.parentMerges.forEach(m => lines.push(`    - [${m.parent}] ${m.merged.join(' + ')}`));
         }
+        if (pp.contextCapDropped?.length) {
+          lines.push(`  Context cap dropped (${pp.contextCapDropped.length}):`);
+          pp.contextCapDropped.forEach(d => lines.push(`    - ${d.heading} (score ${d.score.toFixed(4)}) — ${d.reason}`));
+        }
         lines.push(`  Final chunk count: ${pp.finalCount}`);
         lines.push('');
+      }
+
+      if (entry.finalChunks?.length) {
+        lines.push('Final merged chunks sent to LLM:');
+        entry.finalChunks.forEach((c, i) => {
+          lines.push(`  ┌── Chunk ${i + 1}: ${c.heading} (score ${c.score.toFixed(4)}, ${c.source}, ${c.charCount} chars)`);
+          c.content.split('\n').forEach(l => lines.push(`  │ ${l}`));
+          lines.push('  └──');
+          lines.push('');
+        });
       }
 
       lines.push('AI Response:');

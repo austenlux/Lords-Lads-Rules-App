@@ -29,7 +29,7 @@ import { buildGameAssistantPrompt } from '../constants';
 import { retrieveRelevantChunks, filterAndMerge } from '../services/ragService';
 import { sanitizeTextForSpeech } from '../utils/sanitizeTextForSpeech';
 import { logError, logEvent } from '../services/errorLogger';
-import { logRetrieval, updateLatestRetrieval, logPostProcessing } from '../services/ragLogger';
+import { logRetrieval, updateLatestRetrieval, logPostProcessing, logFinalChunks } from '../services/ragLogger';
 
 
 const VOICE_STORAGE_KEY = '@lnl_voice_id';
@@ -483,6 +483,7 @@ export function useGameAssistant() {
 
         const { chunks, log: postProcessLog } = filterAndMerge(rawChunks);
         logPostProcessing(postProcessLog);
+        logFinalChunks(chunks);
         const totalContextChars = chunks.reduce((s, c) => s + c.content.length, 0);
         logEvent('RAG', `Post-processed: ${rawChunks.length} → ${chunks.length} chunks (${totalContextChars} chars)`);
 
@@ -503,8 +504,11 @@ export function useGameAssistant() {
         setIsThinking(true);
         logEvent('Voice', `askQuestion called (prompt length: ${fullPrompt.length})`);
         await native.askQuestion(fullPrompt);
-        logEvent('Voice', 'askQuestion resolved');
-        updateLatestRetrieval({ aiResponse: fullAnswerRef.current });
+        const aiResponse = fullAnswerRef.current;
+        logEvent('Voice', aiResponse
+          ? `askQuestion resolved (${aiResponse.length} chars)`
+          : 'askQuestion resolved with EMPTY response — model returned no content');
+        updateLatestRetrieval({ aiResponse });
         activeAssistantMsgId.current = null;
 
         const remaining = sentenceBufferRef.current.trim();

@@ -9,8 +9,6 @@ import {
   Pressable,
   ScrollView,
   Animated,
-  LayoutAnimation,
-  UIManager,
   Linking,
   Image,
   Switch,
@@ -18,9 +16,6 @@ import {
   Dimensions,
 } from 'react-native';
 
-if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import RNFS from 'react-native-fs';
 import { getEventLog, clearEventLog, onEventLogChange, formatEventLogAsText, logError, logEvent } from '../services/errorLogger';
@@ -408,7 +403,7 @@ export default function MoreScreen({
   // ── Toggle functions ─────────────────────────────────────────────────────
 
   const toggleMoreSection = (sectionKey) => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+
     const willCollapse = sectionsExpanded[sectionKey];
     if (willCollapse) {
       if (sectionKey === SECTION_KEYS.SETTINGS)  collapseSettingsChildren();
@@ -419,21 +414,21 @@ export default function MoreScreen({
   };
 
   const toggleVoiceLocale = (localeKey) => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+
     const isExpanded = !expandedLocales[localeKey];
     animateSection(voiceLocaleAnims[localeKey], isExpanded);
     setExpandedLocales(prev => ({ ...prev, [localeKey]: isExpanded }));
   };
 
   const toggleExpandDefaults = () => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+
     const isExpanded = !expandDefaultsExpanded;
     animateSection(animations['expandDefaults'], isExpanded);
     setExpandDefaultsExpanded(isExpanded);
   };
 
   const toggleTheme = () => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+
     const isExpanded = !themeExpanded;
     animateSection(animations['theme'], isExpanded);
     if (!isExpanded) {
@@ -448,7 +443,7 @@ export default function MoreScreen({
   };
 
   const toggleThemeColor = () => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+
     const isExpanded = !themeColorExpanded;
     animateSection(animations['themeColor'], isExpanded);
     if (!isExpanded) {
@@ -459,14 +454,14 @@ export default function MoreScreen({
   };
 
   const toggleColorGroup = (groupId) => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+
     const isExpanded = !colorGroupExpanded[groupId];
     animateSection(animations[`colorGroup_${groupId}`], isExpanded);
     setColorGroupExpanded(prev => ({ ...prev, [groupId]: isExpanded }));
   };
 
   const toggleThemeFontPrimary = () => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+
     const isExpanded = !themeFontPrimaryExpanded;
     animateSection(animations['themeFontPrimary'], isExpanded);
     setThemeFontPrimaryExpanded(isExpanded);
@@ -475,7 +470,7 @@ export default function MoreScreen({
 
 
   const toggleVoiceParent = () => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+
     const isExpanded = !voiceParentExpanded;
     animateSection(animations['voiceParent'], isExpanded);
     if (!isExpanded) collapseAllLocales();
@@ -483,7 +478,7 @@ export default function MoreScreen({
   };
 
   const toggleVoiceMeta = () => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+
     const isExpanded = !voiceMetaExpanded;
     animateSection(animations['voiceMeta'], isExpanded);
     if (!isExpanded) collapseAllDebugVoices();
@@ -491,14 +486,14 @@ export default function MoreScreen({
   };
 
   const toggleFeatureFlags = () => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+
     const isExpanded = !featureFlagsExpanded;
     animateSection(animations['featureFlags'], isExpanded);
     setFeatureFlagsExpanded(isExpanded);
   };
 
   const toggleVaDebug = () => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+
     const isExpanded = !vaDebugExpanded;
     animateSection(animations['vaDebug'], isExpanded);
     if (!isExpanded) {
@@ -510,14 +505,14 @@ export default function MoreScreen({
   };
 
   const toggleBuildInfo = () => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+
     const isExpanded = !buildInfoExpanded;
     animateSection(animations['buildInfo'], isExpanded);
     setBuildInfoExpanded(isExpanded);
   };
 
   const toggleErrorLog = () => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+
     const isExpanded = !errorLogExpanded;
     animateSection(animations['errorLog'], isExpanded);
     if (isExpanded) {
@@ -532,7 +527,7 @@ export default function MoreScreen({
   };
 
   const toggleRagLog = () => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+
     const isExpanded = !ragLogExpanded;
     animateSection(animations['ragLog'], isExpanded);
     if (isExpanded) {
@@ -549,7 +544,7 @@ export default function MoreScreen({
   };
 
   const toggleRetrieval = (id) => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+
     if (!ragRetrievalAnims[id]) ragRetrievalAnims[id] = { rotation: new Animated.Value(0) };
     const isExpanded = !expandedRetrievals[id];
     animateSection(ragRetrievalAnims[id], isExpanded);
@@ -577,10 +572,9 @@ export default function MoreScreen({
     try {
       const text = formatRagLogAsText();
       const dir = Platform.OS === 'android' ? RNFS.DownloadDirectoryPath : RNFS.DocumentDirectoryPath;
-      const filename = `rag_log_${new Date().toISOString().replace(/[:.]/g, '-')}.txt`;
-      const path = `${dir}/${filename}`;
+      const path = `${dir}/rag_log.txt`;
       await RNFS.writeFile(path, text, 'utf8');
-      logEvent('RAG Log', `Exported to ${filename}`);
+      logEvent('RAG Log', 'Exported to rag_log.txt');
       setRagExported(true);
       setTimeout(() => setRagExported(false), 3000);
     } catch (e) {
@@ -592,10 +586,9 @@ export default function MoreScreen({
     try {
       const text = formatEventLogAsText();
       const dir = Platform.OS === 'android' ? RNFS.DownloadDirectoryPath : RNFS.DocumentDirectoryPath;
-      const filename = `event_log_${new Date().toISOString().replace(/[:.]/g, '-')}.txt`;
-      const path = `${dir}/${filename}`;
+      const path = `${dir}/event_log.txt`;
       await RNFS.writeFile(path, text, 'utf8');
-      logEvent('Event Log', `Exported to ${filename}`);
+      logEvent('Event Log', 'Exported to event_log.txt');
       setEventExported(true);
       setTimeout(() => setEventExported(false), 3000);
     } catch (e) {
@@ -611,7 +604,7 @@ export default function MoreScreen({
   }, []);
 
   const toggleDebugVoice = (voiceId) => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+
     const isExpanded = !expandedDebugVoices[voiceId];
     animateSection(debugVoiceAnims[voiceId], isExpanded);
     setExpandedDebugVoices(prev => ({ ...prev, [voiceId]: isExpanded }));
@@ -770,14 +763,14 @@ export default function MoreScreen({
   }, []);
 
   const toggleVersionExpansion = (version) => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+
     const isExpanded = !expandedVersions[version];
     animateSection(animations[version], isExpanded);
     setExpandedVersions(prev => ({ ...prev, [version]: isExpanded }));
   };
 
   const togglePastReleasesExpansion = () => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+
     const isExpanded = !pastReleasesExpanded;
     animateSection(animations[PAST_RELEASES_KEY], isExpanded);
     if (!isExpanded) collapseAllVersions();
@@ -1821,7 +1814,7 @@ export default function MoreScreen({
                           ))}
                           <TouchableOpacity
                             onPress={() => {
-                              LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+                          
                               setRagChunksExpanded(prev => !prev);
                             }}
                             style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8, marginBottom: 4 }}
@@ -1902,7 +1895,7 @@ export default function MoreScreen({
                                 {/* All scored chunks */}
                                 <TouchableOpacity
                                   onPress={() => {
-                                    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+                                
                                     setRagScoredChunksExpanded(prev => ({ ...prev, [entry.id]: !prev[entry.id] }));
                                   }}
                                   style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10, marginBottom: 4 }}
@@ -1946,7 +1939,7 @@ export default function MoreScreen({
                                         <TouchableOpacity
                                           key={i}
                                           onPress={() => {
-                                            LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+                                        
                                             setRagSelectedChunkExpanded(prev => ({ ...prev, [chunkKey]: !prev[chunkKey] }));
                                           }}
                                           activeOpacity={0.7}

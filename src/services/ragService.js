@@ -305,6 +305,8 @@ export function retrieveRelevantChunks(index, query, topK = 8) {
 
 const MERGE_SIZE_CAP = 5000;
 const CROSS_REF_BRIDGE = 'The following rules all apply to the same game event:\n\n';
+const MAX_FINAL_CHUNKS = 3;
+const MAX_CONTEXT_CHARS = 4000;
 
 /**
  * Three-stage post-retrieval processing: smart filtering (top-3 + siblings +
@@ -466,8 +468,34 @@ export function filterAndMerge(selectedChunks) {
     }
   }
 
-  finalChunks.sort((a, b) => a.originalIndex - b.originalIndex);
-  logData.finalCount = finalChunks.length;
+  // ── Stage 4: Context Cap ────────────────────────────────────────────────
+  // Keep at most MAX_FINAL_CHUNKS, sorted by highest score. If total context
+  // still exceeds MAX_CONTEXT_CHARS, drop the lowest-scoring chunks.
+  finalChunks.sort((a, b) => b.score - a.score);
 
-  return { chunks: finalChunks, log: logData };
+  const cappedChunks = [];
+  let totalChars = 0;
+  const dropped = [];
+
+  for (const chunk of finalChunks.slice(0, MAX_FINAL_CHUNKS)) {
+    if (totalChars + chunk.content.length <= MAX_CONTEXT_CHARS || cappedChunks.length === 0) {
+      cappedChunks.push(chunk);
+      totalChars += chunk.content.length;
+    } else {
+      dropped.push({ heading: chunk.heading, score: chunk.score, reason: `Exceeds ${MAX_CONTEXT_CHARS} char context cap` });
+    }
+  }
+
+  for (const chunk of finalChunks.slice(MAX_FINAL_CHUNKS)) {
+    dropped.push({ heading: chunk.heading, score: chunk.score, reason: `Beyond top-${MAX_FINAL_CHUNKS} chunk cap` });
+  }
+
+  if (dropped.length) {
+    logData.contextCapDropped = dropped;
+  }
+
+  cappedChunks.sort((a, b) => a.originalIndex - b.originalIndex);
+  logData.finalCount = cappedChunks.length;
+
+  return { chunks: cappedChunks, log: logData };
 }
