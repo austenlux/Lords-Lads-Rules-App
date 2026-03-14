@@ -304,7 +304,7 @@ export function retrieveRelevantChunks(index, query, topK = 8) {
 // ── Post-Retrieval Processing ─────────────────────────────────────────────
 
 const MERGE_SIZE_CAP = 5000;
-const CROSS_REF_BRIDGE = 'The following rules all apply to the same game event:\n\n';
+const CROSS_REF_BRIDGE = 'IMPORTANT: The following rules describe different consequences of the same game event. Include ALL consequences in your answer:\n\n';
 const MAX_FINAL_CHUNKS = 3;
 const MAX_CONTEXT_CHARS = 4000;
 
@@ -366,7 +366,7 @@ export function filterAndMerge(selectedChunks) {
       const b = survivors[j];
       if (!a.crossRefs?.includes(b.sectionName) && !b.crossRefs?.includes(a.sectionName)) continue;
 
-      const [first, second] = a.content.length <= b.content.length ? [a, b] : [b, a];
+      const [first, second] = a.score <= b.score ? [a, b] : [b, a];
       const combined = `${CROSS_REF_BRIDGE}${first.content}\n\n${second.content}`;
       if (combined.length > MERGE_SIZE_CAP) continue;
 
