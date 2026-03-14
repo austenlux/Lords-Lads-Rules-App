@@ -27,7 +27,8 @@ import { getEventLog, clearEventLog, onEventLogChange } from '../services/errorL
 import ErrorIcon from '../../assets/icons/error.svg';
 import Clipboard from '@react-native-clipboard/clipboard';
 import TrashIcon from '../../assets/icons/trash.svg';
-import StatsIcon from '../../assets/icons/stats.svg';
+import BenderIcon from '../../assets/icons/bender.svg';
+import CopyIcon from '../../assets/icons/copy.svg';
 import { getRagLog, clearRagLog, onRagLogChange, formatRagLogAsText } from '../services/ragLogger';
 import { HEADER_HEIGHT } from '../styles';
 import NativeVoiceAssistantOptional from '../specs/NativeVoiceAssistantOptional';
@@ -1569,6 +1570,113 @@ export default function MoreScreen({
                   </View>
                 )}
               </TouchableOpacity>
+              {/* ── Event Log ── */}
+              <TouchableOpacity
+                style={[styles.versionContainer, { paddingHorizontal: 10 }]}
+                onPress={toggleErrorLog}
+                activeOpacity={0.7}
+              >
+                <View style={styles.versionHeader}>
+                  <CardIconTitle icon={<ErrorIcon width={20} height={20} fill="#FFC107" />} title="Event Log" styles={styles} />
+                  <Animated.View style={{ transform: [{ rotate: animations['errorLog']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
+                    <Text style={styles.versionArrow}>▶</Text>
+                  </Animated.View>
+                </View>
+                {errorLogExpanded && (
+                  <View style={[styles.versionContent, { paddingLeft: 0, paddingRight: 0 }]}>
+                    {errorLogEntries.length === 0 ? (
+                      <Text style={[styles.debugMetaValue, { paddingHorizontal: 12, paddingVertical: 8 }]}>No events recorded.</Text>
+                    ) : (
+                      <>
+                        <TouchableOpacity
+                          style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            alignSelf: 'center',
+                            gap: 6,
+                            marginBottom: 10,
+                            paddingHorizontal: 16,
+                            paddingVertical: 7,
+                            borderRadius: 6,
+                            borderWidth: 1,
+                            borderColor: accent,
+                            backgroundColor: `${accent}1A`,
+                          }}
+                          onPress={() => { clearEventLog(); setErrorLogEntries([]); }}
+                        >
+                          <TrashIcon width={18} height={18} fill={accent} />
+                          <Text style={[{ color: accent, fontSize: 13 }, bodyFontStyle]}>Clear Log</Text>
+                        </TouchableOpacity>
+                        {errorLogEntries.map((entry, i) => {
+                          const typeColor = entry.type === 'error' ? '#CF6679'
+                            : entry.type === 'success' ? '#66BB6A'
+                            : '#4FC3F7';
+                          const typeLabel = entry.type === 'error' ? 'ERROR'
+                            : entry.type === 'success' ? 'SUCCESS'
+                            : 'INFO';
+                          const badgeIcon = entry.type === 'error'
+                            ? <BadgeErrorIcon size={18} color={typeColor} />
+                            : entry.type === 'success'
+                            ? <BadgeSuccessIcon size={18} color={typeColor} />
+                            : <BadgeInfoIcon size={18} color={typeColor} />;
+                          const usefulErrorName = entry.errorName && entry.errorName !== 'Error' ? entry.errorName : null;
+                          return (
+                            <View key={i} style={[styles.debugMetaRow, { flexDirection: 'column', alignItems: 'flex-start', gap: 3, paddingVertical: 8 }]}>
+                              <View style={{
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: 4,
+                                borderWidth: 1,
+                                borderColor: typeColor,
+                                borderRadius: 5,
+                                paddingHorizontal: 8,
+                                paddingVertical: 4,
+                              }}>
+                                {badgeIcon}
+                                <Text style={[{
+                                  fontSize: 13,
+                                  color: typeColor,
+                                  fontWeight: 'bold',
+                                  includeFontPadding: false,
+                                  textAlignVertical: 'center',
+                                }, bodyFontStyle]}>{typeLabel}</Text>
+                              </View>
+                              <View style={{ gap: 3, paddingLeft: 2, paddingTop: 6, width: '100%' }}>
+                                <Text style={[{ fontSize: 11, color: '#CCC' }, bodyFontStyle]}>
+                                  <Text style={{ color: '#999' }}>Time:  </Text>{entry.ts}
+                                </Text>
+                                <Text style={[{ fontSize: 11, color: '#CCC' }, bodyFontStyle]}>
+                                  <Text style={{ color: '#999' }}>Source:  </Text>{entry.source}
+                                </Text>
+                                <Text style={[{ fontSize: 12, color: '#E0E0E0' }, bodyFontStyle]}>
+                                  <Text style={{ color: '#999' }}>Message:  </Text>{entry.message}
+                                </Text>
+                                {entry.elapsedMs != null && (
+                                  <Text style={[{ fontSize: 11, color: '#CCC' }, bodyFontStyle]}>
+                                    <Text style={{ color: '#999' }}>Elapsed:  </Text>{entry.elapsedMs}ms
+                                  </Text>
+                                )}
+                                {entry.url != null && (
+                                  <Text style={[{ fontSize: 11, color: '#CCC' }, bodyFontStyle]}>
+                                    <Text style={{ color: '#999' }}>URL:  </Text>{entry.url}
+                                  </Text>
+                                )}
+                                {usefulErrorName != null && (
+                                  <Text style={[{ fontSize: 11, color: '#CCC' }, bodyFontStyle]}>
+                                    <Text style={{ color: '#999' }}>Error:  </Text>{usefulErrorName}
+                                  </Text>
+                                )}
+                              </View>
+                            </View>
+                          );
+                        })}
+                      </>
+                    )}
+                  </View>
+                )}
+              </TouchableOpacity>
+
               {/* ── RAG Log ── */}
               <TouchableOpacity
                 style={[styles.versionContainer, { paddingHorizontal: 10 }]}
@@ -1576,7 +1684,7 @@ export default function MoreScreen({
                 activeOpacity={0.7}
               >
                 <View style={styles.versionHeader}>
-                  <CardIconTitle icon={<StatsIcon fill="#26C6DA" />} title="RAG Log" styles={styles} />
+                  <CardIconTitle icon={<BenderIcon width={20} height={20} fill="#7B8D9E" />} title="RAG Log" styles={styles} />
                   <Animated.View style={{ transform: [{ rotate: animations['ragLog']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
                     <Text style={styles.versionArrow}>▶</Text>
                   </Animated.View>
@@ -1594,6 +1702,7 @@ export default function MoreScreen({
                         }}
                         onPress={handleCopyRagLog}
                       >
+                        <CopyIcon width={16} height={16} fill={ragCopied ? '#4CAF50' : accent} />
                         <Text style={[{ color: ragCopied ? '#4CAF50' : accent, fontSize: 13 }, bodyFontStyle]}>
                           {ragCopied ? 'Copied!' : 'Copy All'}
                         </Text>
@@ -1739,113 +1848,6 @@ export default function MoreScreen({
                           </TouchableOpacity>
                         );
                       })
-                    )}
-                  </View>
-                )}
-              </TouchableOpacity>
-
-              {/* ── Event Log ── */}
-              <TouchableOpacity
-                style={[styles.versionContainer, { paddingHorizontal: 10 }]}
-                onPress={toggleErrorLog}
-                activeOpacity={0.7}
-              >
-                <View style={styles.versionHeader}>
-                  <CardIconTitle icon={<ErrorIcon width={20} height={20} fill="#C8D84B" />} title="Event Log" styles={styles} />
-                  <Animated.View style={{ transform: [{ rotate: animations['errorLog']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
-                    <Text style={styles.versionArrow}>▶</Text>
-                  </Animated.View>
-                </View>
-                {errorLogExpanded && (
-                  <View style={[styles.versionContent, { paddingLeft: 0, paddingRight: 0 }]}>
-                    {errorLogEntries.length === 0 ? (
-                      <Text style={[styles.debugMetaValue, { paddingHorizontal: 12, paddingVertical: 8 }]}>No events recorded.</Text>
-                    ) : (
-                      <>
-                        <TouchableOpacity
-                          style={{
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            alignSelf: 'center',
-                            gap: 6,
-                            marginBottom: 10,
-                            paddingHorizontal: 16,
-                            paddingVertical: 7,
-                            borderRadius: 6,
-                            borderWidth: 1,
-                            borderColor: accent,
-                            backgroundColor: `${accent}1A`,
-                          }}
-                          onPress={() => { clearEventLog(); setErrorLogEntries([]); }}
-                        >
-                          <TrashIcon width={18} height={18} fill={accent} />
-                          <Text style={[{ color: accent, fontSize: 13 }, bodyFontStyle]}>Clear Log</Text>
-                        </TouchableOpacity>
-                        {errorLogEntries.map((entry, i) => {
-                          const typeColor = entry.type === 'error' ? '#CF6679'
-                            : entry.type === 'success' ? '#66BB6A'
-                            : '#4FC3F7';
-                          const typeLabel = entry.type === 'error' ? 'ERROR'
-                            : entry.type === 'success' ? 'SUCCESS'
-                            : 'INFO';
-                          const badgeIcon = entry.type === 'error'
-                            ? <BadgeErrorIcon size={18} color={typeColor} />
-                            : entry.type === 'success'
-                            ? <BadgeSuccessIcon size={18} color={typeColor} />
-                            : <BadgeInfoIcon size={18} color={typeColor} />;
-                          const usefulErrorName = entry.errorName && entry.errorName !== 'Error' ? entry.errorName : null;
-                          return (
-                            <View key={i} style={[styles.debugMetaRow, { flexDirection: 'column', alignItems: 'flex-start', gap: 3, paddingVertical: 8 }]}>
-                              <View style={{
-                                flexDirection: 'row',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: 4,
-                                borderWidth: 1,
-                                borderColor: typeColor,
-                                borderRadius: 5,
-                                paddingHorizontal: 8,
-                                paddingVertical: 4,
-                              }}>
-                                {badgeIcon}
-                                <Text style={[{
-                                  fontSize: 13,
-                                  color: typeColor,
-                                  fontWeight: 'bold',
-                                  includeFontPadding: false,
-                                  textAlignVertical: 'center',
-                                }, bodyFontStyle]}>{typeLabel}</Text>
-                              </View>
-                              <View style={{ gap: 3, paddingLeft: 2, paddingTop: 6, width: '100%' }}>
-                                <Text style={[{ fontSize: 11, color: '#CCC' }, bodyFontStyle]}>
-                                  <Text style={{ color: '#999' }}>Time:  </Text>{entry.ts}
-                                </Text>
-                                <Text style={[{ fontSize: 11, color: '#CCC' }, bodyFontStyle]}>
-                                  <Text style={{ color: '#999' }}>Source:  </Text>{entry.source}
-                                </Text>
-                                <Text style={[{ fontSize: 12, color: '#E0E0E0' }, bodyFontStyle]}>
-                                  <Text style={{ color: '#999' }}>Message:  </Text>{entry.message}
-                                </Text>
-                                {entry.elapsedMs != null && (
-                                  <Text style={[{ fontSize: 11, color: '#CCC' }, bodyFontStyle]}>
-                                    <Text style={{ color: '#999' }}>Elapsed:  </Text>{entry.elapsedMs}ms
-                                  </Text>
-                                )}
-                                {entry.url != null && (
-                                  <Text style={[{ fontSize: 11, color: '#CCC' }, bodyFontStyle]}>
-                                    <Text style={{ color: '#999' }}>URL:  </Text>{entry.url}
-                                  </Text>
-                                )}
-                                {usefulErrorName != null && (
-                                  <Text style={[{ fontSize: 11, color: '#CCC' }, bodyFontStyle]}>
-                                    <Text style={{ color: '#999' }}>Error:  </Text>{usefulErrorName}
-                                  </Text>
-                                )}
-                              </View>
-                            </View>
-                          );
-                        })}
-                      </>
                     )}
                   </View>
                 )}
