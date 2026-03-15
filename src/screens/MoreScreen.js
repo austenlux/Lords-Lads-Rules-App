@@ -1159,7 +1159,7 @@ export default function MoreScreen({
                         <View style={[styles.versionContent, { paddingLeft: 0, paddingRight: 0 }]}>
                           {(() => {
                             const screenW = Dimensions.get('window').width;
-                            const bannerW = screenW - 24 - 20 - 20;
+                            const bannerW = screenW - 88;
                             const bannerH = bannerW * (1152 / 3712);
                             return (
                               <View style={{ paddingHorizontal: 10, marginBottom: 12 }}>
@@ -1188,7 +1188,7 @@ export default function MoreScreen({
                                           styles.nailImage,
                                           { borderRadius: 999 },
                                           isSelected
-                                            ? { borderWidth: 3, borderColor: accent, opacity: 1, transform: [{ scale: 1.08 }] }
+                                            ? { borderWidth: 3, borderColor: accent, opacity: 1 }
                                             : { borderWidth: 1, borderColor: '#333', opacity: 0.5 },
                                         ]}
                                         resizeMode="cover"
@@ -1216,7 +1216,7 @@ export default function MoreScreen({
                                           styles.nailImage,
                                           { borderRadius: 999 },
                                           isSelected
-                                            ? { borderWidth: 3, borderColor: accent, opacity: 1, transform: [{ scale: 1.08 }] }
+                                            ? { borderWidth: 3, borderColor: accent, opacity: 1 }
                                             : { borderWidth: 1, borderColor: '#333', opacity: 0.5 },
                                         ]}
                                         resizeMode="cover"
