@@ -382,6 +382,7 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
     color: ACCENT_COLOR,
     width: 130,
     flexShrink: 0,
+    marginRight: 8,
   },
   debugMetaValue: {
     fontSize: 12,

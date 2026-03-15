@@ -311,22 +311,26 @@ export default function MoreScreen({
   const setExpandRulesDefaultAndSave = async (value) => {
     setExpandRulesDefault(value);
     await AsyncStorage.setItem(SETTINGS_KEYS.EXPAND_RULES_DEFAULT, value ? 'true' : 'false');
+    logEvent({ type: 'info', source: 'Feature Flags', message: `Expand Rules Default ${value ? 'enabled' : 'disabled'}` });
   };
 
   const setExpandExpansionsDefaultAndSave = async (value) => {
     setExpandExpansionsDefault(value);
     await AsyncStorage.setItem(SETTINGS_KEYS.EXPAND_EXPANSIONS_DEFAULT, value ? 'true' : 'false');
+    logEvent({ type: 'info', source: 'Feature Flags', message: `Expand Expansions Default ${value ? 'enabled' : 'disabled'}` });
   };
 
   const setThinkingSoundsEnabledAndSave = async (value) => {
     setThinkingSoundsEnabled(value);
     NativeVoiceAssistantOptional?.setThinkingSoundEnabled(value);
     await AsyncStorage.setItem(SETTINGS_KEYS.THINKING_SOUNDS_ENABLED, value ? 'true' : 'false');
+    logEvent({ type: 'info', source: 'Feature Flags', message: `Thinking Sounds ${value ? 'enabled' : 'disabled'}` });
   };
 
   const setForceLocalLlmAndSave = async (value) => {
     setForceLocalLlm(value);
     await AsyncStorage.setItem(SETTINGS_KEYS.FORCE_LOCAL_LLM, value ? 'true' : 'false');
+    logEvent({ type: 'info', source: 'Feature Flags', message: `Force Local LLM ${value ? 'enabled' : 'disabled'}` });
   };
 
   // ── Voice locale section animations ─────────────────────────────────────
