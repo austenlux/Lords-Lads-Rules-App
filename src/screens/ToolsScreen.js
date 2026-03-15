@@ -11,6 +11,7 @@ import PlayersIcon from '../../assets/icons/players.svg';
 import NailsIcon from '../../assets/icons/about.svg';
 import UprisingIcon from '../../assets/icons/uprising.svg';
 import StatsIcon from '../../assets/icons/stats.svg';
+import NailIcon from '../../assets/icons/nail.svg';
 
 const SECTION_KEYS = { NAIL_CALC: 'nailCalc', GAME_STAT_TRACKER: 'gameStatTracker' };
 
@@ -88,7 +89,7 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
 
           <CollapsibleSection
             title="Nail Calculator"
-            icon={<CrownIcon width={24} height={24} fill="#E8B923" />}
+            icon={<CrownIcon width={24} height={24} fill={INFO_BLUE} />}
             isExpanded={sectionsExpanded[SECTION_KEYS.NAIL_CALC]}
             onToggle={() => toggleSection(SECTION_KEYS.NAIL_CALC)}
             styles={styles}
@@ -184,15 +185,15 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
           </CollapsibleSection>
 
           <CollapsibleSection
-            title="Golden Nail Count"
-            icon={<StatsIcon width={24} height={24} fill={INFO_BLUE} />}
+            title="Golden Nails"
+            icon={<NailIcon width={24} height={24} fill="#E8B923" />}
             isExpanded={sectionsExpanded[SECTION_KEYS.GAME_STAT_TRACKER]}
             onToggle={() => toggleSection(SECTION_KEYS.GAME_STAT_TRACKER)}
             styles={styles}
             style={styles.aboutSectionWrapper}
           >
             <View
-              style={styles.versionContainer}
+              style={[styles.versionContainer, { padding: 0 }]}
               onLayout={(e) => setGoldenNailWidth(e.nativeEvent.layout.width)}
             >
               {goldenNailWidth > 0 && (
@@ -201,7 +202,8 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                   style={{
                     width: goldenNailWidth,
                     height: goldenNailWidth * (1152 / 3744),
-                    borderRadius: 10,
+                    borderTopLeftRadius: 8,
+                    borderTopRightRadius: 8,
                   }}
                   resizeMode="cover"
                 />
