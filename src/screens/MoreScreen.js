@@ -84,6 +84,15 @@ const APPEARANCE_OPTIONS = [
   { id: 'dark_female', image: require('../../assets/clinks/headshots/dark_female.png') },
 ];
 
+const BANNER_MAP = {
+  light_male: require('../../assets/clinks/banners/light_male_banner.png'),
+  tan_male: require('../../assets/clinks/banners/tan_male_banner.png'),
+  dark_male: require('../../assets/clinks/banners/dark_male_banner.png'),
+  light_female: require('../../assets/clinks/banners/light_female_banner.png'),
+  tan_female: require('../../assets/clinks/banners/tan_female_banner.png'),
+  dark_female: require('../../assets/clinks/banners/dark_female_banner.png'),
+};
+
 function CardIconTitle({ icon, title, styles, titleColor }) {
   const { titleFontStyle } = useTheme();
   return (
@@ -258,6 +267,7 @@ export default function MoreScreen({
   const [voiceVoiceExpanded, setVoiceVoiceExpanded] = useState(false);
   const [voiceAppearanceExpanded, setVoiceAppearanceExpanded] = useState(false);
   const [clinksAppearance, setClinksAppearance] = useState('light_male');
+  const selectedAppearanceOption = APPEARANCE_OPTIONS.find(o => o.id === clinksAppearance) || APPEARANCE_OPTIONS[0];
   const [voiceMetaExpanded, setVoiceMetaExpanded] = useState(false);
   const [expandedDebugVoices, setExpandedDebugVoices] = useState({});
   const [vaDebugExpanded, setVaDebugExpanded] = useState(false);
@@ -1068,7 +1078,7 @@ export default function MoreScreen({
                       activeOpacity={0.7}
                     >
                       <View style={styles.versionHeader}>
-                        <CardIconTitle icon={<SpeakerIcon fill="#AB47BC" />} title="Voice" styles={styles} />
+                        <CardIconTitle icon={<SpeakerIcon fill="#78909C" />} title="Voice" styles={styles} />
                         <Animated.View style={{ transform: [{ rotate: animations['voiceVoice']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
                           <Text style={styles.versionArrow}>▶</Text>
                         </Animated.View>
@@ -1140,62 +1150,73 @@ export default function MoreScreen({
                       activeOpacity={0.7}
                     >
                       <View style={styles.versionHeader}>
-                        <CardIconTitle icon={<PaintIcon fill={accent} />} title="Appearance" styles={styles} />
+                        <CardIconTitle icon={<View style={{ width: 20, height: 20, borderRadius: 999, overflow: 'hidden' }}><Image source={selectedAppearanceOption.image} style={{ width: 20, height: 20 }} resizeMode="cover" /></View>} title="Appearance" styles={styles} />
                         <Animated.View style={{ transform: [{ rotate: animations['voiceAppearance']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
                           <Text style={styles.versionArrow}>▶</Text>
                         </Animated.View>
                       </View>
                       {voiceAppearanceExpanded && (
                         <View style={[styles.versionContent, { paddingLeft: 0, paddingRight: 0 }]}>
+                          <Image
+                            source={BANNER_MAP[clinksAppearance] || BANNER_MAP.light_male}
+                            style={{ width: '100%', aspectRatio: 3712 / 1152, borderRadius: 10, marginBottom: 12 }}
+                            resizeMode="contain"
+                          />
                           <View style={styles.venmoGridRow}>
-                            {APPEARANCE_OPTIONS.slice(0, 3).map((item) => (
-                              <View key={item.id} style={styles.venmoGridCell}>
-                                <View style={styles.nailButtonWrapper}>
-                                  <Pressable
-                                    onPress={() => setClinksAppearanceAndSave(item.id)}
-                                    style={({ pressed }) => [styles.nailButton, pressed && styles.nailButtonPressed]}
-                                    android_ripple={{ color: `${accent}33`, borderless: false }}
-                                  >
-                                    <Image
-                                      source={item.image}
-                                      style={[
-                                        styles.nailImage,
-                                        { borderRadius: 999 },
-                                        clinksAppearance === item.id
-                                          ? { borderWidth: 3, borderColor: accent }
-                                          : { borderWidth: 1, borderColor: '#333' },
-                                      ]}
-                                      resizeMode="cover"
-                                    />
-                                  </Pressable>
+                            {APPEARANCE_OPTIONS.slice(0, 3).map((item) => {
+                              const isSelected = clinksAppearance === item.id;
+                              return (
+                                <View key={item.id} style={styles.venmoGridCell}>
+                                  <View style={styles.nailButtonWrapper}>
+                                    <Pressable
+                                      onPress={() => setClinksAppearanceAndSave(item.id)}
+                                      style={({ pressed }) => [styles.nailButton, pressed && styles.nailButtonPressed]}
+                                      android_ripple={{ color: `${accent}33`, borderless: false }}
+                                    >
+                                      <Image
+                                        source={item.image}
+                                        style={[
+                                          styles.nailImage,
+                                          { borderRadius: 999 },
+                                          isSelected
+                                            ? { borderWidth: 3, borderColor: accent, opacity: 1, transform: [{ scale: 1.08 }] }
+                                            : { borderWidth: 1, borderColor: '#333', opacity: 0.5 },
+                                        ]}
+                                        resizeMode="cover"
+                                      />
+                                    </Pressable>
+                                  </View>
                                 </View>
-                              </View>
-                            ))}
+                              );
+                            })}
                           </View>
                           <View style={styles.venmoGridRow}>
-                            {APPEARANCE_OPTIONS.slice(3, 6).map((item) => (
-                              <View key={item.id} style={styles.venmoGridCell}>
-                                <View style={styles.nailButtonWrapper}>
-                                  <Pressable
-                                    onPress={() => setClinksAppearanceAndSave(item.id)}
-                                    style={({ pressed }) => [styles.nailButton, pressed && styles.nailButtonPressed]}
-                                    android_ripple={{ color: `${accent}33`, borderless: false }}
-                                  >
-                                    <Image
-                                      source={item.image}
-                                      style={[
-                                        styles.nailImage,
-                                        { borderRadius: 999 },
-                                        clinksAppearance === item.id
-                                          ? { borderWidth: 3, borderColor: accent }
-                                          : { borderWidth: 1, borderColor: '#333' },
-                                      ]}
-                                      resizeMode="cover"
-                                    />
-                                  </Pressable>
+                            {APPEARANCE_OPTIONS.slice(3, 6).map((item) => {
+                              const isSelected = clinksAppearance === item.id;
+                              return (
+                                <View key={item.id} style={styles.venmoGridCell}>
+                                  <View style={styles.nailButtonWrapper}>
+                                    <Pressable
+                                      onPress={() => setClinksAppearanceAndSave(item.id)}
+                                      style={({ pressed }) => [styles.nailButton, pressed && styles.nailButtonPressed]}
+                                      android_ripple={{ color: `${accent}33`, borderless: false }}
+                                    >
+                                      <Image
+                                        source={item.image}
+                                        style={[
+                                          styles.nailImage,
+                                          { borderRadius: 999 },
+                                          isSelected
+                                            ? { borderWidth: 3, borderColor: accent, opacity: 1, transform: [{ scale: 1.08 }] }
+                                            : { borderWidth: 1, borderColor: '#333', opacity: 0.5 },
+                                        ]}
+                                        resizeMode="cover"
+                                      />
+                                    </Pressable>
+                                  </View>
                                 </View>
-                              </View>
-                            ))}
+                              );
+                            })}
                           </View>
                         </View>
                       )}
@@ -1795,7 +1816,7 @@ export default function MoreScreen({
                     >
                       <View style={styles.versionHeader}>
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 }}>
-                          <CardIconTitle icon={<SpeakerIcon fill="#AB47BC" />} title="Models" styles={styles} />
+                          <CardIconTitle icon={<SpeakerIcon fill="#78909C" />} title="Models" styles={styles} />
                           <Text style={[styles.versionDate, bodyFontStyle]}>{availableVoices.length} Available</Text>
                         </View>
                         <Animated.View style={{ transform: [{ rotate: animations['voiceMeta']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
