@@ -1609,7 +1609,12 @@ export default function MoreScreen({
               <View style={[styles.versionContainer, { paddingHorizontal: 10 }]}>
                 <TouchableOpacity onPress={toggleVaDebug} activeOpacity={0.7}>
                   <View style={styles.versionHeader}>
-                    <CardIconTitle icon={<MicIcon fill="#FF9800" />} title="Clinks" styles={styles} />
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1, flexShrink: 1 }}>
+                      <View style={{ width: 28, height: 28, borderRadius: 999, overflow: 'hidden' }}>
+                        <Image source={selectedAppearanceOption.image} style={{ width: 28, height: 28 }} resizeMode="cover" />
+                      </View>
+                      <Text style={[styles.versionText, { flexShrink: 1 }, titleFontStyle]}>Clinks</Text>
+                    </View>
                     <Animated.View style={{ transform: [{ rotate: animations['vaDebug']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
                       <Text style={styles.versionArrow}>▶</Text>
                     </Animated.View>

@@ -239,8 +239,14 @@ export default function VoiceAssistantModal({ messages, isOpen, fabBottom = 96 }
         {panelWidth > 0 && (
           <Image
             source={BANNER_MAP[clinksAppearance] || BANNER_MAP.light_male}
-            style={[styles.banner, { width: panelWidth - 8, marginHorizontal: 4 }]}
-            resizeMode="contain"
+            style={{
+              width: panelWidth - 8,
+              height: (panelWidth - 8) * (1152 / 3712),
+              marginHorizontal: 4,
+              borderTopLeftRadius: 19,
+              borderTopRightRadius: 19,
+            }}
+            resizeMode="cover"
           />
         )}
         <FlatList
@@ -291,11 +297,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 12,
     gap: 10,
-  },
-  banner: {
-    aspectRatio: 3712 / 1152,
-    borderTopLeftRadius: 19,
-    borderTopRightRadius: 19,
   },
   bubbleRow: {
     flexDirection: 'row',
