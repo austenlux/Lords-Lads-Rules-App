@@ -260,6 +260,12 @@ export default function MoreScreen({
   const [ragChunksExpanded, setRagChunksExpanded] = useState(false);
   const [ragScoredChunksExpanded, setRagScoredChunksExpanded] = useState({});
   const [ragSelectedChunkExpanded, setRagSelectedChunkExpanded] = useState({});
+  const [indexBuildExpanded, setIndexBuildExpanded] = useState(false);
+  const [entryLocalExpanded, setEntryLocalExpanded] = useState({});
+  const [entryCloudExpanded, setEntryCloudExpanded] = useState({});
+  const [entryResponseExpanded, setEntryResponseExpanded] = useState({});
+  const [entrySentenceExpanded, setEntrySentenceExpanded] = useState({});
+  const [entryFinalChunksExpanded, setEntryFinalChunksExpanded] = useState({});
   const ragLogUnsub = useRef(null);
   const ragRetrievalAnims = useRef({}).current;
 
@@ -398,6 +404,12 @@ export default function MoreScreen({
     setBuildInfoExpanded(false);
     animateSection(animations['ragLog'], false, 150);
     setRagLogExpanded(false);
+    setIndexBuildExpanded(false);
+    setEntryLocalExpanded({});
+    setEntryCloudExpanded({});
+    setEntryResponseExpanded({});
+    setEntrySentenceExpanded({});
+    setEntryFinalChunksExpanded({});
     if (ragLogUnsub.current) { ragLogUnsub.current(); ragLogUnsub.current = null; }
   };
 
@@ -539,6 +551,12 @@ export default function MoreScreen({
       setExpandedRetrievals({});
       setRagScoredChunksExpanded({});
       setRagSelectedChunkExpanded({});
+      setIndexBuildExpanded(false);
+      setEntryLocalExpanded({});
+      setEntryCloudExpanded({});
+      setEntryResponseExpanded({});
+      setEntrySentenceExpanded({});
+      setEntryFinalChunksExpanded({});
       Object.values(ragRetrievalAnims).forEach(a => animateSection(a, false, 0));
     }
     setRagLogExpanded(isExpanded);
@@ -565,6 +583,12 @@ export default function MoreScreen({
     setExpandedRetrievals({});
     setRagScoredChunksExpanded({});
     setRagSelectedChunkExpanded({});
+    setIndexBuildExpanded(false);
+    setEntryLocalExpanded({});
+    setEntryCloudExpanded({});
+    setEntryResponseExpanded({});
+    setEntrySentenceExpanded({});
+    setEntryFinalChunksExpanded({});
     Object.values(ragRetrievalAnims).forEach(a => animateSection(a, false, 0));
     logEvent('LLM Log', 'Cleared');
   };
@@ -643,6 +667,12 @@ export default function MoreScreen({
     setExpandedRetrievals({});
     setRagScoredChunksExpanded({});
     setRagSelectedChunkExpanded({});
+    setIndexBuildExpanded(false);
+    setEntryLocalExpanded({});
+    setEntryCloudExpanded({});
+    setEntryResponseExpanded({});
+    setEntrySentenceExpanded({});
+    setEntryFinalChunksExpanded({});
     Object.values(animations).forEach(a => animateSection(a, false, 0));
     Object.values(voiceLocaleAnims).forEach(a => animateSection(a, false, 0));
     Object.values(debugVoiceAnims).forEach(a => animateSection(a, false, 0));
@@ -1433,6 +1463,7 @@ export default function MoreScreen({
                               <View style={{ width: 20, height: 20 }}>{overallIcon}</View>
                               <Text style={[styles.versionText, titleFontStyle]}>Local LLM</Text>
                             </View>
+                            <Text style={[{ fontSize: 10, color: '#888', textAlign: 'center', marginTop: 2 }, bodyFontStyle]}>STATUS</Text>
                           </View>
                           <View style={styles.debugMetaRow}>
                             <Text style={[styles.debugMetaLabel, bodyFontStyle]}>Device Support</Text>
@@ -1529,12 +1560,8 @@ export default function MoreScreen({
                     {/* Cloud LLM status */}
                     {(() => {
                       const cloudKeyOk = !!cloudLlmStatus.keyConfigured;
-                      const cloudHasResponse = !!cloudLlmStatus.lastCloudResponse;
-                      const cloudHasFallbacks = (cloudLlmStatus.fallbackCount ?? 0) > 0;
                       const cloudOverallIcon = cloudKeyOk
-                        ? (cloudHasFallbacks
-                          ? <BadgeWarningIcon size={22} color="#FFC107" />
-                          : <BadgeSuccessIcon size={22} color="#4CAF50" />)
+                        ? <BadgeSuccessIcon size={22} color="#4CAF50" />
                         : <BadgeErrorIcon size={22} color="#CF6679" />;
                       return (
                         <>
@@ -1543,6 +1570,7 @@ export default function MoreScreen({
                               <View style={{ width: 20, height: 20 }}>{cloudOverallIcon}</View>
                               <Text style={[styles.versionText, titleFontStyle]}>Cloud LLM</Text>
                             </View>
+                            <Text style={[{ fontSize: 10, color: '#888', textAlign: 'center', marginTop: 2 }, bodyFontStyle]}>STATUS</Text>
                           </View>
                           <View style={styles.debugMetaRow}>
                             <Text style={[styles.debugMetaLabel, bodyFontStyle]}>API Key</Text>
@@ -1552,28 +1580,6 @@ export default function MoreScreen({
                                 : <BadgeErrorIcon size={16} color="#CF6679" />}
                               <Text style={[styles.debugMetaValue, { color: cloudKeyOk ? '#4CAF50' : '#CF6679' }]}>
                                 {cloudKeyOk ? 'Configured' : 'Not Set'}
-                              </Text>
-                            </View>
-                          </View>
-                          <View style={styles.debugMetaRow}>
-                            <Text style={[styles.debugMetaLabel, bodyFontStyle]}>Last Cloud Response</Text>
-                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1 }}>
-                              {cloudHasResponse
-                                ? <BadgeSuccessIcon size={16} color="#4CAF50" />
-                                : <BadgeWarningIcon size={16} color="#FFC107" />}
-                              <Text style={[styles.debugMetaValue, { color: cloudHasResponse ? '#4CAF50' : '#888' }]}>
-                                {cloudLlmStatus.lastCloudResponse ?? '—'}
-                              </Text>
-                            </View>
-                          </View>
-                          <View style={styles.debugMetaRow}>
-                            <Text style={[styles.debugMetaLabel, bodyFontStyle]}>Fallback Count</Text>
-                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1 }}>
-                              {cloudHasFallbacks
-                                ? <BadgeWarningIcon size={16} color="#FFC107" />
-                                : <BadgeSuccessIcon size={16} color="#4CAF50" />}
-                              <Text style={[styles.debugMetaValue, { color: cloudHasFallbacks ? '#FFC107' : '#888' }]}>
-                                {cloudLlmStatus.fallbackCount ?? 0}
                               </Text>
                             </View>
                           </View>
@@ -1853,58 +1859,77 @@ export default function MoreScreen({
                       </TouchableOpacity>
                     </View>
 
-                    {/* Index Build Summary */}
+                    {/* Index Build Summary — collapsible, collapsed by default */}
                     <View style={[styles.versionContainer, { marginBottom: 8 }]}>
-                      <CardIconTitle icon={<BadgeInfoIcon size={18} color="#26C6DA" />} title="Index Build" styles={styles} />
-                      {ragLog.indexBuild ? (
-                        <View style={{ paddingTop: 8 }}>
-                          {[
-                            { label: 'Built at', value: ragLog.indexBuild.timestamp },
-                            { label: 'Total chunks', value: String(ragLog.indexBuild.totalChunks) },
-                            { label: 'Build time', value: `${ragLog.indexBuild.buildTimeMs}ms` },
-                            { label: 'Content size', value: `${ragLog.indexBuild.totalContentSize.toLocaleString()} chars` },
-                          ].map(({ label, value }) => (
-                            <View key={label} style={styles.debugMetaRow}>
-                              <Text style={[styles.debugMetaLabel, bodyFontStyle]}>{label}</Text>
-                              <Text style={styles.debugMetaValue}>{value}</Text>
-                            </View>
-                          ))}
-                          <TouchableOpacity
-                            onPress={() => {
-                          
-                              setRagChunksExpanded(prev => !prev);
-                            }}
-                            style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8, marginBottom: 4 }}
-                            activeOpacity={0.7}
-                          >
-                            <Text style={[{ fontSize: 11, color: '#999', flex: 1 }, bodyFontStyle]}>
-                              Chunks ({ragLog.indexBuild.totalChunks})
+                      <TouchableOpacity
+                        onPress={() => setIndexBuildExpanded(prev => !prev)}
+                        activeOpacity={0.7}
+                      >
+                        <View style={styles.versionHeader}>
+                          <View style={{ flex: 1 }}>
+                            <CardIconTitle icon={<BadgeInfoIcon size={18} color="#26C6DA" />} title="Index Build" styles={styles} />
+                            <Text style={[{ fontSize: 10, color: '#888', marginTop: 2, marginLeft: 28 }, bodyFontStyle]}>
+                              Used for Local LLM only
                             </Text>
-                            <Text style={{ fontSize: 10, color: '#999' }}>{ragChunksExpanded ? '▼' : '▶'}</Text>
-                          </TouchableOpacity>
-                          {ragChunksExpanded && ragLog.indexBuild.chunks.map((c, i) => (
-                            <View key={i} style={[styles.debugMetaRow, { flexDirection: 'column', gap: 2, paddingVertical: 4 }]}>
-                              <Text style={[{ fontSize: 11, color: '#E0E0E0', fontWeight: '600' }, bodyFontStyle]} numberOfLines={1}>
-                                {i + 1}. {c.heading}
-                              </Text>
-                              <Text style={[{ fontSize: 10, color: '#999' }, bodyFontStyle]}>
-                                {c.source} · {c.charCount} chars · {c.wordCount} words · ~{c.tokenEstimate} tokens
-                              </Text>
-                            </View>
-                          ))}
+                          </View>
+                          <Text style={{ fontSize: 10, color: '#999' }}>{indexBuildExpanded ? '▼' : '▶'}</Text>
                         </View>
-                      ) : (
-                        <Text style={[styles.debugMetaValue, { paddingTop: 8 }]}>No index build recorded yet.</Text>
+                      </TouchableOpacity>
+                      {indexBuildExpanded && (
+                        ragLog.indexBuild ? (
+                          <View style={{ paddingTop: 8 }}>
+                            {[
+                              { label: 'Built at', value: ragLog.indexBuild.timestamp },
+                              { label: 'Total chunks', value: String(ragLog.indexBuild.totalChunks) },
+                              { label: 'Build time', value: `${ragLog.indexBuild.buildTimeMs}ms` },
+                              { label: 'Content size', value: `${ragLog.indexBuild.totalContentSize.toLocaleString()} chars` },
+                            ].map(({ label, value }) => (
+                              <View key={label} style={styles.debugMetaRow}>
+                                <Text style={[styles.debugMetaLabel, bodyFontStyle]}>{label}</Text>
+                                <Text style={styles.debugMetaValue}>{value}</Text>
+                              </View>
+                            ))}
+                            <TouchableOpacity
+                              onPress={() => setRagChunksExpanded(prev => !prev)}
+                              style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8, marginBottom: 4 }}
+                              activeOpacity={0.7}
+                            >
+                              <Text style={[{ fontSize: 11, color: '#999', flex: 1 }, bodyFontStyle]}>
+                                Chunks ({ragLog.indexBuild.totalChunks})
+                              </Text>
+                              <Text style={{ fontSize: 10, color: '#999' }}>{ragChunksExpanded ? '▼' : '▶'}</Text>
+                            </TouchableOpacity>
+                            {ragChunksExpanded && ragLog.indexBuild.chunks.map((c, i) => (
+                              <View key={i} style={[styles.debugMetaRow, { flexDirection: 'column', gap: 2, paddingVertical: 4 }]}>
+                                <Text style={[{ fontSize: 11, color: '#E0E0E0', fontWeight: '600' }, bodyFontStyle]} numberOfLines={1}>
+                                  {i + 1}. {c.heading}
+                                </Text>
+                                <Text style={[{ fontSize: 10, color: '#999' }, bodyFontStyle]}>
+                                  {c.source} · {c.charCount} chars · {c.wordCount} words · ~{c.tokenEstimate} tokens
+                                </Text>
+                              </View>
+                            ))}
+                          </View>
+                        ) : (
+                          <Text style={[styles.debugMetaValue, { paddingTop: 8 }]}>No index build recorded yet.</Text>
+                        )
                       )}
                     </View>
 
-                    {/* Retrieval entries */}
+                    {/* Retrieval entries — chronological order (oldest first) */}
                     {ragLog.retrievals.length === 0 ? (
                       <Text style={[styles.debugMetaValue, { paddingHorizontal: 12, paddingVertical: 8 }]}>No retrievals recorded yet.</Text>
                     ) : (
-                      ragLog.retrievals.map(entry => {
+                      ragLog.retrievals.slice().reverse().map((entry, idx) => {
+                        const promptNumber = idx + 1;
                         if (!ragRetrievalAnims[entry.id]) ragRetrievalAnims[entry.id] = { rotation: new Animated.Value(0) };
                         const isOpen = expandedRetrievals[entry.id];
+                        const usedCloud = entry.responseSource === 'cloud';
+                        const isLocalOpen = entry.id in entryLocalExpanded ? entryLocalExpanded[entry.id] : !usedCloud;
+                        const isCloudOpen = entry.id in entryCloudExpanded ? entryCloudExpanded[entry.id] : usedCloud;
+                        const isResponseOpen = entry.id in entryResponseExpanded ? entryResponseExpanded[entry.id] : true;
+                        const sourceBadgeColor = usedCloud ? '#4FC3F7' : '#FF9800';
+                        const sourceBadgeLabel = usedCloud ? 'Cloud LLM' : 'Local LLM';
                         return (
                           <View
                             key={entry.id}
@@ -1916,6 +1941,14 @@ export default function MoreScreen({
                             >
                               <View style={styles.versionHeader}>
                                 <View style={{ flex: 1, marginRight: 8 }}>
+                                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                                    <Text style={[{ fontSize: 12, color: accent, fontWeight: '700' }, bodyFontStyle]}>
+                                      Prompt {promptNumber}
+                                    </Text>
+                                    <View style={{ paddingHorizontal: 6, paddingVertical: 1, borderRadius: 4, backgroundColor: `${sourceBadgeColor}1A`, borderWidth: 1, borderColor: `${sourceBadgeColor}55` }}>
+                                      <Text style={[{ fontSize: 9, color: sourceBadgeColor, fontWeight: '700' }, bodyFontStyle]}>{sourceBadgeLabel}</Text>
+                                    </View>
+                                  </View>
                                   <Text style={[{ fontSize: 13, color: '#E0E0E0', fontWeight: '600' }, bodyFontStyle]}>
                                     "{entry.question}"
                                   </Text>
@@ -1930,167 +1963,302 @@ export default function MoreScreen({
                             </TouchableOpacity>
                             {isOpen && (
                               <View style={{ paddingTop: 8 }}>
-                                {entry.noIndex && (
-                                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, padding: 8, marginBottom: 8, borderRadius: 6, backgroundColor: 'rgba(255,152,0,0.1)', borderWidth: 1, borderColor: 'rgba(255,152,0,0.3)' }}>
-                                    <BadgeWarningIcon size={16} color="#FF9800" />
-                                    <Text style={[{ fontSize: 11, color: '#FF9800' }, bodyFontStyle]}>RAG index was not ready — no chunks retrieved</Text>
-                                  </View>
-                                )}
-                                {/* Retrieval metadata */}
-                                {[
-                                  { label: 'Keywords', value: entry.keywords?.join(', ') || 'none' },
-                                  { label: 'Top-K', value: String(entry.topK) },
-                                  ...(entry.totalContextChars != null ? [{ label: 'Context → LLM', value: `${entry.totalContextChars.toLocaleString()} chars` }] : []),
-                                  ...(entry.promptLength != null ? [{ label: 'Prompt length', value: `${entry.promptLength.toLocaleString()} chars` }] : []),
-                                ].map(({ label, value }) => (
-                                  <View key={label} style={styles.debugMetaRow}>
-                                    <Text style={[styles.debugMetaLabel, bodyFontStyle]}>{label}</Text>
-                                    <Text style={styles.debugMetaValue}>{value}</Text>
-                                  </View>
-                                ))}
 
-                                {/* All scored chunks */}
-                                <TouchableOpacity
-                                  onPress={() => {
-                                
-                                    setRagScoredChunksExpanded(prev => ({ ...prev, [entry.id]: !prev[entry.id] }));
-                                  }}
-                                  style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10, marginBottom: 4 }}
-                                  activeOpacity={0.7}
-                                >
-                                  <Text style={[{ fontSize: 11, color: '#999', flex: 1 }, bodyFontStyle]}>
-                                    All chunks scored ({entry.allScoredChunks?.length ?? 0})
-                                  </Text>
-                                  <Text style={{ fontSize: 10, color: '#999' }}>{ragScoredChunksExpanded[entry.id] ? '▼' : '▶'}</Text>
-                                </TouchableOpacity>
-                                {ragScoredChunksExpanded[entry.id] && entry.allScoredChunks?.map((c, i) => (
-                                  <View key={i} style={[styles.debugMetaRow, {
-                                    flexDirection: 'column', gap: 2, paddingVertical: 3,
-                                    backgroundColor: c.selected ? 'rgba(76,175,80,0.08)' : 'transparent',
-                                    borderLeftWidth: c.selected ? 2 : 0,
-                                    borderLeftColor: '#4CAF50',
-                                    paddingLeft: c.selected ? 6 : 0,
-                                  }]}>
-                                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                                      {c.selected && <BadgeSuccessIcon size={12} color="#4CAF50" />}
-                                      <Text style={[{ fontSize: 11, color: c.selected ? '#4CAF50' : '#CCC', fontWeight: c.selected ? '700' : '400', flex: 1 }, bodyFontStyle]} numberOfLines={1}>
-                                        {i + 1}. {c.heading}
-                                      </Text>
-                                    </View>
-                                    <Text style={[{ fontSize: 10, color: c.score > 0 ? '#AAA' : '#666' }, bodyFontStyle]}>
-                                      Score: {c.score.toFixed(4)} · {c.source} · {c.charCount} chars · {c.wordCount} words
-                                    </Text>
-                                  </View>
-                                ))}
-
-                                {/* Selected chunks with full text */}
-                                {entry.selectedChunks?.length > 0 && (
-                                  <>
-                                    <Text style={[{ fontSize: 11, color: '#999', marginTop: 10, marginBottom: 4 }, bodyFontStyle]}>
-                                      Selected chunks sent to LLM ({entry.selectedChunks.length}):
-                                    </Text>
-                                    {entry.selectedChunks.map((c, i) => {
-                                      const chunkKey = `${entry.id}_${i}`;
-                                      const isChunkOpen = !!ragSelectedChunkExpanded[chunkKey];
-                                      return (
-                                        <TouchableOpacity
-                                          key={i}
-                                          onPress={() => {
-                                        
-                                            setRagSelectedChunkExpanded(prev => ({ ...prev, [chunkKey]: !prev[chunkKey] }));
-                                          }}
-                                          activeOpacity={0.7}
-                                          style={{
-                                            marginBottom: 6, padding: 8, borderRadius: 6,
-                                            backgroundColor: 'rgba(38,198,218,0.06)',
-                                            borderWidth: 1, borderColor: 'rgba(38,198,218,0.2)',
-                                          }}
-                                        >
-                                          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                            <Text style={[{ fontSize: 11, color: '#26C6DA', fontWeight: '700', flex: 1 }, bodyFontStyle]}>
-                                              {c.heading} (score {c.score.toFixed(4)}, {c.source})
-                                            </Text>
-                                            <Text style={{ fontSize: 10, color: '#26C6DA', marginLeft: 6 }}>{isChunkOpen ? '▼' : '▶'}</Text>
-                                          </View>
-                                          {isChunkOpen && (
-                                            <Text style={[{ fontSize: 10, color: '#BBB', fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace', marginTop: 4 }]} selectable>
-                                              {c.content}
-                                            </Text>
+                                {/* ── Local LLM section ── */}
+                                <View style={{ marginBottom: 8, borderRadius: 6, borderWidth: 1, borderColor: 'rgba(255,152,0,0.2)', overflow: 'hidden' }}>
+                                  <TouchableOpacity
+                                    onPress={() => setEntryLocalExpanded(prev => ({ ...prev, [entry.id]: !isLocalOpen }))}
+                                    activeOpacity={0.7}
+                                    style={{ flexDirection: 'row', alignItems: 'center', padding: 8, backgroundColor: 'rgba(255,152,0,0.06)' }}
+                                  >
+                                    <Text style={[{ fontSize: 12, color: '#FF9800', fontWeight: '700', flex: 1 }, bodyFontStyle]}>Local LLM</Text>
+                                    {!usedCloud && (
+                                      <View style={{ paddingHorizontal: 5, paddingVertical: 1, borderRadius: 3, backgroundColor: 'rgba(76,175,80,0.15)', marginRight: 6 }}>
+                                        <Text style={[{ fontSize: 8, color: '#4CAF50', fontWeight: '700' }, bodyFontStyle]}>USED</Text>
+                                      </View>
+                                    )}
+                                    <Text style={{ fontSize: 10, color: '#FF9800' }}>{isLocalOpen ? '▼' : '▶'}</Text>
+                                  </TouchableOpacity>
+                                  {isLocalOpen && (
+                                    <View style={{ padding: 8 }}>
+                                      {usedCloud ? (
+                                        <Text style={[{ fontSize: 11, color: '#777', fontStyle: 'italic' }, bodyFontStyle]}>Not used for this prompt</Text>
+                                      ) : (
+                                        <>
+                                          {entry.noIndex && (
+                                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, padding: 8, marginBottom: 8, borderRadius: 6, backgroundColor: 'rgba(255,152,0,0.1)', borderWidth: 1, borderColor: 'rgba(255,152,0,0.3)' }}>
+                                              <BadgeWarningIcon size={16} color="#FF9800" />
+                                              <Text style={[{ fontSize: 11, color: '#FF9800' }, bodyFontStyle]}>RAG index was not ready — no chunks retrieved</Text>
+                                            </View>
                                           )}
-                                        </TouchableOpacity>
-                                      );
-                                    })}
-                                  </>
-                                )}
+                                          {[
+                                            { label: 'Keywords', value: entry.keywords?.join(', ') || 'none' },
+                                            { label: 'Top-K', value: String(entry.topK) },
+                                            ...(entry.totalContextChars != null ? [{ label: 'Context → LLM', value: `${entry.totalContextChars.toLocaleString()} chars` }] : []),
+                                            ...(entry.promptLength != null ? [{ label: 'Prompt length', value: `${entry.promptLength.toLocaleString()} chars` }] : []),
+                                          ].map(({ label, value }) => (
+                                            <View key={label} style={styles.debugMetaRow}>
+                                              <Text style={[styles.debugMetaLabel, bodyFontStyle]}>{label}</Text>
+                                              <Text style={styles.debugMetaValue}>{value}</Text>
+                                            </View>
+                                          ))}
 
-                                {/* Post-Processing */}
-                                {entry.postProcessing && (
-                                  <View style={{ marginTop: 10 }}>
-                                    <Text style={[{ fontSize: 11, color: '#CE93D8', fontWeight: '700', marginBottom: 4 }, bodyFontStyle]}>
-                                      Post-Processing
-                                    </Text>
-                                    {/* Filtered out */}
-                                    {entry.postProcessing.filtered?.length > 0 ? (
-                                      <View style={{ marginBottom: 6, padding: 6, borderRadius: 4, backgroundColor: 'rgba(255,152,0,0.06)', borderWidth: 1, borderColor: 'rgba(255,152,0,0.2)' }}>
-                                        <Text style={[{ fontSize: 10, color: '#FFB74D', fontWeight: '600', marginBottom: 2 }, bodyFontStyle]}>
-                                          Filtered out ({entry.postProcessing.filtered.length}):
-                                        </Text>
-                                        {entry.postProcessing.filtered.map((f, fi) => (
-                                          <Text key={fi} style={[{ fontSize: 10, color: '#FFCC80' }, bodyFontStyle]}>
-                                            • {f.heading} — score {f.score.toFixed(4)} — {f.reason}
-                                          </Text>
-                                        ))}
-                                      </View>
-                                    ) : (
-                                      <Text style={[{ fontSize: 10, color: '#777', marginBottom: 4 }, bodyFontStyle]}>No chunks filtered out</Text>
-                                    )}
-                                    {/* Cross-ref merges */}
-                                    {entry.postProcessing.crossRefMerges?.length > 0 && (
-                                      <View style={{ marginBottom: 6, padding: 6, borderRadius: 4, backgroundColor: 'rgba(206,147,216,0.06)', borderWidth: 1, borderColor: 'rgba(206,147,216,0.2)' }}>
-                                        <Text style={[{ fontSize: 10, color: '#CE93D8', fontWeight: '600', marginBottom: 2 }, bodyFontStyle]}>
-                                          Cross-ref merges ({entry.postProcessing.crossRefMerges.length}):
-                                        </Text>
-                                        {entry.postProcessing.crossRefMerges.map((m, mi) => (
-                                          <Text key={mi} style={[{ fontSize: 10, color: '#E1BEE7' }, bodyFontStyle]}>
-                                            • {m.from.join(' + ')} — {m.reason}
-                                          </Text>
-                                        ))}
-                                      </View>
-                                    )}
-                                    {/* Same-parent merges */}
-                                    {entry.postProcessing.parentMerges?.length > 0 && (
-                                      <View style={{ marginBottom: 6, padding: 6, borderRadius: 4, backgroundColor: 'rgba(129,212,250,0.06)', borderWidth: 1, borderColor: 'rgba(129,212,250,0.2)' }}>
-                                        <Text style={[{ fontSize: 10, color: '#81D4FA', fontWeight: '600', marginBottom: 2 }, bodyFontStyle]}>
-                                          Same-parent merges ({entry.postProcessing.parentMerges.length}):
-                                        </Text>
-                                        {entry.postProcessing.parentMerges.map((m, mi) => (
-                                          <Text key={mi} style={[{ fontSize: 10, color: '#B3E5FC' }, bodyFontStyle]}>
-                                            • [{m.parent}] {m.merged.join(' + ')}
-                                          </Text>
-                                        ))}
-                                      </View>
-                                    )}
-                                    <Text style={[{ fontSize: 10, color: '#CE93D8', fontWeight: '600' }, bodyFontStyle]}>
-                                      Final chunks → LLM: {entry.postProcessing.finalCount}
-                                    </Text>
-                                  </View>
-                                )}
+                                          {/* All scored chunks */}
+                                          <TouchableOpacity
+                                            onPress={() => setRagScoredChunksExpanded(prev => ({ ...prev, [entry.id]: !prev[entry.id] }))}
+                                            style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10, marginBottom: 4 }}
+                                            activeOpacity={0.7}
+                                          >
+                                            <Text style={[{ fontSize: 11, color: '#999', flex: 1 }, bodyFontStyle]}>
+                                              All chunks scored ({entry.allScoredChunks?.length ?? 0})
+                                            </Text>
+                                            <Text style={{ fontSize: 10, color: '#999' }}>{ragScoredChunksExpanded[entry.id] ? '▼' : '▶'}</Text>
+                                          </TouchableOpacity>
+                                          {ragScoredChunksExpanded[entry.id] && entry.allScoredChunks?.map((c, i) => (
+                                            <View key={i} style={[styles.debugMetaRow, {
+                                              flexDirection: 'column', gap: 2, paddingVertical: 3,
+                                              backgroundColor: c.selected ? 'rgba(76,175,80,0.08)' : 'transparent',
+                                              borderLeftWidth: c.selected ? 2 : 0,
+                                              borderLeftColor: '#4CAF50',
+                                              paddingLeft: c.selected ? 6 : 0,
+                                            }]}>
+                                              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                                                {c.selected && <BadgeSuccessIcon size={12} color="#4CAF50" />}
+                                                <Text style={[{ fontSize: 11, color: c.selected ? '#4CAF50' : '#CCC', fontWeight: c.selected ? '700' : '400', flex: 1 }, bodyFontStyle]} numberOfLines={1}>
+                                                  {i + 1}. {c.heading}
+                                                </Text>
+                                              </View>
+                                              <Text style={[{ fontSize: 10, color: c.score > 0 ? '#AAA' : '#666' }, bodyFontStyle]}>
+                                                Score: {c.score.toFixed(4)} · {c.source} · {c.charCount} chars · {c.wordCount} words
+                                              </Text>
+                                            </View>
+                                          ))}
 
-                                {/* AI Response */}
-                                {entry.aiResponse != null && (
-                                  <View style={{ marginTop: 10 }}>
-                                    <Text style={[{ fontSize: 11, color: '#999', marginBottom: 4 }, bodyFontStyle]}>
-                                      AI Response:
-                                    </Text>
-                                    <View style={{
-                                      padding: 8, borderRadius: 6,
-                                      backgroundColor: 'rgba(76,175,80,0.06)',
-                                      borderWidth: 1, borderColor: 'rgba(76,175,80,0.2)',
-                                    }}>
-                                      <Text style={[{ fontSize: 11, color: '#C8E6C9', fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace' }]} selectable>
-                                        {entry.aiResponse}
-                                      </Text>
+                                          {/* Selected chunks with full text */}
+                                          {entry.selectedChunks?.length > 0 && (
+                                            <>
+                                              <Text style={[{ fontSize: 11, color: '#999', marginTop: 10, marginBottom: 4 }, bodyFontStyle]}>
+                                                Selected chunks sent to LLM ({entry.selectedChunks.length}):
+                                              </Text>
+                                              {entry.selectedChunks.map((c, i) => {
+                                                const chunkKey = `${entry.id}_${i}`;
+                                                const isChunkOpen = !!ragSelectedChunkExpanded[chunkKey];
+                                                return (
+                                                  <TouchableOpacity
+                                                    key={i}
+                                                    onPress={() => setRagSelectedChunkExpanded(prev => ({ ...prev, [chunkKey]: !prev[chunkKey] }))}
+                                                    activeOpacity={0.7}
+                                                    style={{
+                                                      marginBottom: 6, padding: 8, borderRadius: 6,
+                                                      backgroundColor: 'rgba(38,198,218,0.06)',
+                                                      borderWidth: 1, borderColor: 'rgba(38,198,218,0.2)',
+                                                    }}
+                                                  >
+                                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                                      <Text style={[{ fontSize: 11, color: '#26C6DA', fontWeight: '700', flex: 1 }, bodyFontStyle]}>
+                                                        {c.heading} (score {c.score.toFixed(4)}, {c.source})
+                                                      </Text>
+                                                      <Text style={{ fontSize: 10, color: '#26C6DA', marginLeft: 6 }}>{isChunkOpen ? '▼' : '▶'}</Text>
+                                                    </View>
+                                                    {isChunkOpen && (
+                                                      <Text style={[{ fontSize: 10, color: '#BBB', fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace', marginTop: 4 }]} selectable>
+                                                        {c.content}
+                                                      </Text>
+                                                    )}
+                                                  </TouchableOpacity>
+                                                );
+                                              })}
+                                            </>
+                                          )}
+
+                                          {/* Post-Processing */}
+                                          {entry.postProcessing && (
+                                            <View style={{ marginTop: 10 }}>
+                                              <Text style={[{ fontSize: 11, color: '#CE93D8', fontWeight: '700', marginBottom: 4 }, bodyFontStyle]}>
+                                                Post-Processing
+                                              </Text>
+                                              {entry.postProcessing.filtered?.length > 0 ? (
+                                                <View style={{ marginBottom: 6, padding: 6, borderRadius: 4, backgroundColor: 'rgba(255,152,0,0.06)', borderWidth: 1, borderColor: 'rgba(255,152,0,0.2)' }}>
+                                                  <Text style={[{ fontSize: 10, color: '#FFB74D', fontWeight: '600', marginBottom: 2 }, bodyFontStyle]}>
+                                                    Filtered out ({entry.postProcessing.filtered.length}):
+                                                  </Text>
+                                                  {entry.postProcessing.filtered.map((f, fi) => (
+                                                    <Text key={fi} style={[{ fontSize: 10, color: '#FFCC80' }, bodyFontStyle]}>
+                                                      • {f.heading} — score {f.score.toFixed(4)} — {f.reason}
+                                                    </Text>
+                                                  ))}
+                                                </View>
+                                              ) : (
+                                                <Text style={[{ fontSize: 10, color: '#777', marginBottom: 4 }, bodyFontStyle]}>No chunks filtered out</Text>
+                                              )}
+                                              {entry.postProcessing.crossRefMerges?.length > 0 && (
+                                                <View style={{ marginBottom: 6, padding: 6, borderRadius: 4, backgroundColor: 'rgba(206,147,216,0.06)', borderWidth: 1, borderColor: 'rgba(206,147,216,0.2)' }}>
+                                                  <Text style={[{ fontSize: 10, color: '#CE93D8', fontWeight: '600', marginBottom: 2 }, bodyFontStyle]}>
+                                                    Cross-ref merges ({entry.postProcessing.crossRefMerges.length}):
+                                                  </Text>
+                                                  {entry.postProcessing.crossRefMerges.map((m, mi) => (
+                                                    <Text key={mi} style={[{ fontSize: 10, color: '#E1BEE7' }, bodyFontStyle]}>
+                                                      • {m.from.join(' + ')} — {m.reason}
+                                                    </Text>
+                                                  ))}
+                                                </View>
+                                              )}
+                                              {entry.postProcessing.parentMerges?.length > 0 && (
+                                                <View style={{ marginBottom: 6, padding: 6, borderRadius: 4, backgroundColor: 'rgba(129,212,250,0.06)', borderWidth: 1, borderColor: 'rgba(129,212,250,0.2)' }}>
+                                                  <Text style={[{ fontSize: 10, color: '#81D4FA', fontWeight: '600', marginBottom: 2 }, bodyFontStyle]}>
+                                                    Same-parent merges ({entry.postProcessing.parentMerges.length}):
+                                                  </Text>
+                                                  {entry.postProcessing.parentMerges.map((m, mi) => (
+                                                    <Text key={mi} style={[{ fontSize: 10, color: '#B3E5FC' }, bodyFontStyle]}>
+                                                      • [{m.parent}] {m.merged.join(' + ')}
+                                                    </Text>
+                                                  ))}
+                                                </View>
+                                              )}
+                                              <Text style={[{ fontSize: 10, color: '#CE93D8', fontWeight: '600' }, bodyFontStyle]}>
+                                                Final chunks → LLM: {entry.postProcessing.finalCount}
+                                              </Text>
+                                            </View>
+                                          )}
+
+                                          {/* Sentence Extraction */}
+                                          {entry.sentenceExtraction?.length > 0 && (
+                                            <>
+                                              <TouchableOpacity
+                                                onPress={() => setEntrySentenceExpanded(prev => ({ ...prev, [entry.id]: !prev[entry.id] }))}
+                                                style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10, marginBottom: 4 }}
+                                                activeOpacity={0.7}
+                                              >
+                                                <Text style={[{ fontSize: 11, color: '#999', flex: 1 }, bodyFontStyle]}>
+                                                  Sentence Extraction ({entry.sentenceExtraction.length} chunks)
+                                                </Text>
+                                                <Text style={{ fontSize: 10, color: '#999' }}>{entrySentenceExpanded[entry.id] ? '▼' : '▶'}</Text>
+                                              </TouchableOpacity>
+                                              {entrySentenceExpanded[entry.id] && entry.sentenceExtraction.map((se, i) => (
+                                                <View key={i} style={{ marginBottom: 6, padding: 6, borderRadius: 4, backgroundColor: 'rgba(129,212,250,0.06)', borderWidth: 1, borderColor: 'rgba(129,212,250,0.2)' }}>
+                                                  <Text style={[{ fontSize: 11, color: '#81D4FA', fontWeight: '600', marginBottom: 2 }, bodyFontStyle]}>
+                                                    Chunk {i + 1}: "{se.heading}" ({se.originalChars} → {se.extractedChars} chars)
+                                                  </Text>
+                                                  {se.sentences?.map((s, si) => {
+                                                    const tag = s.score === '∞' ? 'H' : (s.kept ? '✓' : '✗');
+                                                    const tagColor = s.score === '∞' ? '#81D4FA' : (s.kept ? '#4CAF50' : '#666');
+                                                    return (
+                                                      <Text key={si} style={[{ fontSize: 10, color: tagColor }, bodyFontStyle]}>
+                                                        [{tag}] "{s.text.substring(0, 80)}{s.text.length > 80 ? '…' : ''}" (score: {s.score})
+                                                      </Text>
+                                                    );
+                                                  })}
+                                                </View>
+                                              ))}
+                                            </>
+                                          )}
+
+                                          {/* Final extracted/merged chunks */}
+                                          {entry.sentenceExtraction?.length > 0 && (
+                                            <>
+                                              <TouchableOpacity
+                                                onPress={() => setEntryFinalChunksExpanded(prev => ({ ...prev, [entry.id]: !prev[entry.id] }))}
+                                                style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10, marginBottom: 4 }}
+                                                activeOpacity={0.7}
+                                              >
+                                                <Text style={[{ fontSize: 11, color: '#999', flex: 1 }, bodyFontStyle]}>
+                                                  Final extracted chunks ({entry.sentenceExtraction.length})
+                                                </Text>
+                                                <Text style={{ fontSize: 10, color: '#999' }}>{entryFinalChunksExpanded[entry.id] ? '▼' : '▶'}</Text>
+                                              </TouchableOpacity>
+                                              {entryFinalChunksExpanded[entry.id] && entry.sentenceExtraction.map((se, i) => (
+                                                <View key={i} style={{ marginBottom: 6, padding: 8, borderRadius: 6, backgroundColor: 'rgba(38,198,218,0.06)', borderWidth: 1, borderColor: 'rgba(38,198,218,0.2)' }}>
+                                                  <Text style={[{ fontSize: 11, color: '#26C6DA', fontWeight: '700' }, bodyFontStyle]}>
+                                                    {se.heading} ({se.extractedChars} chars)
+                                                  </Text>
+                                                  {se.extractedContent && (
+                                                    <Text style={[{ fontSize: 10, color: '#BBB', fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace', marginTop: 4 }]} selectable>
+                                                      {se.extractedContent}
+                                                    </Text>
+                                                  )}
+                                                </View>
+                                              ))}
+                                            </>
+                                          )}
+                                        </>
+                                      )}
                                     </View>
+                                  )}
+                                </View>
+
+                                {/* ── Cloud LLM section ── */}
+                                <View style={{ marginBottom: 8, borderRadius: 6, borderWidth: 1, borderColor: 'rgba(79,195,247,0.2)', overflow: 'hidden' }}>
+                                  <TouchableOpacity
+                                    onPress={() => setEntryCloudExpanded(prev => ({ ...prev, [entry.id]: !isCloudOpen }))}
+                                    activeOpacity={0.7}
+                                    style={{ flexDirection: 'row', alignItems: 'center', padding: 8, backgroundColor: 'rgba(79,195,247,0.06)' }}
+                                  >
+                                    <Text style={[{ fontSize: 12, color: '#4FC3F7', fontWeight: '700', flex: 1 }, bodyFontStyle]}>Cloud LLM</Text>
+                                    {usedCloud && (
+                                      <View style={{ paddingHorizontal: 5, paddingVertical: 1, borderRadius: 3, backgroundColor: 'rgba(76,175,80,0.15)', marginRight: 6 }}>
+                                        <Text style={[{ fontSize: 8, color: '#4CAF50', fontWeight: '700' }, bodyFontStyle]}>USED</Text>
+                                      </View>
+                                    )}
+                                    <Text style={{ fontSize: 10, color: '#4FC3F7' }}>{isCloudOpen ? '▼' : '▶'}</Text>
+                                  </TouchableOpacity>
+                                  {isCloudOpen && (
+                                    <View style={{ padding: 8 }}>
+                                      {!usedCloud ? (
+                                        <Text style={[{ fontSize: 11, color: '#777', fontStyle: 'italic' }, bodyFontStyle]}>Not used for this prompt</Text>
+                                      ) : (
+                                        <>
+                                          {[
+                                            ...(entry.totalContextChars != null ? [{ label: 'Context → LLM', value: `${entry.totalContextChars.toLocaleString()} chars` }] : []),
+                                            ...(entry.promptLength != null ? [{ label: 'Prompt length', value: `${entry.promptLength.toLocaleString()} chars` }] : []),
+                                            ...(entry.modelName ? [{ label: 'Model', value: entry.modelName }] : []),
+                                            ...(entry.cloudResponseTimeMs != null ? [{ label: 'Response time', value: `${entry.cloudResponseTimeMs.toLocaleString()}ms` }] : []),
+                                          ].map(({ label, value }) => (
+                                            <View key={label} style={styles.debugMetaRow}>
+                                              <Text style={[styles.debugMetaLabel, bodyFontStyle]}>{label}</Text>
+                                              <Text style={styles.debugMetaValue}>{value}</Text>
+                                            </View>
+                                          ))}
+                                        </>
+                                      )}
+                                      <View style={[styles.debugMetaRow, { marginTop: usedCloud ? 0 : 8 }]}>
+                                        <Text style={[styles.debugMetaLabel, bodyFontStyle]}>Last Cloud Response</Text>
+                                        <Text style={[styles.debugMetaValue, { color: cloudLlmStatus.lastCloudResponse ? '#4CAF50' : '#888' }]}>
+                                          {cloudLlmStatus.lastCloudResponse ?? '—'}
+                                        </Text>
+                                      </View>
+                                      <View style={styles.debugMetaRow}>
+                                        <Text style={[styles.debugMetaLabel, bodyFontStyle]}>Fallback Count</Text>
+                                        <Text style={[styles.debugMetaValue, { color: (cloudLlmStatus.fallbackCount ?? 0) > 0 ? '#FFC107' : '#888' }]}>
+                                          {cloudLlmStatus.fallbackCount ?? 0}
+                                        </Text>
+                                      </View>
+                                    </View>
+                                  )}
+                                </View>
+
+                                {/* ── AI Response (collapsible, expanded by default) ── */}
+                                {entry.aiResponse != null && (
+                                  <View style={{ marginBottom: 4, borderRadius: 6, borderWidth: 1, borderColor: 'rgba(76,175,80,0.2)', overflow: 'hidden' }}>
+                                    <TouchableOpacity
+                                      onPress={() => setEntryResponseExpanded(prev => ({ ...prev, [entry.id]: !isResponseOpen }))}
+                                      activeOpacity={0.7}
+                                      style={{ flexDirection: 'row', alignItems: 'center', padding: 8, backgroundColor: 'rgba(76,175,80,0.06)' }}
+                                    >
+                                      <Text style={[{ fontSize: 12, color: '#66BB6A', fontWeight: '700', flex: 1 }, bodyFontStyle]}>AI Response</Text>
+                                      {entry.responseSource && (
+                                        <Text style={[{ fontSize: 10, color: '#888', marginRight: 6 }, bodyFontStyle]}>
+                                          {entry.responseSource}{entry.modelName ? ` (${entry.modelName})` : ''}
+                                        </Text>
+                                      )}
+                                      <Text style={{ fontSize: 10, color: '#66BB6A' }}>{isResponseOpen ? '▼' : '▶'}</Text>
+                                    </TouchableOpacity>
+                                    {isResponseOpen && (
+                                      <View style={{ padding: 8 }}>
+                                        <Text style={[{ fontSize: 11, color: '#C8E6C9', fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace' }]} selectable>
+                                          {entry.aiResponse}
+                                        </Text>
+                                      </View>
+                                    )}
                                   </View>
                                 )}
                               </View>

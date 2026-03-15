@@ -171,6 +171,12 @@ export function formatRagLogAsText() {
       if (entry.promptLength != null) {
         lines.push(`Prompt length: ${entry.promptLength} chars`);
       }
+      if (entry.modelName) {
+        lines.push(`Model:       ${entry.modelName}`);
+      }
+      if (entry.cloudResponseTimeMs != null) {
+        lines.push(`Response time: ${entry.cloudResponseTimeMs}ms`);
+      }
       lines.push('');
 
       if (!entry.cloudFullContext) {

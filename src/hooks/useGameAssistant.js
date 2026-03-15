@@ -508,6 +508,7 @@ export function useGameAssistant() {
               aiResponse: geminiResponse,
               responseSource: 'cloud',
               modelName: GEMINI_MODEL,
+              cloudResponseTimeMs: geminiElapsed,
             });
 
             setCloudLlmStatus(prev => ({

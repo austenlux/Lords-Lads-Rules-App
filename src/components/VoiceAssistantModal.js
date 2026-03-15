@@ -276,6 +276,7 @@ const styles = StyleSheet.create({
     backgroundColor: BASE_MODAL_COLORS.assistantBubble,
     borderColor: BASE_MODAL_COLORS.assistantBorder,
     borderBottomLeftRadius: 4,
+    minWidth: '70%',
   },
   roleLabel: {
     fontSize: 11,
