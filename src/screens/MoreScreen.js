@@ -1167,13 +1167,13 @@ export default function MoreScreen({
                           style={[styles.versionContent, { paddingLeft: 0, paddingRight: 0 }]}
                           onLayout={(e) => setAppearanceContentWidth(e.nativeEvent.layout.width)}
                         >
-                          <View style={{ paddingHorizontal: 4, marginBottom: 12 }}>
+                          <View style={{ paddingHorizontal: 2, marginBottom: 12 }}>
                             {appearanceContentWidth > 0 && (
                               <Image
                                 source={BANNER_MAP[clinksAppearance] || BANNER_MAP.light_male}
                                 style={{
-                                  width: appearanceContentWidth - 8,
-                                  height: (appearanceContentWidth - 8) * (1152 / 3712),
+                                  width: appearanceContentWidth - 4,
+                                  height: (appearanceContentWidth - 4) * (1152 / 3712),
                                   borderRadius: 10,
                                 }}
                                 resizeMode="cover"

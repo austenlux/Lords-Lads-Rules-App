@@ -619,7 +619,7 @@ export function useGameAssistant() {
             fullAnswerRef.current = userFacingError;
             setFullAnswer(userFacingError);
             setMessages((prev) =>
-              prev.map((m) => (m.id === assistantMsgId ? { ...m, text: userFacingError, source: 'error' } : m)),
+              prev.map((m) => (m.id === assistantMsgId ? { ...m, text: userFacingError, source: 'error', errorSource: 'local' } : m)),
             );
 
             sentenceBufferRef.current = '';

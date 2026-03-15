@@ -94,22 +94,28 @@ function UserBubble({ text, bodyFontStyle, colors }) {
 }
 
 
-function SourceIcon({ source, accent }) {
-  if (!source || source === 'error') return null;
+function SourceIcon({ source, errorSource, accent }) {
+  if (!source) return null;
+  if (source === 'error') {
+    if (errorSource === 'cloud') {
+      return <WifiIcon width={12} height={12} fill={accent} />;
+    }
+    return <NoWifiIcon width={12} height={12} wifiColor="#666666" xColor="#666666" />;
+  }
   if (source === 'cloud') {
     return <WifiIcon width={12} height={12} fill={accent} />;
   }
   return <NoWifiIcon width={12} height={12} wifiColor="#666666" xColor="#666666" />;
 }
 
-function AssistantBubble({ text, source, accent, bodyFontStyle, mdStyles }) {
+function AssistantBubble({ text, source, errorSource, accent, bodyFontStyle, mdStyles }) {
   const isError = source === 'error';
   return (
     <View style={[styles.bubbleRow, styles.bubbleRowAssistant]}>
       <View style={[styles.bubble, styles.assistantBubble, isError && styles.errorBubble]}>
         <View style={styles.assistantHeader}>
           <Text style={[styles.roleLabelAI, bodyFontStyle]}>Clinks</Text>
-          <SourceIcon source={source} accent={accent} />
+          <SourceIcon source={source} errorSource={errorSource} accent={accent} />
         </View>
         {text ? (
           isError ? (
@@ -240,9 +246,8 @@ export default function VoiceAssistantModal({ messages, isOpen, fabBottom = 96 }
           <Image
             source={BANNER_MAP[clinksAppearance] || BANNER_MAP.light_male}
             style={{
-              width: panelWidth - 8,
-              height: (panelWidth - 8) * (1152 / 3712),
-              marginHorizontal: 4,
+              width: panelWidth,
+              height: panelWidth * (1152 / 3712),
               borderTopLeftRadius: 19,
               borderTopRightRadius: 19,
             }}
@@ -261,7 +266,7 @@ export default function VoiceAssistantModal({ messages, isOpen, fabBottom = 96 }
             item.role === 'user' ? (
               <UserBubble text={item.text} bodyFontStyle={bodyFontStyle} colors={COLORS} />
             ) : (
-              <AssistantBubble text={item.text} source={item.source} accent={accent} bodyFontStyle={bodyFontStyle} mdStyles={mdStyles} />
+              <AssistantBubble text={item.text} source={item.source} errorSource={item.errorSource} accent={accent} bodyFontStyle={bodyFontStyle} mdStyles={mdStyles} />
             )
           }
           onContentSizeChange={(_, h) => {
