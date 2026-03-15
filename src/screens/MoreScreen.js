@@ -1360,9 +1360,6 @@ export default function MoreScreen({
                     <View style={[styles.settingsRow, styles.settingsRowLast, { marginBottom: 8 }]}>
                       <View style={[styles.settingsRowLabel, { flex: 1 }]}>
                         <Text style={[styles.settingsRowText, bodyFontStyle]}>Force Local LLM</Text>
-                        <Text style={[{ fontSize: 11, color: '#888', marginTop: 2 }, bodyFontStyle]}>
-                          Forces the AI assistant to use the local on-device model instead of the cloud model, even when online.
-                        </Text>
                       </View>
                       <Switch
                         value={forceLocalLlm}
@@ -1443,7 +1440,7 @@ export default function MoreScreen({
                 </TouchableOpacity>
                 {vaDebugExpanded && (
                   <View style={[styles.versionContent, { paddingTop: 4, paddingLeft: 0, paddingRight: 0 }]}>
-                    {/* Shared Requirements — items needed for both Local & Cloud LLM */}
+                    {/* General Status — items needed for both Local & Cloud LLM */}
                     {(() => {
                       const micOk = micPermissionStatus === 'granted';
                       const micFailed = micPermissionStatus === 'not_granted';
@@ -1469,7 +1466,7 @@ export default function MoreScreen({
                           <View style={{ marginTop: 12, marginBottom: 12 }}>
                             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
                               <View style={{ width: 20, height: 20 }}>{sharedOverallIcon}</View>
-                              <Text style={[styles.versionText, titleFontStyle]}>Shared Requirements</Text>
+                              <Text style={[styles.versionText, titleFontStyle]}>General Status</Text>
                             </View>
                           </View>
                           <View style={styles.debugMetaRow}>
@@ -1911,7 +1908,7 @@ export default function MoreScreen({
                       >
                         <View style={styles.versionHeader}>
                           <View style={{ flex: 1 }}>
-                            <CardIconTitle icon={<BadgeInfoIcon size={18} color="#26C6DA" />} title="BM25 Index Build" styles={styles} />
+                            <CardIconTitle icon={<BadgeInfoIcon size={18} color="#26C6DA" />} title="RAG Index Build" styles={styles} />
                             <Text style={[{ fontSize: 10, color: '#888', marginTop: 2, marginLeft: 28 }, bodyFontStyle]}>
                               Used for Local LLM only
                             </Text>
