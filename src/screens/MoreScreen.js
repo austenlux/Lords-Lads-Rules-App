@@ -245,6 +245,8 @@ export default function MoreScreen({
   const [themeFontPrimaryExpanded, setThemeFontPrimaryExpanded] = useState(false);
   const [featureFlagsExpanded, setFeatureFlagsExpanded] = useState(false);
   const [voiceParentExpanded, setVoiceParentExpanded] = useState(false);
+  const [voiceVoiceExpanded, setVoiceVoiceExpanded] = useState(false);
+  const [voiceAppearanceExpanded, setVoiceAppearanceExpanded] = useState(false);
   const [voiceMetaExpanded, setVoiceMetaExpanded] = useState(false);
   const [expandedDebugVoices, setExpandedDebugVoices] = useState({});
   const [vaDebugExpanded, setVaDebugExpanded] = useState(false);
@@ -276,6 +278,8 @@ export default function MoreScreen({
   useEffect(() => {
     if (!animations['expandDefaults']) animations['expandDefaults'] = { rotation: new Animated.Value(0) };
     if (!animations['voiceParent'])    animations['voiceParent']    = { rotation: new Animated.Value(0) };
+    if (!animations['voiceVoice'])     animations['voiceVoice']     = { rotation: new Animated.Value(0) };
+    if (!animations['voiceAppearance']) animations['voiceAppearance'] = { rotation: new Animated.Value(0) };
     if (!animations['voiceMeta'])      animations['voiceMeta']      = { rotation: new Animated.Value(0) };
     if (!animations['theme'])              animations['theme']              = { rotation: new Animated.Value(0) };
     if (!animations['themeColor'])         animations['themeColor']         = { rotation: new Animated.Value(0) };
@@ -395,6 +399,10 @@ export default function MoreScreen({
     setExpandDefaultsExpanded(false);
     animateSection(animations['voiceParent'], false, 150);
     setVoiceParentExpanded(false);
+    animateSection(animations['voiceVoice'], false, 150);
+    setVoiceVoiceExpanded(false);
+    animateSection(animations['voiceAppearance'], false, 150);
+    setVoiceAppearanceExpanded(false);
     collapseAllLocales();
   };
 
@@ -500,8 +508,29 @@ export default function MoreScreen({
 
     const isExpanded = !voiceParentExpanded;
     animateSection(animations['voiceParent'], isExpanded);
-    if (!isExpanded) collapseAllLocales();
+    if (!isExpanded) {
+      animateSection(animations['voiceVoice'], false, 150);
+      setVoiceVoiceExpanded(false);
+      animateSection(animations['voiceAppearance'], false, 150);
+      setVoiceAppearanceExpanded(false);
+      collapseAllLocales();
+    }
     setVoiceParentExpanded(isExpanded);
+  };
+
+  const toggleVoiceVoice = () => {
+
+    const isExpanded = !voiceVoiceExpanded;
+    animateSection(animations['voiceVoice'], isExpanded);
+    if (!isExpanded) collapseAllLocales();
+    setVoiceVoiceExpanded(isExpanded);
+  };
+
+  const toggleVoiceAppearance = () => {
+
+    const isExpanded = !voiceAppearanceExpanded;
+    animateSection(animations['voiceAppearance'], isExpanded);
+    setVoiceAppearanceExpanded(isExpanded);
   };
 
   const toggleVoiceMeta = () => {
@@ -1013,60 +1042,91 @@ export default function MoreScreen({
                 </View>
                 {voiceParentExpanded && (
                   <View style={[styles.versionContent, { paddingLeft: 0, paddingRight: 0 }]}>
-                    {voiceLocaleGroups.map(group => {
-                      const groupHasSelection = group.voices.some(v => v.id === selectedVoiceId);
-                      const localeAnim = voiceLocaleAnims[group.key];
-                      const localeRotation = localeAnim?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] });
-                      return (
-                        <TouchableOpacity
-                          key={group.key}
-                          style={[styles.versionContainer, { paddingHorizontal: 10 }]}
-                          onPress={() => toggleVoiceLocale(group.key)}
-                          activeOpacity={0.7}
-                        >
-                          <View style={styles.versionHeader}>
-                            <View style={styles.versionRow}>
-                              <Text style={[styles.versionText, { flex: 1 }, titleFontStyle]}>{group.display}</Text>
-                              {groupHasSelection && (
-                                <View style={styles.latestBadge}>
-                                  <Text style={[styles.latestBadgeText, bodyFontStyle]}>Active</Text>
+                    {/* ── Voice sub-section ── */}
+                    <TouchableOpacity
+                      style={[styles.versionContainer, { paddingHorizontal: 10 }]}
+                      onPress={toggleVoiceVoice}
+                      activeOpacity={0.7}
+                    >
+                      <View style={styles.versionHeader}>
+                        <CardIconTitle icon={<SpeakerIcon fill={accent} />} title="Voice" styles={styles} />
+                        <Animated.View style={{ transform: [{ rotate: animations['voiceVoice']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
+                          <Text style={styles.versionArrow}>▶</Text>
+                        </Animated.View>
+                      </View>
+                      {voiceVoiceExpanded && (
+                        <View style={[styles.versionContent, { paddingLeft: 0, paddingRight: 0 }]}>
+                          {voiceLocaleGroups.map(group => {
+                            const groupHasSelection = group.voices.some(v => v.id === selectedVoiceId);
+                            const localeAnim = voiceLocaleAnims[group.key];
+                            const localeRotation = localeAnim?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] });
+                            return (
+                              <TouchableOpacity
+                                key={group.key}
+                                style={[styles.versionContainer, { paddingHorizontal: 10 }]}
+                                onPress={() => toggleVoiceLocale(group.key)}
+                                activeOpacity={0.7}
+                              >
+                                <View style={styles.versionHeader}>
+                                  <View style={styles.versionRow}>
+                                    <Text style={[styles.versionText, { flex: 1 }, titleFontStyle]}>{group.display}</Text>
+                                    {groupHasSelection && (
+                                      <View style={styles.latestBadge}>
+                                        <Text style={[styles.latestBadgeText, bodyFontStyle]}>Active</Text>
+                                      </View>
+                                    )}
+                                  </View>
+                                  <Animated.View style={{ transform: [{ rotate: localeRotation || '0deg' }], marginLeft: 12 }}>
+                                    <Text style={styles.versionArrow}>▶</Text>
+                                  </Animated.View>
                                 </View>
-                              )}
-                            </View>
-                            <Animated.View style={{ transform: [{ rotate: localeRotation || '0deg' }], marginLeft: 12 }}>
-                              <Text style={styles.versionArrow}>▶</Text>
-                            </Animated.View>
-                          </View>
-                          {expandedLocales[group.key] && (
-                            <View style={[styles.versionContent, { paddingLeft: 0, paddingRight: 0 }]}>
-                              {group.voices.map((voice, index) => {
-                                const isSelected = voice.id === selectedVoiceId;
-                                const isLast = index === group.voices.length - 1;
-                                return (
-                                  <Pressable
-                                    key={voice.id}
-                                    onPress={() => onVoiceSelect?.(voice.id)}
-                                    style={({ pressed }) => [
-                                      styles.voiceRadioItem,
-                                      isLast && styles.voiceRadioItemLast,
-                                      pressed && styles.voiceRadioItemPressed,
-                                    ]}
-                                    android_ripple={{ color: `${accent}33`, borderless: false }}
-                                  >
-                                    <View style={[styles.voiceRadioOuter, isSelected && styles.voiceRadioOuterSelected]}>
-                                      {isSelected && <View style={styles.voiceRadioInner} />}
-                                    </View>
-                                    <Text style={[styles.voiceRadioText, bodyFontStyle, isSelected && styles.voiceRadioTextSelected]}>
-                                      {voice.name}
-                                    </Text>
-                                  </Pressable>
-                                );
-                              })}
-                            </View>
-                          )}
-                        </TouchableOpacity>
-                      );
-                    })}
+                                {expandedLocales[group.key] && (
+                                  <View style={[styles.versionContent, { paddingLeft: 0, paddingRight: 0 }]}>
+                                    {group.voices.map((voice, index) => {
+                                      const isSelected = voice.id === selectedVoiceId;
+                                      const isLast = index === group.voices.length - 1;
+                                      return (
+                                        <Pressable
+                                          key={voice.id}
+                                          onPress={() => onVoiceSelect?.(voice.id)}
+                                          style={({ pressed }) => [
+                                            styles.voiceRadioItem,
+                                            isLast && styles.voiceRadioItemLast,
+                                            pressed && styles.voiceRadioItemPressed,
+                                          ]}
+                                          android_ripple={{ color: `${accent}33`, borderless: false }}
+                                        >
+                                          <View style={[styles.voiceRadioOuter, isSelected && styles.voiceRadioOuterSelected]}>
+                                            {isSelected && <View style={styles.voiceRadioInner} />}
+                                          </View>
+                                          <Text style={[styles.voiceRadioText, bodyFontStyle, isSelected && styles.voiceRadioTextSelected]}>
+                                            {voice.name}
+                                          </Text>
+                                        </Pressable>
+                                      );
+                                    })}
+                                  </View>
+                                )}
+                              </TouchableOpacity>
+                            );
+                          })}
+                        </View>
+                      )}
+                    </TouchableOpacity>
+
+                    {/* ── Appearance sub-section ── */}
+                    <TouchableOpacity
+                      style={[styles.versionContainer, { paddingHorizontal: 10 }]}
+                      onPress={toggleVoiceAppearance}
+                      activeOpacity={0.7}
+                    >
+                      <View style={styles.versionHeader}>
+                        <CardIconTitle icon={<PaintIcon fill={accent} />} title="Appearance" styles={styles} />
+                        <Animated.View style={{ transform: [{ rotate: animations['voiceAppearance']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
+                          <Text style={styles.versionArrow}>▶</Text>
+                        </Animated.View>
+                      </View>
+                    </TouchableOpacity>
                   </View>
                 )}
               </TouchableOpacity>
