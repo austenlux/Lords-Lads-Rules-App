@@ -143,6 +143,7 @@ function AppContent() {
     retryModelSetup,
     modelDebugInfo,
     cloudLlmStatus,
+    geminiUsageStats,
   } = useGameAssistant();
 
   const {
@@ -309,6 +310,7 @@ function AppContent() {
         ragIndexReady={ragIndexReady}
         ragChunkCount={ragChunkCount}
         cloudLlmStatus={cloudLlmStatus}
+        geminiUsageStats={geminiUsageStats}
       />
     );
   };

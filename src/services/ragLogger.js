@@ -177,6 +177,9 @@ export function formatRagLogAsText() {
       if (entry.cloudResponseTimeMs != null) {
         lines.push(`Response time: ${entry.cloudResponseTimeMs}ms`);
       }
+      if (entry.cloudFallbackReason) {
+        lines.push(`Cloud fallback reason: ${entry.cloudFallbackReason}`);
+      }
       lines.push('');
 
       if (!entry.cloudFullContext) {

@@ -84,7 +84,7 @@ function UserBubble({ text, bodyFontStyle, colors }) {
 
 
 function SourceIcon({ source, accent }) {
-  if (!source) return null;
+  if (!source || source === 'error') return null;
   if (source === 'cloud') {
     return <WifiIcon width={12} height={12} fill={accent} />;
   }
@@ -92,15 +92,20 @@ function SourceIcon({ source, accent }) {
 }
 
 function AssistantBubble({ text, source, accent, bodyFontStyle, mdStyles }) {
+  const isError = source === 'error';
   return (
     <View style={[styles.bubbleRow, styles.bubbleRowAssistant]}>
-      <View style={[styles.bubble, styles.assistantBubble]}>
+      <View style={[styles.bubble, styles.assistantBubble, isError && styles.errorBubble]}>
         <View style={styles.assistantHeader}>
           <Text style={[styles.roleLabelAI, bodyFontStyle]}>Assistant</Text>
           <SourceIcon source={source} accent={accent} />
         </View>
         {text ? (
-          <Markdown style={mdStyles}>{text}</Markdown>
+          isError ? (
+            <Text style={[{ fontSize: 13, color: '#CF6679', lineHeight: 18 }, bodyFontStyle]}>{text}</Text>
+          ) : (
+            <Markdown style={mdStyles}>{text}</Markdown>
+          )
         ) : (
           <ThinkingText style={[styles.thinkingText, bodyFontStyle]} />
         )}
@@ -280,6 +285,9 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 4,
     minWidth: '70%',
     flexShrink: 0,
+  },
+  errorBubble: {
+    borderColor: 'rgba(207,102,121,0.3)',
   },
   roleLabel: {
     fontSize: 11,

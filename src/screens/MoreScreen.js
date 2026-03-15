@@ -216,6 +216,7 @@ export default function MoreScreen({
   ragIndexReady = false,
   ragChunkCount = 0,
   cloudLlmStatus = {},
+  geminiUsageStats,
 }) {
   const [releaseNotes, setReleaseNotes] = useState([]);
   const [expandedVersions, setExpandedVersions] = useState({});
@@ -1606,6 +1607,7 @@ export default function MoreScreen({
                     {/* Cloud LLM Status */}
                     {(() => {
                       const cloudKeyOk = !!cloudLlmStatus.keyConfigured;
+                      const usage = typeof geminiUsageStats === 'function' ? geminiUsageStats() : {};
                       const cloudOverallIcon = cloudKeyOk
                         ? <BadgeSuccessIcon size={22} color="#4CAF50" />
                         : <BadgeErrorIcon size={22} color="#CF6679" />;
@@ -1628,6 +1630,26 @@ export default function MoreScreen({
                               </Text>
                             </View>
                           </View>
+                          <View style={styles.debugMetaRow}>
+                            <Text style={[styles.debugMetaLabel, bodyFontStyle]}>Calls (session)</Text>
+                            <Text style={[styles.debugMetaValue, { color: '#CCC' }]}>
+                              {usage.callsThisSession ?? 0}
+                            </Text>
+                          </View>
+                          <View style={styles.debugMetaRow}>
+                            <Text style={[styles.debugMetaLabel, bodyFontStyle]}>Calls (last 60s)</Text>
+                            <Text style={[styles.debugMetaValue, { color: (usage.callsLastMinute ?? 0) >= 8 ? '#FFC107' : '#CCC' }]}>
+                              {usage.callsLastMinute ?? 0}
+                            </Text>
+                          </View>
+                          {usage.lastRateLimitAt && (
+                            <View style={styles.debugMetaRow}>
+                              <Text style={[styles.debugMetaLabel, bodyFontStyle]}>Last Rate Limit</Text>
+                              <Text style={[styles.debugMetaValue, { color: '#CF6679' }]}>
+                                {usage.lastRateLimitAt}
+                              </Text>
+                            </View>
+                          )}
                         </>
                       );
                     })()}
@@ -2248,9 +2270,7 @@ export default function MoreScreen({
                                   </TouchableOpacity>
                                   {isCloudOpen && (
                                     <View style={{ padding: 8 }}>
-                                      {!usedCloud ? (
-                                        <Text style={[{ fontSize: 11, color: '#777', fontStyle: 'italic' }, bodyFontStyle]}>Not used for this prompt</Text>
-                                      ) : (
+                                      {usedCloud ? (
                                         <>
                                           {[
                                             ...(entry.totalContextChars != null ? [{ label: 'Context → LLM', value: `${entry.totalContextChars.toLocaleString()} chars` }] : []),
@@ -2264,8 +2284,17 @@ export default function MoreScreen({
                                             </View>
                                           ))}
                                         </>
+                                      ) : (
+                                        <>
+                                          <View style={styles.debugMetaRow}>
+                                            <Text style={[styles.debugMetaLabel, bodyFontStyle]}>Fallback Reason</Text>
+                                            <Text style={[styles.debugMetaValue, { color: '#CF6679' }]}>
+                                              {entry.cloudFallbackReason || 'Not used'}
+                                            </Text>
+                                          </View>
+                                        </>
                                       )}
-                                      <View style={[styles.debugMetaRow, { marginTop: usedCloud ? 0 : 8 }]}>
+                                      <View style={[styles.debugMetaRow, { marginTop: usedCloud ? 0 : 4 }]}>
                                         <Text style={[styles.debugMetaLabel, bodyFontStyle]}>Last Cloud Response</Text>
                                         <Text style={[styles.debugMetaValue, { color: cloudLlmStatus.lastCloudResponse ? '#4CAF50' : '#888' }]}>
                                           {cloudLlmStatus.lastCloudResponse ?? '—'}

@@ -27,7 +27,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import NativeVoiceAssistantOptional from '../specs/NativeVoiceAssistantOptional';
 import { buildGameAssistantPrompt, buildGeminiFullContextPrompt } from '../constants';
 import { retrieveRelevantChunks, filterAndMerge, extractRelevantSentences } from '../services/ragService';
-import { askGemini, isGeminiConfigured, GEMINI_MODEL } from '../services/geminiService';
+import { askGemini, isGeminiConfigured, GEMINI_MODEL, getGeminiUsageStats } from '../services/geminiService';
 import { sanitizeTextForSpeech } from '../utils/sanitizeTextForSpeech';
 import { logError, logEvent } from '../services/errorLogger';
 import { logRetrieval, updateLatestRetrieval, logPostProcessing, logFinalChunks, logSentenceExtraction } from '../services/ragLogger';
@@ -471,7 +471,14 @@ export function useGameAssistant() {
 
         // ── Cloud-first: skip RAG entirely, send full rules to Gemini ──
         let usedCloud = false;
+        let cloudFailReason = null;
         const forceLocal = (await AsyncStorage.getItem(FORCE_LOCAL_LLM_KEY)) === 'true';
+
+        if (forceLocal) {
+          cloudFailReason = 'Force Local LLM enabled';
+        } else if (!isGeminiConfigured()) {
+          cloudFailReason = 'API key not configured';
+        }
 
         if (!forceLocal && isGeminiConfigured()) {
           try {
@@ -523,10 +530,13 @@ export function useGameAssistant() {
             native.markSpeechQueueComplete();
             usedCloud = true;
           } catch (geminiErr) {
-            logEvent('Voice', `Gemini API failed — falling back to on-device: ${geminiErr.message}`);
+            cloudFailReason = geminiErr.message;
+            logEvent('Voice', `Gemini API failed — falling back to on-device: ${cloudFailReason}`);
+            updateLatestRetrieval({ cloudFallbackReason: cloudFailReason });
             setCloudLlmStatus(prev => ({
               ...prev,
               fallbackCount: prev.fallbackCount + 1,
+              lastFallbackReason: cloudFailReason,
             }));
           }
         }
@@ -571,27 +581,57 @@ export function useGameAssistant() {
             totalContextChars,
             promptLength: fullPrompt.length,
             postProcessing: postProcessLog,
+            cloudFallbackReason: cloudFailReason,
           });
 
           logEvent('Voice', `askQuestion called — on-device (prompt length: ${fullPrompt.length})`);
-          await native.askQuestion(fullPrompt);
-          const aiResponse = fullAnswerRef.current;
-          logEvent('Voice', aiResponse
-            ? `askQuestion resolved (${aiResponse.length} chars)`
-            : 'askQuestion resolved with EMPTY response — model returned no content');
-          updateLatestRetrieval({ aiResponse, responseSource: 'on-device' });
 
-          setMessages((prev) =>
-            prev.map((m) => (m.id === assistantMsgId ? { ...m, source: 'on-device' } : m)),
-          );
+          try {
+            await native.askQuestion(fullPrompt);
+            const aiResponse = fullAnswerRef.current;
+            logEvent('Voice', aiResponse
+              ? `askQuestion resolved (${aiResponse.length} chars)`
+              : 'askQuestion resolved with EMPTY response — model returned no content');
+            updateLatestRetrieval({ aiResponse, responseSource: 'on-device' });
 
-          const remaining = sentenceBufferRef.current.trim();
-          sentenceBufferRef.current = '';
-          if (remaining) {
-            const cleaned = sanitizeTextForSpeech(remaining);
-            if (cleaned) native.speak(cleaned);
+            setMessages((prev) =>
+              prev.map((m) => (m.id === assistantMsgId ? { ...m, source: 'on-device' } : m)),
+            );
+
+            const remaining = sentenceBufferRef.current.trim();
+            sentenceBufferRef.current = '';
+            if (remaining) {
+              const cleaned = sanitizeTextForSpeech(remaining);
+              if (cleaned) native.speak(cleaned);
+            }
+            native.markSpeechQueueComplete();
+          } catch (localErr) {
+            const localMsg = localErr?.message ?? 'Unknown error';
+            logEvent('Voice', `On-device LLM failed: ${localMsg}`);
+            logError('Voice Assistant', localErr, { phase: 'on-device-inference' });
+
+            const isUnsafe = /unsafe/i.test(localMsg);
+            const userFacingError = isUnsafe
+              ? "Sorry, the AI safety filter blocked this question. Try rephrasing it, or try again later when cloud AI is available."
+              : `Sorry, I couldn't answer that question. (${localMsg})`;
+
+            updateLatestRetrieval({
+              aiResponse: `[ERROR] ${localMsg}`,
+              responseSource: 'on-device',
+            });
+
+            fullAnswerRef.current = userFacingError;
+            setFullAnswer(userFacingError);
+            setMessages((prev) =>
+              prev.map((m) => (m.id === assistantMsgId ? { ...m, text: userFacingError, source: 'error' } : m)),
+            );
+
+            sentenceBufferRef.current = '';
+            setIsThinking(false);
+            isBusy.current = false;
+            activeAssistantMsgId.current = null;
+            return;
           }
-          native.markSpeechQueueComplete();
         }
 
       } catch (err) {
@@ -704,5 +744,7 @@ export function useGameAssistant() {
     modelDebugInfo,
     /** Cloud LLM status for the debug panel */
     cloudLlmStatus,
+    /** Local usage stats for the Gemini API (calls this session, last minute, rate limits) */
+    geminiUsageStats: getGeminiUsageStats,
   };
 }

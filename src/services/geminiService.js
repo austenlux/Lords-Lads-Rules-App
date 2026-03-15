@@ -11,11 +11,29 @@ export const GEMINI_MODEL = 'gemini-2.5-flash';
 const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 const REQUEST_TIMEOUT_MS = 15_000;
 
+const callTimestamps = [];
+let lastRateLimitTs = null;
+
 /**
  * @returns {boolean} Whether a Gemini API key is configured.
  */
 export function isGeminiConfigured() {
   return typeof GEMINI_API_KEY === 'string' && GEMINI_API_KEY.length > 0;
+}
+
+/**
+ * Returns local usage stats for the current session.
+ * Gemini free tier does not expose remaining quota via headers,
+ * so we track call timestamps locally for debugging.
+ */
+export function getGeminiUsageStats() {
+  const now = Date.now();
+  const oneMinAgo = now - 60_000;
+  return {
+    callsThisSession: callTimestamps.length,
+    callsLastMinute: callTimestamps.filter(ts => ts > oneMinAgo).length,
+    lastRateLimitAt: lastRateLimitTs ? new Date(lastRateLimitTs).toLocaleString() : null,
+  };
 }
 
 /**
@@ -32,6 +50,8 @@ export async function askGemini(prompt) {
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+  callTimestamps.push(Date.now());
 
   try {
     const url = `${GEMINI_ENDPOINT}?key=${GEMINI_API_KEY}`;
@@ -57,6 +77,7 @@ export async function askGemini(prompt) {
     });
 
     if (response.status === 429) {
+      lastRateLimitTs = Date.now();
       throw new Error('Rate limit exceeded (429)');
     }
 
