@@ -231,6 +231,11 @@ export default function VoiceAssistantModal({ messages, isOpen, fabBottom = 96 }
       pointerEvents={isOpen || isMounted.current ? 'box-none' : 'none'}
     >
       <View style={[styles.panel, { maxHeight: maxPanelHeight, borderColor: COLORS.border }]} pointerEvents={isOpen ? 'auto' : 'none'}>
+        <Image
+          source={BANNER_MAP[clinksAppearance] || BANNER_MAP.light_male}
+          style={styles.banner}
+          resizeMode="contain"
+        />
         <FlatList
           ref={listRef}
           data={messages}
@@ -239,9 +244,6 @@ export default function VoiceAssistantModal({ messages, isOpen, fabBottom = 96 }
           showsVerticalScrollIndicator={false}
           scrollEnabled={isOpen}
           keyboardShouldPersistTaps="handled"
-          ListHeaderComponent={
-            <Image source={BANNER_MAP[clinksAppearance] || BANNER_MAP.light_male} style={styles.banner} resizeMode="contain" />
-          }
           renderItem={({ item }) =>
             item.role === 'user' ? (
               <UserBubble text={item.text} bodyFontStyle={bodyFontStyle} colors={COLORS} />
@@ -284,11 +286,12 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   banner: {
-    width: '100%',
+    alignSelf: 'stretch',
     height: undefined,
     aspectRatio: 3712 / 1152,
-    borderRadius: 10,
-    marginBottom: 4,
+    borderTopLeftRadius: 19,
+    borderTopRightRadius: 19,
+    marginBottom: 0,
   },
   bubbleRow: {
     flexDirection: 'row',
