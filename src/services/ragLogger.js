@@ -119,7 +119,7 @@ export function clearRagLog() {
  */
 export function formatRagLogAsText() {
   const lines = [];
-  lines.push('=== RAG PIPELINE LOG ===');
+  lines.push('=== LLM LOG ===');
   lines.push(`Exported: ${new Date().toLocaleString()}`);
   lines.push('');
 

@@ -554,7 +554,7 @@ export default function MoreScreen({
 
   const handleCopyRagLog = () => {
     Clipboard.setString(formatRagLogAsText());
-    logEvent('RAG Log', 'Copied to clipboard');
+    logEvent('LLM Log', 'Copied to clipboard');
     setRagCopied(true);
     setTimeout(() => setRagCopied(false), 2000);
   };
@@ -566,16 +566,16 @@ export default function MoreScreen({
     setRagScoredChunksExpanded({});
     setRagSelectedChunkExpanded({});
     Object.values(ragRetrievalAnims).forEach(a => animateSection(a, false, 0));
-    logEvent('RAG Log', 'Cleared');
+    logEvent('LLM Log', 'Cleared');
   };
 
   const handleExportRagLog = async () => {
     try {
       const text = formatRagLogAsText();
       const dir = Platform.OS === 'android' ? RNFS.DownloadDirectoryPath : RNFS.DocumentDirectoryPath;
-      const path = `${dir}/rag_log.txt`;
+      const path = `${dir}/llm_log.txt`;
       await RNFS.writeFile(path, text, 'utf8');
-      logEvent('RAG Log', 'Exported to rag_log.txt');
+      logEvent('LLM Log', 'Exported to llm_log.txt');
       setRagExported(true);
       setTimeout(() => setRagExported(false), 3000);
     } catch (e) {
@@ -1800,7 +1800,7 @@ export default function MoreScreen({
                   <View style={styles.versionHeader}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1, flexShrink: 1 }}>
                         <BenderIcon width={24} height={24} fill="#7B8D9E" />
-                        <Text style={[styles.versionText, { flexShrink: 1 }, titleFontStyle]}>RAG Log</Text>
+                        <Text style={[styles.versionText, { flexShrink: 1 }, titleFontStyle]}>LLM Log</Text>
                       </View>
                     <Animated.View style={{ transform: [{ rotate: animations['ragLog']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
                       <Text style={styles.versionArrow}>▶</Text>

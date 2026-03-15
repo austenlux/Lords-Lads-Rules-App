@@ -46,7 +46,7 @@ export async function askGemini(prompt) {
         }],
         generationConfig: {
           temperature: 0.3,
-          maxOutputTokens: 512,
+          maxOutputTokens: 1024,
         },
         safetySettings: [
           { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
