@@ -1157,13 +1157,20 @@ export default function MoreScreen({
                       </View>
                       {voiceAppearanceExpanded && (
                         <View style={[styles.versionContent, { paddingLeft: 0, paddingRight: 0 }]}>
-                          <View style={{ paddingHorizontal: 10, marginBottom: 12 }}>
-                            <Image
-                              source={BANNER_MAP[clinksAppearance] || BANNER_MAP.light_male}
-                              style={{ width: '100%', aspectRatio: 3712 / 1152, borderRadius: 10 }}
-                              resizeMode="contain"
-                            />
-                          </View>
+                          {(() => {
+                            const screenW = Dimensions.get('window').width;
+                            const bannerW = screenW - 24 - 20 - 20;
+                            const bannerH = bannerW * (1152 / 3712);
+                            return (
+                              <View style={{ paddingHorizontal: 10, marginBottom: 12 }}>
+                                <Image
+                                  source={BANNER_MAP[clinksAppearance] || BANNER_MAP.light_male}
+                                  style={{ width: bannerW, height: bannerH, borderRadius: 10 }}
+                                  resizeMode="cover"
+                                />
+                              </View>
+                            );
+                          })()}
                           <View style={styles.venmoGridRow}>
                             {APPEARANCE_OPTIONS.slice(0, 3).map((item) => {
                               const isSelected = clinksAppearance === item.id;
