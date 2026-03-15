@@ -15,6 +15,7 @@ import {
   Animated,
   Dimensions,
   FlatList,
+  Image,
   Platform,
   StatusBar,
   StyleSheet,
@@ -25,6 +26,8 @@ import Markdown from 'react-native-markdown-display';
 import WifiIcon from '../../assets/icons/wifi.svg';
 import NoWifiIcon from './NoWifiIcon';
 import { useTheme } from '../context/ThemeContext';
+
+const clinksBanner = require('../../assets/clinks/clinks_male_white.png');
 
 // ─────────────────────────────────────────────────── Constants ──
 
@@ -97,7 +100,7 @@ function AssistantBubble({ text, source, accent, bodyFontStyle, mdStyles }) {
     <View style={[styles.bubbleRow, styles.bubbleRowAssistant]}>
       <View style={[styles.bubble, styles.assistantBubble, isError && styles.errorBubble]}>
         <View style={styles.assistantHeader}>
-          <Text style={[styles.roleLabelAI, bodyFontStyle]}>Assistant</Text>
+          <Text style={[styles.roleLabelAI, bodyFontStyle]}>Clinks</Text>
           <SourceIcon source={source} accent={accent} />
         </View>
         {text ? (
@@ -221,6 +224,9 @@ export default function VoiceAssistantModal({ messages, isOpen, fabBottom = 96 }
           showsVerticalScrollIndicator={false}
           scrollEnabled={isOpen}
           keyboardShouldPersistTaps="handled"
+          ListHeaderComponent={
+            <Image source={clinksBanner} style={styles.banner} resizeMode="contain" />
+          }
           renderItem={({ item }) =>
             item.role === 'user' ? (
               <UserBubble text={item.text} bodyFontStyle={bodyFontStyle} colors={COLORS} />
@@ -261,6 +267,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 12,
     gap: 10,
+  },
+  banner: {
+    width: '100%',
+    height: undefined,
+    aspectRatio: 3712 / 1152,
+    borderRadius: 10,
+    marginBottom: 4,
   },
   bubbleRow: {
     flexDirection: 'row',
