@@ -41,6 +41,7 @@ const SETTINGS_KEYS = {
   EXPAND_RULES_DEFAULT: '@lnl_expand_rules_default',
   EXPAND_EXPANSIONS_DEFAULT: '@lnl_expand_expansions_default',
   THINKING_SOUNDS_ENABLED: '@lnl_thinking_sounds_enabled',
+  FORCE_LOCAL_LLM: '@lnl_force_local_llm',
 };
 import { getVenmoPayUrl } from '../constants';
 import { useTheme, COLOR_GROUPS, FONT_PAIRINGS } from '../context/ThemeContext';
@@ -235,6 +236,7 @@ export default function MoreScreen({
   const [expandedLocales, setExpandedLocales] = useState({});
   const [expandDefaultsExpanded, setExpandDefaultsExpanded] = useState(false);
   const [thinkingSoundsEnabled, setThinkingSoundsEnabled] = useState(false);
+  const [forceLocalLlm, setForceLocalLlm] = useState(false);
   const { themeId: selectedTheme, accent, selectTheme, fontId: selectedFont, selectFont, titleFont, bodyFont, titleFontStyle, bodyFontStyle } = useTheme();
   const [themeExpanded, setThemeExpanded] = useState(false);
   const [themeColorExpanded, setThemeColorExpanded] = useState(false);
@@ -290,16 +292,18 @@ export default function MoreScreen({
 
   useEffect(() => {
     const load = async () => {
-      const [rules, expansions, thinkingSounds] = await Promise.all([
+      const [rules, expansions, thinkingSounds, forceLocal] = await Promise.all([
         AsyncStorage.getItem(SETTINGS_KEYS.EXPAND_RULES_DEFAULT),
         AsyncStorage.getItem(SETTINGS_KEYS.EXPAND_EXPANSIONS_DEFAULT),
         AsyncStorage.getItem(SETTINGS_KEYS.THINKING_SOUNDS_ENABLED),
+        AsyncStorage.getItem(SETTINGS_KEYS.FORCE_LOCAL_LLM),
       ]);
       setExpandRulesDefault(rules === 'true');
       setExpandExpansionsDefault(expansions === 'true');
       const soundsOn = thinkingSounds === 'true';
       setThinkingSoundsEnabled(soundsOn);
       NativeVoiceAssistantOptional?.setThinkingSoundEnabled(soundsOn);
+      setForceLocalLlm(forceLocal === 'true');
     };
     load();
   }, []);
@@ -318,6 +322,11 @@ export default function MoreScreen({
     setThinkingSoundsEnabled(value);
     NativeVoiceAssistantOptional?.setThinkingSoundEnabled(value);
     await AsyncStorage.setItem(SETTINGS_KEYS.THINKING_SOUNDS_ENABLED, value ? 'true' : 'false');
+  };
+
+  const setForceLocalLlmAndSave = async (value) => {
+    setForceLocalLlm(value);
+    await AsyncStorage.setItem(SETTINGS_KEYS.FORCE_LOCAL_LLM, value ? 'true' : 'false');
   };
 
   // ── Voice locale section animations ─────────────────────────────────────
@@ -1337,13 +1346,27 @@ export default function MoreScreen({
                 </TouchableOpacity>
                 {featureFlagsExpanded && (
                   <View style={styles.versionContent}>
-                    <View style={[styles.settingsRow, styles.settingsRowLast, { marginBottom: 8 }]}>
+                    <View style={styles.settingsRow}>
                       <View style={styles.settingsRowLabel}>
                         <Text style={[styles.settingsRowText, bodyFontStyle]}>Thinking Sounds</Text>
                       </View>
                       <Switch
                         value={thinkingSoundsEnabled}
                         onValueChange={setThinkingSoundsEnabledAndSave}
+                        trackColor={{ false: '#555', true: accent }}
+                        thumbColor="#E1E1E1"
+                      />
+                    </View>
+                    <View style={[styles.settingsRow, styles.settingsRowLast, { marginBottom: 8 }]}>
+                      <View style={[styles.settingsRowLabel, { flex: 1 }]}>
+                        <Text style={[styles.settingsRowText, bodyFontStyle]}>Force Local LLM</Text>
+                        <Text style={[{ fontSize: 11, color: '#888', marginTop: 2 }, bodyFontStyle]}>
+                          Forces the AI assistant to use the local on-device model instead of the cloud model, even when online.
+                        </Text>
+                      </View>
+                      <Switch
+                        value={forceLocalLlm}
+                        onValueChange={setForceLocalLlmAndSave}
                         trackColor={{ false: '#555', true: accent }}
                         thumbColor="#E1E1E1"
                       />
@@ -1420,74 +1443,35 @@ export default function MoreScreen({
                 </TouchableOpacity>
                 {vaDebugExpanded && (
                   <View style={[styles.versionContent, { paddingTop: 4, paddingLeft: 0, paddingRight: 0 }]}>
-                    {/* Status subsection */}
+                    {/* Shared Requirements — items needed for both Local & Cloud LLM */}
                     {(() => {
-                      const deviceKey = modelStatus === 'unavailable' ? 'unavailable' : modelStatus === 'unknown' ? 'unknown' : 'supported';
-                      const deviceOk = deviceKey === 'supported';
-                      const devicePending = deviceKey === 'unknown';
-
-                      const modelOk = modelStatus === 'available';
-                      const modelNeedsSetup = ['ai_disabled', 'not_ready', 'downloadable', 'downloading'].includes(modelStatus);
-                      const modelFailed = modelStatus === 'unavailable' || modelStatus === 'download_failed';
-                      const modelPending = !modelOk && !modelFailed && !modelNeedsSetup;
-
                       const micOk = micPermissionStatus === 'granted';
                       const micFailed = micPermissionStatus === 'not_granted';
-                      const micPending = !micOk && !micFailed;
-
                       const speechOk = speechPermissionStatus === 'granted';
                       const speechFailed = ['denied', 'restricted', 'siri_disabled', 'no_on_device', 'unavailable'].includes(speechPermissionStatus);
-                      const speechPending = !speechOk && !speechFailed;
-
                       const isAndroidPlatform = Platform.OS === 'android';
-                      const anyFailed = (!deviceOk && !devicePending) || modelFailed || micFailed || (!isAndroidPlatform && speechFailed);
-                      const allGood = deviceOk && modelOk && micOk && (isAndroidPlatform || speechOk);
+                      const sharedAllGood = micOk && (isAndroidPlatform || speechOk);
+                      const sharedAnyFailed = micFailed || (!isAndroidPlatform && speechFailed);
 
                       const statusIcon = (ok, failed) =>
                         ok ? <BadgeSuccessIcon size={16} color="#4CAF50" />
                         : failed ? <BadgeErrorIcon size={16} color="#CF6679" />
                         : <BadgeWarningIcon size={16} color="#FFC107" />;
 
-                      const overallIcon = allGood
+                      const sharedOverallIcon = sharedAllGood
                         ? <BadgeSuccessIcon size={22} color="#4CAF50" />
-                        : anyFailed
+                        : sharedAnyFailed
                         ? <BadgeErrorIcon size={22} color="#CF6679" />
                         : <BadgeWarningIcon size={22} color="#FFC107" />;
-
-                      const modelText = VA_STATUS_LABEL.modelDownload[modelStatus] ?? modelStatus;
 
                       return (
                         <>
                           <View style={{ marginTop: 12, marginBottom: 12 }}>
                             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-                              <View style={{ width: 20, height: 20 }}>{overallIcon}</View>
-                              <Text style={[styles.versionText, titleFontStyle]}>Local LLM</Text>
-                            </View>
-                            <Text style={[{ fontSize: 10, color: '#888', textAlign: 'center', marginTop: 2 }, bodyFontStyle]}>STATUS</Text>
-                          </View>
-                          <View style={styles.debugMetaRow}>
-                            <Text style={[styles.debugMetaLabel, bodyFontStyle]}>Device Support</Text>
-                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1 }}>
-                              {statusIcon(deviceOk, !deviceOk && !devicePending)}
-                              <Text style={[styles.debugMetaValue, { color: VA_STATUS_COLOR.deviceSupport[deviceKey] }]}>
-                                {VA_STATUS_LABEL.deviceSupport[deviceKey]}
-                              </Text>
+                              <View style={{ width: 20, height: 20 }}>{sharedOverallIcon}</View>
+                              <Text style={[styles.versionText, titleFontStyle]}>Shared Requirements</Text>
                             </View>
                           </View>
-                          <View style={modelStatus === 'downloading' ? [styles.debugMetaRow, { borderBottomWidth: 0 }] : styles.debugMetaRow}>
-                            <Text style={[styles.debugMetaLabel, bodyFontStyle]}>AI Model</Text>
-                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1 }}>
-                              {statusIcon(modelOk, modelFailed)}
-                              <Text style={[styles.debugMetaValue, { color: VA_STATUS_COLOR.modelDownload[modelStatus] ?? '#888' }]}>
-                                {modelText}
-                              </Text>
-                            </View>
-                          </View>
-                          {modelNeedsSetup && (
-                            <Text style={[{ fontSize: 11, color: '#888', textAlign: 'center', marginTop: 4, marginBottom: 6 }, bodyFontStyle]}>
-                              Enable Apple Intelligence in your device Settings, then use Retry below.
-                            </Text>
-                          )}
                           <View style={styles.debugMetaRow}>
                             <Text style={[styles.debugMetaLabel, bodyFontStyle]}>Mic Permission</Text>
                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1 }}>
@@ -1528,6 +1512,67 @@ export default function MoreScreen({
                               )}
                             </>
                           )}
+                        </>
+                      );
+                    })()}
+
+                    {/* Local LLM Status */}
+                    {(() => {
+                      const deviceKey = modelStatus === 'unavailable' ? 'unavailable' : modelStatus === 'unknown' ? 'unknown' : 'supported';
+                      const deviceOk = deviceKey === 'supported';
+                      const devicePending = deviceKey === 'unknown';
+
+                      const modelOk = modelStatus === 'available';
+                      const modelNeedsSetup = ['ai_disabled', 'not_ready', 'downloadable', 'downloading'].includes(modelStatus);
+                      const modelFailed = modelStatus === 'unavailable' || modelStatus === 'download_failed';
+
+                      const localAnyFailed = (!deviceOk && !devicePending) || modelFailed;
+                      const localAllGood = deviceOk && modelOk;
+
+                      const statusIcon = (ok, failed) =>
+                        ok ? <BadgeSuccessIcon size={16} color="#4CAF50" />
+                        : failed ? <BadgeErrorIcon size={16} color="#CF6679" />
+                        : <BadgeWarningIcon size={16} color="#FFC107" />;
+
+                      const localOverallIcon = localAllGood
+                        ? <BadgeSuccessIcon size={22} color="#4CAF50" />
+                        : localAnyFailed
+                        ? <BadgeErrorIcon size={22} color="#CF6679" />
+                        : <BadgeWarningIcon size={22} color="#FFC107" />;
+
+                      const modelText = VA_STATUS_LABEL.modelDownload[modelStatus] ?? modelStatus;
+
+                      return (
+                        <>
+                          <View style={{ marginTop: 12, marginBottom: 12 }}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                              <View style={{ width: 20, height: 20 }}>{localOverallIcon}</View>
+                              <Text style={[styles.versionText, titleFontStyle]}>Local LLM Status</Text>
+                            </View>
+                          </View>
+                          <View style={styles.debugMetaRow}>
+                            <Text style={[styles.debugMetaLabel, bodyFontStyle]}>Device Support</Text>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1 }}>
+                              {statusIcon(deviceOk, !deviceOk && !devicePending)}
+                              <Text style={[styles.debugMetaValue, { color: VA_STATUS_COLOR.deviceSupport[deviceKey] }]}>
+                                {VA_STATUS_LABEL.deviceSupport[deviceKey]}
+                              </Text>
+                            </View>
+                          </View>
+                          <View style={modelStatus === 'downloading' ? [styles.debugMetaRow, { borderBottomWidth: 0 }] : styles.debugMetaRow}>
+                            <Text style={[styles.debugMetaLabel, bodyFontStyle]}>AI Model</Text>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1 }}>
+                              {statusIcon(modelOk, modelFailed)}
+                              <Text style={[styles.debugMetaValue, { color: VA_STATUS_COLOR.modelDownload[modelStatus] ?? '#888' }]}>
+                                {modelText}
+                              </Text>
+                            </View>
+                          </View>
+                          {modelNeedsSetup && (
+                            <Text style={[{ fontSize: 11, color: '#888', textAlign: 'center', marginTop: 4, marginBottom: 6 }, bodyFontStyle]}>
+                              Enable Apple Intelligence in your device Settings, then use Retry below.
+                            </Text>
+                          )}
                           {(modelNeedsSetup || modelStatus === 'download_failed') && (
                             <>
                               <TouchableOpacity
@@ -1557,7 +1602,7 @@ export default function MoreScreen({
                       </View>
                     </View>
 
-                    {/* Cloud LLM status */}
+                    {/* Cloud LLM Status */}
                     {(() => {
                       const cloudKeyOk = !!cloudLlmStatus.keyConfigured;
                       const cloudOverallIcon = cloudKeyOk
@@ -1568,9 +1613,8 @@ export default function MoreScreen({
                           <View style={{ marginTop: 12, marginBottom: 4 }}>
                             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
                               <View style={{ width: 20, height: 20 }}>{cloudOverallIcon}</View>
-                              <Text style={[styles.versionText, titleFontStyle]}>Cloud LLM</Text>
+                              <Text style={[styles.versionText, titleFontStyle]}>Cloud LLM Status</Text>
                             </View>
-                            <Text style={[{ fontSize: 10, color: '#888', textAlign: 'center', marginTop: 2 }, bodyFontStyle]}>STATUS</Text>
                           </View>
                           <View style={styles.debugMetaRow}>
                             <Text style={[styles.debugMetaLabel, bodyFontStyle]}>API Key</Text>
@@ -1867,7 +1911,7 @@ export default function MoreScreen({
                       >
                         <View style={styles.versionHeader}>
                           <View style={{ flex: 1 }}>
-                            <CardIconTitle icon={<BadgeInfoIcon size={18} color="#26C6DA" />} title="Index Build" styles={styles} />
+                            <CardIconTitle icon={<BadgeInfoIcon size={18} color="#26C6DA" />} title="BM25 Index Build" styles={styles} />
                             <Text style={[{ fontSize: 10, color: '#888', marginTop: 2, marginLeft: 28 }, bodyFontStyle]}>
                               Used for Local LLM only
                             </Text>

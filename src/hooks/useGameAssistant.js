@@ -34,6 +34,7 @@ import { logRetrieval, updateLatestRetrieval, logPostProcessing, logFinalChunks,
 
 
 const VOICE_STORAGE_KEY = '@lnl_voice_id';
+const FORCE_LOCAL_LLM_KEY = '@lnl_force_local_llm';
 const VOICE_PREVIEW_TEXT = 'This is a preview of the selected voice.';
 
 const isAndroid = Platform.OS === 'android';
@@ -470,8 +471,9 @@ export function useGameAssistant() {
 
         // ── Cloud-first: skip RAG entirely, send full rules to Gemini ──
         let usedCloud = false;
+        const forceLocal = (await AsyncStorage.getItem(FORCE_LOCAL_LLM_KEY)) === 'true';
 
-        if (isGeminiConfigured()) {
+        if (!forceLocal && isGeminiConfigured()) {
           try {
             const rawRules = ragIndex?.rawRules || '';
             const rawExpansions = ragIndex?.rawExpansions || '';

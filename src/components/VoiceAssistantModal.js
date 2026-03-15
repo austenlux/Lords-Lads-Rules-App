@@ -207,13 +207,15 @@ export default function VoiceAssistantModal({ messages, isOpen, fabBottom = 96 }
       style={[styles.container, { opacity: mountOpacity, bottom: panelBottom }]}
       pointerEvents={isOpen || isMounted.current ? 'box-none' : 'none'}
     >
-      <View style={[styles.panel, { maxHeight: maxPanelHeight, borderColor: COLORS.border }]}>
+      <View style={[styles.panel, { maxHeight: maxPanelHeight, borderColor: COLORS.border }]} pointerEvents={isOpen ? 'auto' : 'none'}>
         <FlatList
           ref={listRef}
           data={messages}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
+          scrollEnabled={isOpen}
+          keyboardShouldPersistTaps="handled"
           renderItem={({ item }) =>
             item.role === 'user' ? (
               <UserBubble text={item.text} bodyFontStyle={bodyFontStyle} colors={COLORS} />
@@ -277,6 +279,7 @@ const styles = StyleSheet.create({
     borderColor: BASE_MODAL_COLORS.assistantBorder,
     borderBottomLeftRadius: 4,
     minWidth: '70%',
+    flexShrink: 0,
   },
   roleLabel: {
     fontSize: 11,
