@@ -42,6 +42,7 @@ const SETTINGS_KEYS = {
   EXPAND_EXPANSIONS_DEFAULT: '@lnl_expand_expansions_default',
   THINKING_SOUNDS_ENABLED: '@lnl_thinking_sounds_enabled',
   FORCE_LOCAL_LLM: '@lnl_force_local_llm',
+  CLINKS_APPEARANCE: '@lnl_clinks_appearance',
 };
 import { getVenmoPayUrl } from '../constants';
 import { useTheme, COLOR_GROUPS, FONT_PAIRINGS } from '../context/ThemeContext';
@@ -73,6 +74,15 @@ import SkyIcon from '../../assets/icons/sky.svg';
 import BeerIcon from '../../assets/icons/beer.svg';
 import RainbowIcon from '../../assets/icons/rainbow.svg';
 import { BadgeInfoIcon, BadgeErrorIcon, BadgeSuccessIcon, BadgeWarningIcon } from '../components/BadgeIcons';
+
+const APPEARANCE_OPTIONS = [
+  { id: 'light_male', image: require('../../assets/clinks/headshots/light_male.png') },
+  { id: 'tan_male', image: require('../../assets/clinks/headshots/tan_male.png') },
+  { id: 'dark_male', image: require('../../assets/clinks/headshots/dark_male.png') },
+  { id: 'light_female', image: require('../../assets/clinks/headshots/light_female.png') },
+  { id: 'tan_female', image: require('../../assets/clinks/headshots/tan_female.png') },
+  { id: 'dark_female', image: require('../../assets/clinks/headshots/dark_female.png') },
+];
 
 function CardIconTitle({ icon, title, styles, titleColor }) {
   const { titleFontStyle } = useTheme();
@@ -247,6 +257,7 @@ export default function MoreScreen({
   const [voiceParentExpanded, setVoiceParentExpanded] = useState(false);
   const [voiceVoiceExpanded, setVoiceVoiceExpanded] = useState(false);
   const [voiceAppearanceExpanded, setVoiceAppearanceExpanded] = useState(false);
+  const [clinksAppearance, setClinksAppearance] = useState('light_male');
   const [voiceMetaExpanded, setVoiceMetaExpanded] = useState(false);
   const [expandedDebugVoices, setExpandedDebugVoices] = useState({});
   const [vaDebugExpanded, setVaDebugExpanded] = useState(false);
@@ -297,11 +308,12 @@ export default function MoreScreen({
 
   useEffect(() => {
     const load = async () => {
-      const [rules, expansions, thinkingSounds, forceLocal] = await Promise.all([
+      const [rules, expansions, thinkingSounds, forceLocal, appearance] = await Promise.all([
         AsyncStorage.getItem(SETTINGS_KEYS.EXPAND_RULES_DEFAULT),
         AsyncStorage.getItem(SETTINGS_KEYS.EXPAND_EXPANSIONS_DEFAULT),
         AsyncStorage.getItem(SETTINGS_KEYS.THINKING_SOUNDS_ENABLED),
         AsyncStorage.getItem(SETTINGS_KEYS.FORCE_LOCAL_LLM),
+        AsyncStorage.getItem(SETTINGS_KEYS.CLINKS_APPEARANCE),
       ]);
       setExpandRulesDefault(rules === 'true');
       setExpandExpansionsDefault(expansions === 'true');
@@ -309,6 +321,7 @@ export default function MoreScreen({
       setThinkingSoundsEnabled(soundsOn);
       NativeVoiceAssistantOptional?.setThinkingSoundEnabled(soundsOn);
       setForceLocalLlm(forceLocal === 'true');
+      if (appearance) setClinksAppearance(appearance);
     };
     load();
   }, []);
@@ -336,6 +349,12 @@ export default function MoreScreen({
     setForceLocalLlm(value);
     await AsyncStorage.setItem(SETTINGS_KEYS.FORCE_LOCAL_LLM, value ? 'true' : 'false');
     logEvent('Feature Flags', `Force Local LLM ${value ? 'enabled' : 'disabled'}`);
+  };
+
+  const setClinksAppearanceAndSave = async (id) => {
+    setClinksAppearance(id);
+    await AsyncStorage.setItem(SETTINGS_KEYS.CLINKS_APPEARANCE, id);
+    logEvent('Feature Flags', `Clinks appearance changed to ${id}`);
   };
 
   // ── Voice locale section animations ─────────────────────────────────────
@@ -1049,7 +1068,7 @@ export default function MoreScreen({
                       activeOpacity={0.7}
                     >
                       <View style={styles.versionHeader}>
-                        <CardIconTitle icon={<SpeakerIcon fill={accent} />} title="Voice" styles={styles} />
+                        <CardIconTitle icon={<SpeakerIcon fill="#AB47BC" />} title="Voice" styles={styles} />
                         <Animated.View style={{ transform: [{ rotate: animations['voiceVoice']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
                           <Text style={styles.versionArrow}>▶</Text>
                         </Animated.View>
@@ -1126,6 +1145,60 @@ export default function MoreScreen({
                           <Text style={styles.versionArrow}>▶</Text>
                         </Animated.View>
                       </View>
+                      {voiceAppearanceExpanded && (
+                        <View style={[styles.versionContent, { paddingLeft: 0, paddingRight: 0 }]}>
+                          <View style={styles.venmoGridRow}>
+                            {APPEARANCE_OPTIONS.slice(0, 3).map((item) => (
+                              <View key={item.id} style={styles.venmoGridCell}>
+                                <View style={styles.nailButtonWrapper}>
+                                  <Pressable
+                                    onPress={() => setClinksAppearanceAndSave(item.id)}
+                                    style={({ pressed }) => [styles.nailButton, pressed && styles.nailButtonPressed]}
+                                    android_ripple={{ color: `${accent}33`, borderless: false }}
+                                  >
+                                    <Image
+                                      source={item.image}
+                                      style={[
+                                        styles.nailImage,
+                                        { borderRadius: 999 },
+                                        clinksAppearance === item.id
+                                          ? { borderWidth: 3, borderColor: accent }
+                                          : { borderWidth: 1, borderColor: '#333' },
+                                      ]}
+                                      resizeMode="cover"
+                                    />
+                                  </Pressable>
+                                </View>
+                              </View>
+                            ))}
+                          </View>
+                          <View style={styles.venmoGridRow}>
+                            {APPEARANCE_OPTIONS.slice(3, 6).map((item) => (
+                              <View key={item.id} style={styles.venmoGridCell}>
+                                <View style={styles.nailButtonWrapper}>
+                                  <Pressable
+                                    onPress={() => setClinksAppearanceAndSave(item.id)}
+                                    style={({ pressed }) => [styles.nailButton, pressed && styles.nailButtonPressed]}
+                                    android_ripple={{ color: `${accent}33`, borderless: false }}
+                                  >
+                                    <Image
+                                      source={item.image}
+                                      style={[
+                                        styles.nailImage,
+                                        { borderRadius: 999 },
+                                        clinksAppearance === item.id
+                                          ? { borderWidth: 3, borderColor: accent }
+                                          : { borderWidth: 1, borderColor: '#333' },
+                                      ]}
+                                      resizeMode="cover"
+                                    />
+                                  </Pressable>
+                                </View>
+                              </View>
+                            ))}
+                          </View>
+                        </View>
+                      )}
                     </TouchableOpacity>
                   </View>
                 )}
