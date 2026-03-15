@@ -2,7 +2,7 @@
  * Tools tab: expandable sections for calculators and utilities.
  */
 import React, { useState, useMemo } from 'react';
-import { View, Text, ScrollView, TextInput, Platform } from 'react-native';
+import { View, Text, ScrollView, TextInput, Image, Platform } from 'react-native';
 import { HEADER_HEIGHT } from '../styles';
 import { useTheme } from '../context/ThemeContext';
 import CollapsibleSection, { DEFAULT_SECTION_EXPANDED } from '../components/CollapsibleSection';
@@ -55,6 +55,7 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
     [SECTION_KEYS.GAME_STAT_TRACKER]: DEFAULT_SECTION_EXPANDED,
   });
   const [playerCountInput, setPlayerCountInput] = useState(ZWSP);
+  const [goldenNailWidth, setGoldenNailWidth] = useState(0);
 
   const toggleSection = (key) => {
     setSectionsExpanded((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -183,15 +184,28 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
           </CollapsibleSection>
 
           <CollapsibleSection
-            title="Game Stat Tracker"
+            title="Golden Nail Count"
             icon={<StatsIcon width={24} height={24} fill={INFO_BLUE} />}
             isExpanded={sectionsExpanded[SECTION_KEYS.GAME_STAT_TRACKER]}
             onToggle={() => toggleSection(SECTION_KEYS.GAME_STAT_TRACKER)}
             styles={styles}
             style={styles.aboutSectionWrapper}
           >
-            <View style={styles.versionContainer}>
-              <Text style={[styles.toolDescription, bodyFontStyle]}>Coming soon.</Text>
+            <View
+              style={styles.versionContainer}
+              onLayout={(e) => setGoldenNailWidth(e.nativeEvent.layout.width)}
+            >
+              {goldenNailWidth > 0 && (
+                <Image
+                  source={require('../../assets/winner.png')}
+                  style={{
+                    width: goldenNailWidth,
+                    height: goldenNailWidth * (1152 / 3744),
+                    borderRadius: 10,
+                  }}
+                  resizeMode="cover"
+                />
+              )}
             </View>
           </CollapsibleSection>
         </View>
