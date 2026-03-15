@@ -73,6 +73,7 @@ import MountainIcon from '../../assets/icons/mountain.svg';
 import SkyIcon from '../../assets/icons/sky.svg';
 import BeerIcon from '../../assets/icons/beer.svg';
 import RainbowIcon from '../../assets/icons/rainbow.svg';
+import SmileIcon from '../../assets/icons/smile.svg';
 import { BadgeInfoIcon, BadgeErrorIcon, BadgeSuccessIcon, BadgeWarningIcon } from '../components/BadgeIcons';
 
 const APPEARANCE_OPTIONS = [
@@ -1065,7 +1066,12 @@ export default function MoreScreen({
                 activeOpacity={0.7}
               >
                 <View style={styles.versionHeader}>
-                  <CardIconTitle icon={<MicIcon fill="#FF9800" />} title="Clinks" styles={styles} />
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1, flexShrink: 1 }}>
+                    <View style={{ width: 28, height: 28, borderRadius: 999, overflow: 'hidden' }}>
+                      <Image source={selectedAppearanceOption.image} style={{ width: 28, height: 28 }} resizeMode="cover" />
+                    </View>
+                    <Text style={[styles.versionText, { flexShrink: 1 }, titleFontStyle]}>Clinks</Text>
+                  </View>
                   <Animated.View style={{ transform: [{ rotate: animations['voiceParent']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
                     <Text style={styles.versionArrow}>▶</Text>
                   </Animated.View>
@@ -1151,12 +1157,7 @@ export default function MoreScreen({
                       activeOpacity={0.7}
                     >
                       <View style={styles.versionHeader}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1, flexShrink: 1 }}>
-                          <View style={{ width: 28, height: 28, borderRadius: 999, overflow: 'hidden' }}>
-                            <Image source={selectedAppearanceOption.image} style={{ width: 28, height: 28 }} resizeMode="cover" />
-                          </View>
-                          <Text style={[styles.versionText, { flexShrink: 1 }, titleFontStyle]}>Appearance</Text>
-                        </View>
+                        <CardIconTitle icon={<SmileIcon fill="#FFD54F" />} title="Appearance" styles={styles} />
                         <Animated.View style={{ transform: [{ rotate: animations['voiceAppearance']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
                           <Text style={styles.versionArrow}>▶</Text>
                         </Animated.View>
@@ -1166,13 +1167,13 @@ export default function MoreScreen({
                           style={[styles.versionContent, { paddingLeft: 0, paddingRight: 0 }]}
                           onLayout={(e) => setAppearanceContentWidth(e.nativeEvent.layout.width)}
                         >
-                          <View style={{ paddingHorizontal: 10, marginBottom: 12 }}>
+                          <View style={{ paddingHorizontal: 4, marginBottom: 12 }}>
                             {appearanceContentWidth > 0 && (
                               <Image
                                 source={BANNER_MAP[clinksAppearance] || BANNER_MAP.light_male}
                                 style={{
-                                  width: appearanceContentWidth - 20,
-                                  height: (appearanceContentWidth - 20) * (1152 / 3712),
+                                  width: appearanceContentWidth - 8,
+                                  height: (appearanceContentWidth - 8) * (1152 / 3712),
                                   borderRadius: 10,
                                 }}
                                 resizeMode="cover"

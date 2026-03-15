@@ -136,6 +136,7 @@ const STATUS_BAR  = Platform.OS === 'android' ? (StatusBar.currentHeight ?? 24) 
 
 export default function VoiceAssistantModal({ messages, isOpen, fabBottom = 96 }) {
   const [clinksAppearance, setClinksAppearance] = useState('light_male');
+  const [panelWidth, setPanelWidth] = useState(0);
   useEffect(() => {
     AsyncStorage.getItem('@lnl_clinks_appearance').then(val => {
       if (val) setClinksAppearance(val);
@@ -230,12 +231,18 @@ export default function VoiceAssistantModal({ messages, isOpen, fabBottom = 96 }
       style={[styles.container, { opacity: mountOpacity, bottom: panelBottom }]}
       pointerEvents={isOpen || isMounted.current ? 'box-none' : 'none'}
     >
-      <View style={[styles.panel, { maxHeight: maxPanelHeight, borderColor: COLORS.border }]} pointerEvents={isOpen ? 'auto' : 'none'}>
-        <Image
-          source={BANNER_MAP[clinksAppearance] || BANNER_MAP.light_male}
-          style={styles.banner}
-          resizeMode="contain"
-        />
+      <View
+        style={[styles.panel, { maxHeight: maxPanelHeight, borderColor: COLORS.border }]}
+        pointerEvents={isOpen ? 'auto' : 'none'}
+        onLayout={(e) => setPanelWidth(e.nativeEvent.layout.width)}
+      >
+        {panelWidth > 0 && (
+          <Image
+            source={BANNER_MAP[clinksAppearance] || BANNER_MAP.light_male}
+            style={[styles.banner, { width: panelWidth - 8, marginHorizontal: 4 }]}
+            resizeMode="contain"
+          />
+        )}
         <FlatList
           ref={listRef}
           data={messages}
@@ -286,12 +293,9 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   banner: {
-    alignSelf: 'stretch',
-    height: undefined,
     aspectRatio: 3712 / 1152,
     borderTopLeftRadius: 19,
     borderTopRightRadius: 19,
-    marginBottom: 0,
   },
   bubbleRow: {
     flexDirection: 'row',
