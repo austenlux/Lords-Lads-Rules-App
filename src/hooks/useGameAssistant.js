@@ -486,6 +486,14 @@ export function useGameAssistant() {
             const rawExpansions = ragIndex?.rawExpansions || '';
             const totalChars = rawRules.length + rawExpansions.length;
 
+            logEvent('Voice', `Gemini API call started (full context: ${totalChars} chars)`);
+            const geminiT0 = Date.now();
+
+            const geminiPrompt = buildGeminiFullContextPrompt(rawRules, rawExpansions, historySnapshot, spokenQuestion);
+            const geminiResponse = await askGemini(geminiPrompt);
+            const geminiElapsed = Date.now() - geminiT0;
+            logEvent('Voice', `Gemini API response received (${geminiElapsed}ms)`);
+
             logRetrieval({
               question: spokenQuestion,
               keywords: [],
@@ -494,31 +502,20 @@ export function useGameAssistant() {
               selectedChunks: [],
               cloudFullContext: true,
             });
-
-            logEvent('Voice', `Gemini API call started (full context: ${totalChars} chars)`);
-            const geminiT0 = Date.now();
-
-            const geminiPrompt = buildGeminiFullContextPrompt(rawRules, rawExpansions, historySnapshot, spokenQuestion);
             updateLatestRetrieval({
               totalContextChars: totalChars,
               promptLength: geminiPrompt.length,
+              aiResponse: geminiResponse,
+              responseSource: 'cloud',
+              modelName: GEMINI_MODEL,
+              cloudResponseTimeMs: geminiElapsed,
             });
-
-            const geminiResponse = await askGemini(geminiPrompt);
-            const geminiElapsed = Date.now() - geminiT0;
-            logEvent('Voice', `Gemini API response received (${geminiElapsed}ms)`);
 
             fullAnswerRef.current = geminiResponse;
             setFullAnswer(geminiResponse);
             setMessages((prev) =>
               prev.map((m) => (m.id === assistantMsgId ? { ...m, text: geminiResponse, source: 'cloud' } : m)),
             );
-            updateLatestRetrieval({
-              aiResponse: geminiResponse,
-              responseSource: 'cloud',
-              modelName: GEMINI_MODEL,
-              cloudResponseTimeMs: geminiElapsed,
-            });
 
             setCloudLlmStatus(prev => ({
               ...prev,
@@ -532,7 +529,6 @@ export function useGameAssistant() {
           } catch (geminiErr) {
             cloudFailReason = geminiErr.message;
             logEvent('Voice', `Gemini API failed — falling back to on-device: ${cloudFailReason}`);
-            updateLatestRetrieval({ cloudFallbackReason: cloudFailReason });
             setCloudLlmStatus(prev => ({
               ...prev,
               fallbackCount: prev.fallbackCount + 1,
