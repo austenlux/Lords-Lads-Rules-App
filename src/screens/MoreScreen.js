@@ -266,6 +266,7 @@ export default function MoreScreen({
   const [voiceParentExpanded, setVoiceParentExpanded] = useState(false);
   const [voiceVoiceExpanded, setVoiceVoiceExpanded] = useState(false);
   const [voiceAppearanceExpanded, setVoiceAppearanceExpanded] = useState(false);
+  const [appearanceContentWidth, setAppearanceContentWidth] = useState(0);
   const [clinksAppearance, setClinksAppearance] = useState('light_male');
   const selectedAppearanceOption = APPEARANCE_OPTIONS.find(o => o.id === clinksAppearance) || APPEARANCE_OPTIONS[0];
   const [voiceMetaExpanded, setVoiceMetaExpanded] = useState(false);
@@ -1064,7 +1065,7 @@ export default function MoreScreen({
                 activeOpacity={0.7}
               >
                 <View style={styles.versionHeader}>
-                  <CardIconTitle icon={<MicIcon fill="#FF9800" />} title="Voice Assistant" styles={styles} />
+                  <CardIconTitle icon={<MicIcon fill="#FF9800" />} title="Clinks" styles={styles} />
                   <Animated.View style={{ transform: [{ rotate: animations['voiceParent']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
                     <Text style={styles.versionArrow}>▶</Text>
                   </Animated.View>
@@ -1150,27 +1151,29 @@ export default function MoreScreen({
                       activeOpacity={0.7}
                     >
                       <View style={styles.versionHeader}>
-                        <CardIconTitle icon={<View style={{ width: 20, height: 20, borderRadius: 999, overflow: 'hidden' }}><Image source={selectedAppearanceOption.image} style={{ width: 20, height: 20 }} resizeMode="cover" /></View>} title="Appearance" styles={styles} />
+                        <CardIconTitle icon={<View style={{ width: 28, height: 28, borderRadius: 999, overflow: 'hidden' }}><Image source={selectedAppearanceOption.image} style={{ width: 28, height: 28 }} resizeMode="cover" /></View>} title="Appearance" styles={styles} />
                         <Animated.View style={{ transform: [{ rotate: animations['voiceAppearance']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
                           <Text style={styles.versionArrow}>▶</Text>
                         </Animated.View>
                       </View>
                       {voiceAppearanceExpanded && (
-                        <View style={[styles.versionContent, { paddingLeft: 0, paddingRight: 0 }]}>
-                          {(() => {
-                            const screenW = Dimensions.get('window').width;
-                            const bannerW = screenW - 88;
-                            const bannerH = bannerW * (1152 / 3712);
-                            return (
-                              <View style={{ paddingHorizontal: 10, marginBottom: 12 }}>
-                                <Image
-                                  source={BANNER_MAP[clinksAppearance] || BANNER_MAP.light_male}
-                                  style={{ width: bannerW, height: bannerH, borderRadius: 10 }}
-                                  resizeMode="cover"
-                                />
-                              </View>
-                            );
-                          })()}
+                        <View
+                          style={[styles.versionContent, { paddingLeft: 0, paddingRight: 0 }]}
+                          onLayout={(e) => setAppearanceContentWidth(e.nativeEvent.layout.width)}
+                        >
+                          <View style={{ paddingHorizontal: 10, marginBottom: 12 }}>
+                            {appearanceContentWidth > 0 && (
+                              <Image
+                                source={BANNER_MAP[clinksAppearance] || BANNER_MAP.light_male}
+                                style={{
+                                  width: appearanceContentWidth - 20,
+                                  height: (appearanceContentWidth - 20) * (1152 / 3712),
+                                  borderRadius: 10,
+                                }}
+                                resizeMode="cover"
+                              />
+                            )}
+                          </View>
                           <View style={styles.venmoGridRow}>
                             {APPEARANCE_OPTIONS.slice(0, 3).map((item) => {
                               const isSelected = clinksAppearance === item.id;
@@ -1600,7 +1603,7 @@ export default function MoreScreen({
               <View style={[styles.versionContainer, { paddingHorizontal: 10 }]}>
                 <TouchableOpacity onPress={toggleVaDebug} activeOpacity={0.7}>
                   <View style={styles.versionHeader}>
-                    <CardIconTitle icon={<MicIcon fill="#FF9800" />} title="Voice Assistant" styles={styles} />
+                    <CardIconTitle icon={<MicIcon fill="#FF9800" />} title="Clinks" styles={styles} />
                     <Animated.View style={{ transform: [{ rotate: animations['vaDebug']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
                       <Text style={styles.versionArrow}>▶</Text>
                     </Animated.View>

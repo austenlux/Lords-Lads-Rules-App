@@ -12,18 +12,17 @@ When the user says **"install it"**, asks to install after changes, or **any cod
 ## Required order — NEVER deviate
 
 1. **Commit first** — `git add -A && git commit` before any build command. The build script (`sync:build-info`) captures `git rev-parse --short HEAD` at build time. Building before committing embeds the wrong commit hash.
-2. **Build BOTH platforms:**
-   - **Android:** `npm run build:android` (release-signed APK)
-   - **iOS:** `cd ios && xcodebuild -workspace LordsandLadsRules.xcworkspace -scheme LordsandLadsRules -configuration Release -destination 'generic/platform=iOS' -derivedDataPath build archive -archivePath build/LordsandLadsRules.xcarchive`
-3. **Install on BOTH physical devices** (no simulators, ever):
-   - **Android:** `npm run install:android:release`
-   - **iOS:** `ios-deploy --bundle ios/build/LordsandLadsRules.xcarchive/Products/Applications/LordsandLadsRules.app`
+2. **Build, install, and launch each platform before starting the next.** Do NOT build both platforms first and then install — the user needs to start testing the first platform while the second builds:
+   - **Android first:** Build → Install → Launch, then move to iOS.
+     - Build: `npm run build:android` (release-signed APK)
+     - Install: `adb install -r android/app/build/outputs/apk/release/lords-and-lads-rules-*.apk`
+     - Launch: `adb shell am start -n com.lux.lnlrules/.MainActivity`
+   - **iOS second:** Build → Install (launches automatically via ios-deploy).
+     - Build: `xcodebuild -workspace ios/LordsandLadsRules.xcworkspace -scheme LordsandLadsRules -configuration Release -destination 'generic/platform=iOS' -derivedDataPath ios/build archive -archivePath ios/build/LordsandLadsRules.xcarchive -allowProvisioningUpdates`
+     - Install: `ios-deploy --bundle ios/build/LordsandLadsRules.xcarchive/Products/Applications/LordsandLadsRules.app`
    - If a device is **not connected**, skip that install and inform the user the build is ready to install next time the device is attached.
-4. **Launch:**
-   - **Android:** `adb shell am start -n com.lux.lnlrules/.MainActivity`
-   - **iOS:** launches automatically via ios-deploy
-5. **Report the commit hash** — After installing, always tell the user the short commit hash (from `git rev-parse --short HEAD`) so they can verify the correct build in the app's debug menu.
-6. **Push** — `git push`
+3. **Report the commit hash** — After installing, always tell the user the short commit hash (from `git rev-parse --short HEAD`) so they can verify the correct build in the app's debug menu.
+4. **Push** — `git push`
 
 ## Other rules
 

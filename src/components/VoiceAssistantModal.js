@@ -23,11 +23,19 @@ import {
   View,
 } from 'react-native';
 import Markdown from 'react-native-markdown-display';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import WifiIcon from '../../assets/icons/wifi.svg';
 import NoWifiIcon from './NoWifiIcon';
 import { useTheme } from '../context/ThemeContext';
 
-const clinksBanner = require('../../assets/clinks/clinks_male_white.png');
+const BANNER_MAP = {
+  light_male: require('../../assets/clinks/banners/light_male_banner.png'),
+  tan_male: require('../../assets/clinks/banners/tan_male_banner.png'),
+  dark_male: require('../../assets/clinks/banners/dark_male_banner.png'),
+  light_female: require('../../assets/clinks/banners/light_female_banner.png'),
+  tan_female: require('../../assets/clinks/banners/tan_female_banner.png'),
+  dark_female: require('../../assets/clinks/banners/dark_female_banner.png'),
+};
 
 // ─────────────────────────────────────────────────── Constants ──
 
@@ -127,6 +135,13 @@ const TOP_MARGIN  = 8;
 const STATUS_BAR  = Platform.OS === 'android' ? (StatusBar.currentHeight ?? 24) : 44;
 
 export default function VoiceAssistantModal({ messages, isOpen, fabBottom = 96 }) {
+  const [clinksAppearance, setClinksAppearance] = useState('light_male');
+  useEffect(() => {
+    AsyncStorage.getItem('@lnl_clinks_appearance').then(val => {
+      if (val) setClinksAppearance(val);
+    });
+  }, [isOpen]);
+
   const { accent, titleFontStyle, bodyFontStyle } = useTheme();
   const rgb = hexToRgb(accent);
   const COLORS = {
@@ -225,7 +240,7 @@ export default function VoiceAssistantModal({ messages, isOpen, fabBottom = 96 }
           scrollEnabled={isOpen}
           keyboardShouldPersistTaps="handled"
           ListHeaderComponent={
-            <Image source={clinksBanner} style={styles.banner} resizeMode="contain" />
+            <Image source={BANNER_MAP[clinksAppearance] || BANNER_MAP.light_male} style={styles.banner} resizeMode="contain" />
           }
           renderItem={({ item }) =>
             item.role === 'user' ? (
