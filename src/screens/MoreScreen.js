@@ -1157,11 +1157,13 @@ export default function MoreScreen({
                       </View>
                       {voiceAppearanceExpanded && (
                         <View style={[styles.versionContent, { paddingLeft: 0, paddingRight: 0 }]}>
-                          <Image
-                            source={BANNER_MAP[clinksAppearance] || BANNER_MAP.light_male}
-                            style={{ width: '100%', aspectRatio: 3712 / 1152, borderRadius: 10, marginBottom: 12 }}
-                            resizeMode="contain"
-                          />
+                          <View style={{ paddingHorizontal: 10, marginBottom: 12 }}>
+                            <Image
+                              source={BANNER_MAP[clinksAppearance] || BANNER_MAP.light_male}
+                              style={{ width: '100%', aspectRatio: 3712 / 1152, borderRadius: 10 }}
+                              resizeMode="contain"
+                            />
+                          </View>
                           <View style={styles.venmoGridRow}>
                             {APPEARANCE_OPTIONS.slice(0, 3).map((item) => {
                               const isSelected = clinksAppearance === item.id;
