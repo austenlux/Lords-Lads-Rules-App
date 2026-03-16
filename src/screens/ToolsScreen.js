@@ -2,7 +2,7 @@
  * Tools tab: expandable sections for calculators and utilities.
  */
 import React, { useState, useMemo, useEffect } from 'react';
-import { View, Text, ScrollView, TextInput, Modal, TouchableOpacity, Platform } from 'react-native';
+import { View, Text, ScrollView, TextInput, Modal, TouchableOpacity, Platform, Keyboard } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { HEADER_HEIGHT } from '../styles';
 import { useTheme } from '../context/ThemeContext';
@@ -110,6 +110,7 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
   };
 
   const handleAddPlayerDone = () => {
+    Keyboard.dismiss();
     const trimmed = addPlayerName.trim();
     if (trimmed !== '') {
       setGoldenNailPlayers((prev) => [...prev, trimmed]);
@@ -237,7 +238,7 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
             style={styles.aboutSectionWrapper}
           >
             <View style={styles.versionContainer}>
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, alignItems: 'center', justifyContent: 'center' }}>
                 <TouchableOpacity
                   style={{
                     flexDirection: 'row',
@@ -300,17 +301,18 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
               activeOpacity={1}
               onPress={closeAddPlayerModal}
             >
-              <TouchableOpacity activeOpacity={1} onPress={(e) => e.stopPropagation()} style={{ backgroundColor: '#1E1E1E', borderRadius: 12, padding: 20, width: '100%', maxWidth: 320, borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)' }}>
-                <Text style={[titleFontStyle, { fontSize: 18, marginBottom: 12, color: '#E0E0E0' }]}>Enter Player's Name</Text>
-                <TextInput
-                  style={[bodyFontStyle, { borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 10, marginBottom: 16, fontSize: 16, backgroundColor: '#2A2A2A', color: '#E0E0E0' }]}
-                  value={addPlayerName}
-                  onChangeText={setAddPlayerName}
-                  placeholder="Name"
-                  placeholderTextColor="#888"
-                  autoFocus
-                />
-                <View style={{ flexDirection: 'row', gap: 8, justifyContent: 'flex-end' }}>
+              <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }} scrollEnabled={false}>
+                <TouchableOpacity activeOpacity={1} onPress={(e) => e.stopPropagation()} style={{ backgroundColor: '#1E1E1E', borderRadius: 12, padding: 20, width: '100%', maxWidth: 320, borderWidth: 1, borderColor: `${accent}40` }}>
+                  <Text style={[titleFontStyle, { fontSize: 18, marginBottom: 12, color: accent }]}>Enter Player's Name</Text>
+                  <TextInput
+                    style={[bodyFontStyle, { borderWidth: 1, borderColor: `${accent}50`, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 10, marginBottom: 16, fontSize: 16, backgroundColor: '#2A2A2A', color: accent }]}
+                    value={addPlayerName}
+                    onChangeText={setAddPlayerName}
+                    placeholder="Name"
+                    placeholderTextColor={`${accent}99`}
+                    autoFocus
+                  />
+                  <View style={{ flexDirection: 'row', gap: 8, justifyContent: 'flex-end' }}>
                   <TouchableOpacity
                     style={{
                       flexDirection: 'row',
@@ -343,6 +345,7 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                   </TouchableOpacity>
                 </View>
               </TouchableOpacity>
+              </ScrollView>
             </TouchableOpacity>
           </Modal>
         </View>
