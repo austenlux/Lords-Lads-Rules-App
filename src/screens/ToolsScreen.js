@@ -2,7 +2,7 @@
  * Tools tab: expandable sections for calculators and utilities.
  */
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { View, Text, ScrollView, TextInput, Modal, TouchableOpacity, Pressable, Platform, InteractionManager, LayoutAnimation, UIManager, Keyboard, Animated } from 'react-native';
+import { View, Text, ScrollView, TextInput, Modal, TouchableOpacity, Pressable, Platform, InteractionManager, LayoutAnimation, UIManager, Keyboard, Animated, Easing } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { HEADER_HEIGHT } from '../styles';
 import { useTheme } from '../context/ThemeContext';
@@ -168,8 +168,36 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
     const nextPlayers = (prev) =>
       prev.map((p) => (p.id === playerId ? { ...p, goldNails: Math.max(0, p.goldNails + delta) } : p));
     if (Platform.OS === 'android') {
+      const next = nextPlayers(goldenNailPlayers);
+      const nextSorted = [...next].sort((a, b) => {
+        const byNails = b.goldNails - a.goldNails;
+        return byNails !== 0 ? byNails : a.name.localeCompare(b.name);
+      });
       previousOrderRef.current = sortedPlayers.map((p) => p.id);
+      nextSorted.forEach((p, newIndex) => {
+        const anim = reorderAnimRef.current[p.id];
+        if (!anim) return;
+        const oldIndex = sortedPlayers.findIndex((x) => x.id === p.id);
+        if (oldIndex >= 0 && oldIndex !== newIndex) {
+          anim.setValue((oldIndex - newIndex) * GOLDEN_NAIL_ROW_HEIGHT);
+        } else {
+          anim.setValue(0);
+        }
+      });
       setGoldenNailPlayers(nextPlayers);
+      requestAnimationFrame(() => {
+        nextSorted.forEach((p) => {
+          const anim = reorderAnimRef.current[p.id];
+          if (anim) {
+            Animated.timing(anim, {
+              toValue: 0,
+              duration: 300,
+              easing: Easing.inOut(Easing.ease),
+              useNativeDriver: true,
+            }).start();
+          }
+        });
+      });
     } else {
       LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
       setGoldenNailPlayers(nextPlayers);
@@ -192,19 +220,7 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
 
   useEffect(() => {
     if (Platform.OS !== 'android' || sortedPlayers.length === 0) return;
-    const newOrder = sortedPlayers.map((p) => p.id);
-    sortedPlayers.forEach((p, newIndex) => {
-      const anim = reorderAnimRef.current[p.id];
-      if (!anim) return;
-      const oldIndex = previousOrderRef.current.indexOf(p.id);
-      if (oldIndex >= 0 && oldIndex !== newIndex) {
-        anim.setValue((oldIndex - newIndex) * GOLDEN_NAIL_ROW_HEIGHT);
-        Animated.timing(anim, { toValue: 0, duration: 280, useNativeDriver: true }).start();
-      } else {
-        anim.setValue(0);
-      }
-    });
-    previousOrderRef.current = newOrder;
+    previousOrderRef.current = sortedPlayers.map((p) => p.id);
   }, [goldenNailPlayers]);
 
   return (
