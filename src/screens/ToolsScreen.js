@@ -237,30 +237,13 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
             style={styles.aboutSectionWrapper}
           >
             <View style={styles.versionContainer}>
-              <TouchableOpacity
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: 6,
-                  paddingHorizontal: 14,
-                  paddingVertical: 7,
-                  borderRadius: 6,
-                  borderWidth: 1,
-                  borderColor: accent,
-                  backgroundColor: `${accent}1A`,
-                }}
-                onPress={openAddPlayerModal}
-              >
-                <PlusIcon width={15} height={15} fill={accent} />
-                <Text style={[{ color: accent, fontSize: 12 }, bodyFontStyle]}>Add Player</Text>
-              </TouchableOpacity>
-              {goldenNailPlayers.length > 0 && (
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
                 <TouchableOpacity
                   style={{
                     flexDirection: 'row',
                     alignItems: 'center',
+                    justifyContent: 'center',
                     gap: 6,
-                    marginTop: 8,
                     paddingHorizontal: 14,
                     paddingVertical: 7,
                     borderRadius: 6,
@@ -268,12 +251,32 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                     borderColor: accent,
                     backgroundColor: `${accent}1A`,
                   }}
-                  onPress={handleClearGoldenNailPlayers}
+                  onPress={openAddPlayerModal}
                 >
-                  <TrashIcon width={15} height={15} fill={accent} />
-                  <Text style={[{ color: accent, fontSize: 12 }, bodyFontStyle]}>Clear</Text>
+                  <PlusIcon width={15} height={15} fill={accent} />
+                  <Text style={[{ color: accent, fontSize: 12 }, bodyFontStyle]}>Add Player</Text>
                 </TouchableOpacity>
-              )}
+                {goldenNailPlayers.length > 0 && (
+                  <TouchableOpacity
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 6,
+                      paddingHorizontal: 14,
+                      paddingVertical: 7,
+                      borderRadius: 6,
+                      borderWidth: 1,
+                      borderColor: accent,
+                      backgroundColor: `${accent}1A`,
+                    }}
+                    onPress={handleClearGoldenNailPlayers}
+                  >
+                    <TrashIcon width={15} height={15} fill={accent} />
+                    <Text style={[{ color: accent, fontSize: 12 }, bodyFontStyle]}>Clear</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
               <Text style={[styles.toolQuickRefTitle, titleFontStyle, { marginTop: 12 }]}>Players</Text>
               {goldenNailPlayers.length === 0 ? (
                 <Text style={[styles.toolDescription, bodyFontStyle]}>No players added yet. Tap Add Player to add names.</Text>
@@ -293,17 +296,18 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
             onRequestClose={closeAddPlayerModal}
           >
             <TouchableOpacity
-              style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 24 }}
+              style={{ flex: 1, backgroundColor: 'rgba(18, 18, 18, 0.92)', justifyContent: 'center', alignItems: 'center', padding: 24 }}
               activeOpacity={1}
               onPress={closeAddPlayerModal}
             >
-              <TouchableOpacity activeOpacity={1} onPress={(e) => e.stopPropagation()} style={{ backgroundColor: '#fff', borderRadius: 12, padding: 20, width: '100%', maxWidth: 320 }}>
-                <Text style={[titleFontStyle, { fontSize: 18, marginBottom: 12 }]}>Enter Player's Name</Text>
+              <TouchableOpacity activeOpacity={1} onPress={(e) => e.stopPropagation()} style={{ backgroundColor: '#1E1E1E', borderRadius: 12, padding: 20, width: '100%', maxWidth: 320, borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)' }}>
+                <Text style={[titleFontStyle, { fontSize: 18, marginBottom: 12, color: '#E0E0E0' }]}>Enter Player's Name</Text>
                 <TextInput
-                  style={[bodyFontStyle, { borderWidth: 1, borderColor: '#ccc', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 10, marginBottom: 16, fontSize: 16 }]}
+                  style={[bodyFontStyle, { borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 10, marginBottom: 16, fontSize: 16, backgroundColor: '#2A2A2A', color: '#E0E0E0' }]}
                   value={addPlayerName}
                   onChangeText={setAddPlayerName}
                   placeholder="Name"
+                  placeholderTextColor="#888"
                   autoFocus
                 />
                 <View style={{ flexDirection: 'row', gap: 8, justifyContent: 'flex-end' }}>

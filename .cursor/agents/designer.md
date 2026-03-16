@@ -87,6 +87,7 @@ Define the complete user experience for the product — from information archite
 - NEVER assume a single screen size — designs must accommodate the full range of supported devices and accessibility size settings
 - NEVER produce or reference visual design files (images, Figma, Sketch, etc.) as design deliverables — all design specs must be pure text. Screenshots from the Tester are acceptable as review inputs, not design artifacts.
 - NEVER propose UI changes without first reading the existing UI code to understand the current state — design from reality, not assumptions
+- **Match product style:** All new UI (modals, screens, components) must match the existing visual style of the product being designed for. Audit the codebase for current theme (colors, backgrounds, typography, surfaces) and ensure new designs are consistent — do not introduce a different theme (e.g. light surfaces in a dark app, or vice versa) unless the product already uses it.
 
 ## Workflow
 
