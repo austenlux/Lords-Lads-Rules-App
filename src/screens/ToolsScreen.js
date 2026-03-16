@@ -2,7 +2,7 @@
  * Tools tab: expandable sections for calculators and utilities.
  */
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { View, Text, ScrollView, TextInput, Modal, TouchableOpacity, Platform, Keyboard, InteractionManager, LayoutAnimation, UIManager } from 'react-native';
+import { View, Text, ScrollView, TextInput, Modal, TouchableOpacity, Platform, InteractionManager, LayoutAnimation, UIManager } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { HEADER_HEIGHT } from '../styles';
 import { useTheme } from '../context/ThemeContext';
@@ -16,6 +16,13 @@ import NailIcon from '../../assets/icons/nail.svg';
 import MinusIcon from '../../assets/icons/minus.svg';
 import PlusIcon from '../../assets/icons/plus.svg';
 import TrashIcon from '../../assets/icons/trash.svg';
+import FirstIcon from '../../assets/icons/first.svg';
+import SecondIcon from '../../assets/icons/second.svg';
+import ThirdIcon from '../../assets/icons/third.svg';
+
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 const SECTION_KEYS = { NAIL_CALC: 'nailCalc', GAME_STAT_TRACKER: 'gameStatTracker' };
 const GOLDEN_NAILS_PLAYERS_KEY = '@lnl_golden_nails_players';
@@ -137,16 +144,23 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
   };
 
   const handleAddPlayerDone = () => {
-    const trimmed = addPlayerName.trim();
-    if (trimmed !== '') {
-      setGoldenNailPlayers((prev) => [...prev, { id: Date.now(), name: trimmed, goldNails: 0 }]);
-    }
-    closeAddPlayerModal();
-    Keyboard.dismiss();
+    addPlayerInputRef.current?.blur();
+    setTimeout(() => {
+      const trimmed = addPlayerName.trim();
+      if (trimmed !== '') {
+        setGoldenNailPlayers((prev) => [...prev, { id: Date.now(), name: trimmed, goldNails: 0 }]);
+      }
+      closeAddPlayerModal();
+    }, 100);
   };
 
   const handleGoldenNailChange = (playerId, delta) => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    LayoutAnimation.configureNext({
+      duration: 300,
+      update: { type: LayoutAnimation.Types.easeInEaseOut },
+      create: { type: LayoutAnimation.Types.easeInEaseOut },
+      delete: { type: LayoutAnimation.Types.easeInEaseOut },
+    });
     setGoldenNailPlayers((prev) =>
       prev.map((p) => (p.id === playerId ? { ...p, goldNails: Math.max(0, p.goldNails + delta) } : p))
     );
@@ -158,7 +172,11 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
   };
 
   const sortedPlayers = useMemo(
-    () => [...goldenNailPlayers].sort((a, b) => b.goldNails - a.goldNails),
+    () =>
+      [...goldenNailPlayers].sort((a, b) => {
+        const byNails = b.goldNails - a.goldNails;
+        return byNails !== 0 ? byNails : a.name.localeCompare(b.name);
+      }),
     [goldenNailPlayers]
   );
 
@@ -327,9 +345,14 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                         <View style={{ height: 1, backgroundColor: `${accent}30`, marginVertical: 8 }} />
                       )}
                       <View>
-                        <Text style={[titleFontStyle, { alignSelf: 'center', marginBottom: 6, fontSize: 22, color: accent }]} numberOfLines={1}>
-                          {p.name}
-                        </Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 6 }}>
+                          {i === 0 && <FirstIcon width={22} height={22} />}
+                          {i === 1 && <SecondIcon width={22} height={22} />}
+                          {i === 2 && <ThirdIcon width={22} height={22} />}
+                          <Text style={[titleFontStyle, { fontSize: 22, color: accent }]} numberOfLines={1}>
+                            {p.name}
+                          </Text>
+                        </View>
                         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
                           <Text style={[bodyFontStyle, { fontSize: 16, color: '#FFFFFF', ...(Platform.OS === 'android' && { includeFontPadding: false }) }]}>
                             {p.goldNails} Gold Nails
@@ -398,7 +421,7 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
               activeOpacity={1}
               onPress={closeAddPlayerModal}
             >
-              <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }} scrollEnabled={false}>
+              <ScrollView keyboardShouldPersistTaps="always" contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }} scrollEnabled={false}>
                 <TouchableOpacity activeOpacity={1} onPress={(e) => e.stopPropagation()} style={{ backgroundColor: '#1E1E1E', borderRadius: 12, padding: 20, width: '100%', maxWidth: 320, borderWidth: 1, borderColor: `${accent}40` }}>
                   <Text style={[titleFontStyle, { fontSize: 18, marginBottom: 12, color: accent }]}>Enter Player's Name</Text>
                   <TextInput
@@ -410,7 +433,7 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                     placeholderTextColor={`${accent}99`}
                     autoFocus={Platform.OS === 'ios'}
                   />
-                  <View style={{ flexDirection: 'row', gap: 8, justifyContent: 'flex-end' }}>
+                  <View style={{ flexDirection: 'row', gap: 8, justifyContent: 'center' }}>
                   <TouchableOpacity
                     style={{
                       flexDirection: 'row',
