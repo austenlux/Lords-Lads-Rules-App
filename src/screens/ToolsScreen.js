@@ -1,8 +1,8 @@
 /**
  * Tools tab: expandable sections for calculators and utilities.
  */
-import React, { useState, useMemo, useEffect } from 'react';
-import { View, Text, ScrollView, TextInput, Modal, TouchableOpacity, Platform, Keyboard } from 'react-native';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { View, Text, ScrollView, TextInput, Modal, TouchableOpacity, Platform, Keyboard, InteractionManager } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { HEADER_HEIGHT } from '../styles';
 import { useTheme } from '../context/ThemeContext';
@@ -13,6 +13,7 @@ import NailsIcon from '../../assets/icons/about.svg';
 import UprisingIcon from '../../assets/icons/uprising.svg';
 import StatsIcon from '../../assets/icons/stats.svg';
 import NailIcon from '../../assets/icons/nail.svg';
+import MinusIcon from '../../assets/icons/minus.svg';
 import PlusIcon from '../../assets/icons/plus.svg';
 import TrashIcon from '../../assets/icons/trash.svg';
 
@@ -63,17 +64,36 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
   const [goldenNailPlayers, setGoldenNailPlayers] = useState([]);
   const [addPlayerModalVisible, setAddPlayerModalVisible] = useState(false);
   const [addPlayerName, setAddPlayerName] = useState('');
+  const addPlayerInputRef = useRef(null);
 
   useEffect(() => {
     AsyncStorage.getItem(GOLDEN_NAILS_PLAYERS_KEY).then((raw) => {
       if (raw != null) {
         try {
           const parsed = JSON.parse(raw);
-          if (Array.isArray(parsed)) setGoldenNailPlayers(parsed);
+          if (!Array.isArray(parsed)) return;
+          const normalized = parsed.map((item) => {
+            if (typeof item === 'string') return { name: item, goldNails: 0 };
+            if (item != null && typeof item.name === 'string') return { name: item.name, goldNails: Number(item.goldNails) || 0 };
+            return null;
+          }).filter(Boolean);
+          setGoldenNailPlayers(normalized);
         } catch (_) {}
       }
     });
   }, []);
+
+  useEffect(() => {
+    if (!addPlayerModalVisible || Platform.OS !== 'android') return;
+    let timeoutId;
+    const task = InteractionManager.runAfterInteractions(() => {
+      timeoutId = setTimeout(() => addPlayerInputRef.current?.focus(), 150);
+    });
+    return () => {
+      task.cancel();
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [addPlayerModalVisible]);
 
   useEffect(() => {
     if (goldenNailPlayers.length === 0) return;
@@ -113,9 +133,15 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
     Keyboard.dismiss();
     const trimmed = addPlayerName.trim();
     if (trimmed !== '') {
-      setGoldenNailPlayers((prev) => [...prev, trimmed]);
+      setGoldenNailPlayers((prev) => [...prev, { name: trimmed, goldNails: 0 }]);
     }
     closeAddPlayerModal();
+  };
+
+  const handleGoldenNailChange = (playerIndex, delta) => {
+    setGoldenNailPlayers((prev) =>
+      prev.map((p, i) => (i === playerIndex ? { ...p, goldNails: Math.max(0, p.goldNails + delta) } : p))
+    );
   };
 
   const handleClearGoldenNailPlayers = () => {
@@ -282,10 +308,60 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
               {goldenNailPlayers.length === 0 ? (
                 <Text style={[styles.toolDescription, bodyFontStyle]}>No players added yet. Tap Add Player to add names.</Text>
               ) : (
-                goldenNailPlayers.map((name, i) => (
-                  <Text key={`player-${i}-${name}`} style={[styles.toolDescription, bodyFontStyle]}>
-                    {name}
-                  </Text>
+                goldenNailPlayers.map((p, i) => (
+                  <React.Fragment key={`player-${i}-${p.name}`}>
+                    {i > 0 && (
+                      <View style={{ height: 1, backgroundColor: `${accent}30`, marginVertical: 8 }} />
+                    )}
+                    <View style={{ flexDirection: 'row', alignItems: 'center', minHeight: 36 }}>
+                      <Text style={[styles.toolDescription, bodyFontStyle, { flexShrink: 0, maxWidth: '35%' }]} numberOfLines={1}>
+                        {p.name}
+                      </Text>
+                      <Text style={[styles.toolDescription, bodyFontStyle, { flex: 1, textAlign: 'center' }]}>
+                        {p.goldNails} Gold Nails
+                      </Text>
+                      <View style={{ flexDirection: 'row', flexShrink: 0, gap: 6, alignItems: 'center' }}>
+                        {p.goldNails > 0 && (
+                          <TouchableOpacity
+                            style={{
+                              flexDirection: 'row',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: 4,
+                              paddingHorizontal: 10,
+                              paddingVertical: 6,
+                              borderRadius: 6,
+                              borderWidth: 1,
+                              borderColor: accent,
+                              backgroundColor: `${accent}1A`,
+                            }}
+                            onPress={() => handleGoldenNailChange(i, -1)}
+                          >
+                            <MinusIcon width={14} height={14} fill={accent} />
+                            <NailIcon width={14} height={14} fill="#E8B923" />
+                          </TouchableOpacity>
+                        )}
+                        <TouchableOpacity
+                          style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: 4,
+                            paddingHorizontal: 10,
+                            paddingVertical: 6,
+                            borderRadius: 6,
+                            borderWidth: 1,
+                            borderColor: accent,
+                            backgroundColor: `${accent}1A`,
+                          }}
+                          onPress={() => handleGoldenNailChange(i, 1)}
+                        >
+                          <PlusIcon width={14} height={14} fill={accent} />
+                          <NailIcon width={14} height={14} fill="#E8B923" />
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  </React.Fragment>
                 ))
               )}
             </View>
@@ -305,12 +381,13 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                 <TouchableOpacity activeOpacity={1} onPress={(e) => e.stopPropagation()} style={{ backgroundColor: '#1E1E1E', borderRadius: 12, padding: 20, width: '100%', maxWidth: 320, borderWidth: 1, borderColor: `${accent}40` }}>
                   <Text style={[titleFontStyle, { fontSize: 18, marginBottom: 12, color: accent }]}>Enter Player's Name</Text>
                   <TextInput
+                    ref={addPlayerInputRef}
                     style={[bodyFontStyle, { borderWidth: 1, borderColor: `${accent}50`, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 10, marginBottom: 16, fontSize: 16, backgroundColor: '#2A2A2A', color: accent }]}
                     value={addPlayerName}
                     onChangeText={setAddPlayerName}
                     placeholder="Name"
                     placeholderTextColor={`${accent}99`}
-                    autoFocus
+                    autoFocus={Platform.OS === 'ios'}
                   />
                   <View style={{ flexDirection: 'row', gap: 8, justifyContent: 'flex-end' }}>
                   <TouchableOpacity
