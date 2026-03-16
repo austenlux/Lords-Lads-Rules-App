@@ -72,6 +72,7 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
   const [addPlayerModalVisible, setAddPlayerModalVisible] = useState(false);
   const [addPlayerName, setAddPlayerName] = useState('');
   const addPlayerInputRef = useRef(null);
+  const doneFiredRef = useRef(false);
 
   useEffect(() => {
     if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -134,6 +135,7 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
   };
 
   const openAddPlayerModal = () => {
+    doneFiredRef.current = false;
     setAddPlayerName('');
     setAddPlayerModalVisible(true);
   };
@@ -144,6 +146,8 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
   };
 
   const handleAddPlayerDone = () => {
+    if (doneFiredRef.current) return;
+    doneFiredRef.current = true;
     const trimmed = addPlayerName.trim();
     if (trimmed !== '') {
       setGoldenNailPlayers((prev) => [...prev, { id: Date.now(), name: trimmed, goldNails: 0 }]);
@@ -153,10 +157,22 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
   };
 
   const handleGoldenNailChange = (playerId, delta) => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setGoldenNailPlayers((prev) =>
-      prev.map((p) => (p.id === playerId ? { ...p, goldNails: Math.max(0, p.goldNails + delta) } : p))
-    );
+    const nextPlayers = (prev) =>
+      prev.map((p) => (p.id === playerId ? { ...p, goldNails: Math.max(0, p.goldNails + delta) } : p));
+    if (Platform.OS === 'android') {
+      LayoutAnimation.configureNext({
+        duration: 280,
+        create: { type: LayoutAnimation.Types.easeInEaseOut, property: LayoutAnimation.Properties.opacity },
+        update: { type: LayoutAnimation.Types.easeInEaseOut },
+        delete: { type: LayoutAnimation.Types.easeInEaseOut, property: LayoutAnimation.Properties.opacity },
+      });
+      requestAnimationFrame(() => {
+        setGoldenNailPlayers(nextPlayers);
+      });
+    } else {
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+      setGoldenNailPlayers(nextPlayers);
+    }
   };
 
   const handleClearGoldenNailPlayers = () => {
@@ -455,6 +471,7 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                       borderColor: accent,
                       backgroundColor: accent,
                     }}
+                    onPressIn={handleAddPlayerDone}
                     onPress={handleAddPlayerDone}
                   >
                     <Text style={[{ color: '#fff', fontSize: 12 }, bodyFontStyle]}>Done</Text>
