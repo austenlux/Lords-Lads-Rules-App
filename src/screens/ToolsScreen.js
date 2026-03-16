@@ -2,7 +2,7 @@
  * Tools tab: expandable sections for calculators and utilities.
  */
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { View, Text, ScrollView, TextInput, Modal, TouchableOpacity, Platform, Keyboard, InteractionManager } from 'react-native';
+import { View, Text, ScrollView, TextInput, Modal, TouchableOpacity, Platform, Keyboard, InteractionManager, LayoutAnimation, UIManager } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { HEADER_HEIGHT } from '../styles';
 import { useTheme } from '../context/ThemeContext';
@@ -67,14 +67,21 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
   const addPlayerInputRef = useRef(null);
 
   useEffect(() => {
+    if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+      UIManager.setLayoutAnimationEnabledExperimental(true);
+    }
+  }, []);
+
+  useEffect(() => {
     AsyncStorage.getItem(GOLDEN_NAILS_PLAYERS_KEY).then((raw) => {
       if (raw != null) {
         try {
           const parsed = JSON.parse(raw);
           if (!Array.isArray(parsed)) return;
-          const normalized = parsed.map((item) => {
-            if (typeof item === 'string') return { name: item, goldNails: 0 };
-            if (item != null && typeof item.name === 'string') return { name: item.name, goldNails: Number(item.goldNails) || 0 };
+          const normalized = parsed.map((item, index) => {
+            const base = Date.now() + index;
+            if (typeof item === 'string') return { id: base, name: item, goldNails: 0 };
+            if (item != null && typeof item.name === 'string') return { id: item.id ?? base, name: item.name, goldNails: Number(item.goldNails) || 0 };
             return null;
           }).filter(Boolean);
           setGoldenNailPlayers(normalized);
@@ -130,17 +137,18 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
   };
 
   const handleAddPlayerDone = () => {
-    Keyboard.dismiss();
     const trimmed = addPlayerName.trim();
     if (trimmed !== '') {
-      setGoldenNailPlayers((prev) => [...prev, { name: trimmed, goldNails: 0 }]);
+      setGoldenNailPlayers((prev) => [...prev, { id: Date.now(), name: trimmed, goldNails: 0 }]);
     }
     closeAddPlayerModal();
+    Keyboard.dismiss();
   };
 
-  const handleGoldenNailChange = (playerIndex, delta) => {
+  const handleGoldenNailChange = (playerId, delta) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setGoldenNailPlayers((prev) =>
-      prev.map((p, i) => (i === playerIndex ? { ...p, goldNails: Math.max(0, p.goldNails + delta) } : p))
+      prev.map((p) => (p.id === playerId ? { ...p, goldNails: Math.max(0, p.goldNails + delta) } : p))
     );
   };
 
@@ -148,6 +156,11 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
     setGoldenNailPlayers([]);
     AsyncStorage.removeItem(GOLDEN_NAILS_PLAYERS_KEY);
   };
+
+  const sortedPlayers = useMemo(
+    () => [...goldenNailPlayers].sort((a, b) => b.goldNails - a.goldNails),
+    [goldenNailPlayers]
+  );
 
   return (
     <ScrollView
@@ -305,11 +318,11 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                 )}
               </View>
               {goldenNailPlayers.length === 0 ? (
-                <Text style={[styles.toolDescription, bodyFontStyle, { marginTop: 12 }]}>Tap Player to add names.</Text>
+                <Text style={[styles.toolDescription, bodyFontStyle, { marginTop: 12 }]}>Add a player to begin</Text>
               ) : (
                 <View style={{ marginTop: 14 }}>
-                  {goldenNailPlayers.map((p, i) => (
-                    <React.Fragment key={`player-${i}-${p.name}`}>
+                  {sortedPlayers.map((p, i) => (
+                    <React.Fragment key={p.id}>
                       {i > 0 && (
                         <View style={{ height: 1, backgroundColor: `${accent}30`, marginVertical: 8 }} />
                       )}
@@ -318,7 +331,7 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                           {p.name}
                         </Text>
                         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                          <Text style={[bodyFontStyle, { fontSize: 16, color: accent, ...(Platform.OS === 'android' && { includeFontPadding: false }) }]}>
+                          <Text style={[bodyFontStyle, { fontSize: 16, color: '#FFFFFF', ...(Platform.OS === 'android' && { includeFontPadding: false }) }]}>
                             {p.goldNails} Gold Nails
                           </Text>
                         <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center' }}>
@@ -336,7 +349,7 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                                 borderColor: accent,
                                 backgroundColor: `${accent}1A`,
                               }}
-                              onPress={() => handleGoldenNailChange(i, -1)}
+                              onPress={() => handleGoldenNailChange(p.id, -1)}
                             >
                               <MinusIcon width={14} height={14} fill={accent} />
                               <NailIcon width={14} height={14} fill="#E8B923" />
@@ -355,7 +368,7 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                               borderColor: accent,
                               backgroundColor: `${accent}1A`,
                             }}
-                            onPress={() => handleGoldenNailChange(i, 1)}
+                            onPress={() => handleGoldenNailChange(p.id, 1)}
                           >
                             <PlusIcon width={14} height={14} fill={accent} />
                             <NailIcon width={14} height={14} fill="#E8B923" />
@@ -364,7 +377,7 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                       </View>
                       <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignContent: 'flex-start', alignItems: 'flex-start', gap: 4 }}>
                         {Array.from({ length: p.goldNails }, (_, k) => (
-                          <NailIcon key={`nail-${i}-${k}`} width={20} height={20} fill="#E8B923" />
+                          <NailIcon key={`nail-${p.id}-${k}`} width={20} height={20} fill="#E8B923" />
                         ))}
                       </View>
                     </View>
