@@ -2,7 +2,7 @@
  * Tools tab: expandable sections for calculators and utilities.
  */
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { View, Text, ScrollView, TextInput, Modal, TouchableOpacity, Pressable, Platform, InteractionManager, LayoutAnimation, UIManager, Keyboard } from 'react-native';
+import { View, Text, ScrollView, TextInput, Modal, TouchableOpacity, Pressable, Platform, InteractionManager, LayoutAnimation, UIManager, Keyboard, Animated } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { HEADER_HEIGHT } from '../styles';
 import { useTheme } from '../context/ThemeContext';
@@ -61,6 +61,9 @@ const PLAYERS_COLOR = '#3D7DD8';
 const NAILS_COLOR = '#2E7D32';
 const UPRISING_COLOR = '#CC4400';
 
+/** Approximate row height for Android reorder animation (name + count + nails). */
+const GOLDEN_NAIL_ROW_HEIGHT = 72;
+
 export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }) {
   const { accent, titleFontStyle, bodyFontStyle } = useTheme();
   const [sectionsExpanded, setSectionsExpanded] = useState({
@@ -73,6 +76,8 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
   const [addPlayerName, setAddPlayerName] = useState('');
   const addPlayerInputRef = useRef(null);
   const doneFiredRef = useRef(false);
+  const previousOrderRef = useRef([]);
+  const reorderAnimRef = useRef({});
 
   useEffect(() => {
     if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -148,27 +153,23 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
   const handleAddPlayerDone = () => {
     if (doneFiredRef.current) return;
     doneFiredRef.current = true;
-    const trimmed = addPlayerName.trim();
-    if (trimmed !== '') {
-      setGoldenNailPlayers((prev) => [...prev, { id: Date.now(), name: trimmed, goldNails: 0 }]);
-    }
-    closeAddPlayerModal();
-    Keyboard.dismiss();
+    addPlayerInputRef.current?.blur();
+    const nameToAdd = addPlayerName.trim();
+    requestAnimationFrame(() => {
+      if (nameToAdd !== '') {
+        setGoldenNailPlayers((prev) => [...prev, { id: Date.now(), name: nameToAdd, goldNails: 0 }]);
+      }
+      closeAddPlayerModal();
+      Keyboard.dismiss();
+    });
   };
 
   const handleGoldenNailChange = (playerId, delta) => {
     const nextPlayers = (prev) =>
       prev.map((p) => (p.id === playerId ? { ...p, goldNails: Math.max(0, p.goldNails + delta) } : p));
     if (Platform.OS === 'android') {
-      LayoutAnimation.configureNext({
-        duration: 280,
-        create: { type: LayoutAnimation.Types.easeInEaseOut, property: LayoutAnimation.Properties.opacity },
-        update: { type: LayoutAnimation.Types.easeInEaseOut },
-        delete: { type: LayoutAnimation.Types.easeInEaseOut, property: LayoutAnimation.Properties.opacity },
-      });
-      requestAnimationFrame(() => {
-        setGoldenNailPlayers(nextPlayers);
-      });
+      previousOrderRef.current = sortedPlayers.map((p) => p.id);
+      setGoldenNailPlayers(nextPlayers);
     } else {
       LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
       setGoldenNailPlayers(nextPlayers);
@@ -188,6 +189,23 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
       }),
     [goldenNailPlayers]
   );
+
+  useEffect(() => {
+    if (Platform.OS !== 'android' || sortedPlayers.length === 0) return;
+    const newOrder = sortedPlayers.map((p) => p.id);
+    sortedPlayers.forEach((p, newIndex) => {
+      const anim = reorderAnimRef.current[p.id];
+      if (!anim) return;
+      const oldIndex = previousOrderRef.current.indexOf(p.id);
+      if (oldIndex >= 0 && oldIndex !== newIndex) {
+        anim.setValue((oldIndex - newIndex) * GOLDEN_NAIL_ROW_HEIGHT);
+        Animated.timing(anim, { toValue: 0, duration: 280, useNativeDriver: true }).start();
+      } else {
+        anim.setValue(0);
+      }
+    });
+    previousOrderRef.current = newOrder;
+  }, [goldenNailPlayers]);
 
   return (
     <ScrollView
@@ -348,26 +366,49 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                 <Text style={[styles.toolDescription, bodyFontStyle, { marginTop: 12 }]}>Add a player to begin</Text>
               ) : (
                 <View style={{ marginTop: 14 }}>
-                  {sortedPlayers.map((p, i) => (
-                    <React.Fragment key={p.id}>
-                      {i > 0 && (
-                        <View style={{ height: 1, backgroundColor: `${accent}30`, marginVertical: 8 }} />
-                      )}
-                      <View>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 6 }}>
-                          {i === 0 && <FirstIcon width={22} height={22} />}
-                          {i === 1 && <SecondIcon width={22} height={22} />}
-                          {i === 2 && <ThirdIcon width={22} height={22} />}
-                          <Text style={[titleFontStyle, { fontSize: 22, color: accent }]} numberOfLines={1}>
-                            {p.name}
-                          </Text>
-                        </View>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                          <Text style={[bodyFontStyle, { fontSize: 16, color: '#FFFFFF', ...(Platform.OS === 'android' && { includeFontPadding: false }) }]}>
-                            {p.goldNails} Gold Nails
-                          </Text>
-                        <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center' }}>
-                          {p.goldNails > 0 && (
+                  {sortedPlayers.map((p, i) => {
+                    if (Platform.OS === 'android') {
+                      reorderAnimRef.current[p.id] = reorderAnimRef.current[p.id] ?? new Animated.Value(0);
+                    }
+                    const rowContent = (
+                      <>
+                        {i > 0 && (
+                          <View style={{ height: 1, backgroundColor: `${accent}30`, marginVertical: 8 }} />
+                        )}
+                        <View>
+                          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 6 }}>
+                            {i === 0 && <FirstIcon width={22} height={22} />}
+                            {i === 1 && <SecondIcon width={22} height={22} />}
+                            {i === 2 && <ThirdIcon width={22} height={22} />}
+                            <Text style={[titleFontStyle, { fontSize: 22, color: accent }]} numberOfLines={1}>
+                              {p.name}
+                            </Text>
+                          </View>
+                          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                            <Text style={[bodyFontStyle, { fontSize: 16, color: '#FFFFFF', ...(Platform.OS === 'android' && { includeFontPadding: false }) }]}>
+                              {p.goldNails} Gold Nails
+                            </Text>
+                          <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center' }}>
+                            {p.goldNails > 0 && (
+                              <TouchableOpacity
+                                style={{
+                                  flexDirection: 'row',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  gap: 4,
+                                  paddingHorizontal: 10,
+                                  paddingVertical: 6,
+                                  borderRadius: 6,
+                                  borderWidth: 1,
+                                  borderColor: accent,
+                                  backgroundColor: `${accent}1A`,
+                                }}
+                                onPress={() => handleGoldenNailChange(p.id, -1)}
+                              >
+                                <MinusIcon width={14} height={14} fill={accent} />
+                                <NailIcon width={14} height={14} fill="#E8B923" />
+                              </TouchableOpacity>
+                            )}
                             <TouchableOpacity
                               style={{
                                 flexDirection: 'row',
@@ -381,40 +422,33 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                                 borderColor: accent,
                                 backgroundColor: `${accent}1A`,
                               }}
-                              onPress={() => handleGoldenNailChange(p.id, -1)}
+                              onPress={() => handleGoldenNailChange(p.id, 1)}
                             >
-                              <MinusIcon width={14} height={14} fill={accent} />
+                              <PlusIcon width={14} height={14} fill={accent} />
                               <NailIcon width={14} height={14} fill="#E8B923" />
                             </TouchableOpacity>
-                          )}
-                          <TouchableOpacity
-                            style={{
-                              flexDirection: 'row',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              gap: 4,
-                              paddingHorizontal: 10,
-                              paddingVertical: 6,
-                              borderRadius: 6,
-                              borderWidth: 1,
-                              borderColor: accent,
-                              backgroundColor: `${accent}1A`,
-                            }}
-                            onPress={() => handleGoldenNailChange(p.id, 1)}
-                          >
-                            <PlusIcon width={14} height={14} fill={accent} />
-                            <NailIcon width={14} height={14} fill="#E8B923" />
-                          </TouchableOpacity>
+                          </View>
+                        </View>
+                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignContent: 'flex-start', alignItems: 'flex-start', gap: 4 }}>
+                          {Array.from({ length: p.goldNails }, (_, k) => (
+                            <NailIcon key={`nail-${p.id}-${k}`} width={20} height={20} fill="#E8B923" />
+                          ))}
                         </View>
                       </View>
-                      <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignContent: 'flex-start', alignItems: 'flex-start', gap: 4 }}>
-                        {Array.from({ length: p.goldNails }, (_, k) => (
-                          <NailIcon key={`nail-${p.id}-${k}`} width={20} height={20} fill="#E8B923" />
-                        ))}
-                      </View>
-                    </View>
-                  </React.Fragment>
-                  ))}
+                    </>
+                    );
+                    const key = p.id;
+                    return Platform.OS === 'android' ? (
+                      <Animated.View
+                        key={key}
+                        style={{ transform: [{ translateY: reorderAnimRef.current[p.id] }] }}
+                      >
+                        {rowContent}
+                      </Animated.View>
+                    ) : (
+                      <React.Fragment key={key}>{rowContent}</React.Fragment>
+                    );
+                  })}
                 </View>
               )}
             </View>
