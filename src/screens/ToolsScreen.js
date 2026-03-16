@@ -307,19 +307,20 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
               {goldenNailPlayers.length === 0 ? (
                 <Text style={[styles.toolDescription, bodyFontStyle, { marginTop: 12 }]}>Tap Player to add names.</Text>
               ) : (
-                goldenNailPlayers.map((p, i) => (
-                  <React.Fragment key={`player-${i}-${p.name}`}>
-                    {i > 0 && (
-                      <View style={{ height: 1, backgroundColor: `${accent}30`, marginVertical: 8 }} />
-                    )}
-                    <View>
-                      <Text style={[titleFontStyle, { alignSelf: 'center', marginBottom: 6 }]} numberOfLines={1}>
-                        {p.name}
-                      </Text>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                        <Text style={[styles.toolDescription, bodyFontStyle]}>
-                          {p.goldNails} Gold Nails
+                <View style={{ marginTop: 14 }}>
+                  {goldenNailPlayers.map((p, i) => (
+                    <React.Fragment key={`player-${i}-${p.name}`}>
+                      {i > 0 && (
+                        <View style={{ height: 1, backgroundColor: `${accent}30`, marginVertical: 8 }} />
+                      )}
+                      <View>
+                        <Text style={[titleFontStyle, { alignSelf: 'center', marginBottom: 6, fontSize: 22, color: accent }]} numberOfLines={1}>
+                          {p.name}
                         </Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                          <Text style={[bodyFontStyle, { fontSize: 16, color: accent, ...(Platform.OS === 'android' && { includeFontPadding: false }) }]}>
+                            {p.goldNails} Gold Nails
+                          </Text>
                         <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center' }}>
                           {p.goldNails > 0 && (
                             <TouchableOpacity
@@ -368,7 +369,8 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                       </View>
                     </View>
                   </React.Fragment>
-                ))
+                  ))}
+                </View>
               )}
             </View>
           </CollapsibleSection>
