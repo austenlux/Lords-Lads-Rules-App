@@ -2,7 +2,7 @@
  * Tools tab: expandable sections for calculators and utilities.
  */
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { View, Text, ScrollView, TextInput, Modal, TouchableOpacity, Platform, InteractionManager, LayoutAnimation, UIManager } from 'react-native';
+import { View, Text, ScrollView, TextInput, Modal, TouchableOpacity, Pressable, Platform, InteractionManager, LayoutAnimation, UIManager, Keyboard } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { HEADER_HEIGHT } from '../styles';
 import { useTheme } from '../context/ThemeContext';
@@ -144,23 +144,16 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
   };
 
   const handleAddPlayerDone = () => {
-    addPlayerInputRef.current?.blur();
-    setTimeout(() => {
-      const trimmed = addPlayerName.trim();
-      if (trimmed !== '') {
-        setGoldenNailPlayers((prev) => [...prev, { id: Date.now(), name: trimmed, goldNails: 0 }]);
-      }
-      closeAddPlayerModal();
-    }, 100);
+    const trimmed = addPlayerName.trim();
+    if (trimmed !== '') {
+      setGoldenNailPlayers((prev) => [...prev, { id: Date.now(), name: trimmed, goldNails: 0 }]);
+    }
+    closeAddPlayerModal();
+    Keyboard.dismiss();
   };
 
   const handleGoldenNailChange = (playerId, delta) => {
-    LayoutAnimation.configureNext({
-      duration: 300,
-      update: { type: LayoutAnimation.Types.easeInEaseOut },
-      create: { type: LayoutAnimation.Types.easeInEaseOut },
-      delete: { type: LayoutAnimation.Types.easeInEaseOut },
-    });
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setGoldenNailPlayers((prev) =>
       prev.map((p) => (p.id === playerId ? { ...p, goldNails: Math.max(0, p.goldNails + delta) } : p))
     );
@@ -432,6 +425,8 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                     placeholder="Name"
                     placeholderTextColor={`${accent}99`}
                     autoFocus={Platform.OS === 'ios'}
+                    blurOnSubmit={true}
+                    onSubmitEditing={handleAddPlayerDone}
                   />
                   <View style={{ flexDirection: 'row', gap: 8, justifyContent: 'center' }}>
                   <TouchableOpacity
@@ -449,7 +444,7 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                   >
                     <Text style={[{ color: accent, fontSize: 12 }, bodyFontStyle]}>Cancel</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity
+                  <Pressable
                     style={{
                       flexDirection: 'row',
                       alignItems: 'center',
@@ -463,7 +458,7 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                     onPress={handleAddPlayerDone}
                   >
                     <Text style={[{ color: '#fff', fontSize: 12 }, bodyFontStyle]}>Done</Text>
-                  </TouchableOpacity>
+                  </Pressable>
                 </View>
               </TouchableOpacity>
               </ScrollView>
