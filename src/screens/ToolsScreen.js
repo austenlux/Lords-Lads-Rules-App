@@ -281,7 +281,7 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                   onPress={openAddPlayerModal}
                 >
                   <PlusIcon width={15} height={15} fill={accent} />
-                  <Text style={[{ color: accent, fontSize: 12 }, bodyFontStyle]}>Add Player</Text>
+                  <Text style={[{ color: accent, fontSize: 12 }, bodyFontStyle]}>Player</Text>
                 </TouchableOpacity>
                 {goldenNailPlayers.length > 0 && (
                   <TouchableOpacity
@@ -304,24 +304,43 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                   </TouchableOpacity>
                 )}
               </View>
-              <Text style={[styles.toolQuickRefTitle, titleFontStyle, { marginTop: 12 }]}>Players</Text>
               {goldenNailPlayers.length === 0 ? (
-                <Text style={[styles.toolDescription, bodyFontStyle]}>No players added yet. Tap Add Player to add names.</Text>
+                <Text style={[styles.toolDescription, bodyFontStyle, { marginTop: 12 }]}>Tap Player to add names.</Text>
               ) : (
                 goldenNailPlayers.map((p, i) => (
                   <React.Fragment key={`player-${i}-${p.name}`}>
                     {i > 0 && (
                       <View style={{ height: 1, backgroundColor: `${accent}30`, marginVertical: 8 }} />
                     )}
-                    <View style={{ flexDirection: 'row', alignItems: 'center', minHeight: 36 }}>
-                      <Text style={[styles.toolDescription, bodyFontStyle, { flexShrink: 0, maxWidth: '35%' }]} numberOfLines={1}>
+                    <View>
+                      <Text style={[titleFontStyle, { alignSelf: 'center', marginBottom: 6 }]} numberOfLines={1}>
                         {p.name}
                       </Text>
-                      <Text style={[styles.toolDescription, bodyFontStyle, { flex: 1, textAlign: 'center' }]}>
-                        {p.goldNails} Gold Nails
-                      </Text>
-                      <View style={{ flexDirection: 'row', flexShrink: 0, gap: 6, alignItems: 'center' }}>
-                        {p.goldNails > 0 && (
+                      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                        <Text style={[styles.toolDescription, bodyFontStyle]}>
+                          {p.goldNails} Gold Nails
+                        </Text>
+                        <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center' }}>
+                          {p.goldNails > 0 && (
+                            <TouchableOpacity
+                              style={{
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: 4,
+                                paddingHorizontal: 10,
+                                paddingVertical: 6,
+                                borderRadius: 6,
+                                borderWidth: 1,
+                                borderColor: accent,
+                                backgroundColor: `${accent}1A`,
+                              }}
+                              onPress={() => handleGoldenNailChange(i, -1)}
+                            >
+                              <MinusIcon width={14} height={14} fill={accent} />
+                              <NailIcon width={14} height={14} fill="#E8B923" />
+                            </TouchableOpacity>
+                          )}
                           <TouchableOpacity
                             style={{
                               flexDirection: 'row',
@@ -335,30 +354,17 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                               borderColor: accent,
                               backgroundColor: `${accent}1A`,
                             }}
-                            onPress={() => handleGoldenNailChange(i, -1)}
+                            onPress={() => handleGoldenNailChange(i, 1)}
                           >
-                            <MinusIcon width={14} height={14} fill={accent} />
+                            <PlusIcon width={14} height={14} fill={accent} />
                             <NailIcon width={14} height={14} fill="#E8B923" />
                           </TouchableOpacity>
-                        )}
-                        <TouchableOpacity
-                          style={{
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: 4,
-                            paddingHorizontal: 10,
-                            paddingVertical: 6,
-                            borderRadius: 6,
-                            borderWidth: 1,
-                            borderColor: accent,
-                            backgroundColor: `${accent}1A`,
-                          }}
-                          onPress={() => handleGoldenNailChange(i, 1)}
-                        >
-                          <PlusIcon width={14} height={14} fill={accent} />
-                          <NailIcon width={14} height={14} fill="#E8B923" />
-                        </TouchableOpacity>
+                        </View>
+                      </View>
+                      <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignContent: 'flex-start', alignItems: 'flex-start', gap: 4 }}>
+                        {Array.from({ length: p.goldNails }, (_, k) => (
+                          <NailIcon key={`nail-${i}-${k}`} width={20} height={20} fill="#E8B923" />
+                        ))}
                       </View>
                     </View>
                   </React.Fragment>
