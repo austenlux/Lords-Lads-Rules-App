@@ -74,6 +74,7 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
   const [goldenNailPlayers, setGoldenNailPlayers] = useState([]);
   const [addPlayerModalVisible, setAddPlayerModalVisible] = useState(false);
   const [addPlayerName, setAddPlayerName] = useState('');
+  const [selectedPlayerIdForDelete, setSelectedPlayerIdForDelete] = useState(null);
   const addPlayerInputRef = useRef(null);
   const doneFiredRef = useRef(false);
   const previousOrderRef = useRef([]);
@@ -168,36 +169,8 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
     const nextPlayers = (prev) =>
       prev.map((p) => (p.id === playerId ? { ...p, goldNails: Math.max(0, p.goldNails + delta) } : p));
     if (Platform.OS === 'android') {
-      const next = nextPlayers(goldenNailPlayers);
-      const nextSorted = [...next].sort((a, b) => {
-        const byNails = b.goldNails - a.goldNails;
-        return byNails !== 0 ? byNails : a.name.localeCompare(b.name);
-      });
       previousOrderRef.current = sortedPlayers.map((p) => p.id);
-      nextSorted.forEach((p, newIndex) => {
-        const anim = reorderAnimRef.current[p.id];
-        if (!anim) return;
-        const oldIndex = sortedPlayers.findIndex((x) => x.id === p.id);
-        if (oldIndex >= 0 && oldIndex !== newIndex) {
-          anim.setValue((oldIndex - newIndex) * GOLDEN_NAIL_ROW_HEIGHT);
-        } else {
-          anim.setValue(0);
-        }
-      });
       setGoldenNailPlayers(nextPlayers);
-      requestAnimationFrame(() => {
-        nextSorted.forEach((p) => {
-          const anim = reorderAnimRef.current[p.id];
-          if (anim) {
-            Animated.timing(anim, {
-              toValue: 0,
-              duration: 300,
-              easing: Easing.inOut(Easing.ease),
-              useNativeDriver: true,
-            }).start();
-          }
-        });
-      });
     } else {
       LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
       setGoldenNailPlayers(nextPlayers);
@@ -207,6 +180,11 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
   const handleClearGoldenNailPlayers = () => {
     setGoldenNailPlayers([]);
     AsyncStorage.removeItem(GOLDEN_NAILS_PLAYERS_KEY);
+  };
+
+  const handleDeleteGoldenNailPlayer = (playerId) => {
+    setGoldenNailPlayers((prev) => prev.filter((p) => p.id !== playerId));
+    setSelectedPlayerIdForDelete(null);
   };
 
   const sortedPlayers = useMemo(
@@ -219,7 +197,23 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
   );
 
   useEffect(() => {
-    if (Platform.OS !== 'android' || sortedPlayers.length === 0) return;
+    if (Platform.OS !== 'android') return;
+    if (sortedPlayers.length === 0) return;
+    if (previousOrderRef.current.length === 0) {
+      previousOrderRef.current = sortedPlayers.map((p) => p.id);
+      return;
+    }
+    sortedPlayers.forEach((p, newIndex) => {
+      const oldIndex = previousOrderRef.current.indexOf(p.id);
+      const anim = reorderAnimRef.current[p.id] ?? new Animated.Value(0);
+      reorderAnimRef.current[p.id] = anim;
+      anim.setValue((oldIndex - newIndex) * GOLDEN_NAIL_ROW_HEIGHT);
+      Animated.timing(anim, {
+        toValue: 0,
+        duration: 280,
+        useNativeDriver: true,
+      }).start();
+    });
     previousOrderRef.current = sortedPlayers.map((p) => p.id);
   }, [goldenNailPlayers]);
 
@@ -454,15 +448,41 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                     </>
                     );
                     const key = p.id;
+                    const rowWithLongPress = (
+                      <Pressable onLongPress={() => setSelectedPlayerIdForDelete(p.id)}>
+                        {rowContent}
+                        {selectedPlayerIdForDelete === p.id && (
+                          <TouchableOpacity
+                            style={{
+                              flexDirection: 'row',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: 6,
+                              marginTop: 8,
+                              paddingVertical: 6,
+                              paddingHorizontal: 12,
+                              borderRadius: 6,
+                              borderWidth: 1,
+                              borderColor: '#E53935',
+                              backgroundColor: '#E539351A',
+                            }}
+                            onPress={() => handleDeleteGoldenNailPlayer(p.id)}
+                          >
+                            <TrashIcon width={14} height={14} fill="#E53935" />
+                            <Text style={[{ color: '#E53935', fontSize: 12 }, bodyFontStyle]}>Delete</Text>
+                          </TouchableOpacity>
+                        )}
+                      </Pressable>
+                    );
                     return Platform.OS === 'android' ? (
                       <Animated.View
                         key={key}
                         style={{ transform: [{ translateY: reorderAnimRef.current[p.id] }] }}
                       >
-                        {rowContent}
+                        {rowWithLongPress}
                       </Animated.View>
                     ) : (
-                      <React.Fragment key={key}>{rowContent}</React.Fragment>
+                      <React.Fragment key={key}>{rowWithLongPress}</React.Fragment>
                     );
                   })}
                 </View>
