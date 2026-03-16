@@ -15,6 +15,7 @@ module.exports = {
     '#111': TINT_PROP,
     '#111111': TINT_PROP,
     '#121212': TINT_PROP,
+    '#020202': TINT_PROP,
     '#222': TINT_PROP,
     '#222222': TINT_PROP,
     '#333': TINT_PROP,

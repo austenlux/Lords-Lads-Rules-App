@@ -1,8 +1,9 @@
 /**
  * Tools tab: expandable sections for calculators and utilities.
  */
-import React, { useState, useMemo } from 'react';
-import { View, Text, ScrollView, TextInput, Image, Platform } from 'react-native';
+import React, { useState, useMemo, useEffect } from 'react';
+import { View, Text, ScrollView, TextInput, Modal, TouchableOpacity, Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { HEADER_HEIGHT } from '../styles';
 import { useTheme } from '../context/ThemeContext';
 import CollapsibleSection, { DEFAULT_SECTION_EXPANDED } from '../components/CollapsibleSection';
@@ -12,8 +13,11 @@ import NailsIcon from '../../assets/icons/about.svg';
 import UprisingIcon from '../../assets/icons/uprising.svg';
 import StatsIcon from '../../assets/icons/stats.svg';
 import NailIcon from '../../assets/icons/nail.svg';
+import PlusIcon from '../../assets/icons/plus.svg';
+import TrashIcon from '../../assets/icons/trash.svg';
 
 const SECTION_KEYS = { NAIL_CALC: 'nailCalc', GAME_STAT_TRACKER: 'gameStatTracker' };
+const GOLDEN_NAILS_PLAYERS_KEY = '@lnl_golden_nails_players';
 
 /** Icon color matching About tab Info icon (info.svg stroke). */
 const INFO_BLUE = '#5C7CFA';
@@ -50,13 +54,31 @@ const NAILS_COLOR = '#2E7D32';
 const UPRISING_COLOR = '#CC4400';
 
 export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }) {
-  const { titleFontStyle, bodyFontStyle } = useTheme();
+  const { accent, titleFontStyle, bodyFontStyle } = useTheme();
   const [sectionsExpanded, setSectionsExpanded] = useState({
     [SECTION_KEYS.NAIL_CALC]: DEFAULT_SECTION_EXPANDED,
     [SECTION_KEYS.GAME_STAT_TRACKER]: DEFAULT_SECTION_EXPANDED,
   });
   const [playerCountInput, setPlayerCountInput] = useState(ZWSP);
-  const [goldenNailWidth, setGoldenNailWidth] = useState(0);
+  const [goldenNailPlayers, setGoldenNailPlayers] = useState([]);
+  const [addPlayerModalVisible, setAddPlayerModalVisible] = useState(false);
+  const [addPlayerName, setAddPlayerName] = useState('');
+
+  useEffect(() => {
+    AsyncStorage.getItem(GOLDEN_NAILS_PLAYERS_KEY).then((raw) => {
+      if (raw != null) {
+        try {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) setGoldenNailPlayers(parsed);
+        } catch (_) {}
+      }
+    });
+  }, []);
+
+  useEffect(() => {
+    if (goldenNailPlayers.length === 0) return;
+    AsyncStorage.setItem(GOLDEN_NAILS_PLAYERS_KEY, JSON.stringify(goldenNailPlayers));
+  }, [goldenNailPlayers]);
 
   const toggleSection = (key) => {
     setSectionsExpanded((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -77,6 +99,28 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
     setPlayerCountInput(text === '' ? ZWSP : text.replace(/\u200B/g, ''));
   };
 
+  const openAddPlayerModal = () => {
+    setAddPlayerName('');
+    setAddPlayerModalVisible(true);
+  };
+
+  const closeAddPlayerModal = () => {
+    setAddPlayerModalVisible(false);
+    setAddPlayerName('');
+  };
+
+  const handleAddPlayerDone = () => {
+    const trimmed = addPlayerName.trim();
+    if (trimmed !== '') {
+      setGoldenNailPlayers((prev) => [...prev, trimmed]);
+    }
+    closeAddPlayerModal();
+  };
+
+  const handleClearGoldenNailPlayers = () => {
+    setGoldenNailPlayers([]);
+    AsyncStorage.removeItem(GOLDEN_NAILS_PLAYERS_KEY);
+  };
 
   return (
     <ScrollView
@@ -192,24 +236,111 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
             styles={styles}
             style={styles.aboutSectionWrapper}
           >
-            <View
-              style={[styles.versionContainer, { padding: 0 }]}
-              onLayout={(e) => setGoldenNailWidth(e.nativeEvent.layout.width)}
-            >
-              {goldenNailWidth > 0 && (
-                <Image
-                  source={require('../../assets/winner.png')}
+            <View style={styles.versionContainer}>
+              <TouchableOpacity
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 6,
+                  paddingHorizontal: 14,
+                  paddingVertical: 7,
+                  borderRadius: 6,
+                  borderWidth: 1,
+                  borderColor: accent,
+                  backgroundColor: `${accent}1A`,
+                }}
+                onPress={openAddPlayerModal}
+              >
+                <PlusIcon width={15} height={15} fill={accent} />
+                <Text style={[{ color: accent, fontSize: 12 }, bodyFontStyle]}>Add Player</Text>
+              </TouchableOpacity>
+              {goldenNailPlayers.length > 0 && (
+                <TouchableOpacity
                   style={{
-                    width: goldenNailWidth,
-                    height: goldenNailWidth * (1152 / 3744),
-                    borderTopLeftRadius: 8,
-                    borderTopRightRadius: 8,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 6,
+                    marginTop: 8,
+                    paddingHorizontal: 14,
+                    paddingVertical: 7,
+                    borderRadius: 6,
+                    borderWidth: 1,
+                    borderColor: accent,
+                    backgroundColor: `${accent}1A`,
                   }}
-                  resizeMode="cover"
-                />
+                  onPress={handleClearGoldenNailPlayers}
+                >
+                  <TrashIcon width={15} height={15} fill={accent} />
+                  <Text style={[{ color: accent, fontSize: 12 }, bodyFontStyle]}>Clear</Text>
+                </TouchableOpacity>
+              )}
+              <Text style={[styles.toolQuickRefTitle, titleFontStyle, { marginTop: 12 }]}>Players</Text>
+              {goldenNailPlayers.length === 0 ? (
+                <Text style={[styles.toolDescription, bodyFontStyle]}>No players added yet. Tap Add Player to add names.</Text>
+              ) : (
+                goldenNailPlayers.map((name, i) => (
+                  <Text key={`player-${i}-${name}`} style={[styles.toolDescription, bodyFontStyle]}>
+                    {name}
+                  </Text>
+                ))
               )}
             </View>
           </CollapsibleSection>
+          <Modal
+            visible={addPlayerModalVisible}
+            transparent
+            animationType="fade"
+            onRequestClose={closeAddPlayerModal}
+          >
+            <TouchableOpacity
+              style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 24 }}
+              activeOpacity={1}
+              onPress={closeAddPlayerModal}
+            >
+              <TouchableOpacity activeOpacity={1} onPress={(e) => e.stopPropagation()} style={{ backgroundColor: '#fff', borderRadius: 12, padding: 20, width: '100%', maxWidth: 320 }}>
+                <Text style={[titleFontStyle, { fontSize: 18, marginBottom: 12 }]}>Enter Player's Name</Text>
+                <TextInput
+                  style={[bodyFontStyle, { borderWidth: 1, borderColor: '#ccc', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 10, marginBottom: 16, fontSize: 16 }]}
+                  value={addPlayerName}
+                  onChangeText={setAddPlayerName}
+                  placeholder="Name"
+                  autoFocus
+                />
+                <View style={{ flexDirection: 'row', gap: 8, justifyContent: 'flex-end' }}>
+                  <TouchableOpacity
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      paddingHorizontal: 14,
+                      paddingVertical: 7,
+                      borderRadius: 6,
+                      borderWidth: 1,
+                      borderColor: accent,
+                      backgroundColor: `${accent}1A`,
+                    }}
+                    onPress={closeAddPlayerModal}
+                  >
+                    <Text style={[{ color: accent, fontSize: 12 }, bodyFontStyle]}>Cancel</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      paddingHorizontal: 14,
+                      paddingVertical: 7,
+                      borderRadius: 6,
+                      borderWidth: 1,
+                      borderColor: accent,
+                      backgroundColor: accent,
+                    }}
+                    onPress={handleAddPlayerDone}
+                  >
+                    <Text style={[{ color: '#fff', fontSize: 12 }, bodyFontStyle]}>Done</Text>
+                  </TouchableOpacity>
+                </View>
+              </TouchableOpacity>
+            </TouchableOpacity>
+          </Modal>
         </View>
       </View>
     </ScrollView>
