@@ -16,6 +16,7 @@ import NailIcon from '../../assets/icons/nail.svg';
 import MinusIcon from '../../assets/icons/minus.svg';
 import PlusIcon from '../../assets/icons/plus.svg';
 import TrashIcon from '../../assets/icons/trash.svg';
+import CloseIcon from '../../assets/icons/close.svg';
 import FirstIcon from '../../assets/icons/first.svg';
 import SecondIcon from '../../assets/icons/second.svg';
 import ThirdIcon from '../../assets/icons/third.svg';
@@ -452,25 +453,42 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                       <Pressable onLongPress={() => setSelectedPlayerIdForDelete(p.id)}>
                         {rowContent}
                         {selectedPlayerIdForDelete === p.id && (
-                          <TouchableOpacity
-                            style={{
-                              flexDirection: 'row',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              gap: 6,
-                              marginTop: 8,
-                              paddingVertical: 6,
-                              paddingHorizontal: 12,
-                              borderRadius: 6,
-                              borderWidth: 1,
-                              borderColor: '#E53935',
-                              backgroundColor: '#E539351A',
-                            }}
-                            onPress={() => handleDeleteGoldenNailPlayer(p.id)}
-                          >
-                            <TrashIcon width={14} height={14} fill="#E53935" />
-                            <Text style={[{ color: '#E53935', fontSize: 12 }, bodyFontStyle]}>Delete</Text>
-                          </TouchableOpacity>
+                          <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8, marginTop: 8 }}>
+                            <TouchableOpacity
+                              style={{
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                gap: 4,
+                                paddingVertical: 6,
+                                paddingHorizontal: 10,
+                                borderRadius: 6,
+                                borderWidth: 1,
+                                borderColor: accent,
+                                backgroundColor: `${accent}1A`,
+                              }}
+                              onPress={() => setSelectedPlayerIdForDelete(null)}
+                            >
+                              <CloseIcon width={14} height={14} fill={accent} />
+                              <Text style={[{ color: accent, fontSize: 12 }, bodyFontStyle]}>Cancel</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                              style={{
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                gap: 4,
+                                paddingVertical: 6,
+                                paddingHorizontal: 10,
+                                borderRadius: 6,
+                                borderWidth: 1,
+                                borderColor: '#E53935',
+                                backgroundColor: '#E539351A',
+                              }}
+                              onPress={() => handleDeleteGoldenNailPlayer(p.id)}
+                            >
+                              <TrashIcon width={14} height={14} fill="#E53935" />
+                              <Text style={[{ color: '#E53935', fontSize: 12 }, bodyFontStyle]}>Delete</Text>
+                            </TouchableOpacity>
+                          </View>
                         )}
                       </Pressable>
                     );
