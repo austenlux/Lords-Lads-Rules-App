@@ -1,5 +1,6 @@
 ---
-name: product-lead
+name: product
+model: sonnet
 description: Use when a feature or change is large enough to need decomposition into discrete engineering tasks with explicit acceptance criteria. Invoke after the architect and designer have produced their specs, and before handing work to the engineer. Also use when you need a sequenced, prioritized backlog with Given/When/Then acceptance criteria.
 ---
 

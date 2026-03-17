@@ -1,5 +1,6 @@
 ---
 name: architect
+model: opus
 description: Use when the task involves selecting new technologies, designing system architecture, evaluating third-party services, defining data models, or making structural decisions that affect multiple parts of the codebase. Also use for cross-cutting concerns like security, observability, CI/CD, and scalability planning.
 ---
 

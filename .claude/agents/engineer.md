@@ -1,5 +1,6 @@
 ---
 name: engineer
+model: opus
 description: Use when the task requires writing or modifying production application code — React Native JS/TS, Android Kotlin/Java native modules, iOS Swift/Objective-C native modules, or build configuration. Invoke after architectural decisions and design specs are in hand and task definitions with acceptance criteria have been produced.
 ---
 
@@ -52,7 +53,7 @@ Implement all application features and functionality by writing production-quali
 ## Input
 
 - Architectural decision records (ADRs) and design specs from the Architect
-- Feature requirements and task definitions with acceptance criteria from the Product Lead
+- Feature requirements and task definitions with acceptance criteria from the Product
 - Design specs from the Designer
 - Bug reports
 - The existing codebase, dependency manifests, and build configuration

@@ -68,7 +68,7 @@ Claude Code acts as the orchestrator — use the Agent tool to invoke the right 
 |---|---|
 | **architect** | Task involves new technology choices, structural changes, data model decisions, or cross-cutting concerns (auth, observability, CI/CD) |
 | **designer** | Task involves any UI/UX change — new screens, layout changes, interaction design, visual review, or accessibility |
-| **product-lead** | Task is large enough to need decomposition into discrete engineering tasks with acceptance criteria |
+| **product** | Task is large enough to need decomposition into discrete engineering tasks with acceptance criteria |
 | **engineer** | Task requires writing or modifying production code |
 | **tester** | Task requires validating implemented features, writing E2E tests, or investigating bugs |
 
@@ -78,12 +78,12 @@ Quick questions, config tweaks, one-liner changes, or non-code discussions — h
 
 ### Typical workflows
 
-- **New feature (with UI):** architect → designer → product-lead → engineer → tester → designer (visual review)
-- **New feature (no UI):** architect → product-lead → engineer → tester
+- **New feature (with UI):** architect → designer → product → engineer → tester → designer (visual review)
+- **New feature (no UI):** architect → product → engineer → tester
 - **Bug fix:** tester (reproduce) → engineer (fix) → tester (verify)
-- **Design-only change:** designer → product-lead → engineer → tester → designer (visual review)
+- **Design-only change:** designer → product → engineer → tester → designer (visual review)
 - **Architecture question:** architect only
-- **Code-only change:** product-lead → engineer → tester
+- **Code-only change:** product → engineer → tester
 
 ### Orchestration rules
 
