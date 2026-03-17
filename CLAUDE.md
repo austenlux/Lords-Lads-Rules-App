@@ -71,6 +71,7 @@ Claude Code acts as the orchestrator — use the Agent tool to invoke the right 
 | **product** | Task is large enough to need decomposition into discrete engineering tasks with acceptance criteria |
 | **engineer** | Task requires writing or modifying production code |
 | **tester** | Task requires validating implemented features, writing E2E tests, or investigating bugs |
+| **security** | Any architectural decision, code change, or feature needs security review — runs in parallel with architect on structure, and in parallel with tester after engineer ships |
 
 ### When NOT to use agents
 
@@ -78,20 +79,23 @@ Quick questions, config tweaks, one-liner changes, or non-code discussions — h
 
 ### Typical workflows
 
-- **New feature (with UI):** architect → designer → product → engineer → tester → designer (visual review)
-- **New feature (no UI):** architect → product → engineer → tester
-- **Bug fix:** tester (reproduce) → engineer (fix) → tester (verify)
-- **Design-only change:** designer → product → engineer → tester → designer (visual review)
-- **Architecture question:** architect only
-- **Code-only change:** product → engineer → tester
+- **New feature (with UI):** architect + security (parallel) → designer → product → engineer → tester + security (parallel) → designer (visual review)
+- **New feature (no UI):** architect + security (parallel) → product → engineer → tester + security (parallel)
+- **Bug fix:** tester (reproduce) → engineer (fix) → tester + security (parallel, verify)
+- **Design-only change:** designer → product → engineer → tester + security (parallel) → designer (visual review)
+- **Architecture question:** architect + security (parallel)
+- **Code-only change:** product → engineer → tester + security (parallel)
+- **Security audit:** security only
 
 ### Orchestration rules
 
 - Run agents sequentially when each depends on the previous agent's output
-- Run agents in parallel when their work is independent (e.g., architect and designer can often work concurrently)
+- Run agents in parallel when their work is independent (e.g., architect and security always run in parallel; tester and security always run in parallel)
 - Always pass the previous agent's output as input to the next
 - Stream each agent's completion summary to the user after it finishes
 - Engineer always ships unit tests alongside production code
 - Tester always runs the full regression suite, not just new-feature tests
+- Security always reviews both architecture decisions and final implementation — never skip either review point
+- Any critical or high security finding is a hard blocker — nothing ships until resolved
 - Any UI change must include Designer visual review after Tester captures screenshots
 - Never ask the user to run CLI commands — agents execute everything autonomously
