@@ -41,9 +41,9 @@ When the user says "install it", asks to install after changes, or **any code ch
      - Build: `npm run build:android`
      - Install: `adb install -r android/app/build/outputs/apk/release/lords-and-lads-rules-*.apk`
      - Launch: `adb shell am start -n com.lux.lnlrules/.MainActivity`
-   - **iOS second:** Build → Install (launches automatically via ios-deploy).
+   - **iOS second:** Build → Install → Launch.
      - Build: `xcodebuild -workspace ios/LordsandLadsRules.xcworkspace -scheme LordsandLadsRules -configuration Release -destination 'generic/platform=iOS' -derivedDataPath ios/build archive -archivePath ios/build/LordsandLadsRules.xcarchive -allowProvisioningUpdates`
-     - Install: `ios-deploy --bundle ios/build/LordsandLadsRules.xcarchive/Products/Applications/LordsandLadsRules.app`
+     - Install + Launch: `ios-deploy --bundle ios/build/LordsandLadsRules.xcarchive/Products/Applications/LordsandLadsRules.app --justlaunch`
    - If a device is **not connected**, skip that install and inform the user the build is ready.
 
 3. **Report the commit hash** — After installing, always tell the user the short commit hash (`git rev-parse --short HEAD`) so they can verify the correct build in the app's debug menu.
