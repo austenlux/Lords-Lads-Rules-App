@@ -2,7 +2,7 @@
  * Tools tab: expandable sections for calculators and utilities.
  */
 import React, { useState, useMemo, useEffect, useLayoutEffect, useRef } from 'react';
-import { View, Text, ScrollView, TextInput, Modal, TouchableOpacity, TouchableWithoutFeedback, Pressable, Platform, InteractionManager, LayoutAnimation, UIManager, Keyboard, Animated, Easing } from 'react-native';
+import { View, Text, ScrollView, TextInput, Modal, TouchableOpacity, Pressable, Platform, InteractionManager, LayoutAnimation, UIManager, Keyboard, Animated, Easing } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { HEADER_HEIGHT } from '../styles';
 import { useTheme } from '../context/ThemeContext';
@@ -113,29 +113,6 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
     AsyncStorage.setItem(GOLDEN_NAILS_PLAYERS_KEY, JSON.stringify(goldenNailPlayers));
   }, [goldenNailPlayers]);
 
-  useLayoutEffect(() => {
-    if (Platform.OS !== 'android') return;
-    if (sortedPlayers.length === 0) return;
-    if (previousOrderRef.current.length === 0) {
-      previousOrderRef.current = sortedPlayers.map((p) => p.id);
-      return;
-    }
-    sortedPlayers.forEach((p, newIndex) => {
-      const oldIndex = previousOrderRef.current.indexOf(p.id);
-      if (oldIndex === newIndex) return;
-      const anim = reorderAnimRef.current[p.id] ?? new Animated.Value(0);
-      reorderAnimRef.current[p.id] = anim;
-      anim.setValue((oldIndex - newIndex) * GOLDEN_NAIL_ROW_HEIGHT);
-      Animated.timing(anim, {
-        toValue: 0,
-        duration: 280,
-        easing: Easing.inOut(Easing.ease),
-        useNativeDriver: true,
-      }).start();
-    });
-    previousOrderRef.current = sortedPlayers.map((p) => p.id);
-  }, [sortedPlayers]);
-
   const toggleSection = (key) => {
     setSectionsExpanded((prev) => ({ ...prev, [key]: !prev[key] }));
   };
@@ -206,6 +183,30 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
       }),
     [goldenNailPlayers]
   );
+
+  // Must be after sortedPlayers declaration — dependency array is evaluated immediately
+  useLayoutEffect(() => {
+    if (Platform.OS !== 'android') return;
+    if (sortedPlayers.length === 0) return;
+    if (previousOrderRef.current.length === 0) {
+      previousOrderRef.current = sortedPlayers.map((p) => p.id);
+      return;
+    }
+    sortedPlayers.forEach((p, newIndex) => {
+      const oldIndex = previousOrderRef.current.indexOf(p.id);
+      if (oldIndex === newIndex) return;
+      const anim = reorderAnimRef.current[p.id] ?? new Animated.Value(0);
+      reorderAnimRef.current[p.id] = anim;
+      anim.setValue((oldIndex - newIndex) * GOLDEN_NAIL_ROW_HEIGHT);
+      Animated.timing(anim, {
+        toValue: 0,
+        duration: 280,
+        easing: Easing.inOut(Easing.ease),
+        useNativeDriver: true,
+      }).start();
+    });
+    previousOrderRef.current = sortedPlayers.map((p) => p.id);
+  }, [sortedPlayers]);
 
   return (
     <ScrollView
@@ -502,60 +503,74 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
             animationType="fade"
             onRequestClose={closeAddPlayerModal}
           >
-            <TouchableWithoutFeedback onPress={closeAddPlayerModal}>
-              <View style={{ flex: 1, backgroundColor: 'rgba(18, 18, 18, 0.92)', justifyContent: 'center', alignItems: 'center', padding: 24 }}>
-                <View
-                  style={{ backgroundColor: '#1E1E1E', borderRadius: 12, padding: 20, width: '100%', maxWidth: 320, borderWidth: 1, borderColor: `${accent}40` }}
-                  onStartShouldSetResponder={() => true}
-                  onMoveShouldSetResponder={() => true}
+            <View style={{ flex: 1, backgroundColor: 'rgba(18, 18, 18, 0.92)' }}>
+              {/* Backdrop — absoluteFill behind everything, closes modal on tap */}
+              <TouchableOpacity
+                style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 }}
+                onPress={closeAddPlayerModal}
+                activeOpacity={1}
+              />
+              {/* Centered container — plain View, passes touches through to backdrop */}
+              <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 }} pointerEvents="box-none">
+                {/* ScrollView wraps only the card — keyboardShouldPersistTaps makes buttons work on first tap */}
+                <ScrollView
+                  keyboardShouldPersistTaps="handled"
+                  scrollEnabled={false}
+                  style={{ width: '100%', maxWidth: 320 }}
+                  contentContainerStyle={{ flexGrow: 1 }}
                 >
-                  <Text style={[titleFontStyle, { fontSize: 18, marginBottom: 12, color: accent }]}>Enter Player's Name</Text>
-                  <TextInput
-                    ref={addPlayerInputRef}
-                    style={[bodyFontStyle, { borderWidth: 1, borderColor: `${accent}50`, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 10, marginBottom: 16, fontSize: 16, backgroundColor: '#2A2A2A', color: accent }]}
-                    value={addPlayerName}
-                    onChangeText={setAddPlayerName}
-                    placeholder="Name"
-                    placeholderTextColor={`${accent}99`}
-                    autoFocus={Platform.OS === 'ios'}
-                    returnKeyType="done"
-                    onSubmitEditing={handleAddPlayerDone}
-                  />
-                  <View style={{ flexDirection: 'row', gap: 8, justifyContent: 'center' }}>
-                    <TouchableOpacity
-                      style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        paddingHorizontal: 14,
-                        paddingVertical: 7,
-                        borderRadius: 6,
-                        borderWidth: 1,
-                        borderColor: accent,
-                        backgroundColor: `${accent}1A`,
-                      }}
-                      onPress={closeAddPlayerModal}
-                    >
-                      <Text style={[{ color: accent, fontSize: 12 }, bodyFontStyle]}>Cancel</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        paddingHorizontal: 14,
-                        paddingVertical: 7,
-                        borderRadius: 6,
-                        borderWidth: 1,
-                        borderColor: accent,
-                        backgroundColor: accent,
-                      }}
-                      onPress={handleAddPlayerDone}
-                    >
-                      <Text style={[{ color: '#fff', fontSize: 12 }, bodyFontStyle]}>Done</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
+                  {/* Card wrapper — absorbs taps on non-interactive card areas so backdrop doesn't fire */}
+                  <TouchableOpacity activeOpacity={1} onPress={() => {}}>
+                    <View style={{ backgroundColor: '#1E1E1E', borderRadius: 12, padding: 20, borderWidth: 1, borderColor: `${accent}40` }}>
+                      <Text style={[titleFontStyle, { fontSize: 18, marginBottom: 12, color: accent }]}>Enter Player's Name</Text>
+                      <TextInput
+                        ref={addPlayerInputRef}
+                        style={[bodyFontStyle, { borderWidth: 1, borderColor: `${accent}50`, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 10, marginBottom: 16, fontSize: 16, backgroundColor: '#2A2A2A', color: accent }]}
+                        value={addPlayerName}
+                        onChangeText={setAddPlayerName}
+                        placeholder="Name"
+                        placeholderTextColor={`${accent}99`}
+                        autoFocus={Platform.OS === 'ios'}
+                        returnKeyType="done"
+                        onSubmitEditing={handleAddPlayerDone}
+                      />
+                      <View style={{ flexDirection: 'row', gap: 8, justifyContent: 'center' }}>
+                        <TouchableOpacity
+                          style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            paddingHorizontal: 14,
+                            paddingVertical: 7,
+                            borderRadius: 6,
+                            borderWidth: 1,
+                            borderColor: accent,
+                            backgroundColor: `${accent}1A`,
+                          }}
+                          onPress={closeAddPlayerModal}
+                        >
+                          <Text style={[{ color: accent, fontSize: 12 }, bodyFontStyle]}>Cancel</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            paddingHorizontal: 14,
+                            paddingVertical: 7,
+                            borderRadius: 6,
+                            borderWidth: 1,
+                            borderColor: accent,
+                            backgroundColor: accent,
+                          }}
+                          onPress={handleAddPlayerDone}
+                        >
+                          <Text style={[{ color: '#fff', fontSize: 12 }, bodyFontStyle]}>Done</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                </ScrollView>
               </View>
-            </TouchableWithoutFeedback>
+            </View>
           </Modal>
         </View>
       </View>
