@@ -14,16 +14,11 @@ Be **short, succinct, and to the point**. Never answer a simple question with a 
 
 ## Decision Making
 
-In direct conversation, the user is the **sole** decision-maker. Whenever a task involves:
-- Multiple valid approaches or implementations
-- Ambiguous or underspecified requirements
-- Any choice between options (libraries, patterns, data formats, scope, behavior)
-- Trade-offs worth mentioning
-- Uncertainty about what the user wants
+Minimize questions. Default to action — make a reasonable call, do the work, and move on. Git operations, file organization, commit messages, minor implementation details, obvious next steps — just do them. If something turns out to be wrong, it can be fixed or reverted.
 
-**Stop and ask before writing a single line of code.** Present the options clearly and wait for explicit direction. Never infer intent and silently pick an approach. Never proceed with "the most common" or "safest" option without approval.
+Only stop and ask when the decision is **genuinely consequential and unclear** — meaning it involves significant scope, irreversible side effects, or a real product/architecture choice where the wrong call would waste substantial effort. Even then, ask once with clear options, not a back-and-forth.
 
-This rule applies in **direct conversation only** — not when agents are operating autonomously within a workflow (they resolve decisions per their own specs).
+When agents are operating autonomously in a workflow, they resolve decisions without escalating to the user per their own specs.
 
 ---
 
