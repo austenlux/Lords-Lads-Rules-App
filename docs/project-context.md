@@ -161,6 +161,16 @@ For exact versions, always read `package.json` (JS deps) and `android/app/build.
 - **No component testing** setup (no React Native Testing Library)
 - The test infrastructure will need to be set up from scratch
 
+## UI Regression Checklist
+
+Run on iOS (and Android where parity is expected) for any UI or layout change. Report pass/fail for each:
+
+- **Background logo:** Is the centered background logo and semi-transparent overlay visible behind content on all tabs (Rules, Expansions, Tools, More)? On Android: confirm no regression.
+- **Tools screen layout:** Do Tools tab sections (Nail Calculator, Game Stat Tracker, etc.) use full-width layout — not centered in a narrow strip, squished, or cut off? Compare to More tab section layout. On Android: confirm no regression.
+- **Nail buttons (More screen):** Are all six nail icon images visible on the "Buy me some nails" buttons ($1, $5, $20, $50, $100, $250) on the More screen? On Android: confirm no regression.
+
+---
+
 ## Known Gaps / Tech Debt
 
 - Voice assistant is Android-only — iOS native module is stubbed but not implemented
