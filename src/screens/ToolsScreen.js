@@ -1,8 +1,8 @@
 /**
  * Tools tab: expandable sections for calculators and utilities.
  */
-import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { View, Text, ScrollView, TextInput, Modal, TouchableOpacity, Pressable, Platform, InteractionManager, LayoutAnimation, UIManager, Keyboard, StyleSheet } from 'react-native';
+import React, { useState, useMemo, useEffect, useLayoutEffect, useRef } from 'react';
+import { View, Text, ScrollView, TextInput, Modal, TouchableOpacity, TouchableWithoutFeedback, Pressable, Platform, InteractionManager, LayoutAnimation, UIManager, Keyboard, Animated, Easing } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { HEADER_HEIGHT } from '../styles';
 import { useTheme } from '../context/ThemeContext';
@@ -25,6 +25,7 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
+const GOLDEN_NAIL_ROW_HEIGHT = 72;
 const SECTION_KEYS = { NAIL_CALC: 'nailCalc', GAME_STAT_TRACKER: 'gameStatTracker' };
 const GOLDEN_NAILS_PLAYERS_KEY = '@lnl_golden_nails_players';
 
@@ -74,7 +75,8 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
   const [addPlayerName, setAddPlayerName] = useState('');
   const [selectedPlayerIdForDelete, setSelectedPlayerIdForDelete] = useState(null);
   const addPlayerInputRef = useRef(null);
-  const doneFiredRef = useRef(false);
+  const previousOrderRef = useRef([]);
+  const reorderAnimRef = useRef({});
 
   useEffect(() => {
     AsyncStorage.getItem(GOLDEN_NAILS_PLAYERS_KEY).then((raw) => {
@@ -111,6 +113,29 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
     AsyncStorage.setItem(GOLDEN_NAILS_PLAYERS_KEY, JSON.stringify(goldenNailPlayers));
   }, [goldenNailPlayers]);
 
+  useLayoutEffect(() => {
+    if (Platform.OS !== 'android') return;
+    if (sortedPlayers.length === 0) return;
+    if (previousOrderRef.current.length === 0) {
+      previousOrderRef.current = sortedPlayers.map((p) => p.id);
+      return;
+    }
+    sortedPlayers.forEach((p, newIndex) => {
+      const oldIndex = previousOrderRef.current.indexOf(p.id);
+      if (oldIndex === newIndex) return;
+      const anim = reorderAnimRef.current[p.id] ?? new Animated.Value(0);
+      reorderAnimRef.current[p.id] = anim;
+      anim.setValue((oldIndex - newIndex) * GOLDEN_NAIL_ROW_HEIGHT);
+      Animated.timing(anim, {
+        toValue: 0,
+        duration: 280,
+        easing: Easing.inOut(Easing.ease),
+        useNativeDriver: true,
+      }).start();
+    });
+    previousOrderRef.current = sortedPlayers.map((p) => p.id);
+  }, [sortedPlayers]);
+
   const toggleSection = (key) => {
     setSectionsExpanded((prev) => ({ ...prev, [key]: !prev[key] }));
   };
@@ -131,7 +156,6 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
   };
 
   const openAddPlayerModal = () => {
-    doneFiredRef.current = false;
     setAddPlayerName('');
     setAddPlayerModalVisible(true);
   };
@@ -142,24 +166,26 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
   };
 
   const handleAddPlayerDone = () => {
-    if (doneFiredRef.current) return;
-    doneFiredRef.current = true;
-    addPlayerInputRef.current?.blur();
     const nameToAdd = addPlayerName.trim();
-    requestAnimationFrame(() => {
-      if (nameToAdd !== '') {
-        setGoldenNailPlayers((prev) => [...prev, { id: Date.now(), name: nameToAdd, goldNails: 0 }]);
-      }
-      closeAddPlayerModal();
-      Keyboard.dismiss();
-    });
+    Keyboard.dismiss();
+    if (nameToAdd !== '') {
+      setGoldenNailPlayers((prev) => [...prev, { id: Date.now(), name: nameToAdd, goldNails: 0 }]);
+    }
+    closeAddPlayerModal();
   };
 
   const handleGoldenNailChange = (playerId, delta) => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setGoldenNailPlayers((prev) =>
-      prev.map((p) => (p.id === playerId ? { ...p, goldNails: Math.max(0, p.goldNails + delta) } : p))
-    );
+    if (Platform.OS === 'android') {
+      previousOrderRef.current = sortedPlayers.map((p) => p.id);
+      setGoldenNailPlayers((prev) =>
+        prev.map((p) => (p.id === playerId ? { ...p, goldNails: Math.max(0, p.goldNails + delta) } : p))
+      );
+    } else {
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+      setGoldenNailPlayers((prev) =>
+        prev.map((p) => (p.id === playerId ? { ...p, goldNails: Math.max(0, p.goldNails + delta) } : p))
+      );
+    }
   };
 
   const handleClearGoldenNailPlayers = () => {
@@ -452,7 +478,19 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                         )}
                       </Pressable>
                     );
-                    return <React.Fragment key={key}>{rowWithLongPress}</React.Fragment>;
+                    if (Platform.OS === 'android') {
+                      reorderAnimRef.current[p.id] = reorderAnimRef.current[p.id] ?? new Animated.Value(0);
+                    }
+                    return Platform.OS === 'android' ? (
+                      <Animated.View
+                        key={key}
+                        style={{ transform: [{ translateY: reorderAnimRef.current[p.id] }] }}
+                      >
+                        {rowWithLongPress}
+                      </Animated.View>
+                    ) : (
+                      <React.Fragment key={key}>{rowWithLongPress}</React.Fragment>
+                    );
                   })}
                 </View>
               )}
@@ -464,10 +502,13 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
             animationType="fade"
             onRequestClose={closeAddPlayerModal}
           >
-            <View style={{ flex: 1, backgroundColor: 'rgba(18, 18, 18, 0.92)', justifyContent: 'center', alignItems: 'center', padding: 24 }}>
-              <Pressable style={StyleSheet.absoluteFill} onPress={closeAddPlayerModal} />
-              <ScrollView keyboardShouldPersistTaps="always" contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', alignItems: 'center' }} scrollEnabled={false}>
-                <View style={{ backgroundColor: '#1E1E1E', borderRadius: 12, padding: 20, width: '100%', maxWidth: 320, borderWidth: 1, borderColor: `${accent}40` }}>
+            <TouchableWithoutFeedback onPress={closeAddPlayerModal}>
+              <View style={{ flex: 1, backgroundColor: 'rgba(18, 18, 18, 0.92)', justifyContent: 'center', alignItems: 'center', padding: 24 }}>
+                <View
+                  style={{ backgroundColor: '#1E1E1E', borderRadius: 12, padding: 20, width: '100%', maxWidth: 320, borderWidth: 1, borderColor: `${accent}40` }}
+                  onStartShouldSetResponder={() => true}
+                  onMoveShouldSetResponder={() => true}
+                >
                   <Text style={[titleFontStyle, { fontSize: 18, marginBottom: 12, color: accent }]}>Enter Player's Name</Text>
                   <TextInput
                     ref={addPlayerInputRef}
@@ -477,7 +518,7 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                     placeholder="Name"
                     placeholderTextColor={`${accent}99`}
                     autoFocus={Platform.OS === 'ios'}
-                    blurOnSubmit={true}
+                    returnKeyType="done"
                     onSubmitEditing={handleAddPlayerDone}
                   />
                   <View style={{ flexDirection: 'row', gap: 8, justifyContent: 'center' }}>
@@ -496,7 +537,7 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                     >
                       <Text style={[{ color: accent, fontSize: 12 }, bodyFontStyle]}>Cancel</Text>
                     </TouchableOpacity>
-                    <Pressable
+                    <TouchableOpacity
                       style={{
                         flexDirection: 'row',
                         alignItems: 'center',
@@ -507,15 +548,14 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                         borderColor: accent,
                         backgroundColor: accent,
                       }}
-                      onPressIn={handleAddPlayerDone}
                       onPress={handleAddPlayerDone}
                     >
                       <Text style={[{ color: '#fff', fontSize: 12 }, bodyFontStyle]}>Done</Text>
-                    </Pressable>
+                    </TouchableOpacity>
                   </View>
                 </View>
-              </ScrollView>
-            </View>
+              </View>
+            </TouchableWithoutFeedback>
           </Modal>
         </View>
       </View>
