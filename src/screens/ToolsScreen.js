@@ -2,7 +2,7 @@
  * Tools tab: expandable sections for calculators and utilities.
  */
 import React, { useState, useMemo, useEffect, useLayoutEffect, useRef } from 'react';
-import { View, Text, ScrollView, TextInput, Modal, TouchableOpacity, Pressable, Platform, InteractionManager, LayoutAnimation, UIManager, Keyboard, Animated, Easing } from 'react-native';
+import { View, Text, ScrollView, TextInput, TouchableOpacity, Pressable, Platform, LayoutAnimation, UIManager, Keyboard, Animated, Easing } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { HEADER_HEIGHT } from '../styles';
 import { useTheme } from '../context/ThemeContext';
@@ -71,11 +71,9 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
   });
   const [playerCountInput, setPlayerCountInput] = useState(ZWSP);
   const [goldenNailPlayers, setGoldenNailPlayers] = useState([]);
-  const [addPlayerModalVisible, setAddPlayerModalVisible] = useState(false);
-  const [addPlayerName, setAddPlayerName] = useState('');
   const [selectedPlayerIdForDelete, setSelectedPlayerIdForDelete] = useState(null);
-  const addPlayerInputRef = useRef(null);
-  const doneFiredRef = useRef(false);
+  const [editingPlayerId, setEditingPlayerId] = useState(null); // null | 'new' | player id
+  const [editingPlayerName, setEditingPlayerName] = useState('');
   const previousOrderRef = useRef([]);
   const reorderAnimRef = useRef({});
 
@@ -96,18 +94,6 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
       }
     });
   }, []);
-
-  useEffect(() => {
-    if (!addPlayerModalVisible || Platform.OS !== 'android') return;
-    let timeoutId;
-    const task = InteractionManager.runAfterInteractions(() => {
-      timeoutId = setTimeout(() => addPlayerInputRef.current?.focus(), 150);
-    });
-    return () => {
-      task.cancel();
-      if (timeoutId) clearTimeout(timeoutId);
-    };
-  }, [addPlayerModalVisible]);
 
   useEffect(() => {
     if (goldenNailPlayers.length === 0) return;
@@ -133,26 +119,37 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
     setPlayerCountInput(text === '' ? ZWSP : text.replace(/\u200B/g, ''));
   };
 
-  const openAddPlayerModal = () => {
-    doneFiredRef.current = false;
-    setAddPlayerName('');
-    setAddPlayerModalVisible(true);
+  const handleStartAddPlayer = () => {
+    setSelectedPlayerIdForDelete(null);
+    setEditingPlayerId('new');
+    setEditingPlayerName('');
   };
 
-  const closeAddPlayerModal = () => {
-    setAddPlayerModalVisible(false);
-    setAddPlayerName('');
+  const handleStartEditPlayer = (p) => {
+    setSelectedPlayerIdForDelete(null);
+    setEditingPlayerId(p.id);
+    setEditingPlayerName(p.name);
   };
 
-  const handleAddPlayerDone = () => {
-    if (doneFiredRef.current) return;
-    doneFiredRef.current = true;
-    const nameToAdd = addPlayerName.trim();
-    Keyboard.dismiss();
-    if (nameToAdd !== '') {
-      setGoldenNailPlayers((prev) => [...prev, { id: Date.now(), name: nameToAdd, goldNails: 0 }]);
+  const handleSavePlayer = () => {
+    const name = editingPlayerName.trim();
+    if (!name) return;
+    if (editingPlayerId === 'new') {
+      setGoldenNailPlayers((prev) => [...prev, { id: Date.now(), name, goldNails: 0 }]);
+    } else {
+      setGoldenNailPlayers((prev) =>
+        prev.map((p) => (p.id === editingPlayerId ? { ...p, name } : p))
+      );
     }
-    closeAddPlayerModal();
+    setEditingPlayerId(null);
+    setEditingPlayerName('');
+    Keyboard.dismiss();
+  };
+
+  const handleCancelEdit = () => {
+    setEditingPlayerId(null);
+    setEditingPlayerName('');
+    Keyboard.dismiss();
   };
 
   const handleGoldenNailChange = (playerId, delta) => {
@@ -171,12 +168,18 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
 
   const handleClearGoldenNailPlayers = () => {
     setGoldenNailPlayers([]);
+    setEditingPlayerId(null);
+    setEditingPlayerName('');
     AsyncStorage.removeItem(GOLDEN_NAILS_PLAYERS_KEY);
   };
 
   const handleDeleteGoldenNailPlayer = (playerId) => {
     setGoldenNailPlayers((prev) => prev.filter((p) => p.id !== playerId));
     setSelectedPlayerIdForDelete(null);
+    if (editingPlayerId === playerId) {
+      setEditingPlayerId(null);
+      setEditingPlayerName('');
+    }
   };
 
   const sortedPlayers = useMemo(
@@ -198,7 +201,7 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
     }
     sortedPlayers.forEach((p, newIndex) => {
       const oldIndex = previousOrderRef.current.indexOf(p.id);
-      if (oldIndex === newIndex) return;
+      if (oldIndex === -1 || oldIndex === newIndex) return;
       const anim = reorderAnimRef.current[p.id] ?? new Animated.Value(0);
       reorderAnimRef.current[p.id] = anim;
       anim.setValue((oldIndex - newIndex) * GOLDEN_NAIL_ROW_HEIGHT);
@@ -211,6 +214,30 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
     });
     previousOrderRef.current = sortedPlayers.map((p) => p.id);
   }, [sortedPlayers]);
+
+  const accentButtonStyle = {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: accent,
+    backgroundColor: `${accent}1A`,
+  };
+
+  const accentFilledButtonStyle = {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: accent,
+    backgroundColor: accent,
+  };
 
   return (
     <ScrollView
@@ -341,7 +368,7 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                     borderColor: accent,
                     backgroundColor: `${accent}1A`,
                   }}
-                  onPress={openAddPlayerModal}
+                  onPress={handleStartAddPlayer}
                 >
                   <PlusIcon width={15} height={15} fill={accent} />
                   <Text style={[{ color: accent, fontSize: 12 }, bodyFontStyle]}>Player</Text>
@@ -367,25 +394,50 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                   </TouchableOpacity>
                 )}
               </View>
-              {goldenNailPlayers.length === 0 ? (
+              {goldenNailPlayers.length === 0 && editingPlayerId !== 'new' ? (
                 <Text style={[styles.toolDescription, bodyFontStyle, { marginTop: 12 }]}>Add a player to begin</Text>
               ) : (
                 <View style={{ marginTop: 14 }}>
                   {sortedPlayers.map((p, i) => {
+                    const isEditing = editingPlayerId === p.id;
                     const rowContent = (
                       <>
                         {i > 0 && (
                           <View style={{ height: 1, backgroundColor: `${accent}30`, marginVertical: 8 }} />
                         )}
                         <View>
+                          {/* Name row — TextInput when editing, Text otherwise */}
                           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 6 }}>
                             {i === 0 && <FirstIcon width={22} height={22} />}
                             {i === 1 && <SecondIcon width={22} height={22} />}
                             {i === 2 && <ThirdIcon width={22} height={22} />}
-                            <Text style={[titleFontStyle, { fontSize: 22, color: accent }]} numberOfLines={1}>
-                              {p.name}
-                            </Text>
+                            {isEditing ? (
+                              <TextInput
+                                autoFocus
+                                value={editingPlayerName}
+                                onChangeText={setEditingPlayerName}
+                                returnKeyType="done"
+                                onSubmitEditing={handleSavePlayer}
+                                style={[titleFontStyle, { fontSize: 22, color: accent, flex: 1, textAlign: 'center', padding: 0 }]}
+                              />
+                            ) : (
+                              <Text style={[titleFontStyle, { fontSize: 22, color: accent }]} numberOfLines={1}>
+                                {p.name}
+                              </Text>
+                            )}
                           </View>
+                          {/* Save / Cancel row — only visible in edit mode */}
+                          {isEditing && (
+                            <View style={{ flexDirection: 'row', gap: 8, justifyContent: 'center', marginBottom: 8 }}>
+                              <TouchableOpacity style={accentButtonStyle} onPress={handleCancelEdit}>
+                                <CloseIcon width={14} height={14} fill={accent} />
+                                <Text style={[{ color: accent, fontSize: 12 }, bodyFontStyle]}>Cancel</Text>
+                              </TouchableOpacity>
+                              <TouchableOpacity style={accentFilledButtonStyle} onPress={handleSavePlayer}>
+                                <Text style={[{ color: '#fff', fontSize: 12 }, bodyFontStyle]}>Save</Text>
+                              </TouchableOpacity>
+                            </View>
+                          )}
                           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
                             <Text style={[bodyFontStyle, { fontSize: 16, color: '#FFFFFF', ...(Platform.OS === 'android' && { includeFontPadding: false }) }]}>
                               {p.goldNails} Gold Nails
@@ -441,26 +493,22 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                     );
                     const key = p.id;
                     const rowWithLongPress = (
-                      <Pressable onLongPress={() => setSelectedPlayerIdForDelete(p.id)}>
+                      <Pressable onLongPress={isEditing ? undefined : () => setSelectedPlayerIdForDelete(p.id)}>
                         {rowContent}
-                        {selectedPlayerIdForDelete === p.id && (
+                        {selectedPlayerIdForDelete === p.id && !isEditing && (
                           <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8, marginTop: 8 }}>
                             <TouchableOpacity
-                              style={{
-                                flexDirection: 'row',
-                                alignItems: 'center',
-                                gap: 4,
-                                paddingVertical: 6,
-                                paddingHorizontal: 10,
-                                borderRadius: 6,
-                                borderWidth: 1,
-                                borderColor: accent,
-                                backgroundColor: `${accent}1A`,
-                              }}
+                              style={accentButtonStyle}
                               onPress={() => setSelectedPlayerIdForDelete(null)}
                             >
                               <CloseIcon width={14} height={14} fill={accent} />
                               <Text style={[{ color: accent, fontSize: 12 }, bodyFontStyle]}>Cancel</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                              style={accentButtonStyle}
+                              onPress={() => handleStartEditPlayer(p)}
+                            >
+                              <Text style={[{ color: accent, fontSize: 12 }, bodyFontStyle]}>Edit</Text>
                             </TouchableOpacity>
                             <TouchableOpacity
                               style={{
@@ -497,76 +545,39 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                       <React.Fragment key={key}>{rowWithLongPress}</React.Fragment>
                     );
                   })}
+                  {/* Inline new player row */}
+                  {editingPlayerId === 'new' && (
+                    <View>
+                      {sortedPlayers.length > 0 && (
+                        <View style={{ height: 1, backgroundColor: `${accent}30`, marginVertical: 8 }} />
+                      )}
+                      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 8 }}>
+                        <TextInput
+                          autoFocus
+                          value={editingPlayerName}
+                          onChangeText={setEditingPlayerName}
+                          placeholder="Player name"
+                          placeholderTextColor={`${accent}99`}
+                          returnKeyType="done"
+                          onSubmitEditing={handleSavePlayer}
+                          style={[titleFontStyle, { fontSize: 22, color: accent, flex: 1, textAlign: 'center', padding: 0 }]}
+                        />
+                      </View>
+                      <View style={{ flexDirection: 'row', gap: 8, justifyContent: 'center' }}>
+                        <TouchableOpacity style={accentButtonStyle} onPress={handleCancelEdit}>
+                          <CloseIcon width={14} height={14} fill={accent} />
+                          <Text style={[{ color: accent, fontSize: 12 }, bodyFontStyle]}>Cancel</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={accentFilledButtonStyle} onPress={handleSavePlayer}>
+                          <Text style={[{ color: '#fff', fontSize: 12 }, bodyFontStyle]}>Save</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  )}
                 </View>
               )}
             </View>
           </CollapsibleSection>
-          <Modal
-            visible={addPlayerModalVisible}
-            transparent
-            animationType="fade"
-            onRequestClose={closeAddPlayerModal}
-          >
-            <View style={{ flex: 1, backgroundColor: 'rgba(18, 18, 18, 0.92)', justifyContent: 'center', alignItems: 'center', padding: 24 }}>
-              {/* Backdrop — behind card due to paint order (first sibling = lower z) */}
-              <TouchableOpacity
-                style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 }}
-                onPress={closeAddPlayerModal}
-                activeOpacity={1}
-              />
-              {/* Card wrapper — TouchableOpacity absorbs taps on non-interactive card areas
-                  so backdrop doesn't fire; inner buttons take priority over this wrapper */}
-              <TouchableOpacity activeOpacity={1} onPress={() => {}} style={{ width: '100%', maxWidth: 320 }}>
-                <View style={{ backgroundColor: '#1E1E1E', borderRadius: 12, padding: 20, borderWidth: 1, borderColor: `${accent}40` }}>
-                  <Text style={[titleFontStyle, { fontSize: 18, marginBottom: 12, color: accent }]}>Enter Player's Name</Text>
-                  <TextInput
-                    ref={addPlayerInputRef}
-                    style={[bodyFontStyle, { borderWidth: 1, borderColor: `${accent}50`, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 10, marginBottom: 16, fontSize: 16, backgroundColor: '#2A2A2A', color: accent }]}
-                    value={addPlayerName}
-                    onChangeText={setAddPlayerName}
-                    placeholder="Name"
-                    placeholderTextColor={`${accent}99`}
-                    autoFocus={Platform.OS === 'ios'}
-                    returnKeyType="done"
-                    onSubmitEditing={handleAddPlayerDone}
-                  />
-                  <View style={{ flexDirection: 'row', gap: 8, justifyContent: 'center' }}>
-                    <TouchableOpacity
-                      style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        paddingHorizontal: 14,
-                        paddingVertical: 7,
-                        borderRadius: 6,
-                        borderWidth: 1,
-                        borderColor: accent,
-                        backgroundColor: `${accent}1A`,
-                      }}
-                      onPress={closeAddPlayerModal}
-                    >
-                      <Text style={[{ color: accent, fontSize: 12 }, bodyFontStyle]}>Cancel</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        paddingHorizontal: 14,
-                        paddingVertical: 7,
-                        borderRadius: 6,
-                        borderWidth: 1,
-                        borderColor: accent,
-                        backgroundColor: accent,
-                      }}
-                      onPressIn={handleAddPlayerDone}
-                      onPress={handleAddPlayerDone}
-                    >
-                      <Text style={[{ color: '#fff', fontSize: 12 }, bodyFontStyle]}>Done</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </TouchableOpacity>
-            </View>
-          </Modal>
         </View>
       </View>
     </ScrollView>
