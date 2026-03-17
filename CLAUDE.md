@@ -28,6 +28,12 @@ When agents are operating autonomously in a workflow, they resolve decisions wit
 
 ---
 
+## Development Workflow
+
+Before editing any file, run `code <filepath>` to open it in VS Code so the user can see the code being changed. Example: `code src/screens/ToolsScreen.js`.
+
+---
+
 ## Build and Install
 
 When the user says "install it", asks to install after changes, or **any code change** is made that the user will need to test — run the full sequence below automatically. Do not wait to be asked.
