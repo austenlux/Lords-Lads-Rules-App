@@ -17,6 +17,8 @@ import MinusIcon from '../../assets/icons/minus.svg';
 import PlusIcon from '../../assets/icons/plus.svg';
 import TrashIcon from '../../assets/icons/trash.svg';
 import CloseIcon from '../../assets/icons/close.svg';
+import EditIcon from '../../assets/icons/edit.svg';
+import SaveIcon from '../../assets/icons/save.svg';
 import FirstIcon from '../../assets/icons/first.svg';
 import SecondIcon from '../../assets/icons/second.svg';
 import ThirdIcon from '../../assets/icons/third.svg';
@@ -76,6 +78,8 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
   const [editingPlayerName, setEditingPlayerName] = useState('');
   const previousOrderRef = useRef([]);
   const reorderAnimRef = useRef({});
+  const scrollViewRef = useRef(null);
+  const editingRowRefs = useRef({});
 
   useEffect(() => {
     AsyncStorage.getItem(GOLDEN_NAILS_PLAYERS_KEY).then((raw) => {
@@ -99,6 +103,29 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
     if (goldenNailPlayers.length === 0) return;
     AsyncStorage.setItem(GOLDEN_NAILS_PLAYERS_KEY, JSON.stringify(goldenNailPlayers));
   }, [goldenNailPlayers]);
+
+  // Scroll the editing row into view when the keyboard appears
+  useEffect(() => {
+    if (!editingPlayerId) return;
+    const scrollToEditing = () => {
+      if (editingPlayerId === 'new') {
+        scrollViewRef.current?.scrollToEnd({ animated: true });
+        return;
+      }
+      const rowRef = editingRowRefs.current[editingPlayerId];
+      if (!rowRef || !scrollViewRef.current) return;
+      rowRef.measureLayout(
+        scrollViewRef.current,
+        (_x, y, _w, h) => {
+          scrollViewRef.current?.scrollTo({ y: Math.max(0, y - 40), animated: true });
+        },
+        () => {}
+      );
+    };
+    const event = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const sub = Keyboard.addListener(event, scrollToEditing);
+    return () => sub.remove();
+  }, [editingPlayerId]);
 
   const toggleSection = (key) => {
     setSectionsExpanded((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -126,7 +153,7 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
   };
 
   const handleStartEditPlayer = (p) => {
-    setSelectedPlayerIdForDelete(null);
+    // Keep selectedPlayerIdForDelete so the long-press menu stays visible (Edit → Save)
     setEditingPlayerId(p.id);
     setEditingPlayerName(p.name);
   };
@@ -143,12 +170,14 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
     }
     setEditingPlayerId(null);
     setEditingPlayerName('');
+    setSelectedPlayerIdForDelete(null);
     Keyboard.dismiss();
   };
 
   const handleCancelEdit = () => {
     setEditingPlayerId(null);
     setEditingPlayerName('');
+    setSelectedPlayerIdForDelete(null);
     Keyboard.dismiss();
   };
 
@@ -170,6 +199,7 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
     setGoldenNailPlayers([]);
     setEditingPlayerId(null);
     setEditingPlayerName('');
+    setSelectedPlayerIdForDelete(null);
     AsyncStorage.removeItem(GOLDEN_NAILS_PLAYERS_KEY);
   };
 
@@ -241,8 +271,10 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
 
   return (
     <ScrollView
+      ref={scrollViewRef}
       style={[styles.scrollView, contentHeight != null && (Platform.OS === 'ios' ? { minHeight: contentHeight } : { height: contentHeight, minHeight: contentHeight })]}
       contentInsetAdjustmentBehavior={Platform.OS === 'ios' ? 'never' : undefined}
+      automaticallyAdjustKeyboardInsets={Platform.OS === 'ios'}
     >
       <View style={[styles.contentContainer, { paddingTop: contentPaddingTop ?? HEADER_HEIGHT }]}>
         <View style={Platform.OS === 'ios' ? styles.moreContainer : styles.aboutContainer}>
@@ -400,6 +432,7 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                 <View style={{ marginTop: 14 }}>
                   {sortedPlayers.map((p, i) => {
                     const isEditing = editingPlayerId === p.id;
+                    const saveDisabled = editingPlayerName.trim() === '' || editingPlayerName.trim() === p.name;
                     const rowContent = (
                       <>
                         {i > 0 && (
@@ -417,7 +450,7 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                                 value={editingPlayerName}
                                 onChangeText={setEditingPlayerName}
                                 returnKeyType="done"
-                                onSubmitEditing={handleSavePlayer}
+                                onSubmitEditing={saveDisabled ? undefined : handleSavePlayer}
                                 style={[titleFontStyle, { fontSize: 22, color: accent, flex: 1, textAlign: 'center', padding: 0 }]}
                               />
                             ) : (
@@ -426,18 +459,6 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                               </Text>
                             )}
                           </View>
-                          {/* Save / Cancel row — only visible in edit mode */}
-                          {isEditing && (
-                            <View style={{ flexDirection: 'row', gap: 8, justifyContent: 'center', marginBottom: 8 }}>
-                              <TouchableOpacity style={accentButtonStyle} onPress={handleCancelEdit}>
-                                <CloseIcon width={14} height={14} fill={accent} />
-                                <Text style={[{ color: accent, fontSize: 12 }, bodyFontStyle]}>Cancel</Text>
-                              </TouchableOpacity>
-                              <TouchableOpacity style={accentFilledButtonStyle} onPress={handleSavePlayer}>
-                                <Text style={[{ color: '#fff', fontSize: 12 }, bodyFontStyle]}>Save</Text>
-                              </TouchableOpacity>
-                            </View>
-                          )}
                           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
                             <Text style={[bodyFontStyle, { fontSize: 16, color: '#FFFFFF', ...(Platform.OS === 'android' && { includeFontPadding: false }) }]}>
                               {p.goldNails} Gold Nails
@@ -492,22 +513,32 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                     </>
                     );
                     const key = p.id;
-                    const rowWithLongPress = (
-                      <Pressable onLongPress={isEditing ? undefined : () => setSelectedPlayerIdForDelete(p.id)}>
-                        {rowContent}
-                        {selectedPlayerIdForDelete === p.id && !isEditing && (
-                          <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8, marginTop: 8 }}>
-                            <TouchableOpacity
-                              style={accentButtonStyle}
-                              onPress={() => setSelectedPlayerIdForDelete(null)}
-                            >
-                              <CloseIcon width={14} height={14} fill={accent} />
-                              <Text style={[{ color: accent, fontSize: 12 }, bodyFontStyle]}>Cancel</Text>
-                            </TouchableOpacity>
+                    // Long-press menu: Cancel | Edit | Delete (normal) or Cancel | Save (editing)
+                    const longPressMenu = selectedPlayerIdForDelete === p.id ? (
+                      <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8, marginTop: 8 }}>
+                        <TouchableOpacity
+                          style={accentButtonStyle}
+                          onPress={handleCancelEdit}
+                        >
+                          <CloseIcon width={14} height={14} fill={accent} />
+                          <Text style={[{ color: accent, fontSize: 12 }, bodyFontStyle]}>Cancel</Text>
+                        </TouchableOpacity>
+                        {isEditing ? (
+                          <TouchableOpacity
+                            style={[accentFilledButtonStyle, saveDisabled && { opacity: 0.4 }]}
+                            onPress={handleSavePlayer}
+                            disabled={saveDisabled}
+                          >
+                            <SaveIcon width={14} height={14} fill="#fff" />
+                            <Text style={[{ color: '#fff', fontSize: 12 }, bodyFontStyle]}>Save</Text>
+                          </TouchableOpacity>
+                        ) : (
+                          <>
                             <TouchableOpacity
                               style={accentButtonStyle}
                               onPress={() => handleStartEditPlayer(p)}
                             >
+                              <EditIcon width={14} height={14} fill={accent} />
                               <Text style={[{ color: accent, fontSize: 12 }, bodyFontStyle]}>Edit</Text>
                             </TouchableOpacity>
                             <TouchableOpacity
@@ -527,8 +558,14 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                               <TrashIcon width={14} height={14} fill="#E53935" />
                               <Text style={[{ color: '#E53935', fontSize: 12 }, bodyFontStyle]}>Delete</Text>
                             </TouchableOpacity>
-                          </View>
+                          </>
                         )}
+                      </View>
+                    ) : null;
+                    const rowWithLongPress = (
+                      <Pressable onLongPress={editingPlayerId !== null ? undefined : () => setSelectedPlayerIdForDelete(p.id)}>
+                        {rowContent}
+                        {longPressMenu}
                       </Pressable>
                     );
                     if (Platform.OS === 'android') {
@@ -537,43 +574,57 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                     return Platform.OS === 'android' ? (
                       <Animated.View
                         key={key}
+                        ref={(r) => { editingRowRefs.current[p.id] = r; }}
                         style={{ transform: [{ translateY: reorderAnimRef.current[p.id] }] }}
                       >
                         {rowWithLongPress}
                       </Animated.View>
                     ) : (
-                      <React.Fragment key={key}>{rowWithLongPress}</React.Fragment>
+                      <View
+                        key={key}
+                        ref={(r) => { editingRowRefs.current[p.id] = r; }}
+                      >
+                        {rowWithLongPress}
+                      </View>
                     );
                   })}
                   {/* Inline new player row */}
-                  {editingPlayerId === 'new' && (
-                    <View>
-                      {sortedPlayers.length > 0 && (
-                        <View style={{ height: 1, backgroundColor: `${accent}30`, marginVertical: 8 }} />
-                      )}
-                      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 8 }}>
-                        <TextInput
-                          autoFocus
-                          value={editingPlayerName}
-                          onChangeText={setEditingPlayerName}
-                          placeholder="Player name"
-                          placeholderTextColor={`${accent}99`}
-                          returnKeyType="done"
-                          onSubmitEditing={handleSavePlayer}
-                          style={[titleFontStyle, { fontSize: 22, color: accent, flex: 1, textAlign: 'center', padding: 0 }]}
-                        />
+                  {editingPlayerId === 'new' && (() => {
+                    const saveDisabled = editingPlayerName.trim() === '';
+                    return (
+                      <View>
+                        {sortedPlayers.length > 0 && (
+                          <View style={{ height: 1, backgroundColor: `${accent}30`, marginVertical: 8 }} />
+                        )}
+                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 8 }}>
+                          <TextInput
+                            autoFocus
+                            value={editingPlayerName}
+                            onChangeText={setEditingPlayerName}
+                            placeholder="Player name"
+                            placeholderTextColor={`${accent}99`}
+                            returnKeyType="done"
+                            onSubmitEditing={saveDisabled ? undefined : handleSavePlayer}
+                            style={[titleFontStyle, { fontSize: 22, color: accent, flex: 1, textAlign: 'center', padding: 0 }]}
+                          />
+                        </View>
+                        <View style={{ flexDirection: 'row', gap: 8, justifyContent: 'center' }}>
+                          <TouchableOpacity style={accentButtonStyle} onPress={handleCancelEdit}>
+                            <CloseIcon width={14} height={14} fill={accent} />
+                            <Text style={[{ color: accent, fontSize: 12 }, bodyFontStyle]}>Cancel</Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity
+                            style={[accentFilledButtonStyle, saveDisabled && { opacity: 0.4 }]}
+                            onPress={handleSavePlayer}
+                            disabled={saveDisabled}
+                          >
+                            <SaveIcon width={14} height={14} fill="#fff" />
+                            <Text style={[{ color: '#fff', fontSize: 12 }, bodyFontStyle]}>Save</Text>
+                          </TouchableOpacity>
+                        </View>
                       </View>
-                      <View style={{ flexDirection: 'row', gap: 8, justifyContent: 'center' }}>
-                        <TouchableOpacity style={accentButtonStyle} onPress={handleCancelEdit}>
-                          <CloseIcon width={14} height={14} fill={accent} />
-                          <Text style={[{ color: accent, fontSize: 12 }, bodyFontStyle]}>Cancel</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={accentFilledButtonStyle} onPress={handleSavePlayer}>
-                          <Text style={[{ color: '#fff', fontSize: 12 }, bodyFontStyle]}>Save</Text>
-                        </TouchableOpacity>
-                      </View>
-                    </View>
-                  )}
+                    );
+                  })()}
                 </View>
               )}
             </View>
