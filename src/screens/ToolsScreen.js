@@ -2,7 +2,7 @@
  * Tools tab: expandable sections for calculators and utilities.
  */
 import React, { useState, useMemo, useEffect, useLayoutEffect, useRef } from 'react';
-import { View, Text, ScrollView, TextInput, TouchableOpacity, Pressable, Platform, LayoutAnimation, UIManager, Keyboard, Animated, Easing } from 'react-native';
+import { View, Text, ScrollView, TextInput, TouchableOpacity, Pressable, Platform, LayoutAnimation, UIManager, Keyboard, Animated, Easing, KeyboardAvoidingView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { HEADER_HEIGHT } from '../styles';
 import { useTheme } from '../context/ThemeContext';
@@ -270,11 +270,15 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
   };
 
   return (
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      style={{ flex: 1 }}
+      keyboardVerticalOffset={HEADER_HEIGHT}
+    >
     <ScrollView
       ref={scrollViewRef}
       style={[styles.scrollView, contentHeight != null && (Platform.OS === 'ios' ? { minHeight: contentHeight } : { height: contentHeight, minHeight: contentHeight })]}
       contentInsetAdjustmentBehavior={Platform.OS === 'ios' ? 'never' : undefined}
-      automaticallyAdjustKeyboardInsets={Platform.OS === 'ios'}
     >
       <View style={[styles.contentContainer, { paddingTop: contentPaddingTop ?? HEADER_HEIGHT }]}>
         <View style={Platform.OS === 'ios' ? styles.moreContainer : styles.aboutContainer}>
@@ -632,5 +636,6 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
         </View>
       </View>
     </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
