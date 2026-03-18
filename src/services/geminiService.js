@@ -54,11 +54,12 @@ export async function askGemini(prompt) {
   callTimestamps.push(Date.now());
 
   try {
-    const url = `${GEMINI_ENDPOINT}?key=${GEMINI_API_KEY}`;
-
-    const response = await fetch(url, {
+    const response = await fetch(GEMINI_ENDPOINT, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': GEMINI_API_KEY,
+      },
       signal: controller.signal,
       body: JSON.stringify({
         contents: [{
