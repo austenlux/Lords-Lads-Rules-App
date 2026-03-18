@@ -27,17 +27,8 @@ import { useGameAssistant } from './src/hooks/useGameAssistant';
 import { ContentScreen, MoreScreen, ToolsScreen } from './src/screens';
 import { VoiceAssistantFAB, VoiceAssistantModal } from './src/components';
 import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { buildIndex } from './src/services/ragService';
 import { initContentFlags } from './src/services/contentService';
-
-const LEGACY_SUMMARY_KEYS = [
-  '@cache_rules_summary',
-  '@cache_expansions_summary',
-  '@cache_rules_summary_hash',
-  '@cache_expansions_summary_hash',
-  '@lnl_show_summary_enabled',
-];
 
 const SPLASH_MIN_MS = 1000;
 const SPLASH_FADE_MS = 400;
@@ -117,7 +108,6 @@ function AppContent() {
   }, []);
 
   useEffect(() => {
-    AsyncStorage.multiRemove(LEGACY_SUMMARY_KEYS).catch(() => {});
     initContentFlags().catch(() => {});
   }, []);
 
