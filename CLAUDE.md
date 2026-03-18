@@ -45,7 +45,7 @@ When the user says "install it", asks to install after changes, or **any code ch
 2. **Build, install, and launch each platform before starting the next.** Do NOT build both platforms first and then install — the user needs to start testing the first platform while the second builds:
    - **Android first:** Build → Install → Launch, then move to iOS.
      - Build: `npm run build:android:debug`
-     - Install: `adb install -r android/app/build/outputs/apk/debug/app-debug.apk`
+     - Install: `adb install -r android/app/build/outputs/apk/debug/lords-and-lads-rules-debug.apk`
      - Launch: `adb shell am start -n com.lux.lnlrules/.MainActivity`
    - **iOS second:** Build → Install → Launch.
      - Build: `xcodebuild -workspace ios/LordsandLadsRules.xcworkspace -scheme LordsandLadsRules -configuration Debug -destination 'generic/platform=iOS' -derivedDataPath ios/build/debug -allowProvisioningUpdates`
