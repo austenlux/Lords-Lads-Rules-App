@@ -2,7 +2,7 @@
  * Tools tab: expandable sections for calculators and utilities.
  */
 import React, { useState, useMemo, useEffect, useLayoutEffect, useRef } from 'react';
-import { View, Text, ScrollView, TextInput, TouchableOpacity, Pressable, Platform, LayoutAnimation, UIManager, Keyboard, Animated, Easing, KeyboardAvoidingView } from 'react-native';
+import { View, Text, ScrollView, TextInput, TouchableOpacity, Pressable, Platform, LayoutAnimation, UIManager, Keyboard, Animated, Easing, KeyboardAvoidingView, Dimensions } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { HEADER_HEIGHT } from '../styles';
 import { useTheme } from '../context/ThemeContext';
@@ -104,20 +104,26 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
     AsyncStorage.setItem(GOLDEN_NAILS_PLAYERS_KEY, JSON.stringify(goldenNailPlayers));
   }, [goldenNailPlayers]);
 
-  // Scroll the editing row into view when the keyboard appears
+  // Scroll so the entire editing row (name + nails + buttons) clears the keyboard
   useEffect(() => {
     if (!editingPlayerId) return;
-    const scrollToEditing = () => {
+    const scrollToEditing = (e) => {
       if (editingPlayerId === 'new') {
         scrollViewRef.current?.scrollToEnd({ animated: true });
         return;
       }
       const rowRef = editingRowRefs.current[editingPlayerId];
       if (!rowRef || !scrollViewRef.current) return;
+      const keyboardHeight = e?.endCoordinates?.height ?? 300;
+      const screenHeight = Dimensions.get('window').height;
+      // Available visible area above the keyboard (header already accounts for top)
+      const visibleHeight = screenHeight - keyboardHeight - HEADER_HEIGHT;
       rowRef.measureLayout(
         scrollViewRef.current,
-        (_x, y, _w, h) => {
-          scrollViewRef.current?.scrollTo({ y: Math.max(0, y - 40), animated: true });
+        (_x, rowY, _w, rowH) => {
+          // Scroll so the row bottom + padding sits just above the keyboard
+          const scrollY = Math.max(0, rowY + rowH + 24 - visibleHeight);
+          scrollViewRef.current?.scrollTo({ y: scrollY, animated: true });
         },
         () => {}
       );
