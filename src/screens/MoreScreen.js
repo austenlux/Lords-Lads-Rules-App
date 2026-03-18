@@ -25,6 +25,7 @@ import TrashIcon from '../../assets/icons/trash.svg';
 import BenderIcon from '../../assets/icons/bender.svg';
 import CopyIcon from '../../assets/icons/copy.svg';
 import ExportIcon from '../../assets/icons/export.svg';
+import RefreshIcon from '../../assets/icons/refresh.svg';
 import { getRagLog, clearRagLog, onRagLogChange, formatRagLogAsText } from '../services/ragLogger';
 import { HEADER_HEIGHT } from '../styles';
 import NativeVoiceAssistantOptional from '../specs/NativeVoiceAssistantOptional';
@@ -237,6 +238,7 @@ export default function MoreScreen({
   ragChunkCount = 0,
   cloudLlmStatus = {},
   geminiUsageStats,
+  onRefreshContent,
 }) {
   const [releaseNotes, setReleaseNotes] = useState([]);
   const [expandedVersions, setExpandedVersions] = useState({});
@@ -285,6 +287,7 @@ export default function MoreScreen({
   const [eventCopied, setEventCopied] = useState(false);
   const [ragExported, setRagExported] = useState(false);
   const [eventExported, setEventExported] = useState(false);
+  const [refreshState, setRefreshState] = useState('idle'); // 'idle' | 'loading' | 'done'
   const [ragChunksExpanded, setRagChunksExpanded] = useState(false);
   const [ragScoredChunksExpanded, setRagScoredChunksExpanded] = useState({});
   const [ragSelectedChunkExpanded, setRagSelectedChunkExpanded] = useState({});
@@ -681,6 +684,18 @@ export default function MoreScreen({
     }
   };
 
+  const handleRefreshContent = async () => {
+    if (refreshState !== 'idle' || !onRefreshContent) return;
+    setRefreshState('loading');
+    try {
+      await onRefreshContent();
+      setRefreshState('done');
+      setTimeout(() => setRefreshState('idle'), 3000);
+    } catch (_) {
+      setRefreshState('idle');
+    }
+  };
+
   const handleExportEventLog = async () => {
     try {
       const text = formatEventLogAsText();
@@ -996,7 +1011,29 @@ export default function MoreScreen({
               <CardIconTitle icon={<SyncedIcon fill="#26C6DA" />} title="Rules Last Synced" styles={styles} />
               <Text style={[styles.moreTimestamp, { marginTop: 4, marginBottom: 12 }, bodyFontStyle]}>{rulesLastSynced || lastFetchDate || 'Never'}</Text>
               <CardIconTitle icon={<SyncedIcon fill="#26C6DA" />} title="Expansions Last Synced" styles={styles} />
-              <Text style={[styles.moreTimestamp, { marginTop: 4 }, bodyFontStyle]}>{expansionsLastSynced || lastFetchDate || 'Never'}</Text>
+              <Text style={[styles.moreTimestamp, { marginTop: 4, marginBottom: 14 }, bodyFontStyle]}>{expansionsLastSynced || lastFetchDate || 'Never'}</Text>
+              <TouchableOpacity
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 6,
+                  paddingHorizontal: 14,
+                  paddingVertical: 7,
+                  borderRadius: 6,
+                  borderWidth: 1,
+                  borderColor: refreshState === 'done' ? '#4CAF50' : accent,
+                  backgroundColor: refreshState === 'done' ? 'rgba(76,175,80,0.1)' : `${accent}1A`,
+                  alignSelf: 'center',
+                }}
+                onPress={handleRefreshContent}
+                disabled={refreshState !== 'idle'}
+              >
+                <RefreshIcon width={15} height={15} fill={refreshState === 'done' ? '#4CAF50' : accent} />
+                <Text style={[{ fontSize: 12, color: refreshState === 'done' ? '#4CAF50' : accent }, bodyFontStyle]}>
+                  {refreshState === 'loading' ? 'Fetching...' : refreshState === 'done' ? 'Done!' : 'Refresh'}
+                </Text>
+              </TouchableOpacity>
             </View>
 
             {/* ── App Repository card ── */}

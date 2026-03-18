@@ -311,6 +311,7 @@ function AppContent() {
         ragChunkCount={ragChunkCount}
         cloudLlmStatus={cloudLlmStatus}
         geminiUsageStats={geminiUsageStats}
+        onRefreshContent={retryFetchContent}
       />
     );
   };
