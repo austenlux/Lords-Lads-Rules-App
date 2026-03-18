@@ -129,7 +129,8 @@ export function useContent(styles, markdownStyles) {
     return true;
   };
 
-  /** Refetch both rules and expansions (e.g. from empty-state Retry). Persists to cache on success. */
+  /** Refetch both rules and expansions (e.g. from empty-state Retry or manual Refresh).
+   *  Returns true if at least one fetch succeeded, false if both failed. */
   const retryFetchContent = async () => {
     const [rulesOk, expansionsOk] = await Promise.all([fetchReadme(), fetchExpansions()]);
     const now = new Date().toLocaleString();
@@ -145,6 +146,7 @@ export function useContent(styles, markdownStyles) {
       setLastFetchDate(now);
       await saveLastFetchDate(now);
     }
+    return rulesOk || expansionsOk;
   };
 
   useEffect(() => {
