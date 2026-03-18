@@ -1,0 +1,14 @@
+diff --git a/node_modules/@op-engineering/op-sqlite/android/src/main/java/com/op/sqlite/OPSQLiteBridge.kt b/node_modules/@op-engineering/op-sqlite/android/src/main/java/com/op/sqlite/OPSQLiteBridge.kt
+index 1a2b3c4..5e6f7g8 100644
+--- a/node_modules/@op-engineering/op-sqlite/android/src/main/java/com/op/sqlite/OPSQLiteBridge.kt
++++ b/node_modules/@op-engineering/op-sqlite/android/src/main/java/com/op/sqlite/OPSQLiteBridge.kt
+@@ -16,8 +16,10 @@ class OPSQLiteBridge {
+     fun install(context: ReactContext) {
+         val jsContextPointer = context.javaScriptContextHolder!!.get()
+-        val jsCallInvokerHolder =
+-            context.catalystInstance.jsCallInvokerHolder as CallInvokerHolderImpl
++        // Use getJSCallInvokerHolder() which works in both bridge and bridgeless
++        // (new arch) modes. context.catalystInstance is null in bridgeless mode.
++        val jsCallInvokerHolder =
++            context.getJSCallInvokerHolder() as CallInvokerHolderImpl
+         // Trick to get the base database path
