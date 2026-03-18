@@ -314,7 +314,6 @@ function AppContent() {
 
   const successContent = (
     <>
-      <StatusBar barStyle="light-content" backgroundColor="transparent" translucent={true} />
       <View style={styles.mainContainer} onLayout={handleContentAreaLayout}>
         <View
           style={[
