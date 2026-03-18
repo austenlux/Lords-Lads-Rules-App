@@ -14,6 +14,9 @@ react {
     reactNativeDir = file("../../node_modules/react-native")
     codegenDir = file("../../node_modules/@react-native/codegen")
     entryFile = file("../../index.js")
+    // Bundle JS into the APK for all build types — no Metro server required
+    bundleInDebug = true
+    bundleInRelease = true
     autolinkLibrariesWithApp()
 }
 

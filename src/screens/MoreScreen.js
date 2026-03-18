@@ -1568,46 +1568,6 @@ export default function MoreScreen({
               styles={styles}
               style={styles.moreSectionWrapper}
             >
-              {/* ── Buy me some nails (iOS only — hidden from App Store in release via debug menu) ── */}
-              {Platform.OS === 'ios' && (
-                <View style={[styles.versionContainer, { paddingHorizontal: 10 }]}>
-                  <View style={styles.versionHeader}>
-                    <CardIconTitle icon={<VenmoIcon width={24} height={24} fill="#E8B923" />} title="Buy me some nails" styles={styles} />
-                  </View>
-                  <View style={styles.paymentSection}>
-                    <View style={styles.venmoGridRow}>
-                      {VENMO_OPTIONS.slice(0, 3).map((item) => (
-                        <View key={`venmo-ios-${item.amount}`} style={styles.venmoGridCell}>
-                          <View style={styles.nailButtonWrapper}>
-                            <Pressable
-                              style={({ pressed }) => [styles.nailButton, pressed && styles.nailButtonPressed]}
-                              onPress={() => Linking.openURL(getVenmoPayUrl(item.amount))}
-                            >
-                              <Image source={item.image} style={styles.nailImage} resizeMode="contain" />
-                              <Text style={[styles.nailLabel, bodyFontStyle]}>{item.label}</Text>
-                            </Pressable>
-                          </View>
-                        </View>
-                      ))}
-                    </View>
-                    <View style={styles.venmoGridRow}>
-                      {VENMO_OPTIONS.slice(3, 6).map((item) => (
-                        <View key={`venmo-ios-${item.amount}`} style={styles.venmoGridCell}>
-                          <View style={styles.nailButtonWrapper}>
-                            <Pressable
-                              style={({ pressed }) => [styles.nailButton, pressed && styles.nailButtonPressed]}
-                              onPress={() => Linking.openURL(getVenmoPayUrl(item.amount))}
-                            >
-                              <Image source={item.image} style={styles.nailImage} resizeMode="contain" />
-                              <Text style={[styles.nailLabel, bodyFontStyle]}>{item.label}</Text>
-                            </Pressable>
-                          </View>
-                        </View>
-                      ))}
-                    </View>
-                  </View>
-                </View>
-              )}
               {/* ── Feature Flags ── */}
               <View style={[styles.versionContainer, { paddingHorizontal: 10 }]}>
                 <TouchableOpacity onPress={toggleFeatureFlags} activeOpacity={0.7}>
