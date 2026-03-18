@@ -24,8 +24,6 @@ export function onEventLogChange(callback) {
   return () => listeners.delete(callback);
 }
 
-/** @deprecated Use onEventLogChange */
-export const onErrorLogChange = onEventLogChange;
 
 /**
  * Log the app launch as the first event in this session.
@@ -90,8 +88,6 @@ export function getEventLog() {
   return [...entries];
 }
 
-/** @deprecated Use getEventLog */
-export const getErrorLog = getEventLog;
 
 /**
  * Clear all entries for this session.
@@ -101,8 +97,6 @@ export function clearEventLog() {
   notifyListeners();
 }
 
-/** @deprecated Use clearEventLog */
-export const clearErrorLog = clearEventLog;
 
 /**
  * Format the entire event log as plain text for clipboard export.
