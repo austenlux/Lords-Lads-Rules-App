@@ -73,9 +73,12 @@ Answer the <latest_user_prompt> based ONLY on the data in <rulebook_core> and <r
  * Strips characters that could break the XML-style prompt tag structure.
  * Applied to all user-controlled input (question, history) before prompt insertion.
  */
+// Strips < and > to prevent corruption of XML-style prompt section tags.
+const stripAngleBrackets = (text) => text.replace(/[<>]/g, '');
+
 const sanitizeUserInput = (text) => {
   if (!text?.trim()) return '';
-  return text.replace(/[<>]/g, '').trim();
+  return stripAngleBrackets(text).trim();
 };
 
 /**
@@ -88,18 +91,17 @@ const sanitizeUserInput = (text) => {
 const sanitizeRulebookContent = (text) => {
   if (!text?.trim()) return '';
 
-  return text
-    // Remove the ToC block: from its header line to (not including) the next header.
-    .replace(/^#{1,6}\s+(?:table\s+of\s+contents|contents)\s*\n[\s\S]*?(?=^#{1,6}\s)/gim, '')
-    // Remove the top-level title heading (# Title) — not useful context for the LLM.
-    .replace(/^#\s+.+$/m, '')
-    // Remove image tags — the model can't process images and they waste tokens.
-    .replace(/!\[.*?\]\(.*?\)/g, '')
-    // Strip HTML entities (e.g. &amp; → &).
-    .replace(/&amp;/g, '&')
-    // Strip characters that conflict with XML-style prompt section tags.
-    .replace(/[<>]/g, '')
-    .trim();
+  return stripAngleBrackets(
+    text
+      // Remove the ToC block: from its header line to (not including) the next header.
+      .replace(/^#{1,6}\s+(?:table\s+of\s+contents|contents)\s*\n[\s\S]*?(?=^#{1,6}\s)/gim, '')
+      // Remove the top-level title heading (# Title) — not useful context for the LLM.
+      .replace(/^#\s+.+$/m, '')
+      // Remove image tags — the model can't process images and they waste tokens.
+      .replace(/!\[.*?\]\(.*?\)/g, '')
+      // Strip HTML entities (e.g. &amp; → &).
+      .replace(/&amp;/g, '&')
+  ).trim();
 };
 
 /**
