@@ -182,12 +182,11 @@ export default function VoiceAssistantModal({ messages, isOpen, fabBottom = 96 }
         useNativeDriver: true,
       }).start();
     } else {
-      isMounted.current = false;
       Animated.timing(mountOpacity, {
         toValue: 0,
         duration: 200,
         useNativeDriver: true,
-      }).start();
+      }).start(() => { isMounted.current = false; });
     }
   }, [isOpen, mountOpacity]);
 
