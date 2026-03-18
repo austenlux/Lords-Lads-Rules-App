@@ -16,14 +16,36 @@ import { logError, logEvent } from './errorLogger';
 const FETCH_TIMEOUT_MS = 20000;
 const FORCE_CONTENT_FETCH_FAILURE_KEY = '@lnl_force_content_fetch_failure';
 
+// In-memory cache for the force-fail debug flag.
+// Read once at startup via initContentFlags(); updated immediately when toggled.
+// Avoids an AsyncStorage round-trip on every fetch call.
+let _forceContentFetchFailure = false;
+
+/**
+ * Read persisted debug flags from AsyncStorage into memory.
+ * Call once at app startup before any content fetches run.
+ */
+export async function initContentFlags() {
+  const val = await AsyncStorage.getItem(FORCE_CONTENT_FETCH_FAILURE_KEY);
+  _forceContentFetchFailure = val === 'true';
+}
+
+/**
+ * Update the in-memory force-fail flag.
+ * Call this immediately after persisting the new value to AsyncStorage
+ * so subsequent fetches see the change without a storage read.
+ */
+export function setForceContentFetchFailure(value) {
+  _forceContentFetchFailure = Boolean(value);
+}
+
 /**
  * Fetch with a timeout via Promise.race (avoids AbortController platform bugs).
  * Returns the Response on success; throws on timeout or network error.
  * If the Force Content Fetch Failure flag is enabled, throws immediately.
  */
 async function fetchWithTimeout(url, opts = {}, timeout = FETCH_TIMEOUT_MS) {
-  const forceFail = (await AsyncStorage.getItem(FORCE_CONTENT_FETCH_FAILURE_KEY)) === 'true';
-  if (forceFail) {
+  if (_forceContentFetchFailure) {
     throw new Error('Force Content Fetch Failure enabled');
   }
   return Promise.race([

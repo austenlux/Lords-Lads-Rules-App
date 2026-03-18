@@ -27,6 +27,7 @@ import CopyIcon from '../../assets/icons/copy.svg';
 import ExportIcon from '../../assets/icons/export.svg';
 import RefreshIcon from '../../assets/icons/refresh.svg';
 import { getRagLog, clearRagLog, onRagLogChange, formatRagLogAsText } from '../services/ragLogger';
+import { setForceContentFetchFailure as updateForceContentFetchFailureCache } from '../services/contentService';
 import { HEADER_HEIGHT } from '../styles';
 import NativeVoiceAssistantOptional from '../specs/NativeVoiceAssistantOptional';
 import {
@@ -372,6 +373,7 @@ export default function MoreScreen({
 
   const setForceContentFetchFailureAndSave = async (value) => {
     setForceContentFetchFailure(value);
+    updateForceContentFetchFailureCache(value);
     await AsyncStorage.setItem(SETTINGS_KEYS.FORCE_CONTENT_FETCH_FAILURE, value ? 'true' : 'false');
     logEvent('Feature Flags', `Force Content Fetch Failure ${value ? 'enabled' : 'disabled'}`);
   };
