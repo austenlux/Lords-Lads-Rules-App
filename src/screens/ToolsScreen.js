@@ -285,13 +285,13 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={{ flex: 1 }}
       keyboardVerticalOffset={HEADER_HEIGHT}
     >
     <ScrollView
       ref={scrollViewRef}
-      style={[styles.scrollView, contentHeight != null && (Platform.OS === 'ios' ? { minHeight: contentHeight } : { height: contentHeight, minHeight: contentHeight })]}
+      style={[styles.scrollView, contentHeight != null && { minHeight: contentHeight }]}
       contentInsetAdjustmentBehavior={Platform.OS === 'ios' ? 'never' : undefined}
     >
       <View style={[styles.contentContainer, { paddingTop: contentPaddingTop ?? HEADER_HEIGHT }]}>
