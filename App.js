@@ -59,21 +59,9 @@ const TAB_BAR_HEIGHT = 68;
 /** Cap bottom inset so we don't reserve more than needed for the OS gesture bar (avoids excessive gap). */
 const TAB_BAR_BOTTOM_INSET_MAX = 20;
 
-/** On iOS, PagerView children get 0 height with flex-only layout; use explicit height. */
-function getPageHeight() {
-  return Dimensions.get('window').height - TAB_BAR_HEIGHT;
-}
-
-function getLogoLayout() {
-  const { width, height } = Dimensions.get('window');
+function computeLogoLayout({ width, height }) {
   const logoSize = Math.min(width, height) * LOGO_SIZE_RATIO;
-  return {
-    width,
-    height,
-    logoSize,
-    logoLeft: (width - logoSize) / 2,
-    logoTop: (height - logoSize) / 2,
-  };
+  return { width, height, logoSize, logoLeft: (width - logoSize) / 2, logoTop: (height - logoSize) / 2 };
 }
 
 export default function App() {
@@ -102,6 +90,15 @@ function AppContent() {
   const iosScrollRef = useRef(null);
   const insets = useSafeAreaInsets();
   const tabBarBottomInset = Math.min(insets.bottom, TAB_BAR_BOTTOM_INSET_MAX);
+
+  const [dims, setDims] = useState(() => Dimensions.get('window'));
+  useEffect(() => {
+    const sub = Dimensions.addEventListener('change', ({ window }) => setDims(window));
+    return () => sub.remove();
+  }, []);
+  const logoLayout = useMemo(() => computeLogoLayout(dims), [dims]);
+  const windowWidth = dims.width;
+  const pageHeight = dims.height - TAB_BAR_HEIGHT;
 
   useEffect(() => {
     const t = setTimeout(() => {
@@ -212,9 +209,6 @@ function AppContent() {
   }, [isThinking, isConvoOpen, isListening]);
 
 
-  const logoLayout = getLogoLayout();
-  const { width: windowWidth, height: windowHeight } = Dimensions.get('window');
-  const pageHeight = getPageHeight();
   const pageStyle = Platform.OS === 'ios' ? { flex: 1, height: pageHeight } : { flex: 1 };
 
   const [contentAreaHeight, setContentAreaHeight] = useState(null);
