@@ -349,9 +349,9 @@ export function useContent(styles, markdownStyles) {
     }, 100);
   };
 
-  const toggleSection = (path) => {
+  const makeToggle = (setState) => (path) => {
     if (!path) return;
-    setSections((prev) => {
+    setState((prev) => {
       if (!prev?.length) return prev;
       const next = JSON.parse(JSON.stringify(prev));
       function toggle(obj, pathParts) {
@@ -369,25 +369,8 @@ export function useContent(styles, markdownStyles) {
     });
   };
 
-  const toggleExpansionSection = (path) => {
-    if (!path) return;
-    setExpansionSections((prev) => {
-      if (!prev?.length) return prev;
-      const next = JSON.parse(JSON.stringify(prev));
-      function toggle(obj, pathParts) {
-        if (!obj || !pathParts?.length) return;
-        if (pathParts.length === 1) {
-          if (obj[pathParts[0]]) obj[pathParts[0]].isExpanded = !obj[pathParts[0]].isExpanded;
-          return;
-        }
-        const [cur, ...rest] = pathParts;
-        if (cur === 'subsections' && obj.subsections) toggle(obj.subsections, rest);
-        else if (obj[cur]) toggle(obj[cur], rest);
-      }
-      toggle(next, path.map(String));
-      return next;
-    });
-  };
+  const toggleSection = makeToggle(setSections);
+  const toggleExpansionSection = makeToggle(setExpansionSections);
 
   const handleSearchQueryChange = (newQuery) => {
     setSearchQuery(newQuery);
