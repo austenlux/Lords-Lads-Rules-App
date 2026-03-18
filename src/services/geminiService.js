@@ -52,6 +52,11 @@ export async function askGemini(prompt) {
   const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
   callTimestamps.push(Date.now());
+  // Prune entries older than 60s — that's all getGeminiUsageStats() uses.
+  const oneMinAgo = Date.now() - 60_000;
+  while (callTimestamps.length > 0 && callTimestamps[0] < oneMinAgo) {
+    callTimestamps.shift();
+  }
 
   try {
     const response = await fetch(GEMINI_ENDPOINT, {
