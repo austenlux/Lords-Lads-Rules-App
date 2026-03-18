@@ -285,7 +285,7 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior="padding"
       style={{ flex: 1 }}
       keyboardVerticalOffset={HEADER_HEIGHT}
     >
