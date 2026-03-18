@@ -148,7 +148,7 @@ export const FONT_PAIRINGS = [
 
 const FONT_MAP = Object.fromEntries(FONT_PAIRINGS.map(f => [f.id, f]));
 
-function hexToGlow(hex, alpha = 0.3) {
+export function hexToGlow(hex, alpha = 0.3) {
   const r = parseInt(hex.slice(1, 3), 16);
   const g = parseInt(hex.slice(3, 5), 16);
   const b = parseInt(hex.slice(5, 7), 16);

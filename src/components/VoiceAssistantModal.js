@@ -26,7 +26,7 @@ import Markdown from 'react-native-markdown-display';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import WifiIcon from '../../assets/icons/wifi.svg';
 import NoWifiIcon from './NoWifiIcon';
-import { useTheme } from '../context/ThemeContext';
+import { useTheme, hexToGlow } from '../context/ThemeContext';
 
 const BANNER_MAP = {
   light_male: require('../../assets/clinks/banners/light_male_banner.png'),
@@ -50,10 +50,6 @@ const BASE_MODAL_COLORS = {
   roleLabelAI:     '#888888',
 };
 
-function hexToRgb(hex) {
-  const n = parseInt(hex.replace('#', ''), 16);
-  return `${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}`;
-}
 
 const BASE_MD_STYLES = {
   body:       { color: BASE_MODAL_COLORS.assistantText, fontSize: 14, lineHeight: 22 },
@@ -150,12 +146,11 @@ export default function VoiceAssistantModal({ messages, isOpen, fabBottom = 96 }
   }, [isOpen]);
 
   const { accent, titleFontStyle, bodyFontStyle } = useTheme();
-  const rgb = hexToRgb(accent);
   const COLORS = {
     ...BASE_MODAL_COLORS,
-    border:         `rgba(${rgb}, 0.25)`,
-    userBubble:     `rgba(${rgb}, 0.12)`,
-    userBorder:     `rgba(${rgb}, 0.5)`,
+    border:         hexToGlow(accent, 0.25),
+    userBubble:     hexToGlow(accent, 0.12),
+    userBorder:     hexToGlow(accent, 0.5),
     roleLabelUser:  accent,
     cursor:         accent,
   };
