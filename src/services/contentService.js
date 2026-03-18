@@ -14,12 +14,18 @@ import {
 import { logError, logEvent } from './errorLogger';
 
 const FETCH_TIMEOUT_MS = 20000;
+const FORCE_CONTENT_FETCH_FAILURE_KEY = '@lnl_force_content_fetch_failure';
 
 /**
  * Fetch with a timeout via Promise.race (avoids AbortController platform bugs).
  * Returns the Response on success; throws on timeout or network error.
+ * If the Force Content Fetch Failure flag is enabled, throws immediately.
  */
-function fetchWithTimeout(url, opts = {}, timeout = FETCH_TIMEOUT_MS) {
+async function fetchWithTimeout(url, opts = {}, timeout = FETCH_TIMEOUT_MS) {
+  const forceFail = (await AsyncStorage.getItem(FORCE_CONTENT_FETCH_FAILURE_KEY)) === 'true';
+  if (forceFail) {
+    throw new Error('Force Content Fetch Failure enabled');
+  }
   return Promise.race([
     fetch(url, opts),
     new Promise((_, reject) =>

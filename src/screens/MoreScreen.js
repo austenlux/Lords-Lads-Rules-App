@@ -43,6 +43,7 @@ const SETTINGS_KEYS = {
   EXPAND_EXPANSIONS_DEFAULT: '@lnl_expand_expansions_default',
   THINKING_SOUNDS_ENABLED: '@lnl_thinking_sounds_enabled',
   FORCE_LOCAL_LLM: '@lnl_force_local_llm',
+  FORCE_CONTENT_FETCH_FAILURE: '@lnl_force_content_fetch_failure',
   CLINKS_APPEARANCE: '@lnl_clinks_appearance',
 };
 import { getVenmoPayUrl } from '../constants';
@@ -260,6 +261,7 @@ export default function MoreScreen({
   const [expandDefaultsExpanded, setExpandDefaultsExpanded] = useState(false);
   const [thinkingSoundsEnabled, setThinkingSoundsEnabled] = useState(false);
   const [forceLocalLlm, setForceLocalLlm] = useState(false);
+  const [forceContentFetchFailure, setForceContentFetchFailure] = useState(false);
   const { themeId: selectedTheme, accent, selectTheme, fontId: selectedFont, selectFont, titleFont, bodyFont, titleFontStyle, bodyFontStyle } = useTheme();
   const [themeExpanded, setThemeExpanded] = useState(false);
   const [themeColorExpanded, setThemeColorExpanded] = useState(false);
@@ -323,11 +325,12 @@ export default function MoreScreen({
 
   useEffect(() => {
     const load = async () => {
-      const [rules, expansions, thinkingSounds, forceLocal, appearance] = await Promise.all([
+      const [rules, expansions, thinkingSounds, forceLocal, forceContentFail, appearance] = await Promise.all([
         AsyncStorage.getItem(SETTINGS_KEYS.EXPAND_RULES_DEFAULT),
         AsyncStorage.getItem(SETTINGS_KEYS.EXPAND_EXPANSIONS_DEFAULT),
         AsyncStorage.getItem(SETTINGS_KEYS.THINKING_SOUNDS_ENABLED),
         AsyncStorage.getItem(SETTINGS_KEYS.FORCE_LOCAL_LLM),
+        AsyncStorage.getItem(SETTINGS_KEYS.FORCE_CONTENT_FETCH_FAILURE),
         AsyncStorage.getItem(SETTINGS_KEYS.CLINKS_APPEARANCE),
       ]);
       setExpandRulesDefault(rules === 'true');
@@ -336,6 +339,7 @@ export default function MoreScreen({
       setThinkingSoundsEnabled(soundsOn);
       NativeVoiceAssistantOptional?.setThinkingSoundEnabled(soundsOn);
       setForceLocalLlm(forceLocal === 'true');
+      setForceContentFetchFailure(forceContentFail === 'true');
       if (appearance) setClinksAppearance(appearance);
     };
     load();
@@ -364,6 +368,12 @@ export default function MoreScreen({
     setForceLocalLlm(value);
     await AsyncStorage.setItem(SETTINGS_KEYS.FORCE_LOCAL_LLM, value ? 'true' : 'false');
     logEvent('Feature Flags', `Force Local LLM ${value ? 'enabled' : 'disabled'}`);
+  };
+
+  const setForceContentFetchFailureAndSave = async (value) => {
+    setForceContentFetchFailure(value);
+    await AsyncStorage.setItem(SETTINGS_KEYS.FORCE_CONTENT_FETCH_FAILURE, value ? 'true' : 'false');
+    logEvent('Feature Flags', `Force Content Fetch Failure ${value ? 'enabled' : 'disabled'}`);
   };
 
   const setClinksAppearanceAndSave = async (id) => {
@@ -1580,13 +1590,24 @@ export default function MoreScreen({
                         thumbColor="#E1E1E1"
                       />
                     </View>
-                    <View style={[styles.settingsRow, styles.settingsRowLast, { marginBottom: 8 }]}>
+                    <View style={styles.settingsRow}>
                       <View style={[styles.settingsRowLabel, { flex: 1 }]}>
                         <Text style={[styles.settingsRowText, bodyFontStyle]}>Force Local LLM</Text>
                       </View>
                       <Switch
                         value={forceLocalLlm}
                         onValueChange={setForceLocalLlmAndSave}
+                        trackColor={{ false: '#555', true: accent }}
+                        thumbColor="#E1E1E1"
+                      />
+                    </View>
+                    <View style={[styles.settingsRow, styles.settingsRowLast, { marginBottom: 8 }]}>
+                      <View style={[styles.settingsRowLabel, { flex: 1 }]}>
+                        <Text style={[styles.settingsRowText, bodyFontStyle]}>Force Content Fetch Failure</Text>
+                      </View>
+                      <Switch
+                        value={forceContentFetchFailure}
+                        onValueChange={setForceContentFetchFailureAndSave}
                         trackColor={{ false: '#555', true: accent }}
                         thumbColor="#E1E1E1"
                       />
