@@ -80,6 +80,7 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
   const reorderAnimRef = useRef({});
   const scrollViewRef = useRef(null);
   const editingRowRefs = useRef({});
+  const editingInputRef = useRef(null);
 
   useEffect(() => {
     AsyncStorage.getItem(GOLDEN_NAILS_PLAYERS_KEY).then((raw) => {
@@ -103,6 +104,13 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
     if (goldenNailPlayers.length === 0) return;
     AsyncStorage.setItem(GOLDEN_NAILS_PLAYERS_KEY, JSON.stringify(goldenNailPlayers));
   }, [goldenNailPlayers]);
+
+  // Focus the input once when editing starts — avoids autoFocus re-triggering on re-renders
+  useEffect(() => {
+    if (!editingPlayerId) return;
+    const timer = setTimeout(() => editingInputRef.current?.focus(), 50);
+    return () => clearTimeout(timer);
+  }, [editingPlayerId]);
 
   // Scroll so the entire editing row (name + nails + buttons) clears the keyboard
   useEffect(() => {
@@ -456,7 +464,7 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                             {i === 2 && <ThirdIcon width={22} height={22} />}
                             {isEditing ? (
                               <TextInput
-                                autoFocus
+                                ref={editingInputRef}
                                 value={editingPlayerName}
                                 onChangeText={setEditingPlayerName}
                                 returnKeyType="done"
@@ -608,7 +616,7 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                         )}
                         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 8 }}>
                           <TextInput
-                            autoFocus
+                            ref={editingInputRef}
                             value={editingPlayerName}
                             onChangeText={setEditingPlayerName}
                             placeholder="Player name"
