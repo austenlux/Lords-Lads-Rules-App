@@ -98,19 +98,13 @@ export function useGameAssistant() {
     return `msg_${msgCounter.current}`;
   };
 
-  // ── Background setup: model + mic permission (runs once on mount) ────────
+  // ── Permission refresh (shared by runSetup and AppState listener) ────────
 
-  const runSetup = useCallback(async () => {
+  const refreshPermissions = useCallback(async () => {
     const native = NativeVoiceAssistantOptional;
 
-    if (!native) {
-      setModelStatus('unavailable');
-      setIsSupported(false);
-      return;
-    }
-
-
     if (isIOS) {
+      if (!native) return;
       try {
         const status = await native.getMicPermissionStatus();
         if (status === 'granted') {
@@ -145,6 +139,20 @@ export function useGameAssistant() {
         setMicPermissionStatus('not_granted');
       }
     }
+  }, []);
+
+  // ── Background setup: model + mic permission (runs once on mount) ────────
+
+  const runSetup = useCallback(async () => {
+    const native = NativeVoiceAssistantOptional;
+
+    if (!native) {
+      setModelStatus('unavailable');
+      setIsSupported(false);
+      return;
+    }
+
+    await refreshPermissions();
 
     try {
       logEvent('AI Model', 'Checking model status...');
@@ -181,7 +189,7 @@ export function useGameAssistant() {
       setModelStatus('unavailable');
       setIsSupported(false);
     }
-  }, []);
+  }, [refreshPermissions]);
 
   const retryModelSetup = useCallback(() => runSetup(), [runSetup]);
 
@@ -192,49 +200,12 @@ export function useGameAssistant() {
   // Re-check mic permission when the app returns to foreground (e.g. after
   // the user grants it in Settings and switches back).
   useEffect(() => {
-    const sub = AppState.addEventListener('change', async (state) => {
+    const sub = AppState.addEventListener('change', (state) => {
       if (state !== 'active') return;
-
-      if (isIOS) {
-        const native = NativeVoiceAssistantOptional;
-        if (!native) return;
-        try {
-          const status = await native.getMicPermissionStatus();
-          if (status === 'granted') {
-            setMicPermissionStatus('granted');
-          } else if (status === 'denied') {
-            setMicPermissionStatus('not_granted');
-          } else if (status === 'undetermined') {
-            setMicPermissionStatus('undetermined');
-          } else {
-            setMicPermissionStatus('unknown');
-          }
-        } catch {
-          setMicPermissionStatus('unknown');
-        }
-        if (typeof native.getSpeechPermissionStatus === 'function') {
-          try {
-            const speechStatus = await native.getSpeechPermissionStatus();
-            setSpeechPermissionStatus(speechStatus);
-          } catch {
-            setSpeechPermissionStatus('unknown');
-          }
-        }
-      }
-
-      if (isAndroid) {
-        try {
-          const granted = await PermissionsAndroid.check(
-            PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
-          );
-          setMicPermissionStatus(granted ? 'granted' : 'not_granted');
-        } catch {
-          setMicPermissionStatus('not_granted');
-        }
-      }
+      refreshPermissions();
     });
     return () => sub.remove();
-  }, []);
+  }, [refreshPermissions]);
 
   const requestMicPermission = useCallback(async () => {
     if (isIOS) {
