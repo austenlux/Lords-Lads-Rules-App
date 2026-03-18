@@ -2,7 +2,7 @@
  * Hook that owns all content/sections state, cache fetch, search, and section navigation.
  * Returns state, refs, handlers, and renderSection for use by App.
  */
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
@@ -23,6 +23,71 @@ import { TitleSection, Section } from '../components';
 const EXPAND_SETTINGS_KEYS = {
   RULES: '@lnl_expand_rules_default',
   EXPANSIONS: '@lnl_expand_expansions_default',
+};
+
+function findSectionPath(sectionsList, targetTitle, currentPath = []) {
+  if (!sectionsList || !targetTitle) return null;
+  const normalizeTitle = (t) => (t || '').toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '');
+  const normalizedTarget = normalizeTitle(targetTitle);
+  for (let i = 0; i < sectionsList.length; i++) {
+    const section = sectionsList[i];
+    if (!section?.title) continue;
+    if (section.title === targetTitle || normalizeTitle(section.title) === normalizedTarget) {
+      return [...currentPath, i];
+    }
+    if (section.subsections?.length > 0) {
+      const sub = findSectionPath(section.subsections, targetTitle, [...currentPath, i, 'subsections']);
+      if (sub) return sub;
+    }
+  }
+  return null;
+}
+
+function filterSectionsBySearch(sectionsList, query) {
+  const q = normalizeSearchQuery(query);
+  if (!q || q.length < 2) return sectionsList;
+  const copy = JSON.parse(JSON.stringify(sectionsList));
+  const queryLower = q.toLowerCase();
+
+  function process(section) {
+    if (!section) return false;
+    const titleMatch = section.title?.toLowerCase().includes(queryLower);
+    const contentMatch = section.content?.toLowerCase().includes(queryLower);
+    let hasSub = false;
+    if (section.subsections?.length > 0) {
+      section.subsections = section.subsections.filter((s) => process(s));
+      hasSub = section.subsections.length > 0;
+    }
+    if (titleMatch || contentMatch || hasSub) {
+      section.isExpanded = true;
+      return true;
+    }
+    return false;
+  }
+
+  const filtered = copy.filter((s) => s.isTitle || process(s));
+  const hasContent = filtered.some((s) => !s.isTitle);
+  return hasContent ? filtered : [];
+}
+
+const makeToggle = (setState) => (path) => {
+  if (!path) return;
+  setState((prev) => {
+    if (!prev?.length) return prev;
+    const next = JSON.parse(JSON.stringify(prev));
+    function toggle(obj, pathParts) {
+      if (!obj || !pathParts?.length) return;
+      if (pathParts.length === 1) {
+        if (obj[pathParts[0]]) obj[pathParts[0]].isExpanded = !obj[pathParts[0]].isExpanded;
+        return;
+      }
+      const [cur, ...rest] = pathParts;
+      if (cur === 'subsections' && obj.subsections) toggle(obj.subsections, rest);
+      else if (obj[cur]) toggle(obj[cur], rest);
+    }
+    toggle(next, path.map(String));
+    return next;
+  });
 };
 
 function applyExpandPreference(sections, expandAll) {
@@ -241,52 +306,7 @@ export function useContent(styles, markdownStyles) {
     init();
   }, []);
 
-  function findSectionPath(sectionsList, targetTitle, currentPath = []) {
-    if (!sectionsList || !targetTitle) return null;
-    const normalizeTitle = (t) => (t || '').toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '');
-    const normalizedTarget = normalizeTitle(targetTitle);
-    for (let i = 0; i < sectionsList.length; i++) {
-      const section = sectionsList[i];
-      if (!section?.title) continue;
-      if (section.title === targetTitle || normalizeTitle(section.title) === normalizedTarget) {
-        return [...currentPath, i];
-      }
-      if (section.subsections?.length > 0) {
-        const sub = findSectionPath(section.subsections, targetTitle, [...currentPath, i, 'subsections']);
-        if (sub) return sub;
-      }
-    }
-    return null;
-  }
-
-  function filterSectionsBySearch(sectionsList, query) {
-    const q = normalizeSearchQuery(query);
-    if (!q || q.length < 2) return sectionsList;
-    const copy = JSON.parse(JSON.stringify(sectionsList));
-    const queryLower = q.toLowerCase();
-
-    function process(section) {
-      if (!section) return false;
-      const titleMatch = section.title?.toLowerCase().includes(queryLower);
-      const contentMatch = section.content?.toLowerCase().includes(queryLower);
-      let hasSub = false;
-      if (section.subsections?.length > 0) {
-        section.subsections = section.subsections.filter((s) => process(s));
-        hasSub = section.subsections.length > 0;
-      }
-      if (titleMatch || contentMatch || hasSub) {
-        section.isExpanded = true;
-        return true;
-      }
-      return false;
-    }
-
-    const filtered = copy.filter((s) => s.isTitle || process(s));
-    const hasContent = filtered.some((s) => !s.isTitle);
-    return hasContent ? filtered : [];
-  }
-
-  const collapseAllAndExpandSection = (sectionTitle) => {
+  const collapseAllAndExpandSection = useCallback((sectionTitle) => {
     if (!sectionTitle || !sections?.length) return;
     let path = findSectionPath(sections, sectionTitle);
     if (!path) {
@@ -347,32 +367,13 @@ export function useContent(styles, markdownStyles) {
         }, () => {});
       }
     }, 100);
-  };
+  }, [sections, activeTab, rulesScrollViewRef, expansionsScrollViewRef]);
 
-  const makeToggle = (setState) => (path) => {
-    if (!path) return;
-    setState((prev) => {
-      if (!prev?.length) return prev;
-      const next = JSON.parse(JSON.stringify(prev));
-      function toggle(obj, pathParts) {
-        if (!obj || !pathParts?.length) return;
-        if (pathParts.length === 1) {
-          if (obj[pathParts[0]]) obj[pathParts[0]].isExpanded = !obj[pathParts[0]].isExpanded;
-          return;
-        }
-        const [cur, ...rest] = pathParts;
-        if (cur === 'subsections' && obj.subsections) toggle(obj.subsections, rest);
-        else if (obj[cur]) toggle(obj[cur], rest);
-      }
-      toggle(next, path.map(String));
-      return next;
-    });
-  };
+  // State setters from useState are stable references — empty deps is correct.
+  const toggleSection = useCallback(makeToggle(setSections), []);
+  const toggleExpansionSection = useCallback(makeToggle(setExpansionSections), []);
 
-  const toggleSection = makeToggle(setSections);
-  const toggleExpansionSection = makeToggle(setExpansionSections);
-
-  const handleSearchQueryChange = (newQuery) => {
+  const handleSearchQueryChange = useCallback((newQuery) => {
     setSearchQuery(newQuery);
     const normalized = normalizeSearchQuery(newQuery);
     if (normalized.length >= 2) {
@@ -385,9 +386,9 @@ export function useContent(styles, markdownStyles) {
       if (activeTab === 'rules') setSections(JSON.parse(JSON.stringify(originalSections)));
       else if (activeTab === 'expansions') setExpansionSections(JSON.parse(JSON.stringify(originalExpansionSections)));
     }
-  };
+  }, [searchQuery, activeTab, originalSections, originalExpansionSections]);
 
-  const toggleSearchBar = () => {
+  const toggleSearchBar = useCallback(() => {
     if (showSearch && searchQuery?.length >= 2) {
       setSearchQuery('');
       if (activeTab === 'rules') setSections(JSON.parse(JSON.stringify(originalSections)));
@@ -400,9 +401,9 @@ export function useContent(styles, markdownStyles) {
       }
     }
     setShowSearch((s) => !s);
-  };
+  }, [showSearch, searchQuery, activeTab, originalSections, originalExpansionSections, fetchExpansions]);
 
-  const renderSection = (section, index, parentPath = []) => {
+  const renderSection = useCallback((section, index, parentPath = []) => {
     const path = [...parentPath, index];
     if (section.isTitle) {
       return (
@@ -436,7 +437,7 @@ export function useContent(styles, markdownStyles) {
         />
       </View>
     );
-  };
+  }, [searchQuery, activeTab, styles, markdownStyles, toggleSection, toggleExpansionSection, collapseAllAndExpandSection]);
 
   const saveScrollY = (tab) => (e) => {
     scrollYByTab.current[tab] = e.nativeEvent.contentOffset.y;
