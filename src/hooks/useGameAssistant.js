@@ -67,6 +67,7 @@ export function useGameAssistant() {
   const [availableVoices, setAvailableVoices] = useState([]);
   const [selectedVoiceId, setSelectedVoiceId] = useState(null);
   const [messages, setMessages] = useState([]);
+  useEffect(() => { messagesRef.current = messages; }, [messages]);
   const [cloudLlmStatus, setCloudLlmStatus] = useState({
     keyConfigured: isGeminiConfigured(),
     lastCloudResponse: null,
@@ -92,6 +93,9 @@ export function useGameAssistant() {
   // previously lived in Kotlin's accumulateAndSpeak().
   const sentenceBufferRef = useRef('');
   const fullAnswerRef = useRef('');
+  // Mirror of messages state for use inside askTheRules without adding messages
+  // to its useCallback dep array (messages changes on every partial speech result).
+  const messagesRef = useRef([]);
 
   const nextId = () => {
     msgCounter.current += 1;
@@ -433,7 +437,7 @@ export function useGameAssistant() {
         const assistantMsgId = nextId();
         activeAssistantMsgId.current = assistantMsgId;
 
-        const historySnapshot = messages
+        const historySnapshot = messagesRef.current
           .filter((m) => m.text?.trim())
           .map((m) => ({ role: m.role, text: m.text }));
 
@@ -661,7 +665,7 @@ export function useGameAssistant() {
         }
       }
     },
-    [messages],
+    [],
   );
 
   // ── Public API ───────────────────────────────────────────────────────────
