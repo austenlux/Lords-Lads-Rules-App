@@ -5,7 +5,10 @@
  * Used as the primary LLM when online; the on-device model is the offline fallback.
  */
 
-import { GEMINI_API_KEY } from '../buildInfo';
+import { Platform } from 'react-native';
+import { GEMINI_API_KEY_ANDROID, GEMINI_API_KEY_IOS } from '../buildInfo';
+
+const GEMINI_API_KEY = Platform.OS === 'ios' ? GEMINI_API_KEY_IOS : GEMINI_API_KEY_ANDROID;
 
 export const GEMINI_MODEL = 'gemini-2.5-flash';
 const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
