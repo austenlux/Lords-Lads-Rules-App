@@ -250,7 +250,7 @@ export default function MoreScreen({
     [SECTION_KEYS.CHANGELOG]: false,
     [SECTION_KEYS.SETTINGS]: false,
     [SECTION_KEYS.INFO]: false,
-    [SECTION_KEYS.DEBUG]: __DEV__,
+    [SECTION_KEYS.DEBUG]: false,
   });
   const [debugVisible, setDebugVisible] = useState(__DEV__);
   const [expandRulesDefault, setExpandRulesDefault] = useState(false);
