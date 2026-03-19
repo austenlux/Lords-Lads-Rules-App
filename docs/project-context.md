@@ -173,7 +173,6 @@ Run on iOS (and Android where parity is expected) for any UI or layout change. R
 
 ## Known Gaps / Tech Debt
 
-- Voice assistant is Android-only — iOS native module is stubbed but not implemented
 - No formal design token system — colors/spacing hardcoded
 - No automated test suite of any kind
 - App.js is a 600+ line monolith — needs decomposition
