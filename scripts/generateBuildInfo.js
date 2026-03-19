@@ -30,6 +30,7 @@ if (existsSync(envPath)) {
 
 const geminiKeyAndroid = envVars.GEMINI_API_KEY_ANDROID || '';
 const geminiKeyIOS = envVars.GEMINI_API_KEY_IOS || '';
+const buildType = process.env.BUILD_TYPE || 'release';
 
 const output = `// Auto-generated at build time — do not edit.
 export const BUILD_COMMIT         = '${commit}';
@@ -38,11 +39,13 @@ export const BUILD_COMMIT_MESSAGE = '${commitMessage.replace(/'/g, "\\'")}';
 export const BUILD_VERSION_NAME   = '${pkg.version}';
 export const BUILD_VERSION_CODE   = '${versionCode}';
 export const BUILD_TIMESTAMP      = '${timestamp}';
+export const BUILD_TYPE           = '${buildType}';
 export const GEMINI_API_KEY_ANDROID = '${geminiKeyAndroid.replace(/'/g, "\\'")}';
 export const GEMINI_API_KEY_IOS     = '${geminiKeyIOS.replace(/'/g, "\\'")}';
 `;
 
 writeFileSync(path.join(rootDir, 'src', 'buildInfo.js'), output);
 console.log(`Build info written: ${commit} v${pkg.version} (${versionCode}) @ ${timestamp}`);
+console.log(`Build type: ${buildType}`);
 console.log(`Gemini API key (Android): ${geminiKeyAndroid ? 'configured' : 'not set'}`);
 console.log(`Gemini API key (iOS):     ${geminiKeyIOS ? 'configured' : 'not set'}`);

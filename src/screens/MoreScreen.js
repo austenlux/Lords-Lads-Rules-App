@@ -37,6 +37,7 @@ import {
   BUILD_VERSION_NAME,
   BUILD_VERSION_CODE,
   BUILD_TIMESTAMP,
+  BUILD_TYPE,
 } from '../buildInfo';
 
 const SETTINGS_KEYS = {
@@ -252,7 +253,7 @@ export default function MoreScreen({
     [SECTION_KEYS.INFO]: false,
     [SECTION_KEYS.DEBUG]: false,
   });
-  const [debugVisible, setDebugVisible] = useState(__DEV__);
+  const [debugVisible, setDebugVisible] = useState(BUILD_TYPE === 'debug');
   const [expandRulesDefault, setExpandRulesDefault] = useState(false);
   const [expandExpansionsDefault, setExpandExpansionsDefault] = useState(false);
   const animations = useRef({}).current;
@@ -788,7 +789,7 @@ export default function MoreScreen({
   };
 
   const handleMoreTitleLongPress = () => {
-    if (Platform.OS === 'ios' && !__DEV__) return;
+    if (Platform.OS === 'ios' && BUILD_TYPE !== 'debug') return;
     const willShow = !debugVisible;
     setDebugVisible(willShow);
     if (willShow) {
