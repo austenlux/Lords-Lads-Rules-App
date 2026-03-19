@@ -8,7 +8,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
   func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
     let bundleURL: URL?
-    #if DEBUG
+    #if DEBUG && targetEnvironment(simulator)
       bundleURL = RCTBundleURLProvider.sharedSettings().jsBundleURL(forBundleRoot: "index")
     #else
       bundleURL = Bundle.main.url(forResource: "main", withExtension: "jsbundle")

@@ -289,7 +289,9 @@ export default function MoreScreen({
   const [ragCopied, setRagCopied] = useState(false);
   const [eventCopied, setEventCopied] = useState(false);
   const [ragExported, setRagExported] = useState(false);
+  const [ragExportError, setRagExportError] = useState(false);
   const [eventExported, setEventExported] = useState(false);
+  const [eventExportError, setEventExportError] = useState(false);
   const [refreshState, setRefreshState] = useState('idle'); // 'idle' | 'loading' | 'done'
   const [ragChunksExpanded, setRagChunksExpanded] = useState(false);
   const [ragScoredChunksExpanded, setRagScoredChunksExpanded] = useState({});
@@ -685,7 +687,7 @@ export default function MoreScreen({
   const handleExportRagLog = async () => {
     try {
       const text = formatRagLogAsText();
-      const dir = Platform.OS === 'android' ? RNFS.DownloadDirectoryPath : RNFS.DocumentDirectoryPath;
+      const dir = Platform.OS === 'android' ? RNFS.ExternalDirectoryPath : RNFS.DocumentDirectoryPath;
       const path = `${dir}/llm_log.txt`;
       await RNFS.writeFile(path, text, 'utf8');
       logEvent('LLM Log', 'Exported to llm_log.txt');
@@ -693,6 +695,8 @@ export default function MoreScreen({
       setTimeout(() => setRagExported(false), 3000);
     } catch (e) {
       logError('RAG Export', e);
+      setRagExportError(true);
+      setTimeout(() => setRagExportError(false), 3000);
     }
   };
 
@@ -712,7 +716,7 @@ export default function MoreScreen({
   const handleExportEventLog = async () => {
     try {
       const text = formatEventLogAsText();
-      const dir = Platform.OS === 'android' ? RNFS.DownloadDirectoryPath : RNFS.DocumentDirectoryPath;
+      const dir = Platform.OS === 'android' ? RNFS.ExternalDirectoryPath : RNFS.DocumentDirectoryPath;
       const path = `${dir}/event_log.txt`;
       await RNFS.writeFile(path, text, 'utf8');
       logEvent('Event Log', 'Exported to event_log.txt');
@@ -720,6 +724,8 @@ export default function MoreScreen({
       setTimeout(() => setEventExported(false), 3000);
     } catch (e) {
       logError('Event Export', e);
+      setEventExportError(true);
+      setTimeout(() => setEventExportError(false), 3000);
     }
   };
 
@@ -2022,14 +2028,14 @@ export default function MoreScreen({
                               flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
                               minWidth: 95, paddingHorizontal: 14, paddingVertical: 7, borderRadius: 6,
                               borderWidth: 1,
-                              borderColor: eventExported ? '#4CAF50' : accent,
-                              backgroundColor: eventExported ? 'rgba(76,175,80,0.1)' : `${accent}1A`,
+                              borderColor: eventExportError ? '#CF6679' : eventExported ? '#4CAF50' : accent,
+                              backgroundColor: eventExportError ? 'rgba(207,102,121,0.1)' : eventExported ? 'rgba(76,175,80,0.1)' : `${accent}1A`,
                             }}
                             onPress={handleExportEventLog}
                           >
-                            <ExportIcon width={15} height={15} fill={eventExported ? '#4CAF50' : accent} />
-                            <Text style={[{ color: eventExported ? '#4CAF50' : accent, fontSize: 12 }, bodyFontStyle]}>
-                              {eventExported ? 'Exported!' : 'Export'}
+                            <ExportIcon width={15} height={15} fill={eventExportError ? '#CF6679' : eventExported ? '#4CAF50' : accent} />
+                            <Text style={[{ color: eventExportError ? '#CF6679' : eventExported ? '#4CAF50' : accent, fontSize: 12 }, bodyFontStyle]}>
+                              {eventExportError ? 'Failed!' : eventExported ? 'Exported!' : 'Export'}
                             </Text>
                           </TouchableOpacity>
                           <TouchableOpacity
@@ -2150,14 +2156,14 @@ export default function MoreScreen({
                           flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
                           minWidth: 95, paddingHorizontal: 14, paddingVertical: 7, borderRadius: 6,
                           borderWidth: 1,
-                          borderColor: ragExported ? '#4CAF50' : accent,
-                          backgroundColor: ragExported ? 'rgba(76,175,80,0.1)' : `${accent}1A`,
+                          borderColor: ragExportError ? '#CF6679' : ragExported ? '#4CAF50' : accent,
+                          backgroundColor: ragExportError ? 'rgba(207,102,121,0.1)' : ragExported ? 'rgba(76,175,80,0.1)' : `${accent}1A`,
                         }}
                         onPress={handleExportRagLog}
                       >
-                        <ExportIcon width={15} height={15} fill={ragExported ? '#4CAF50' : accent} />
-                        <Text style={[{ color: ragExported ? '#4CAF50' : accent, fontSize: 12 }, bodyFontStyle]}>
-                          {ragExported ? 'Exported!' : 'Export'}
+                        <ExportIcon width={15} height={15} fill={ragExportError ? '#CF6679' : ragExported ? '#4CAF50' : accent} />
+                        <Text style={[{ color: ragExportError ? '#CF6679' : ragExported ? '#4CAF50' : accent, fontSize: 12 }, bodyFontStyle]}>
+                          {ragExportError ? 'Failed!' : ragExported ? 'Exported!' : 'Export'}
                         </Text>
                       </TouchableOpacity>
                       <TouchableOpacity
