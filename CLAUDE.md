@@ -42,8 +42,8 @@ When the user says "install it", asks to install after changes, or **any code ch
      - Install: `adb install -r android/app/build/outputs/apk/debug/lords-and-lads-rules-debug.apk`
      - Launch: `adb shell am start -n com.lux.lnlrules/.MainActivity`
    - **iOS second:** Build → Install → Launch.
-     - Build: `xcodebuild -workspace ios/LordsandLadsRules.xcworkspace -scheme LordsandLadsRules -configuration Debug -destination 'generic/platform=iOS' -derivedDataPath ios/build/debug -allowProvisioningUpdates`
-     - Install + Launch: `ios-deploy --bundle ios/build/debug/Build/Products/Debug-iphoneos/LordsandLadsRules.app --justlaunch`
+     - Build: `xcodebuild -workspace ios/LordsandLadsRules.xcworkspace -scheme LordsandLadsRules -configuration Release -destination 'generic/platform=iOS' -derivedDataPath ios/build/release -allowProvisioningUpdates`
+     - Install + Launch: `ios-deploy --bundle ios/build/release/Build/Products/Release-iphoneos/LordsandLadsRules.app --justlaunch`
    - If a device is **not connected**, skip that install and inform the user the build is ready.
 
 3. **Report the commit hash** — After installing, always tell the user the short commit hash (`git rev-parse --short HEAD`) so they can verify the correct build in the app's debug menu.
@@ -59,7 +59,7 @@ Use release builds only when explicitly preparing a store submission. Commands:
 ### Other rules
 
 - **Do not** run `npm install` as the default response to "install it." The user means **install the app**. Run `npm install` only when `package.json` or `package-lock.json` actually change.
-- Debug builds do not require Metro or a JS server at runtime — they are standalone.
+- Android debug builds are standalone (bundle is embedded in the APK). iOS debug builds on physical devices attempt to connect to Metro even with an embedded bundle — always use Release for iOS device installs.
 - **Always build and install on BOTH platforms.** Never skip one unless the user explicitly says to.
 
 ---
