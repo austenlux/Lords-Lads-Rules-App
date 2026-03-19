@@ -210,14 +210,7 @@ export default function VoiceAssistantModal({ messages, isOpen, fabBottom = 96 }
     if (!isOpen) return;
 
     const raf = requestAnimationFrame(scrollToBottom);
-    const t1  = setTimeout(scrollToBottom, 200);
-    const t2  = setTimeout(scrollToBottom, 500);
-
-    return () => {
-      cancelAnimationFrame(raf);
-      clearTimeout(t1);
-      clearTimeout(t2);
-    };
+    return () => cancelAnimationFrame(raf);
   }, [isOpen, messages]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Panel bottom anchored just above the FAB.
