@@ -224,9 +224,9 @@ export function useContent(styles, markdownStyles) {
   }, [originalExpansionSections.length]);
 
   useEffect(() => {
-    if (showSearch && searchInputRef.current) {
-      setTimeout(() => searchInputRef.current?.focus(), 10);
-    }
+    if (!showSearch) return;
+    const raf = requestAnimationFrame(() => searchInputRef.current?.focus());
+    return () => cancelAnimationFrame(raf);
   }, [showSearch]);
 
   // When search is cleared (user tapped X), restore both tabs to full content (with expand preference).
