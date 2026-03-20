@@ -50,7 +50,7 @@ const SETTINGS_KEYS = {
   TIP_JAR_THEME: '@lnl_tip_jar_theme',
 };
 import { getVenmoPayUrl } from '../constants';
-import { activeTipJarTheme, TIP_JAR_THEMES } from '../tipJar/themes';
+import { TIP_JAR_THEMES } from '../tipJar/themes';
 import { useTheme, COLOR_GROUPS, FONT_PAIRINGS } from '../context/ThemeContext';
 import CollapsibleSection, { DEFAULT_SECTION_EXPANDED } from '../components/CollapsibleSection';
 import SyncedIcon from '../../assets/icons/synced.svg';
@@ -265,10 +265,13 @@ export default function MoreScreen({
   const [expandDefaultsExpanded, setExpandDefaultsExpanded] = useState(false);
   const [thinkingSoundsEnabled, setThinkingSoundsEnabled] = useState(false);
   const [tipJarThemeOverride, setTipJarThemeOverride] = useState('random');
-  // 'random' uses the session-stable theme picked at module load; otherwise use the explicit choice.
+  // Holds the currently active random pick. Re-randomized each time the user selects "Random".
+  const [randomTipJarTheme, setRandomTipJarTheme] = useState(
+    () => TIP_JAR_THEMES[Math.floor(Math.random() * TIP_JAR_THEMES.length)]
+  );
   const resolvedTipJarTheme = tipJarThemeOverride === 'random'
-    ? activeTipJarTheme
-    : (TIP_JAR_THEMES.find(t => t.id === tipJarThemeOverride) ?? activeTipJarTheme);
+    ? randomTipJarTheme
+    : (TIP_JAR_THEMES.find(t => t.id === tipJarThemeOverride) ?? randomTipJarTheme);
   const [forceLocalLlm, setForceLocalLlm] = useState(false);
   const [forceContentFetchFailure, setForceContentFetchFailure] = useState(false);
   const { themeId: selectedTheme, accent, selectTheme, fontId: selectedFont, selectFont, titleFont, bodyFont, titleFontStyle, bodyFontStyle } = useTheme();
@@ -397,6 +400,9 @@ export default function MoreScreen({
   };
 
   const setTipJarThemeAndSave = async (id) => {
+    if (id === 'random') {
+      setRandomTipJarTheme(TIP_JAR_THEMES[Math.floor(Math.random() * TIP_JAR_THEMES.length)]);
+    }
     setTipJarThemeOverride(id);
     await AsyncStorage.setItem(SETTINGS_KEYS.TIP_JAR_THEME, id);
     logEvent('Feature Flags', `Tip Jar theme set to ${id}`);
