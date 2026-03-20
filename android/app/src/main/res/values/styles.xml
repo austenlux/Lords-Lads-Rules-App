@@ -12,16 +12,11 @@
     <item name="android:textColorHint">#c8c8c8</item>
     <item name="android:textColor">@android:color/black</item>
   </style>
-  <style name="Theme.App.SplashScreen" parent="Theme.SplashScreen">
-    <!-- Dark background matching the app background -->
-    <item name="windowSplashScreenBackground">@color/splashscreen_background</item>
-    <!-- Show the actual splash logo so the screen is never blank during cold start.
-         The system holds this until JS calls NativeSplashScreen.dismiss(), at which
-         point the JS Animated.View overlay (same logo, opacity=1) is already rendered. -->
-    <item name="windowSplashScreenAnimatedIcon">@drawable/splash_logo</item>
-    <!-- Keep the icon background the same dark color so no white circle appears -->
-    <item name="windowSplashScreenIconBackgroundColor">@color/splashscreen_background</item>
-    <!-- Switch to AppTheme the instant the system splash exits -->
-    <item name="postSplashScreenTheme">@style/AppTheme</item>
+  <style name="Theme.App.SplashScreen" parent="AppTheme">
+    <item name="android:windowBackground">@drawable/splashscreen</item>
+    <item name="android:statusBarColor">@color/splashscreen_background</item>
+    <item name="android:windowLightStatusBar">false</item>
+    <item name="android:navigationBarColor">@android:color/transparent</item>
+    <item name="android:enforceNavigationBarContrast">false</item>
   </style>
 </resources>

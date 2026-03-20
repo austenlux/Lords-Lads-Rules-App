@@ -25,8 +25,8 @@ def jscFlavor = 'org.webkit:android-jsc:+'
 
 // Sync thinking sound MP3s from the shared project assets folder into the
 // Android assets folder so they are accessible via AssetManager in Kotlin.
-// Uses Sync (not Copy) so files deleted from the shared folder are also
-// removed from the Android assets on the next build.
+// This runs automatically before every build, so adding/removing files in
+// assets/audio/thinking_sounds/ requires no manual steps.
 task syncThinkingSounds(type: Sync) {
     from("${rootProject.projectDir}/../assets/audio/thinking_sounds")
     into("${projectDir}/src/main/assets/audio/thinking_sounds")
@@ -113,7 +113,6 @@ dependencies {
     implementation("com.google.mlkit:genai-prompt:1.0.0-beta1")
 
     implementation("androidx.core:core-ktx:1.15.0")
-    implementation("androidx.core:core-splashscreen:1.0.1")
     implementation("androidx.activity:activity-ktx:1.9.3")
 
     // On-device speech recognition uses android.speech.SpeechRecognizer (Android SDK, no dep needed).
