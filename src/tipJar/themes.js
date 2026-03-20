@@ -9,7 +9,7 @@
 export const TIP_JAR_THEMES = [
   {
     id: 'fire',
-    title: 'Fuel the Forge',
+    title: 'Forge Fuel',
     images: [
       require('../../assets/tipjar/fire/fire1.png'),
       require('../../assets/tipjar/fire/fire2.png'),
@@ -33,7 +33,7 @@ export const TIP_JAR_THEMES = [
   },
   {
     id: 'hammer',
-    title: "The Hammer's Hoard",
+    title: "Hammer's Hoard",
     images: [
       require('../../assets/tipjar/hammer/hammer1.png'),
       require('../../assets/tipjar/hammer/hammer2.png'),
