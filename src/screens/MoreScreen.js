@@ -49,6 +49,7 @@ const SETTINGS_KEYS = {
   CLINKS_APPEARANCE: '@lnl_clinks_appearance',
 };
 import { getVenmoPayUrl } from '../constants';
+import { activeTipJarTheme } from '../tipJar/themes';
 import { useTheme, COLOR_GROUPS, FONT_PAIRINGS } from '../context/ThemeContext';
 import CollapsibleSection, { DEFAULT_SECTION_EXPANDED } from '../components/CollapsibleSection';
 import SyncedIcon from '../../assets/icons/synced.svg';
@@ -120,7 +121,7 @@ const COLOR_GROUP_ICONS = {
 };
 
 const PAST_RELEASES_KEY = 'pastReleases';
-const SECTION_KEYS = { BUY_NAILS: 'buyNails', CHANGELOG: 'changelog', SETTINGS: 'settings', INFO: 'info', DEBUG: 'debug' };
+const SECTION_KEYS = { TIP_JAR: 'tipJar', CHANGELOG: 'changelog', SETTINGS: 'settings', INFO: 'info', DEBUG: 'debug' };
 
 const VA_STATUS_LABEL = {
   deviceSupport: {
@@ -212,7 +213,7 @@ const vaReadinessStyles = RNStyleSheet.create({
 const RULEBOOK_REPO_URL = 'https://github.com/seanKenkeremath/lords-and-lads';
 const APP_REPO_URL = 'https://github.com/austenlux/Lords-Lads-Rules-App';
 
-const VENMO_OPTIONS = [
+const TIP_JAR_OPTIONS = [
   { amount: 1, label: '$1', image: require('../../assets/icons/nail1.png') },
   { amount: 5, label: '$5', image: require('../../assets/icons/nail2.png') },
   { amount: 20, label: '$20', image: require('../../assets/icons/nail3.png') },
@@ -247,7 +248,7 @@ export default function MoreScreen({
   const [expandedVersions, setExpandedVersions] = useState({});
   const [pastReleasesExpanded, setPastReleasesExpanded] = useState(false);
   const [sectionsExpanded, setSectionsExpanded] = useState({
-    [SECTION_KEYS.BUY_NAILS]: false,
+    [SECTION_KEYS.TIP_JAR]: false,
     [SECTION_KEYS.CHANGELOG]: false,
     [SECTION_KEYS.SETTINGS]: false,
     [SECTION_KEYS.INFO]: false,
@@ -749,7 +750,7 @@ export default function MoreScreen({
 
   const collapseAllSections = () => {
     setSectionsExpanded({
-      [SECTION_KEYS.BUY_NAILS]: false,
+      [SECTION_KEYS.TIP_JAR]: false,
       [SECTION_KEYS.CHANGELOG]: false,
       [SECTION_KEYS.SETTINGS]: false,
       [SECTION_KEYS.INFO]: false,
@@ -1507,17 +1508,17 @@ export default function MoreScreen({
           </CollapsibleSection>
 
           {Platform.OS === 'android' && <CollapsibleSection
-            title="Buy me some nails"
+            title={activeTipJarTheme.title}
             icon={<VenmoIcon width={24} height={24} fill="#E8B923" />}
-            isExpanded={sectionsExpanded[SECTION_KEYS.BUY_NAILS]}
-            onToggle={() => toggleMoreSection(SECTION_KEYS.BUY_NAILS)}
+            isExpanded={sectionsExpanded[SECTION_KEYS.TIP_JAR]}
+            onToggle={() => toggleMoreSection(SECTION_KEYS.TIP_JAR)}
             styles={styles}
             style={styles.moreSectionWrapper}
           >
             <View style={styles.versionContainer}>
               <View style={styles.paymentSection}>
               <View style={styles.venmoGridRow}>
-                {VENMO_OPTIONS.slice(0, 3).map((item) => (
+                {TIP_JAR_OPTIONS.slice(0, 3).map((item) => (
                   <View key={`venmo-${item.amount}`} style={styles.venmoGridCell}>
                     <View style={styles.nailButtonWrapper}>
                       <Pressable
@@ -1537,7 +1538,7 @@ export default function MoreScreen({
                 ))}
               </View>
               <View style={styles.venmoGridRow}>
-                {VENMO_OPTIONS.slice(3, 6).map((item) => (
+                {TIP_JAR_OPTIONS.slice(3, 6).map((item) => (
                   <View key={`venmo-${item.amount}`} style={styles.venmoGridCell}>
                     <View style={styles.nailButtonWrapper}>
                       <Pressable
