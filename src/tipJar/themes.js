@@ -43,6 +43,18 @@ export const TIP_JAR_THEMES = [
       require('../../assets/tipjar/hammer/hammer6.png'),
     ],
   },
+  {
+    id: 'beer',
+    title: 'Beer Bounty',
+    images: [
+      require('../../assets/tipjar/beer/beer1.png'),
+      require('../../assets/tipjar/beer/beer2.png'),
+      require('../../assets/tipjar/beer/beer3.png'),
+      require('../../assets/tipjar/beer/beer4.png'),
+      require('../../assets/tipjar/beer/beer5.png'),
+      require('../../assets/tipjar/beer/beer6.png'),
+    ],
+  },
 ];
 
 // Picked once when the module is first imported (app launch).

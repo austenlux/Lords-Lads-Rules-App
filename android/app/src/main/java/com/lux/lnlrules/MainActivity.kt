@@ -4,6 +4,8 @@ import android.content.Context
 import android.content.res.Configuration
 import android.os.Bundle
 import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.LayerDrawable
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
@@ -12,6 +14,7 @@ import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
 import com.facebook.react.defaults.DefaultReactActivityDelegate
+import kotlin.math.roundToInt
 
 class MainActivity : ReactActivity() {
 
@@ -32,11 +35,28 @@ class MainActivity : ReactActivity() {
         // app's adaptive icon in a circle). installSplashScreen replaces it with
         // our theme's windowSplashScreenAnimatedIcon (invisible dark shape).
         // setOnExitAnimationListener removes it instantly after the first frame so
-        // postSplashScreenTheme (Theme.App.Main) takes effect: its windowBackground
-        // is splashscreen.xml (the logo), visible while React Native finishes loading.
+        // postSplashScreenTheme (Theme.App.Main) takes effect.
         val splashScreen = installSplashScreen()
         splashScreen.setOnExitAnimationListener { it.remove() }
         super.onCreate(savedInstanceState)
+
+        // Override the theme's static 320dp window background with one whose logo
+        // matches the JS overlay exactly: Math.min(width, height) * 0.9 (dp).
+        // This eliminates the size jump between the native window background and
+        // the React Native splash overlay that replaces it.
+        val dm = resources.displayMetrics
+        val widthDp = dm.widthPixels / dm.density
+        val heightDp = dm.heightPixels / dm.density
+        val logoSizePx = (minOf(widthDp, heightDp) * 0.9f * dm.density).roundToInt()
+        val insetH = ((dm.widthPixels - logoSizePx) / 2).coerceAtLeast(0)
+        val insetV = ((dm.heightPixels - logoSizePx) / 2).coerceAtLeast(0)
+        @Suppress("DEPRECATION")
+        val layers = LayerDrawable(arrayOf(
+            ColorDrawable(Color.parseColor("#121212")),
+            resources.getDrawable(R.drawable.splash_logo, theme),
+        ))
+        layers.setLayerInset(1, insetH, insetV, insetH, insetV)
+        window.setBackgroundDrawable(layers)
 
         WindowCompat.setDecorFitsSystemWindows(window, false)
         window.statusBarColor = Color.TRANSPARENT
