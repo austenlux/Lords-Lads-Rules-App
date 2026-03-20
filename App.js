@@ -51,7 +51,10 @@ const TAB_BAR_HEIGHT = 68;
 const TAB_BAR_BOTTOM_INSET_MAX = 20;
 
 function computeLogoLayout({ width, height }) {
-  const logoSize = Math.min(width, height) * LOGO_SIZE_RATIO;
+  // Android: match the native splashscreen.xml logo size exactly (320dp) so there
+  // is no visible size change when the RN overlay takes over from the window background.
+  // iOS: ratio-based sizing (the native splash is handled by AppDelegate, not XML).
+  const logoSize = Platform.OS === 'android' ? 320 : Math.min(width, height) * LOGO_SIZE_RATIO;
   return { width, height, logoSize, logoLeft: (width - logoSize) / 2, logoTop: (height - logoSize) / 2 };
 }
 
