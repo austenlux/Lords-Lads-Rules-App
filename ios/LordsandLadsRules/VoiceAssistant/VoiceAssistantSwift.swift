@@ -52,6 +52,7 @@ class VoiceAssistantSwift: NSObject {
     private var pendingTtsCount = 0
     private var generationComplete = false
     private let completionLock = NSLock()
+    private var ttsFinishedWorkItem: DispatchWorkItem?
 
     // MARK: Thinking Sound (lazy to avoid init-time crashes)
 
@@ -303,6 +304,9 @@ class VoiceAssistantSwift: NSObject {
     func stopAssistant() {
         cancelInferenceTask()
 
+        ttsFinishedWorkItem?.cancel()
+        ttsFinishedWorkItem = nil
+
         completionLock.lock()
         pendingTtsCount = 0
         generationComplete = false
@@ -399,8 +403,7 @@ class VoiceAssistantSwift: NSObject {
         completionLock.unlock()
 
         if shouldFire {
-            deactivateAudioSession()
-            eventDelegate?.onTTSFinished()
+            scheduleTTSFinished()
         }
     }
 
@@ -690,8 +693,24 @@ extension VoiceAssistantSwift: AVSpeechSynthesizerDelegate {
         completionLock.unlock()
 
         if shouldFire {
-            deactivateAudioSession()
-            eventDelegate?.onTTSFinished()
+            scheduleTTSFinished()
         }
+    }
+}
+
+// MARK: - TTS Completion Scheduling
+
+private extension VoiceAssistantSwift {
+    /// Schedules `onTTSFinished` after a short delay to allow premium/neural voice
+    /// audio buffers to fully drain before the delegate callback fires.
+    /// Any previously scheduled call is cancelled first.
+    func scheduleTTSFinished() {
+        ttsFinishedWorkItem?.cancel()
+        let item = DispatchWorkItem { [weak self] in
+            self?.deactivateAudioSession()
+            self?.eventDelegate?.onTTSFinished()
+        }
+        ttsFinishedWorkItem = item
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: item)
     }
 }
