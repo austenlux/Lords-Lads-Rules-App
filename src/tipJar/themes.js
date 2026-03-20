@@ -31,6 +31,18 @@ export const TIP_JAR_THEMES = [
       require('../../assets/tipjar/wood/wood6.png'),
     ],
   },
+  {
+    id: 'hammer',
+    title: "The Hammer's Hoard",
+    images: [
+      require('../../assets/tipjar/hammer/hammer1.png'),
+      require('../../assets/tipjar/hammer/hammer2.png'),
+      require('../../assets/tipjar/hammer/hammer3.png'),
+      require('../../assets/tipjar/hammer/hammer4.png'),
+      require('../../assets/tipjar/hammer/hammer5.png'),
+      require('../../assets/tipjar/hammer/hammer6.png'),
+    ],
+  },
 ];
 
 // Picked once when the module is first imported (app launch).
