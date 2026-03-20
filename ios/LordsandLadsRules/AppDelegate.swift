@@ -11,6 +11,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     #if DEBUG && targetEnvironment(simulator)
       bundleURL = RCTBundleURLProvider.sharedSettings().jsBundleURL(forBundleRoot: "index")
     #else
+      // Suppress the "Connect to Metro" banner — this is a standalone build.
+      setenv("RCT_NO_LAUNCH_PACKAGER", "1", 1)
       bundleURL = Bundle.main.url(forResource: "main", withExtension: "jsbundle")
     #endif
     bridge = RCTCreateBridgeWithTurboModules(bundleURL, launchOptions as? [String: Any])
