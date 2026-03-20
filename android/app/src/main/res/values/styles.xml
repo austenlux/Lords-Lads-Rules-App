@@ -13,11 +13,14 @@
     <item name="android:textColor">@android:color/black</item>
   </style>
   <style name="Theme.App.SplashScreen" parent="Theme.SplashScreen">
-    <!-- Dark background — matches the RN splash overlay so there is no flash -->
+    <!-- Dark background matching the app background -->
     <item name="windowSplashScreenBackground">@color/splashscreen_background</item>
-    <!-- Invisible icon: same color as background so the mandatory Android 12+
-         icon area is not visible; the RN overlay is the only logo shown -->
-    <item name="windowSplashScreenAnimatedIcon">@drawable/splash_icon_bg</item>
+    <!-- Show the actual splash logo so the screen is never blank during cold start.
+         The system holds this until JS calls NativeSplashScreen.dismiss(), at which
+         point the JS Animated.View overlay (same logo, opacity=1) is already rendered. -->
+    <item name="windowSplashScreenAnimatedIcon">@drawable/splash_logo</item>
+    <!-- Keep the icon background the same dark color so no white circle appears -->
+    <item name="windowSplashScreenIconBackgroundColor">@color/splashscreen_background</item>
     <!-- Switch to AppTheme the instant the system splash exits -->
     <item name="postSplashScreenTheme">@style/AppTheme</item>
   </style>
