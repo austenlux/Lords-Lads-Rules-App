@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Invisible icon for the system splash: same color as background so the
+     mandatory Android 12+ icon area is not visible to the user. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/splashscreen_background" />
+</shape>

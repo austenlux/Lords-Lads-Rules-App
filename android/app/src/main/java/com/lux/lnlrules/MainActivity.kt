@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.res.Configuration
 import android.os.Bundle
 import android.graphics.Color
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -25,8 +26,16 @@ class MainActivity : ReactActivity() {
 
     override fun createReactActivityDelegate(): ReactActivityDelegate =
         DefaultReactActivityDelegate(this, mainComponentName, fabricEnabled)
-        
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Suppress the Android 12+ mandatory system splash (which would show the
+        // app's adaptive icon in a circle). installSplashScreen replaces it with
+        // our theme's windowSplashScreenAnimatedIcon (invisible dark shape).
+        // setOnExitAnimationListener removes it instantly after the first frame so
+        // postSplashScreenTheme (Theme.App.Main) takes effect: its windowBackground
+        // is splashscreen.xml (the logo), visible while React Native finishes loading.
+        val splashScreen = installSplashScreen()
+        splashScreen.setOnExitAnimationListener { it.remove() }
         super.onCreate(savedInstanceState)
 
         WindowCompat.setDecorFitsSystemWindows(window, false)
@@ -38,4 +47,4 @@ class MainActivity : ReactActivity() {
             it.isAppearanceLightNavigationBars = true
         }
     }
-} 
+}
