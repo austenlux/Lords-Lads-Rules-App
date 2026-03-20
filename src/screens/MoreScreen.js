@@ -214,12 +214,12 @@ const RULEBOOK_REPO_URL = 'https://github.com/seanKenkeremath/lords-and-lads';
 const APP_REPO_URL = 'https://github.com/austenlux/Lords-Lads-Rules-App';
 
 const TIP_JAR_OPTIONS = [
-  { amount: 1, label: '$1', image: require('../../assets/icons/nail1.png') },
-  { amount: 5, label: '$5', image: require('../../assets/icons/nail2.png') },
-  { amount: 20, label: '$20', image: require('../../assets/icons/nail3.png') },
-  { amount: 50, label: '$50', image: require('../../assets/icons/nail4.png') },
-  { amount: 100, label: '$100', image: require('../../assets/icons/nail5.png') },
-  { amount: 250, label: '$250', image: require('../../assets/icons/nail6.png') },
+  { amount: 1,   label: '$1'   },
+  { amount: 5,   label: '$5'   },
+  { amount: 20,  label: '$20'  },
+  { amount: 50,  label: '$50'  },
+  { amount: 100, label: '$100' },
+  { amount: 250, label: '$250' },
 ];
 
 export default function MoreScreen({
@@ -1518,8 +1518,8 @@ export default function MoreScreen({
             <View style={styles.versionContainer}>
               <View style={styles.paymentSection}>
               <View style={styles.venmoGridRow}>
-                {TIP_JAR_OPTIONS.slice(0, 3).map((item) => (
-                  <View key={`venmo-${item.amount}`} style={styles.venmoGridCell}>
+                {TIP_JAR_OPTIONS.slice(0, 3).map((item, i) => (
+                  <View key={`tipjar-${item.amount}`} style={styles.venmoGridCell}>
                     <View style={styles.nailButtonWrapper}>
                       <Pressable
                         style={({ pressed }) => [styles.nailButton, pressed && styles.nailButtonPressed]}
@@ -1527,7 +1527,7 @@ export default function MoreScreen({
                         android_ripple={{ color: `${accent}66`, borderless: false }}
                       >
                         <Image
-                          source={item.image}
+                          source={activeTipJarTheme.images[i]}
                           style={styles.nailImage}
                           resizeMode="contain"
                         />
@@ -1538,8 +1538,8 @@ export default function MoreScreen({
                 ))}
               </View>
               <View style={styles.venmoGridRow}>
-                {TIP_JAR_OPTIONS.slice(3, 6).map((item) => (
-                  <View key={`venmo-${item.amount}`} style={styles.venmoGridCell}>
+                {TIP_JAR_OPTIONS.slice(3, 6).map((item, i) => (
+                  <View key={`tipjar-${item.amount}`} style={styles.venmoGridCell}>
                     <View style={styles.nailButtonWrapper}>
                       <Pressable
                         style={({ pressed }) => [styles.nailButton, pressed && styles.nailButtonPressed]}
@@ -1547,7 +1547,7 @@ export default function MoreScreen({
                         android_ripple={{ color: `${accent}66`, borderless: false }}
                       >
                         <Image
-                          source={item.image}
+                          source={activeTipJarTheme.images[3 + i]}
                           style={styles.nailImage}
                           resizeMode="contain"
                         />

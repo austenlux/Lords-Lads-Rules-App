@@ -7,8 +7,30 @@
  */
 
 export const TIP_JAR_THEMES = [
-  { id: 'fire', title: 'Fuel the Forge' },
-  { id: 'wood', title: "Carpenter's Coin" },
+  {
+    id: 'fire',
+    title: 'Fuel the Forge',
+    images: [
+      require('../../assets/tipjar/fire/fire1.png'),
+      require('../../assets/tipjar/fire/fire2.png'),
+      require('../../assets/tipjar/fire/fire3.png'),
+      require('../../assets/tipjar/fire/fire4.png'),
+      require('../../assets/tipjar/fire/fire5.png'),
+      require('../../assets/tipjar/fire/fire6.png'),
+    ],
+  },
+  {
+    id: 'wood',
+    title: "Carpenter's Coin",
+    images: [
+      require('../../assets/tipjar/wood/wood1.png'),
+      require('../../assets/tipjar/wood/wood2.png'),
+      require('../../assets/tipjar/wood/wood3.png'),
+      require('../../assets/tipjar/wood/wood4.png'),
+      require('../../assets/tipjar/wood/wood5.png'),
+      require('../../assets/tipjar/wood/wood6.png'),
+    ],
+  },
 ];
 
 // Picked once when the module is first imported (app launch).
