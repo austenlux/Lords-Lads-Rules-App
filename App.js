@@ -51,10 +51,7 @@ const TAB_BAR_HEIGHT = 68;
 const TAB_BAR_BOTTOM_INSET_MAX = 20;
 
 function computeLogoLayout({ width, height }) {
-  // Android: match the native splashscreen.xml logo size exactly (320dp) so there
-  // is no visible size change when the RN overlay takes over from the window background.
-  // iOS: ratio-based sizing (the native splash is handled by AppDelegate, not XML).
-  const logoSize = Platform.OS === 'android' ? 320 : Math.min(width, height) * LOGO_SIZE_RATIO;
+  const logoSize = Math.min(width, height) * LOGO_SIZE_RATIO;
   return { width, height, logoSize, logoLeft: (width - logoSize) / 2, logoTop: (height - logoSize) / 2 };
 }
 
@@ -77,7 +74,9 @@ function AppContent() {
   const askTheRulesRef = useRef(null);
   const isIOS = Platform.OS === 'ios';
   const splashOpacity = useRef(new Animated.Value(1)).current;
-  const mainAppOpacity = useRef(new Animated.Value(0)).current;
+  // Android: native window background is the sole splash — app content starts visible immediately.
+  // iOS: JS overlay fades in after the native AppDelegate splash is dismissed.
+  const mainAppOpacity = useRef(new Animated.Value(isIOS ? 0 : 1)).current;
   const fadeOutStarted = useRef(false);
   const splashDismissedRef = useRef(false);
   const pagerRef = useRef(null);
@@ -475,30 +474,6 @@ function AppContent() {
             />
           </View>
         </View>
-      )}
-
-      {!isIOS && (
-        <Animated.View
-          style={{
-            ...StyleSheet.absoluteFillObject,
-            zIndex: 100,
-            backgroundColor: '#121212',
-            opacity: splashOpacity,
-          }}
-          pointerEvents="none"
-        >
-          <Image
-            source={require('./assets/logo_dark.png')}
-            style={{
-              position: 'absolute',
-              width: logoLayout.logoSize,
-              height: logoLayout.logoSize,
-              left: logoLayout.logoLeft,
-              top: logoLayout.logoTop,
-            }}
-            resizeMode="contain"
-          />
-        </Animated.View>
       )}
 
       {(showMicDialog || speechPermissionError) && (
