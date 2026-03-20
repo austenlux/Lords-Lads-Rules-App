@@ -47,9 +47,10 @@ const SETTINGS_KEYS = {
   FORCE_LOCAL_LLM: '@lnl_force_local_llm',
   FORCE_CONTENT_FETCH_FAILURE: '@lnl_force_content_fetch_failure',
   CLINKS_APPEARANCE: '@lnl_clinks_appearance',
+  TIP_JAR_THEME: '@lnl_tip_jar_theme',
 };
 import { getVenmoPayUrl } from '../constants';
-import { activeTipJarTheme } from '../tipJar/themes';
+import { activeTipJarTheme, TIP_JAR_THEMES } from '../tipJar/themes';
 import { useTheme, COLOR_GROUPS, FONT_PAIRINGS } from '../context/ThemeContext';
 import CollapsibleSection, { DEFAULT_SECTION_EXPANDED } from '../components/CollapsibleSection';
 import SyncedIcon from '../../assets/icons/synced.svg';
@@ -263,6 +264,11 @@ export default function MoreScreen({
   const [expandedLocales, setExpandedLocales] = useState({});
   const [expandDefaultsExpanded, setExpandDefaultsExpanded] = useState(false);
   const [thinkingSoundsEnabled, setThinkingSoundsEnabled] = useState(false);
+  const [tipJarThemeOverride, setTipJarThemeOverride] = useState('random');
+  // 'random' uses the session-stable theme picked at module load; otherwise use the explicit choice.
+  const resolvedTipJarTheme = tipJarThemeOverride === 'random'
+    ? activeTipJarTheme
+    : (TIP_JAR_THEMES.find(t => t.id === tipJarThemeOverride) ?? activeTipJarTheme);
   const [forceLocalLlm, setForceLocalLlm] = useState(false);
   const [forceContentFetchFailure, setForceContentFetchFailure] = useState(false);
   const { themeId: selectedTheme, accent, selectTheme, fontId: selectedFont, selectFont, titleFont, bodyFont, titleFontStyle, bodyFontStyle } = useTheme();
@@ -330,13 +336,14 @@ export default function MoreScreen({
 
   useEffect(() => {
     const load = async () => {
-      const [rules, expansions, thinkingSounds, forceLocal, forceContentFail, appearance] = await Promise.all([
+      const [rules, expansions, thinkingSounds, forceLocal, forceContentFail, appearance, tipJarTheme] = await Promise.all([
         AsyncStorage.getItem(SETTINGS_KEYS.EXPAND_RULES_DEFAULT),
         AsyncStorage.getItem(SETTINGS_KEYS.EXPAND_EXPANSIONS_DEFAULT),
         AsyncStorage.getItem(SETTINGS_KEYS.THINKING_SOUNDS_ENABLED),
         AsyncStorage.getItem(SETTINGS_KEYS.FORCE_LOCAL_LLM),
         AsyncStorage.getItem(SETTINGS_KEYS.FORCE_CONTENT_FETCH_FAILURE),
         AsyncStorage.getItem(SETTINGS_KEYS.CLINKS_APPEARANCE),
+        AsyncStorage.getItem(SETTINGS_KEYS.TIP_JAR_THEME),
       ]);
       setExpandRulesDefault(rules === 'true');
       setExpandExpansionsDefault(expansions === 'true');
@@ -346,6 +353,7 @@ export default function MoreScreen({
       setForceLocalLlm(forceLocal === 'true');
       setForceContentFetchFailure(forceContentFail === 'true');
       if (appearance) setClinksAppearance(appearance);
+      if (tipJarTheme) setTipJarThemeOverride(tipJarTheme);
     };
     load();
   }, []);
@@ -386,6 +394,12 @@ export default function MoreScreen({
     setClinksAppearance(id);
     await AsyncStorage.setItem(SETTINGS_KEYS.CLINKS_APPEARANCE, id);
     logEvent('Feature Flags', `Clinks appearance changed to ${id}`);
+  };
+
+  const setTipJarThemeAndSave = async (id) => {
+    setTipJarThemeOverride(id);
+    await AsyncStorage.setItem(SETTINGS_KEYS.TIP_JAR_THEME, id);
+    logEvent('Feature Flags', `Tip Jar theme set to ${id}`);
   };
 
   // ── Voice locale section animations ─────────────────────────────────────
@@ -1508,7 +1522,7 @@ export default function MoreScreen({
           </CollapsibleSection>
 
           {Platform.OS === 'android' && <CollapsibleSection
-            title={activeTipJarTheme.title}
+            title={resolvedTipJarTheme.title}
             icon={<VenmoIcon width={24} height={24} fill="#E8B923" />}
             isExpanded={sectionsExpanded[SECTION_KEYS.TIP_JAR]}
             onToggle={() => toggleMoreSection(SECTION_KEYS.TIP_JAR)}
@@ -1527,7 +1541,7 @@ export default function MoreScreen({
                         android_ripple={{ color: `${accent}66`, borderless: false }}
                       >
                         <Image
-                          source={activeTipJarTheme.images[i]}
+                          source={resolvedTipJarTheme.images[i]}
                           style={styles.nailImage}
                           resizeMode="contain"
                         />
@@ -1547,7 +1561,7 @@ export default function MoreScreen({
                         android_ripple={{ color: `${accent}66`, borderless: false }}
                       >
                         <Image
-                          source={activeTipJarTheme.images[3 + i]}
+                          source={resolvedTipJarTheme.images[3 + i]}
                           style={styles.nailImage}
                           resizeMode="contain"
                         />
@@ -1612,7 +1626,7 @@ export default function MoreScreen({
                         thumbColor="#E1E1E1"
                       />
                     </View>
-                    <View style={[styles.settingsRow, styles.settingsRowLast, { marginBottom: 8 }]}>
+                    <View style={styles.settingsRow}>
                       <View style={[styles.settingsRowLabel, { flex: 1 }]}>
                         <Text style={[styles.settingsRowText, bodyFontStyle]}>Force Content Fetch Failure</Text>
                       </View>
@@ -1622,6 +1636,31 @@ export default function MoreScreen({
                         trackColor={{ false: '#555', true: accent }}
                         thumbColor="#E1E1E1"
                       />
+                    </View>
+                    <View style={[styles.settingsRow, styles.settingsRowLast, { flexDirection: 'column', alignItems: 'flex-start', paddingBottom: 12, marginBottom: 8 }]}>
+                      <Text style={[styles.settingsRowText, bodyFontStyle, { marginBottom: 10 }]}>Tip Jar Theme</Text>
+                      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                        {[{ id: 'random', label: 'Random' }, ...TIP_JAR_THEMES.map(t => ({ id: t.id, label: t.title }))].map(({ id, label }) => {
+                          const isSelected = tipJarThemeOverride === id;
+                          return (
+                            <Pressable
+                              key={id}
+                              onPress={() => setTipJarThemeAndSave(id)}
+                              style={({ pressed }) => ({
+                                borderWidth: 1.5,
+                                borderColor: accent,
+                                borderRadius: 8,
+                                paddingVertical: 6,
+                                paddingHorizontal: 12,
+                                backgroundColor: isSelected ? accent : 'transparent',
+                                opacity: pressed && !isSelected ? 0.7 : 1,
+                              })}
+                            >
+                              <Text style={[bodyFontStyle, { color: isSelected ? '#1E1E22' : accent, fontSize: 13 }]}>{label}</Text>
+                            </Pressable>
+                          );
+                        })}
+                      </View>
                     </View>
                   </View>
                 )}

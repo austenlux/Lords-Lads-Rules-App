@@ -79,7 +79,7 @@
 		VA00040000000000VA000004 /* RCTVoiceAssistant.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCTVoiceAssistant.h; sourceTree = "<group>"; };
 		VA00050000000000VA000005 /* RCTVoiceAssistant.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = RCTVoiceAssistant.mm; sourceTree = "<group>"; };
 		VA00060000000000VA000006 /* LordsandLadsRules-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "LordsandLadsRules-Bridging-Header.h"; path = "LordsandLadsRules/LordsandLadsRules-Bridging-Header.h"; sourceTree = "<group>"; };
-		VA00070000000000VA000007 /* ThinkingSounds */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ThinkingSounds; path = LordsandLadsRules/ThinkingSounds; sourceTree = "<group>"; };
+		VA00070000000000VA000007 /* ThinkingSounds */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ThinkingSounds; path = ../assets/audio/thinking_sounds; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */

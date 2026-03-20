@@ -99,3 +99,7 @@ releases/
 !.cursor/rules/
 # Auto-generated build info
 src/buildInfo.js
+
+# Thinking sounds — auto-synced at build time from assets/audio/thinking_sounds/
+ios/LordsandLadsRules/ThinkingSounds/
+android/app/src/main/assets/audio/thinking_sounds/
