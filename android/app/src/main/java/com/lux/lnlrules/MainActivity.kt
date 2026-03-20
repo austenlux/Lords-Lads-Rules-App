@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.res.Configuration
 import android.os.Bundle
 import android.graphics.Color
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -11,6 +12,7 @@ import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
 import com.facebook.react.defaults.DefaultReactActivityDelegate
+import com.lux.lnlrules.splash.NativeSplashScreenModule
 
 class MainActivity : ReactActivity() {
 
@@ -27,6 +29,12 @@ class MainActivity : ReactActivity() {
         DefaultReactActivityDelegate(this, mainComponentName, fabricEnabled)
         
     override fun onCreate(savedInstanceState: Bundle?) {
+        // installSplashScreen MUST be called before super.onCreate().
+        // Keep the system splash on screen until JS calls NativeSplashScreen.dismiss(),
+        // at which point the RN overlay (already rendered, opacity=1) takes over.
+        val splashScreen = installSplashScreen()
+        splashScreen.setKeepOnScreenCondition { !NativeSplashScreenModule.splashReady.get() }
+        splashScreen.setOnExitAnimationListener { it.remove() }
         super.onCreate(savedInstanceState)
 
         WindowCompat.setDecorFitsSystemWindows(window, false)

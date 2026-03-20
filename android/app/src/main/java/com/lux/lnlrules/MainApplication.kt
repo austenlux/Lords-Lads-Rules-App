@@ -6,6 +6,7 @@ import android.content.res.Configuration
 import com.facebook.react.PackageList
 import com.facebook.react.ReactApplication
 import com.lux.lnlrules.voiceassistant.VoiceAssistantPackage
+import com.lux.lnlrules.splash.NativeSplashScreenPackage
 import com.facebook.react.ReactHost
 import com.facebook.react.ReactNativeHost
 import com.facebook.react.ReactPackage
@@ -27,6 +28,7 @@ class MainApplication : Application(), ReactApplication {
         override fun getPackages(): List<ReactPackage> {
             val packages = PackageList(this).packages
             packages.add(VoiceAssistantPackage())
+            packages.add(NativeSplashScreenPackage())
             return packages
         }
 

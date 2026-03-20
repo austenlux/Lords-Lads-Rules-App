@@ -102,6 +102,15 @@ function AppContent() {
   const insets = useSafeAreaInsets();
   const tabBarBottomInset = Math.min(insets.bottom, TAB_BAR_BOTTOM_INSET_MAX);
 
+  // Android: dismiss the system splash (core-splashscreen) immediately on first
+  // render so the RN overlay (already at opacity=1 with the big logo) takes over.
+  // The SPLASH_MIN_MS timer below then handles the timed fade-out.
+  useEffect(() => {
+    if (!isIOS) {
+      NativeModules.NativeSplashScreen?.dismiss();
+    }
+  }, []);
+
   useEffect(() => {
     const t = setTimeout(() => {
       if (isIOS) {
