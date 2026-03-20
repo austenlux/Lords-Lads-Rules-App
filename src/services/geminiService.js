@@ -6,7 +6,7 @@
  */
 
 import { Platform } from 'react-native';
-import { GEMINI_API_KEY_ANDROID, GEMINI_API_KEY_IOS } from '../buildInfo';
+import { GEMINI_API_KEY_ANDROID, GEMINI_API_KEY_IOS, ANDROID_CERT_SHA1 } from '../buildInfo';
 
 const GEMINI_API_KEY = Platform.OS === 'ios' ? GEMINI_API_KEY_IOS : GEMINI_API_KEY_ANDROID;
 
@@ -67,6 +67,9 @@ export async function askGemini(prompt) {
       headers: {
         'Content-Type': 'application/json',
         'x-goog-api-key': GEMINI_API_KEY,
+        ...(Platform.OS === 'ios'
+          ? { 'X-Ios-Bundle-Identifier': 'com.lux.lnlrules' }
+          : { 'X-Android-Package': 'com.lux.lnlrules', 'X-Android-Cert': ANDROID_CERT_SHA1 }),
       },
       signal: controller.signal,
       body: JSON.stringify({
