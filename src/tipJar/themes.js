@@ -44,6 +44,18 @@ export const TIP_JAR_THEMES = [
     ],
   },
   {
+    id: 'nail',
+    title: 'Galvanized Gold',
+    images: [
+      require('../../assets/tipjar/nail/nail1.png'),
+      require('../../assets/tipjar/nail/nail2.png'),
+      require('../../assets/tipjar/nail/nail3.png'),
+      require('../../assets/tipjar/nail/nail4.png'),
+      require('../../assets/tipjar/nail/nail5.png'),
+      require('../../assets/tipjar/nail/nail6.png'),
+    ],
+  },
+  {
     id: 'beer',
     title: 'Beer Bounty',
     images: [
