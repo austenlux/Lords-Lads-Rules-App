@@ -396,6 +396,14 @@ class VoiceAssistantSwift: NSObject {
         if !enabled { thinkingSound.stop() }
     }
 
+    func playThinkingSound() {
+        if thinkingSoundEnabled { thinkingSound.play() }
+    }
+
+    func stopThinkingSound() {
+        thinkingSound.stop()
+    }
+
     func markSpeechQueueComplete() {
         completionLock.lock()
         generationComplete = true

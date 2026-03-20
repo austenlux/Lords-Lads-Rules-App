@@ -125,6 +125,18 @@ export interface Spec extends TurboModule {
   setThinkingSoundEnabled(enabled: boolean): void;
 
   /**
+   * Starts the thinking sound immediately (if enabled).
+   * Call before a cloud LLM request where askQuestion() is not used.
+   */
+  playThinkingSound(): void;
+
+  /**
+   * Stops the thinking sound immediately.
+   * Call when a cloud LLM response is received or an error occurs.
+   */
+  stopThinkingSound(): void;
+
+  /**
    * Called by JS after it has queued the final speak() for a turn.
    * Tells the native layer no more utterances are coming so it can fire
    * onTTSFinished once the TTS queue drains completely.

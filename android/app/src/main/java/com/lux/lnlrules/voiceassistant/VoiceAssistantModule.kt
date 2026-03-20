@@ -454,6 +454,14 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
         if (!enabled) thinkingSound.stop()
     }
 
+    override fun playThinkingSound() {
+        if (thinkingSoundEnabled) thinkingSound.play()
+    }
+
+    override fun stopThinkingSound() {
+        thinkingSound.stop()
+    }
+
     /**
      * Called by JS after it has queued the final speak() for a turn.
      * Sets generationComplete and fires onTTSFinished immediately if the

@@ -464,8 +464,10 @@ export function useGameAssistant() {
             logEvent('Voice', `Gemini API call started (full context: ${totalChars} chars)`);
             const geminiT0 = Date.now();
 
+            native.playThinkingSound();
             const geminiPrompt = buildGeminiFullContextPrompt(rawRules, rawExpansions, historySnapshot, spokenQuestion);
             const geminiResponse = await askGemini(geminiPrompt);
+            native.stopThinkingSound();
             const geminiElapsed = Date.now() - geminiT0;
             logEvent('Voice', `Gemini API response received (${geminiElapsed}ms)`);
 
@@ -502,6 +504,7 @@ export function useGameAssistant() {
             native.markSpeechQueueComplete();
             usedCloud = true;
           } catch (geminiErr) {
+            native.stopThinkingSound();
             cloudFailReason = geminiErr.message;
             logEvent('Voice', `Gemini API failed — falling back to on-device: ${cloudFailReason}`);
             setCloudLlmStatus(prev => ({

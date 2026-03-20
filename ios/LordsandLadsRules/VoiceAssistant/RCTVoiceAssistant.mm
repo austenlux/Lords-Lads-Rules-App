@@ -123,6 +123,14 @@ RCT_EXPORT_MODULE(VoiceAssistant)
   [_swiftModule setThinkingSoundEnabledWithEnabled:enabled];
 }
 
+- (void)playThinkingSound {
+  [_swiftModule playThinkingSound];
+}
+
+- (void)stopThinkingSound {
+  [_swiftModule stopThinkingSound];
+}
+
 - (void)markSpeechQueueComplete {
   [_swiftModule markSpeechQueueComplete];
 }
