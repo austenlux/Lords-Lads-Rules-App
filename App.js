@@ -27,8 +27,16 @@ import { useGameAssistant } from './src/hooks/useGameAssistant';
 import { ContentScreen, MoreScreen, ToolsScreen } from './src/screens';
 import { VoiceAssistantFAB, VoiceAssistantModal } from './src/components';
 import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { buildIndex } from './src/services/ragService';
-import { initContentFlags } from './src/services/contentService';
+
+const LEGACY_SUMMARY_KEYS = [
+  '@cache_rules_summary',
+  '@cache_expansions_summary',
+  '@cache_rules_summary_hash',
+  '@cache_expansions_summary_hash',
+  '@lnl_show_summary_enabled',
+];
 
 const SPLASH_MIN_MS = 1000;
 const SPLASH_FADE_MS = 400;
@@ -50,9 +58,21 @@ const TAB_BAR_HEIGHT = 68;
 /** Cap bottom inset so we don't reserve more than needed for the OS gesture bar (avoids excessive gap). */
 const TAB_BAR_BOTTOM_INSET_MAX = 20;
 
-function computeLogoLayout({ width, height }) {
+/** On iOS, PagerView children get 0 height with flex-only layout; use explicit height. */
+function getPageHeight() {
+  return Dimensions.get('window').height - TAB_BAR_HEIGHT;
+}
+
+function getLogoLayout() {
+  const { width, height } = Dimensions.get('window');
   const logoSize = Math.min(width, height) * LOGO_SIZE_RATIO;
-  return { width, height, logoSize, logoLeft: (width - logoSize) / 2, logoTop: (height - logoSize) / 2 };
+  return {
+    width,
+    height,
+    logoSize,
+    logoLeft: (width - logoSize) / 2,
+    logoTop: (height - logoSize) / 2,
+  };
 }
 
 export default function App() {
@@ -74,24 +94,13 @@ function AppContent() {
   const askTheRulesRef = useRef(null);
   const isIOS = Platform.OS === 'ios';
   const splashOpacity = useRef(new Animated.Value(1)).current;
-  // Android: native window background is the sole splash — app content starts visible immediately.
-  // iOS: JS overlay fades in after the native AppDelegate splash is dismissed.
-  const mainAppOpacity = useRef(new Animated.Value(isIOS ? 0 : 1)).current;
+  const mainAppOpacity = useRef(new Animated.Value(0)).current;
   const fadeOutStarted = useRef(false);
   const splashDismissedRef = useRef(false);
   const pagerRef = useRef(null);
   const iosScrollRef = useRef(null);
   const insets = useSafeAreaInsets();
   const tabBarBottomInset = Math.min(insets.bottom, TAB_BAR_BOTTOM_INSET_MAX);
-
-  const [dims, setDims] = useState(() => Dimensions.get('window'));
-  useEffect(() => {
-    const sub = Dimensions.addEventListener('change', ({ window }) => setDims(window));
-    return () => sub.remove();
-  }, []);
-  const logoLayout = useMemo(() => computeLogoLayout(dims), [dims]);
-  const windowWidth = dims.width;
-  const pageHeight = dims.height - TAB_BAR_HEIGHT;
 
   useEffect(() => {
     const t = setTimeout(() => {
@@ -110,7 +119,7 @@ function AppContent() {
   }, []);
 
   useEffect(() => {
-    initContentFlags().catch(() => {});
+    AsyncStorage.multiRemove(LEGACY_SUMMARY_KEYS).catch(() => {});
   }, []);
 
   const {
@@ -201,6 +210,9 @@ function AppContent() {
   }, [isThinking, isConvoOpen, isListening]);
 
 
+  const logoLayout = getLogoLayout();
+  const { width: windowWidth, height: windowHeight } = Dimensions.get('window');
+  const pageHeight = getPageHeight();
   const pageStyle = Platform.OS === 'ios' ? { flex: 1, height: pageHeight } : { flex: 1 };
 
   const [contentAreaHeight, setContentAreaHeight] = useState(null);
@@ -306,6 +318,7 @@ function AppContent() {
 
   const successContent = (
     <>
+      <StatusBar barStyle="light-content" backgroundColor="transparent" translucent={true} />
       <View style={styles.mainContainer} onLayout={handleContentAreaLayout}>
         <View
           style={[
@@ -474,6 +487,30 @@ function AppContent() {
             />
           </View>
         </View>
+      )}
+
+      {!isIOS && (
+        <Animated.View
+          style={{
+            ...StyleSheet.absoluteFillObject,
+            zIndex: 100,
+            backgroundColor: '#121212',
+            opacity: splashOpacity,
+          }}
+          pointerEvents="none"
+        >
+          <Image
+            source={require('./assets/logo_dark.png')}
+            style={{
+              position: 'absolute',
+              width: logoLayout.logoSize,
+              height: logoLayout.logoSize,
+              left: logoLayout.logoLeft,
+              top: logoLayout.logoTop,
+            }}
+            resizeMode="contain"
+          />
+        </Animated.View>
       )}
 
       {(showMicDialog || speechPermissionError) && (
