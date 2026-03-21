@@ -1643,6 +1643,7 @@ export default function MoreScreen({
                         thumbColor="#E1E1E1"
                       />
                     </View>
+                    {Platform.OS !== 'ios' && (
                     <View style={[styles.settingsRow, styles.settingsRowLast, { flexDirection: 'column', alignItems: 'flex-start', paddingBottom: 12, marginBottom: 8 }]}>
                       <Text style={[styles.settingsRowText, bodyFontStyle, { marginBottom: 10 }]}>Tip Jar Theme</Text>
                       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
@@ -1668,6 +1669,7 @@ export default function MoreScreen({
                         })}
                       </View>
                     </View>
+                    )}
                   </View>
                 )}
               </View>
