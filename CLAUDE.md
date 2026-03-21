@@ -82,7 +82,7 @@ Claude Code acts as the orchestrator — use the Agent tool to invoke the right 
 
 ### When NOT to use agents
 
-Quick questions, config tweaks, one-liner changes, or non-code discussions — handle directly without invoking agents.
+Only when the user asks a question that requires no code change — answer directly. **Every code change, no matter how small (including one-liners and config tweaks), must go through the appropriate subagent(s).** Never write or edit production code directly as the orchestrator.
 
 ### Typical workflows
 
