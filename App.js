@@ -90,6 +90,7 @@ function AppContent() {
 
   const [isConvoOpen, setIsConvoOpen] = useState(false);
   const [showMicDialog, setShowMicDialog] = useState(false);
+  const [splashImageLoaded, setSplashImageLoaded] = useState(false);
   const prevIsThinkingRef = useRef(false);
   const askTheRulesRef = useRef(null);
   const isIOS = Platform.OS === 'ios';
@@ -494,7 +495,7 @@ function AppContent() {
           style={{
             ...StyleSheet.absoluteFillObject,
             zIndex: 100,
-            backgroundColor: '#121212',
+            backgroundColor: splashImageLoaded ? '#121212' : 'transparent',
             opacity: splashOpacity,
           }}
           pointerEvents="none"
@@ -509,6 +510,7 @@ function AppContent() {
               top: logoLayout.logoTop,
             }}
             resizeMode="contain"
+            onLoad={() => setSplashImageLoaded(true)}
           />
         </Animated.View>
       )}
