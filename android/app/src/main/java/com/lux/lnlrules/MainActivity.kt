@@ -67,6 +67,8 @@ class MainActivity : ReactActivity() {
         layers.setLayerInset(1, insetH, insetV, insetH, insetV)
         window.setBackgroundDrawable(layers)
 
+        SplashOverlay.show(this)
+
         WindowCompat.setDecorFitsSystemWindows(window, false)
         window.statusBarColor = Color.TRANSPARENT
         window.navigationBarColor = Color.TRANSPARENT

@@ -7,7 +7,6 @@ import {
   StatusBar,
   Image,
   Dimensions,
-  Animated,
   Platform,
   ScrollView,
   Linking,
@@ -39,7 +38,6 @@ const LEGACY_SUMMARY_KEYS = [
 ];
 
 const SPLASH_MIN_MS = 1000;
-const SPLASH_FADE_MS = 400;
 const LOGO_SIZE_RATIO = 0.9;
 /** iOS: asset catalog image (Metro require doesn't work in iOS release builds).
     Android: Metro-bundled greyscale logo. */
@@ -90,14 +88,9 @@ function AppContent() {
 
   const [isConvoOpen, setIsConvoOpen] = useState(false);
   const [showMicDialog, setShowMicDialog] = useState(false);
-  const [splashImageLoaded, setSplashImageLoaded] = useState(false);
   const prevIsThinkingRef = useRef(false);
   const askTheRulesRef = useRef(null);
   const isIOS = Platform.OS === 'ios';
-  const splashOpacity = useRef(new Animated.Value(1)).current;
-  const mainAppOpacity = useRef(new Animated.Value(0)).current;
-  const fadeOutStarted = useRef(false);
-  const splashDismissedRef = useRef(false);
   const pagerRef = useRef(null);
   const iosScrollRef = useRef(null);
   const insets = useSafeAreaInsets();
@@ -105,15 +98,9 @@ function AppContent() {
 
   useEffect(() => {
     const t = setTimeout(() => {
-      if (isIOS) {
-        NativeModules.NativeSplashScreen?.dismiss();
-      }
-      if (!fadeOutStarted.current) {
-        fadeOutStarted.current = true;
-        Animated.parallel([
-          Animated.timing(splashOpacity, { toValue: 0, duration: SPLASH_FADE_MS, useNativeDriver: true }),
-          Animated.timing(mainAppOpacity, { toValue: 1, duration: SPLASH_FADE_MS, useNativeDriver: true }),
-        ]).start(() => { splashDismissedRef.current = true; });
+      NativeModules.NativeSplashScreen?.dismiss();  // iOS
+      if (!isIOS) {
+        NativeModules.NativeSplashScreen?.hide();   // Android
       }
     }, SPLASH_MIN_MS);
     return () => clearTimeout(t);
@@ -422,8 +409,8 @@ function AppContent() {
   );
 
   return (
-    <View style={{ flex: 1, backgroundColor: (isIOS || !splashImageLoaded) ? 'transparent' : '#121212' }}>
-      {!isIOS && splashImageLoaded && (
+    <View style={{ flex: 1, backgroundColor: isIOS ? 'transparent' : '#121212' }}>
+      {!isIOS && (
         <>
           <Image
             source={BG_LOGO_ANDROID}
@@ -444,9 +431,9 @@ function AppContent() {
         backgroundColor={isIOS ? 'transparent' : '#121212'}
         translucent={isIOS || undefined}
       />
-      <Animated.View style={{ flex: 1, opacity: mainAppOpacity }}>
+      <View style={{ flex: 1 }}>
         {mainContent}
-      </Animated.View>
+      </View>
 
       {aiSupported && ragIndexReady && (
         <View
@@ -488,31 +475,6 @@ function AppContent() {
             />
           </View>
         </View>
-      )}
-
-      {!isIOS && (
-        <Animated.View
-          style={{
-            ...StyleSheet.absoluteFillObject,
-            zIndex: 100,
-            backgroundColor: splashImageLoaded ? '#121212' : 'transparent',
-            opacity: splashOpacity,
-          }}
-          pointerEvents="none"
-        >
-          <Image
-            source={require('./assets/logo_dark.png')}
-            style={{
-              position: 'absolute',
-              width: logoLayout.logoSize,
-              height: logoLayout.logoSize,
-              left: logoLayout.logoLeft,
-              top: logoLayout.logoTop,
-            }}
-            resizeMode="contain"
-            onLoad={() => setSplashImageLoaded(true)}
-          />
-        </Animated.View>
       )}
 
       {(showMicDialog || speechPermissionError) && (
