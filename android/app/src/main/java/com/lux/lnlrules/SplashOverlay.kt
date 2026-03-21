@@ -20,7 +20,7 @@ object SplashOverlay {
         val dm = activity.resources.displayMetrics
         val widthDp = dm.widthPixels / dm.density
         val heightDp = dm.heightPixels / dm.density
-        val logoSizePx = (minOf(widthDp, heightDp) * 0.93f * dm.density).roundToInt()
+        val logoSizePx = (minOf(widthDp, heightDp) * 0.915f * dm.density).roundToInt()
 
         val imageView = ImageView(activity).apply {
             setImageResource(R.drawable.splash_logo)
