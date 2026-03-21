@@ -98,9 +98,10 @@ function AppContent() {
 
   useEffect(() => {
     const t = setTimeout(() => {
-      NativeModules.NativeSplashScreen?.dismiss();  // iOS
-      if (!isIOS) {
-        NativeModules.NativeSplashScreen?.hide();   // Android
+      if (isIOS) {
+        NativeModules.NativeSplashScreen?.dismiss();
+      } else {
+        NativeModules.NativeSplashScreen?.hide();
       }
     }, SPLASH_MIN_MS);
     return () => clearTimeout(t);
