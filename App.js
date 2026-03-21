@@ -422,8 +422,8 @@ function AppContent() {
   );
 
   return (
-    <View style={{ flex: 1, backgroundColor: isIOS ? 'transparent' : '#121212' }}>
-      {!isIOS && (
+    <View style={{ flex: 1, backgroundColor: (isIOS || !splashImageLoaded) ? 'transparent' : '#121212' }}>
+      {!isIOS && splashImageLoaded && (
         <>
           <Image
             source={BG_LOGO_ANDROID}
