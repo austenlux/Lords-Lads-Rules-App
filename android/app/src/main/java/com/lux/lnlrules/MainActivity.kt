@@ -30,11 +30,12 @@ class MainActivity : ReactActivity() {
 
     override fun createReactActivityDelegate(): ReactActivityDelegate =
         object : DefaultReactActivityDelegate(this, mainComponentName, fabricEnabled) {
-            // Match the splash background so the 1-frame gap between the window
-            // background logo and the JS overlay is invisible instead of a flash.
+            // Transparent background so the window background logo shows through
+            // until the JS overlay paints — keeps the logo visible continuously
+            // with no gap or flicker during the native→JS transition.
             override fun createRootView(): ReactRootView =
                 ReactRootView(this@MainActivity).also {
-                    it.setBackgroundColor(Color.parseColor("#121212"))
+                    it.setBackgroundColor(Color.TRANSPARENT)
                 }
         }
 
