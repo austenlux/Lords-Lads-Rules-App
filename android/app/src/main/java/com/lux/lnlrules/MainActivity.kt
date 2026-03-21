@@ -12,6 +12,7 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
+import com.facebook.react.ReactRootView
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
 import com.facebook.react.defaults.DefaultReactActivityDelegate
 import kotlin.math.roundToInt
@@ -28,7 +29,14 @@ class MainActivity : ReactActivity() {
     override fun getMainComponentName(): String = "LordsandLadsRules"
 
     override fun createReactActivityDelegate(): ReactActivityDelegate =
-        DefaultReactActivityDelegate(this, mainComponentName, fabricEnabled)
+        object : DefaultReactActivityDelegate(this, mainComponentName, fabricEnabled) {
+            // Match the splash background so the 1-frame gap between the window
+            // background logo and the JS overlay is invisible instead of a flash.
+            override fun createRootView(): ReactRootView =
+                ReactRootView(this@MainActivity).also {
+                    it.setBackgroundColor(Color.parseColor("#121212"))
+                }
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Suppress the Android 12+ mandatory system splash (which would show the
