@@ -40,19 +40,8 @@ class MainActivity : ReactActivity() {
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        // Suppress the Android 12+ mandatory system splash (which would show the
-        // app's adaptive icon in a circle). installSplashScreen replaces it with
-        // our theme's windowSplashScreenAnimatedIcon (invisible dark shape).
-        // setOnExitAnimationListener removes it instantly after the first frame so
-        // postSplashScreenTheme (Theme.App.Main) takes effect.
-        val splashScreen = installSplashScreen()
-        splashScreen.setOnExitAnimationListener { it.remove() }
-        super.onCreate(savedInstanceState)
-
-        // Override the theme's static 320dp window background with one whose logo
-        // matches the JS overlay exactly: Math.min(width, height) * 0.9 (dp).
-        // This eliminates the size jump between the native window background and
-        // the React Native splash overlay that replaces it.
+        // Set correct-sized window background BEFORE super.onCreate() so it takes
+        // effect as early as possible — visible through the transparent system splash.
         val dm = resources.displayMetrics
         val widthDp = dm.widthPixels / dm.density
         val heightDp = dm.heightPixels / dm.density
@@ -66,6 +55,10 @@ class MainActivity : ReactActivity() {
         ))
         layers.setLayerInset(1, insetH, insetV, insetH, insetV)
         window.setBackgroundDrawable(layers)
+
+        val splashScreen = installSplashScreen()
+        splashScreen.setOnExitAnimationListener { it.remove() }
+        super.onCreate(savedInstanceState)
 
         SplashOverlay.show(this)
 

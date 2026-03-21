@@ -28,7 +28,7 @@ object SplashOverlay {
         }
 
         val frame = FrameLayout(activity).apply {
-            background = ColorDrawable(Color.TRANSPARENT)
+            background = ColorDrawable(Color.parseColor("#121212"))
             val lp = FrameLayout.LayoutParams(logoSizePx, logoSizePx).apply {
                 gravity = Gravity.CENTER
             }
