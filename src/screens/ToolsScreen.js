@@ -330,7 +330,7 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
 
           <CollapsibleSection
             title="Nail Calculator"
-            icon={<CalculatorIcon width={24} height={24} color={INFO_BLUE} />}
+            icon={<CalculatorIcon width={24} height={24} />}
             isExpanded={sectionsExpanded[SECTION_KEYS.NAIL_CALC]}
             onToggle={() => toggleSection(SECTION_KEYS.NAIL_CALC)}
             styles={styles}
