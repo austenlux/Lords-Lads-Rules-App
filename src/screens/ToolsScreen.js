@@ -508,7 +508,7 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                           </View>
                           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
                             <Text style={[bodyFontStyle, { fontSize: 16, color: '#FFFFFF', ...(Platform.OS === 'android' && { includeFontPadding: false }) }]}>
-                              {p.goldNails} Gold Nails
+                              {p.goldNails} Gold Nail{p.goldNails === 1 ? '' : 's'}
                             </Text>
                           <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center' }}>
                             {p.goldNails > 0 && (
