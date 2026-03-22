@@ -82,6 +82,7 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
   const editingRowRefs = useRef({});
   const editingInputRef = useRef(null);
   const [androidKeyboardHeight, setAndroidKeyboardHeight] = useState(0);
+  const [iosKeyboardHeight, setIosKeyboardHeight] = useState(0);
 
   useEffect(() => {
     AsyncStorage.getItem(GOLDEN_NAILS_PLAYERS_KEY).then((raw) => {
@@ -106,18 +107,24 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
     AsyncStorage.setItem(GOLDEN_NAILS_PLAYERS_KEY, JSON.stringify(goldenNailPlayers));
   }, [goldenNailPlayers]);
 
-  // Android: manually track keyboard height to add/remove bottom padding on the ScrollView.
-  // KAV behavior modes are unreliable with adjustNothing — they may not restore on keyboard hide,
-  // leaving a permanent gap. Explicit state with keyboardDidHide cleanup is guaranteed to clear.
   useEffect(() => {
-    if (Platform.OS !== 'android') return;
-    const showSub = Keyboard.addListener('keyboardDidShow', (e) => {
-      setAndroidKeyboardHeight(e.endCoordinates.height);
-    });
-    const hideSub = Keyboard.addListener('keyboardDidHide', () => {
-      setAndroidKeyboardHeight(0);
-    });
-    return () => { showSub.remove(); hideSub.remove(); };
+    if (Platform.OS === 'android') {
+      const showSub = Keyboard.addListener('keyboardDidShow', (e) => {
+        setAndroidKeyboardHeight(e.endCoordinates.height);
+      });
+      const hideSub = Keyboard.addListener('keyboardDidHide', () => {
+        setAndroidKeyboardHeight(0);
+      });
+      return () => { showSub.remove(); hideSub.remove(); };
+    } else {
+      const showSub = Keyboard.addListener('keyboardWillShow', (e) => {
+        setIosKeyboardHeight(e.endCoordinates.height);
+      });
+      const hideSub = Keyboard.addListener('keyboardWillHide', () => {
+        setIosKeyboardHeight(0);
+      });
+      return () => { showSub.remove(); hideSub.remove(); };
+    }
   }, []);
 
   // Focus the input once when editing starts — avoids autoFocus re-triggering on re-renders
@@ -131,9 +138,7 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
   useEffect(() => {
     if (!editingPlayerId) return;
     const scrollToEditing = (e) => {
-      // On Android, delay scroll so the paddingBottom state update renders first —
-      // padding extends the scrollable range; scrolling before it renders would clamp
-      const delay = Platform.OS === 'android' ? 50 : 0;
+      const delay = 50;
       setTimeout(() => {
         if (editingPlayerId === 'new') {
           scrollViewRef.current?.scrollToEnd({ animated: true });
@@ -305,14 +310,17 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={undefined}
       style={{ flex: 1 }}
       keyboardVerticalOffset={HEADER_HEIGHT}
     >
     <ScrollView
       ref={scrollViewRef}
       style={[styles.scrollView, contentHeight != null && { minHeight: contentHeight }]}
-      contentContainerStyle={Platform.OS === 'android' && androidKeyboardHeight > 0 ? { paddingBottom: androidKeyboardHeight } : undefined}
+      contentContainerStyle={(() => {
+        const kbHeight = Platform.OS === 'android' ? androidKeyboardHeight : iosKeyboardHeight;
+        return kbHeight > 0 ? { paddingBottom: kbHeight } : undefined;
+      })()}
       contentInsetAdjustmentBehavior={Platform.OS === 'ios' ? 'never' : undefined}
     >
       <View style={[styles.contentContainer, { paddingTop: contentPaddingTop ?? HEADER_HEIGHT }]}>
