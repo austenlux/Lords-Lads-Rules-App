@@ -486,6 +486,7 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
+    flexShrink: 1,
     gap: 8,
   },
   versionText: {
@@ -498,6 +499,7 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
     fontSize: 15,
     color: '#E1E1E1',
     marginRight: 12,
+    flexShrink: 1,
   },
   versionArrow: {
     color: ACCENT_COLOR,

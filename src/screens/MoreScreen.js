@@ -1103,14 +1103,21 @@ export default function MoreScreen({
             styles={styles}
             style={styles.moreSectionWrapper}
           >
-            {/* ── Card: Expand all sections by default ── */}
+            {/* ── Card: Default Expanded ── */}
             <TouchableOpacity
               style={styles.versionContainer}
               onPress={toggleExpandDefaults}
               activeOpacity={0.7}
             >
               <View style={styles.versionHeader}>
-                <CardIconTitle icon={<ExpandIcon fill="#66BB6A" />} title="Expand all sections by default" styles={styles} />
+                <View style={{ flex: 1 }}>
+                  <CardIconTitle icon={<ExpandIcon fill="#66BB6A" />} title="Default Expanded" styles={styles} />
+                  {expandDefaultsExpanded && (
+                    <Text style={[{ fontSize: 10, color: '#888', marginTop: 2, marginLeft: 28 }, bodyFontStyle]}>
+                      Sections in Rules and Expansions will open automatically
+                    </Text>
+                  )}
+                </View>
                 <Animated.View style={{ transform: [{ rotate: animations['expandDefaults']?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }] }}>
                   <Text style={styles.versionArrow}>▶</Text>
                 </Animated.View>
