@@ -24,6 +24,7 @@ import {
 } from 'react-native';
 import Markdown from 'react-native-markdown-display';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { scaleFontSize } from '../utils/scaleFontSize';
 import WifiIcon from '../../assets/icons/wifi.svg';
 import NoWifiIcon from './NoWifiIcon';
 import { useTheme, hexToGlow } from '../context/ThemeContext';
@@ -52,9 +53,9 @@ const BASE_MODAL_COLORS = {
 
 
 const BASE_MD_STYLES = {
-  body:       { color: BASE_MODAL_COLORS.assistantText, fontSize: 14, lineHeight: 22 },
-  heading1:   { fontSize: 16, fontWeight: '700', marginBottom: 4 },
-  heading2:   { fontSize: 15, fontWeight: '600', marginBottom: 4 },
+  body:       { color: BASE_MODAL_COLORS.assistantText, fontSize: scaleFontSize(14), lineHeight: 22 },
+  heading1:   { fontSize: scaleFontSize(16), fontWeight: '700', marginBottom: 4 },
+  heading2:   { fontSize: scaleFontSize(15), fontWeight: '600', marginBottom: 4 },
   strong:     { fontWeight: '700', color: '#FFFFFF' },
   em:         { fontStyle: 'italic' },
   code_inline: { backgroundColor: '#2A2A2A', color: '#CF6679', borderRadius: 4, paddingHorizontal: 4 },
@@ -115,7 +116,7 @@ function AssistantBubble({ text, source, errorSource, accent, bodyFontStyle, mdS
         </View>
         {text ? (
           isError ? (
-            <Text style={[{ fontSize: 13, color: '#CF6679', lineHeight: 18 }, bodyFontStyle]}>{text}</Text>
+            <Text style={[{ fontSize: scaleFontSize(13), color: '#CF6679', lineHeight: 18 }, bodyFontStyle]}>{text}</Text>
           ) : (
             <Markdown style={mdStyles}>{text}</Markdown>
           )
@@ -318,7 +319,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(207,102,121,0.3)',
   },
   roleLabel: {
-    fontSize: 11,
+    fontSize: scaleFontSize(11),
     fontWeight: '600',
     marginBottom: 4,
     textTransform: 'uppercase',
@@ -331,24 +332,24 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   roleLabelAI: {
-    fontSize: 11,
+    fontSize: scaleFontSize(11),
     fontWeight: '600',
     color: BASE_MODAL_COLORS.roleLabelAI,
     textTransform: 'uppercase',
     letterSpacing: 0.8,
   },
   userText: {
-    fontSize: 14,
+    fontSize: scaleFontSize(14),
     lineHeight: 22,
     color: BASE_MODAL_COLORS.userText,
   },
   thinkingText: {
-    fontSize: 14,
+    fontSize: scaleFontSize(14),
     color: '#666666',
     fontStyle: 'italic',
   },
   listeningText: {
-    fontSize: 14,
+    fontSize: scaleFontSize(14),
     color: '#888888',
     fontStyle: 'italic',
   },

@@ -5,6 +5,7 @@
  */
 import React, { useRef, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Animated } from 'react-native';
+import { scaleFontSize } from '../utils/scaleFontSize';
 import { useTheme } from '../context/ThemeContext';
 
 /** Default expanded state for a section; false = collapsed, matching Rules/Expansions. */
@@ -39,7 +40,7 @@ export default function CollapsibleSection({
   });
 
   const marginLeft = (level - 1) * 12;
-  const fontSize = 28 - (level - 1) * 4;
+  const fontSize = scaleFontSize(28 - (level - 1) * 4);
 
   return (
     <View ref={sectionRef} style={[style, { marginLeft }]}>

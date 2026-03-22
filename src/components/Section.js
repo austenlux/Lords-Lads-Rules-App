@@ -5,6 +5,7 @@
 import React from 'react';
 import { Text } from 'react-native';
 import { decodeHtmlEntities, normalizeSearchQuery } from '../utils/searchUtils';
+import { scaleFontSize } from '../utils/scaleFontSize';
 import HighlightedMarkdown from './HighlightedMarkdown';
 import CollapsibleSection from './CollapsibleSection';
 import { useTheme } from '../context/ThemeContext';
@@ -36,7 +37,7 @@ export default function Section({
     return true;
   };
 
-  const fontSize = 32 - (level - 1) * 4;
+  const fontSize = scaleFontSize(32 - (level - 1) * 4);
   const titleNode =
     trimmedSearchQuery.length >= 2 ? (
       <Text style={[styles.sectionTitle, { fontSize, color: accent }, titleFontStyle]}>

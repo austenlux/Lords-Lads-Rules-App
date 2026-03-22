@@ -5,6 +5,7 @@ import React, { useState, useMemo, useEffect, useLayoutEffect, useRef } from 're
 import { View, Text, ScrollView, TextInput, TouchableOpacity, Pressable, Platform, LayoutAnimation, UIManager, Keyboard, Animated, Easing, KeyboardAvoidingView, Dimensions } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { HEADER_HEIGHT } from '../styles';
+import { scaleFontSize } from '../utils/scaleFontSize';
 import { useTheme } from '../context/ThemeContext';
 import CollapsibleSection, { DEFAULT_SECTION_EXPANDED } from '../components/CollapsibleSection';
 import CrownIcon from '../../assets/icons/crown.svg';
@@ -450,7 +451,7 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                   onPress={handleStartAddPlayer}
                 >
                   <PlusIcon width={15} height={15} fill={accent} />
-                  <Text style={[{ color: accent, fontSize: 12 }, bodyFontStyle]}>Player</Text>
+                  <Text style={[{ color: accent, fontSize: scaleFontSize(12) }, bodyFontStyle]}>Player</Text>
                 </TouchableOpacity>
                 {goldenNailPlayers.length > 0 && (
                   <TouchableOpacity
@@ -469,7 +470,7 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                     onPress={handleClearGoldenNailPlayers}
                   >
                     <TrashIcon width={15} height={15} fill={accent} />
-                    <Text style={[{ color: accent, fontSize: 12 }, bodyFontStyle]}>Clear</Text>
+                    <Text style={[{ color: accent, fontSize: scaleFontSize(12) }, bodyFontStyle]}>Clear</Text>
                   </TouchableOpacity>
                 )}
               </View>
@@ -498,16 +499,16 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                                 onChangeText={setEditingPlayerName}
                                 returnKeyType="done"
                                 onSubmitEditing={saveDisabled ? undefined : handleSavePlayer}
-                                style={[titleFontStyle, { fontSize: 22, color: accent, flex: 1, textAlign: 'center', padding: 0 }]}
+                                style={[titleFontStyle, { fontSize: scaleFontSize(22), color: accent, flex: 1, textAlign: 'center', padding: 0 }]}
                               />
                             ) : (
-                              <Text style={[titleFontStyle, { fontSize: 22, color: accent }]} numberOfLines={1}>
+                              <Text style={[titleFontStyle, { fontSize: scaleFontSize(22), color: accent }]} numberOfLines={1}>
                                 {p.name}
                               </Text>
                             )}
                           </View>
                           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                            <Text style={[bodyFontStyle, { fontSize: 16, color: '#FFFFFF', ...(Platform.OS === 'android' && { includeFontPadding: false }) }]}>
+                            <Text style={[bodyFontStyle, { fontSize: scaleFontSize(16), color: '#FFFFFF', ...(Platform.OS === 'android' && { includeFontPadding: false }) }]}>
                               {p.goldNails} Gold Nail{p.goldNails === 1 ? '' : 's'}
                             </Text>
                           <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center' }}>
@@ -568,7 +569,7 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                           onPress={handleCancelEdit}
                         >
                           <CloseIcon width={14} height={14} fill={accent} />
-                          <Text style={[{ color: accent, fontSize: 12 }, bodyFontStyle]}>Cancel</Text>
+                          <Text style={[{ color: accent, fontSize: scaleFontSize(12) }, bodyFontStyle]}>Cancel</Text>
                         </TouchableOpacity>
                         {isEditing ? (
                           <TouchableOpacity
@@ -577,7 +578,7 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                             disabled={saveDisabled}
                           >
                             <SaveIcon width={14} height={14} fill="#fff" />
-                            <Text style={[{ color: '#fff', fontSize: 12 }, bodyFontStyle]}>Save</Text>
+                            <Text style={[{ color: '#fff', fontSize: scaleFontSize(12) }, bodyFontStyle]}>Save</Text>
                           </TouchableOpacity>
                         ) : (
                           <>
@@ -586,7 +587,7 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                               onPress={() => handleStartEditPlayer(p)}
                             >
                               <EditIcon width={14} height={14} fill={accent} />
-                              <Text style={[{ color: accent, fontSize: 12 }, bodyFontStyle]}>Edit</Text>
+                              <Text style={[{ color: accent, fontSize: scaleFontSize(12) }, bodyFontStyle]}>Edit</Text>
                             </TouchableOpacity>
                             <TouchableOpacity
                               style={{
@@ -603,7 +604,7 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                               onPress={() => handleDeleteGoldenNailPlayer(p.id)}
                             >
                               <TrashIcon width={14} height={14} fill="#E53935" />
-                              <Text style={[{ color: '#E53935', fontSize: 12 }, bodyFontStyle]}>Delete</Text>
+                              <Text style={[{ color: '#E53935', fontSize: scaleFontSize(12) }, bodyFontStyle]}>Delete</Text>
                             </TouchableOpacity>
                           </>
                         )}
@@ -652,13 +653,13 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                             placeholderTextColor={`${accent}99`}
                             returnKeyType="done"
                             onSubmitEditing={saveDisabled ? undefined : handleSavePlayer}
-                            style={[titleFontStyle, { fontSize: 22, color: accent, flex: 1, textAlign: 'center', padding: 0 }]}
+                            style={[titleFontStyle, { fontSize: scaleFontSize(22), color: accent, flex: 1, textAlign: 'center', padding: 0 }]}
                           />
                         </View>
                         <View style={{ flexDirection: 'row', gap: 8, justifyContent: 'center' }}>
                           <TouchableOpacity style={accentButtonStyle} onPress={handleCancelEdit}>
                             <CloseIcon width={14} height={14} fill={accent} />
-                            <Text style={[{ color: accent, fontSize: 12 }, bodyFontStyle]}>Cancel</Text>
+                            <Text style={[{ color: accent, fontSize: scaleFontSize(12) }, bodyFontStyle]}>Cancel</Text>
                           </TouchableOpacity>
                           <TouchableOpacity
                             style={[accentFilledButtonStyle, saveDisabled && { opacity: 0.4 }]}
@@ -666,7 +667,7 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
                             disabled={saveDisabled}
                           >
                             <SaveIcon width={14} height={14} fill="#fff" />
-                            <Text style={[{ color: '#fff', fontSize: 12 }, bodyFontStyle]}>Save</Text>
+                            <Text style={[{ color: '#fff', fontSize: scaleFontSize(12) }, bodyFontStyle]}>Save</Text>
                           </TouchableOpacity>
                         </View>
                       </View>

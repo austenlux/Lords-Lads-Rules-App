@@ -2,19 +2,20 @@
  * Styles for react-native-markdown-display (headings, links, code, tables, etc.).
  */
 import { Platform } from 'react-native';
+import { scaleFontSize } from '../utils/scaleFontSize';
 
 const monospace = Platform.OS === 'ios' ? 'Menlo' : 'monospace';
 
 const createMarkdownStyles = (ACCENT_COLOR, titleFontStyle, bodyFontStyle) => ({
   body: {
     color: '#E1E1E1',
-    fontSize: 16,
+    fontSize: scaleFontSize(16),
     lineHeight: 24,
     ...bodyFontStyle,
   },
   heading1: {
     color: ACCENT_COLOR,
-    fontSize: 32,
+    fontSize: scaleFontSize(32),
     fontWeight: 'bold',
     marginBottom: 0,
     marginTop: 0,
@@ -23,7 +24,7 @@ const createMarkdownStyles = (ACCENT_COLOR, titleFontStyle, bodyFontStyle) => ({
   },
   heading2: {
     color: ACCENT_COLOR,
-    fontSize: 26,
+    fontSize: scaleFontSize(26),
     fontWeight: 'bold',
     marginBottom: 0,
     marginTop: 0,
@@ -32,7 +33,7 @@ const createMarkdownStyles = (ACCENT_COLOR, titleFontStyle, bodyFontStyle) => ({
   },
   heading3: {
     color: ACCENT_COLOR,
-    fontSize: 22,
+    fontSize: scaleFontSize(22),
     fontWeight: 'bold',
     marginBottom: 0,
     marginTop: 0,

@@ -14,6 +14,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import PagerView from 'react-native-pager-view';
+import { scaleFontSize } from './src/utils/scaleFontSize';
 import RulesIcon from './assets/icons/rules.svg';
 import ExpansionsIcon from './assets/icons/expansions.svg';
 import ToolsIcon from './assets/icons/tools.svg';
@@ -541,13 +542,13 @@ const micDialogStyles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.15)',
   },
   title: {
-    fontSize: 18,
+    fontSize: scaleFontSize(18),
     fontWeight: '700',
     marginBottom: 12,
   },
   body: {
     color: '#E0E0E0',
-    fontSize: 15,
+    fontSize: scaleFontSize(15),
     lineHeight: 22,
     marginBottom: 24,
   },
@@ -559,7 +560,7 @@ const micDialogStyles = StyleSheet.create({
   },
   settingsButtonText: {
     color: '#121212',
-    fontSize: 15,
+    fontSize: scaleFontSize(15),
     fontWeight: '700',
   },
   dismissButton: {
@@ -568,6 +569,6 @@ const micDialogStyles = StyleSheet.create({
   },
   dismissButtonText: {
     color: '#888888',
-    fontSize: 14,
+    fontSize: scaleFontSize(14),
   },
 });

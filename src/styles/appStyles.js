@@ -2,6 +2,7 @@
  * App layout and component styles (tab bar, headers, sections, more, etc.).
  */
 import { StyleSheet, StatusBar, Platform } from 'react-native';
+import { scaleFontSize } from '../utils/scaleFontSize';
 
 const STATUS_BAR_HEIGHT = StatusBar.currentHeight ?? 0;
 const HEADER_HEIGHT = STATUS_BAR_HEIGHT + 74;
@@ -39,13 +40,13 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
     borderColor: '#CF6679',
   },
   errorTitle: {
-    fontSize: 22,
+    fontSize: scaleFontSize(22),
     fontWeight: 'bold',
     color: '#CF6679',
     marginBottom: 12,
   },
   errorMessage: {
-    fontSize: 16,
+    fontSize: scaleFontSize(16),
     color: '#E1E1E1',
     textAlign: 'center',
     marginBottom: 20,
@@ -58,17 +59,17 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
   },
   retryButtonText: {
     color: '#121212',
-    fontSize: 16,
+    fontSize: scaleFontSize(16),
     fontWeight: '600',
   },
   loadingText: {
     marginTop: 16,
-    fontSize: 16,
+    fontSize: scaleFontSize(16),
     color: '#E1E1E1',
   },
   chevron: {
     color: ACCENT_COLOR,
-    fontSize: 16,
+    fontSize: scaleFontSize(16),
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -96,14 +97,14 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
     width: '100%',
   },
   mainTitle: {
-    fontSize: 40,
+    fontSize: scaleFontSize(40),
     fontWeight: 'bold',
     color: ACCENT_COLOR,
     marginBottom: 16,
     textAlign: 'center',
   },
   titleSummary: {
-    fontSize: 18,
+    fontSize: scaleFontSize(18),
     color: '#E1E1E1',
     textAlign: 'center',
     lineHeight: 24,
@@ -176,7 +177,7 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
     justifyContent: 'center',
   },
   searchIcon: {
-    fontSize: 20,
+    fontSize: scaleFontSize(20),
   },
   searchBarWrapper: {
     flex: 1,
@@ -193,7 +194,7 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
     padding: 12,
     paddingHorizontal: 16,
     borderRadius: 8,
-    fontSize: 16,
+    fontSize: scaleFontSize(16),
     borderWidth: 1,
     borderColor: ACCENT_GLOW,
   },
@@ -202,7 +203,7 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
     marginLeft: 8,
   },
   closeIcon: {
-    fontSize: 18,
+    fontSize: scaleFontSize(18),
     color: '#E1E1E1',
   },
   highlightedText: {
@@ -217,18 +218,18 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
     marginTop: 50,
   },
   emptyStateIcon: {
-    fontSize: 50,
+    fontSize: scaleFontSize(50),
     marginBottom: 20,
   },
   emptyStateTitle: {
-    fontSize: 20,
+    fontSize: scaleFontSize(20),
     fontWeight: 'bold',
     color: '#fff',
     marginBottom: 10,
     textAlign: 'center',
   },
   emptyStateText: {
-    fontSize: 16,
+    fontSize: scaleFontSize(16),
     color: '#aaa',
     marginBottom: 10,
     textAlign: 'center',
@@ -283,7 +284,7 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
     backgroundColor: 'transparent',
   },
   tabButtonText: {
-    fontSize: 10,
+    fontSize: scaleFontSize(10),
     color: '#E1E1E1',
     marginTop: 2,
   },
@@ -325,7 +326,7 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
     width: '100%',
   },
   aboutTitle: {
-    fontSize: 48,
+    fontSize: scaleFontSize(48),
     fontWeight: 'bold',
     color: ACCENT_COLOR,
     marginBottom: 24,
@@ -335,7 +336,7 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
     textShadowRadius: 20,
   },
   moreTitle: {
-    fontSize: 48,
+    fontSize: scaleFontSize(48),
     fontWeight: 'bold',
     color: ACCENT_COLOR,
     marginBottom: 24,
@@ -350,7 +351,7 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
     marginBottom: 12,
   },
   moreSectionTitle: {
-    fontSize: 24,
+    fontSize: scaleFontSize(24),
     fontWeight: 'bold',
     color: ACCENT_COLOR,
     marginLeft: 10,
@@ -360,11 +361,11 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
     width: '100%',
   },
   moreTimestamp: {
-    fontSize: 15,
+    fontSize: scaleFontSize(15),
     color: '#E1E1E1',
   },
   comingSoonText: {
-    fontSize: 15,
+    fontSize: scaleFontSize(15),
     color: '#888888',
     fontStyle: 'italic',
     textAlign: 'center',
@@ -377,7 +378,7 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
     borderBottomColor: `${ACCENT_COLOR}1A`,
   },
   debugMetaLabel: {
-    fontSize: 12,
+    fontSize: scaleFontSize(12),
     fontWeight: '600',
     color: ACCENT_COLOR,
     width: 130,
@@ -385,7 +386,7 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
     marginRight: 8,
   },
   debugMetaValue: {
-    fontSize: 12,
+    fontSize: scaleFontSize(12),
     color: '#CCCCCC',
     flex: 1,
     flexWrap: 'wrap',
@@ -394,7 +395,7 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
     marginBottom: 0,
   },
   paymentSectionTitle: {
-    fontSize: 16,
+    fontSize: scaleFontSize(16),
     fontWeight: '600',
     color: '#E1E1E1',
     marginBottom: 8,
@@ -413,7 +414,7 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
     backgroundColor: 'rgba(30, 30, 30, 0.7)',
   },
   amountButtonText: {
-    fontSize: 16,
+    fontSize: scaleFontSize(16),
     fontWeight: '600',
     color: ACCENT_COLOR,
   },
@@ -464,7 +465,7 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
     },
   }),
   nailLabel: {
-    fontSize: 18,
+    fontSize: scaleFontSize(18),
     fontWeight: '600',
     color: ACCENT_COLOR,
     marginTop: 8,
@@ -490,20 +491,20 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
     gap: 8,
   },
   versionText: {
-    fontSize: 18,
+    fontSize: scaleFontSize(18),
     fontWeight: 'bold',
     color: ACCENT_COLOR,
     marginRight: 12,
   },
   versionDate: {
-    fontSize: 15,
+    fontSize: scaleFontSize(15),
     color: '#E1E1E1',
     marginRight: 12,
     flexShrink: 1,
   },
   versionArrow: {
     color: ACCENT_COLOR,
-    fontSize: 16,
+    fontSize: scaleFontSize(16),
   },
   versionContentContainer: {
     overflow: 'hidden',
@@ -515,13 +516,13 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
     paddingBottom: 4,
   },
   changelogSubtitle: {
-    fontSize: 16,
+    fontSize: scaleFontSize(16),
     fontWeight: 'bold',
     color: ACCENT_COLOR,
     marginBottom: 8,
   },
   changelogItem: {
-    fontSize: 16,
+    fontSize: scaleFontSize(16),
     color: '#E1E1E1',
   },
   infoBlock: {
@@ -531,18 +532,18 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
     marginBottom: 0,
   },
   infoText: {
-    fontSize: 15,
+    fontSize: scaleFontSize(15),
     color: '#E1E1E1',
     marginBottom: 6,
     lineHeight: 22,
   },
   infoLink: {
-    fontSize: 15,
+    fontSize: scaleFontSize(15),
     color: '#5C7CFA',
     textDecorationLine: 'underline',
   },
   toolDescription: {
-    fontSize: 14,
+    fontSize: scaleFontSize(14),
     color: '#E1E1E1',
     lineHeight: 20,
     marginBottom: 16,
@@ -577,7 +578,7 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
     marginBottom: 4,
   },
   toolInputLabel: {
-    fontSize: 14,
+    fontSize: scaleFontSize(14),
     fontWeight: 'bold',
     color: '#E1E1E1',
   },
@@ -594,11 +595,11 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
     alignItems: 'center',
   },
   toolInputPlaceholderText: {
-    fontSize: 18,
+    fontSize: scaleFontSize(18),
     color: '#888',
   },
   toolInput: {
-    fontSize: 18,
+    fontSize: scaleFontSize(18),
     color: '#E1E1E1',
     borderWidth: 1,
     borderColor: `${ACCENT_COLOR}66`,
@@ -620,7 +621,7 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
     pointerEvents: 'none',
   },
   toolOutputLabel: {
-    fontSize: 13,
+    fontSize: scaleFontSize(13),
     fontWeight: 'bold',
     color: '#FFFFFF',
   },
@@ -638,17 +639,17 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
     alignItems: 'center',
   },
   toolOutputValue: {
-    fontSize: 18,
+    fontSize: scaleFontSize(18),
     fontWeight: '600',
     color: '#2E7D32',
   },
   toolOutputValueUprising: {
-    fontSize: 18,
+    fontSize: scaleFontSize(18),
     fontWeight: '600',
     color: '#CC4400',
   },
   toolQuickRefTitle: {
-    fontSize: 16,
+    fontSize: scaleFontSize(16),
     fontWeight: '600',
     color: ACCENT_COLOR,
     marginTop: 16,
@@ -677,7 +678,7 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
     justifyContent: 'center',
   },
   toolTableLabelText: {
-    fontSize: 14,
+    fontSize: scaleFontSize(14),
     color: '#E1E1E1',
     fontWeight: '500',
   },
@@ -691,21 +692,21 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
     backgroundColor: 'rgba(30, 30, 30, 0.6)',
   },
   toolTableDataText: {
-    fontSize: 13,
+    fontSize: scaleFontSize(13),
     color: '#E1E1E1',
   },
   toolTableDataTextPlayers: {
-    fontSize: 16,
+    fontSize: scaleFontSize(16),
     fontWeight: 'bold',
     color: '#3D7DD8',
   },
   toolTableDataTextNails: {
-    fontSize: 16,
+    fontSize: scaleFontSize(16),
     fontWeight: 'bold',
     color: '#2E7D32',
   },
   toolTableDataTextUprising: {
-    fontSize: 16,
+    fontSize: scaleFontSize(16),
     fontWeight: 'bold',
     color: '#CC4400',
   },
@@ -720,11 +721,11 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
   },
   latestBadgeText: {
     color: '#2E7D32',
-    fontSize: 12,
+    fontSize: scaleFontSize(12),
     fontWeight: 'bold',
   },
   settingsSectionTitle: {
-    fontSize: 16,
+    fontSize: scaleFontSize(16),
     fontWeight: '600',
     color: '#E1E1E1',
     marginBottom: 12,
@@ -745,7 +746,7 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
     marginRight: 8,
   },
   settingsRowText: {
-    fontSize: 16,
+    fontSize: scaleFontSize(16),
     color: '#E1E1E1',
   },
   settingsRowLast: {
@@ -761,14 +762,14 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
     marginBottom: 4,
   },
   voiceGenderLabel: {
-    fontSize: 13,
+    fontSize: scaleFontSize(13),
     fontWeight: '700',
     color: '#AAAAAA',
     textTransform: 'uppercase',
     letterSpacing: 1,
   },
   voiceSubsectionTitle: {
-    fontSize: 15,
+    fontSize: scaleFontSize(15),
     fontWeight: '600',
     color: ACCENT_COLOR,
     marginTop: 16,
@@ -809,7 +810,7 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
     backgroundColor: ACCENT_COLOR,
   },
   voiceRadioText: {
-    fontSize: 15,
+    fontSize: scaleFontSize(15),
     color: '#E1E1E1',
     flex: 1,
   },
@@ -835,7 +836,7 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
     backgroundColor: 'transparent',
   },
   colorBtnText: {
-    fontSize: 14,
+    fontSize: scaleFontSize(14),
     fontWeight: '500',
     letterSpacing: 0.3,
     textAlign: 'center',
@@ -850,7 +851,7 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
     marginBottom: 14,
   },
   fontPairingName: {
-    fontSize: 13,
+    fontSize: scaleFontSize(13),
     fontWeight: '600',
     marginBottom: 6,
     letterSpacing: 0.3,
@@ -863,11 +864,11 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
     backgroundColor: 'transparent',
   },
   fontBtnTitle: {
-    fontSize: 20,
+    fontSize: scaleFontSize(20),
     marginBottom: 4,
   },
   fontBtnDesc: {
-    fontSize: 13,
+    fontSize: scaleFontSize(13),
   },
   showMatchesButton: {
     backgroundColor: ACCENT_COLOR,
@@ -879,7 +880,7 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
   },
   showMatchesText: {
     color: '#FFFFFF',
-    fontSize: 12,
+    fontSize: scaleFontSize(12),
     fontWeight: 'bold',
   },
 });

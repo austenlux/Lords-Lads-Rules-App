@@ -17,6 +17,7 @@ import {
 } from 'react-native';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { scaleFontSize } from '../utils/scaleFontSize';
 import RNFS from 'react-native-fs';
 import { getEventLog, clearEventLog, onEventLogChange, formatEventLogAsText, logError, logEvent } from '../services/errorLogger';
 import ErrorIcon from '../../assets/icons/error.svg';
@@ -206,7 +207,7 @@ const vaReadinessStyles = RNStyleSheet.create({
   },
   actionButtonText: {
     color: '#BB86FC',
-    fontSize: 13,
+    fontSize: scaleFontSize(13),
     fontWeight: '600',
   },
 });
@@ -1078,7 +1079,7 @@ export default function MoreScreen({
                     disabled={refreshState !== 'idle'}
                   >
                     <RefreshIcon width={15} height={15} fill={color} />
-                    <Text style={[{ fontSize: 12, color }, bodyFontStyle]}>
+                    <Text style={[{ fontSize: scaleFontSize(12), color }, bodyFontStyle]}>
                       {refreshState === 'loading' ? 'Fetching...' : isDone ? 'Done!' : isError ? 'Failed' : 'Refresh'}
                     </Text>
                   </TouchableOpacity>
@@ -1113,7 +1114,7 @@ export default function MoreScreen({
                 <View style={{ flex: 1 }}>
                   <CardIconTitle icon={<ExpandIcon fill="#66BB6A" />} title="Default Expanded" styles={styles} />
                   {expandDefaultsExpanded && (
-                    <Text style={[{ fontSize: 10, color: '#888', marginTop: 2, marginLeft: 28 }, bodyFontStyle]}>
+                    <Text style={[{ fontSize: scaleFontSize(10), color: '#888', marginTop: 2, marginLeft: 28 }, bodyFontStyle]}>
                       Sections in Rules and Expansions will open automatically
                     </Text>
                   )}
@@ -1670,7 +1671,7 @@ export default function MoreScreen({
                                 opacity: pressed && !isSelected ? 0.7 : 1,
                               })}
                             >
-                              <Text style={[bodyFontStyle, { color: isSelected ? '#1E1E22' : accent, fontSize: 13 }]}>{label}</Text>
+                              <Text style={[bodyFontStyle, { color: isSelected ? '#1E1E22' : accent, fontSize: scaleFontSize(13) }]}>{label}</Text>
                             </Pressable>
                           );
                         })}
@@ -1709,7 +1710,7 @@ export default function MoreScreen({
                             { label: 'Brand',  value: (Platform.constants?.Brand ?? 'unknown').replace(/\b\w/g, c => c.toUpperCase()) },
                             { label: 'Android', value: `${Platform.constants?.Release ?? '?'} (API ${Platform.Version})` },
                           ]),
-                      { label: 'Screen',       value: (() => { const { width, height } = Dimensions.get('window'); return `${Math.round(width)} × ${Math.round(height)}`; })() },
+                      { label: 'Screen',       value: (() => { const { width, height } = Dimensions.get('window'); return `w${Math.round(width)} × h${Math.round(height)}`; })() },
                     ].map(({ label, value }, idx, arr) => {
                       const isLast = idx === arr.length - 1;
                       const isMsg = label === 'Message';
@@ -1880,7 +1881,7 @@ export default function MoreScreen({
                             </View>
                           </View>
                           {modelNeedsSetup && (
-                            <Text style={[{ fontSize: 11, color: '#888', textAlign: 'center', marginTop: 4, marginBottom: 6 }, bodyFontStyle]}>
+                            <Text style={[{ fontSize: scaleFontSize(11), color: '#888', textAlign: 'center', marginTop: 4, marginBottom: 6 }, bodyFontStyle]}>
                               Enable Apple Intelligence in your device Settings, then use Retry below.
                             </Text>
                           )}
@@ -2003,7 +2004,7 @@ export default function MoreScreen({
                               >
                                 <View style={styles.versionHeader}>
                                   <View style={styles.versionRow}>
-                                    <Text style={[styles.versionText, { flexShrink: 1, fontSize: 14 }]} numberOfLines={1}>{voice.id}</Text>
+                                    <Text style={[styles.versionText, { flexShrink: 1, fontSize: scaleFontSize(14) }]} numberOfLines={1}>{voice.id}</Text>
                                   </View>
                                   <Animated.View style={{ transform: [{ rotate: voiceAnim?.rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) || '0deg' }], marginLeft: 12 }}>
                                     <Text style={styles.versionArrow}>▶</Text>
@@ -2023,7 +2024,7 @@ export default function MoreScreen({
                                         {featureItems.length > 0
                                           ? featureItems.map((f, i) => (
                                               <View key={i} style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
-                                                <Text style={{ fontSize: 12, color: '#CCCCCC', width: 14 }}>{'\u2022'}</Text>
+                                                <Text style={{ fontSize: scaleFontSize(12), color: '#CCCCCC', width: 14 }}>{'\u2022'}</Text>
                                                 <Text style={[styles.debugMetaValue, { flex: 1 }]}>{f.trim()}</Text>
                                               </View>
                                             ))
@@ -2075,7 +2076,7 @@ export default function MoreScreen({
                             }}
                           >
                             <CopyIcon width={15} height={15} fill={eventCopied ? '#4CAF50' : accent} />
-                            <Text style={[{ color: eventCopied ? '#4CAF50' : accent, fontSize: 12 }, bodyFontStyle]}>
+                            <Text style={[{ color: eventCopied ? '#4CAF50' : accent, fontSize: scaleFontSize(12) }, bodyFontStyle]}>
                               {eventCopied ? 'Copied!' : 'Copy'}
                             </Text>
                           </TouchableOpacity>
@@ -2090,7 +2091,7 @@ export default function MoreScreen({
                             onPress={handleExportEventLog}
                           >
                             <ExportIcon width={15} height={15} fill={eventExportError ? '#CF6679' : eventExported ? '#4CAF50' : accent} />
-                            <Text style={[{ color: eventExportError ? '#CF6679' : eventExported ? '#4CAF50' : accent, fontSize: 12 }, bodyFontStyle]}>
+                            <Text style={[{ color: eventExportError ? '#CF6679' : eventExported ? '#4CAF50' : accent, fontSize: scaleFontSize(12) }, bodyFontStyle]}>
                               {eventExportError ? 'Failed!' : eventExported ? 'Exported!' : 'Export'}
                             </Text>
                           </TouchableOpacity>
@@ -2103,7 +2104,7 @@ export default function MoreScreen({
                             onPress={() => { clearEventLog(); setErrorLogEntries([]); logEvent('Event Log', 'Cleared'); }}
                           >
                             <TrashIcon width={15} height={15} fill={accent} />
-                            <Text style={[{ color: accent, fontSize: 12 }, bodyFontStyle]}>Clear</Text>
+                            <Text style={[{ color: accent, fontSize: scaleFontSize(12) }, bodyFontStyle]}>Clear</Text>
                           </TouchableOpacity>
                         </View>
                         {errorLogEntries.map((entry, i) => {
@@ -2134,7 +2135,7 @@ export default function MoreScreen({
                               }}>
                                 {badgeIcon}
                                 <Text style={[{
-                                  fontSize: 13,
+                                  fontSize: scaleFontSize(13),
                                   color: typeColor,
                                   fontWeight: 'bold',
                                   includeFontPadding: false,
@@ -2142,27 +2143,27 @@ export default function MoreScreen({
                                 }, bodyFontStyle]}>{typeLabel}</Text>
                               </View>
                               <View style={{ gap: 3, paddingLeft: 2, paddingTop: 6, width: '100%' }}>
-                                <Text style={[{ fontSize: 11, color: '#CCC' }, bodyFontStyle]}>
+                                <Text style={[{ fontSize: scaleFontSize(11), color: '#CCC' }, bodyFontStyle]}>
                                   <Text style={{ color: '#999' }}>Time:  </Text>{entry.ts}
                                 </Text>
-                                <Text style={[{ fontSize: 11, color: '#CCC' }, bodyFontStyle]}>
+                                <Text style={[{ fontSize: scaleFontSize(11), color: '#CCC' }, bodyFontStyle]}>
                                   <Text style={{ color: '#999' }}>Source:  </Text>{entry.source}
                                 </Text>
-                                <Text style={[{ fontSize: 12, color: '#E0E0E0' }, bodyFontStyle]}>
+                                <Text style={[{ fontSize: scaleFontSize(12), color: '#E0E0E0' }, bodyFontStyle]}>
                                   <Text style={{ color: '#999' }}>Message:  </Text>{entry.message}
                                 </Text>
                                 {entry.elapsedMs != null && (
-                                  <Text style={[{ fontSize: 11, color: '#CCC' }, bodyFontStyle]}>
+                                  <Text style={[{ fontSize: scaleFontSize(11), color: '#CCC' }, bodyFontStyle]}>
                                     <Text style={{ color: '#999' }}>Elapsed:  </Text>{entry.elapsedMs}ms
                                   </Text>
                                 )}
                                 {entry.url != null && (
-                                  <Text style={[{ fontSize: 11, color: '#CCC' }, bodyFontStyle]}>
+                                  <Text style={[{ fontSize: scaleFontSize(11), color: '#CCC' }, bodyFontStyle]}>
                                     <Text style={{ color: '#999' }}>URL:  </Text>{entry.url}
                                   </Text>
                                 )}
                                 {usefulErrorName != null && (
-                                  <Text style={[{ fontSize: 11, color: '#CCC' }, bodyFontStyle]}>
+                                  <Text style={[{ fontSize: scaleFontSize(11), color: '#CCC' }, bodyFontStyle]}>
                                     <Text style={{ color: '#999' }}>Error:  </Text>{usefulErrorName}
                                   </Text>
                                 )}
@@ -2203,7 +2204,7 @@ export default function MoreScreen({
                         onPress={handleCopyRagLog}
                       >
                         <CopyIcon width={15} height={15} fill={ragCopied ? '#4CAF50' : accent} />
-                        <Text style={[{ color: ragCopied ? '#4CAF50' : accent, fontSize: 12 }, bodyFontStyle]}>
+                        <Text style={[{ color: ragCopied ? '#4CAF50' : accent, fontSize: scaleFontSize(12) }, bodyFontStyle]}>
                           {ragCopied ? 'Copied!' : 'Copy'}
                         </Text>
                       </TouchableOpacity>
@@ -2218,7 +2219,7 @@ export default function MoreScreen({
                         onPress={handleExportRagLog}
                       >
                         <ExportIcon width={15} height={15} fill={ragExportError ? '#CF6679' : ragExported ? '#4CAF50' : accent} />
-                        <Text style={[{ color: ragExportError ? '#CF6679' : ragExported ? '#4CAF50' : accent, fontSize: 12 }, bodyFontStyle]}>
+                        <Text style={[{ color: ragExportError ? '#CF6679' : ragExported ? '#4CAF50' : accent, fontSize: scaleFontSize(12) }, bodyFontStyle]}>
                           {ragExportError ? 'Failed!' : ragExported ? 'Exported!' : 'Export'}
                         </Text>
                       </TouchableOpacity>
@@ -2231,7 +2232,7 @@ export default function MoreScreen({
                         onPress={handleClearRagLog}
                       >
                         <TrashIcon width={15} height={15} fill={accent} />
-                        <Text style={[{ color: accent, fontSize: 12 }, bodyFontStyle]}>Clear</Text>
+                        <Text style={[{ color: accent, fontSize: scaleFontSize(12) }, bodyFontStyle]}>Clear</Text>
                       </TouchableOpacity>
                     </View>
 
@@ -2244,11 +2245,11 @@ export default function MoreScreen({
                         <View style={styles.versionHeader}>
                           <View style={{ flex: 1 }}>
                             <CardIconTitle icon={<BadgeInfoIcon size={18} color="#26C6DA" />} title="RAG Index Build" styles={styles} />
-                            <Text style={[{ fontSize: 10, color: '#888', marginTop: 2, marginLeft: 28 }, bodyFontStyle]}>
+                            <Text style={[{ fontSize: scaleFontSize(10), color: '#888', marginTop: 2, marginLeft: 28 }, bodyFontStyle]}>
                               Used for Local LLM only
                             </Text>
                           </View>
-                          <Text style={{ fontSize: 10, color: '#999' }}>{indexBuildExpanded ? '▼' : '▶'}</Text>
+                          <Text style={{ fontSize: scaleFontSize(10), color: '#999' }}>{indexBuildExpanded ? '▼' : '▶'}</Text>
                         </View>
                       </TouchableOpacity>
                       {indexBuildExpanded && (
@@ -2270,17 +2271,17 @@ export default function MoreScreen({
                               style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8, marginBottom: 4 }}
                               activeOpacity={0.7}
                             >
-                              <Text style={[{ fontSize: 11, color: '#999', flex: 1 }, bodyFontStyle]}>
+                              <Text style={[{ fontSize: scaleFontSize(11), color: '#999', flex: 1 }, bodyFontStyle]}>
                                 Chunks ({ragLog.indexBuild.totalChunks})
                               </Text>
-                              <Text style={{ fontSize: 10, color: '#999' }}>{ragChunksExpanded ? '▼' : '▶'}</Text>
+                              <Text style={{ fontSize: scaleFontSize(10), color: '#999' }}>{ragChunksExpanded ? '▼' : '▶'}</Text>
                             </TouchableOpacity>
                             {ragChunksExpanded && ragLog.indexBuild.chunks.map((c, i) => (
                               <View key={i} style={[styles.debugMetaRow, { flexDirection: 'column', gap: 2, paddingVertical: 4 }]}>
-                                <Text style={[{ fontSize: 11, color: '#E0E0E0', fontWeight: '600' }, bodyFontStyle]} numberOfLines={1}>
+                                <Text style={[{ fontSize: scaleFontSize(11), color: '#E0E0E0', fontWeight: '600' }, bodyFontStyle]} numberOfLines={1}>
                                   {i + 1}. {c.heading}
                                 </Text>
-                                <Text style={[{ fontSize: 10, color: '#999' }, bodyFontStyle]}>
+                                <Text style={[{ fontSize: scaleFontSize(10), color: '#999' }, bodyFontStyle]}>
                                   {c.source} · {c.charCount} chars · {c.wordCount} words · ~{c.tokenEstimate} tokens
                                 </Text>
                               </View>
@@ -2318,17 +2319,17 @@ export default function MoreScreen({
                               <View style={styles.versionHeader}>
                                 <View style={{ flex: 1, marginRight: 8 }}>
                                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-                                    <Text style={[{ fontSize: 12, color: accent, fontWeight: '700' }, bodyFontStyle]}>
+                                    <Text style={[{ fontSize: scaleFontSize(12), color: accent, fontWeight: '700' }, bodyFontStyle]}>
                                       Prompt {promptNumber}
                                     </Text>
                                     <View style={{ paddingHorizontal: 6, paddingVertical: 1, borderRadius: 4, backgroundColor: `${sourceBadgeColor}1A`, borderWidth: 1, borderColor: `${sourceBadgeColor}55` }}>
-                                      <Text style={[{ fontSize: 9, color: sourceBadgeColor, fontWeight: '700' }, bodyFontStyle]}>{sourceBadgeLabel}</Text>
+                                      <Text style={[{ fontSize: scaleFontSize(9), color: sourceBadgeColor, fontWeight: '700' }, bodyFontStyle]}>{sourceBadgeLabel}</Text>
                                     </View>
                                   </View>
-                                  <Text style={[{ fontSize: 13, color: '#E0E0E0', fontWeight: '600' }, bodyFontStyle]}>
+                                  <Text style={[{ fontSize: scaleFontSize(13), color: '#E0E0E0', fontWeight: '600' }, bodyFontStyle]}>
                                     "{entry.question}"
                                   </Text>
-                                  <Text style={[{ fontSize: 10, color: '#888', marginTop: 2 }, bodyFontStyle]}>
+                                  <Text style={[{ fontSize: scaleFontSize(10), color: '#888', marginTop: 2 }, bodyFontStyle]}>
                                     {entry.timestamp}
                                   </Text>
                                 </View>
@@ -2347,24 +2348,24 @@ export default function MoreScreen({
                                     activeOpacity={0.7}
                                     style={{ flexDirection: 'row', alignItems: 'center', padding: 8, backgroundColor: 'rgba(255,152,0,0.06)' }}
                                   >
-                                    <Text style={[{ fontSize: 12, color: '#FF9800', fontWeight: '700', flex: 1 }, bodyFontStyle]}>Local LLM</Text>
+                                    <Text style={[{ fontSize: scaleFontSize(12), color: '#FF9800', fontWeight: '700', flex: 1 }, bodyFontStyle]}>Local LLM</Text>
                                     {!usedCloud && (
                                       <View style={{ paddingHorizontal: 5, paddingVertical: 1, borderRadius: 3, backgroundColor: 'rgba(76,175,80,0.15)', marginRight: 6 }}>
-                                        <Text style={[{ fontSize: 8, color: '#4CAF50', fontWeight: '700' }, bodyFontStyle]}>USED</Text>
+                                        <Text style={[{ fontSize: scaleFontSize(8), color: '#4CAF50', fontWeight: '700' }, bodyFontStyle]}>USED</Text>
                                       </View>
                                     )}
-                                    <Text style={{ fontSize: 10, color: '#FF9800' }}>{isLocalOpen ? '▼' : '▶'}</Text>
+                                    <Text style={{ fontSize: scaleFontSize(10), color: '#FF9800' }}>{isLocalOpen ? '▼' : '▶'}</Text>
                                   </TouchableOpacity>
                                   {isLocalOpen && (
                                     <View style={{ padding: 8 }}>
                                       {usedCloud ? (
-                                        <Text style={[{ fontSize: 11, color: '#777', fontStyle: 'italic' }, bodyFontStyle]}>Not used for this prompt</Text>
+                                        <Text style={[{ fontSize: scaleFontSize(11), color: '#777', fontStyle: 'italic' }, bodyFontStyle]}>Not used for this prompt</Text>
                                       ) : (
                                         <>
                                           {entry.noIndex && (
                                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, padding: 8, marginBottom: 8, borderRadius: 6, backgroundColor: 'rgba(255,152,0,0.1)', borderWidth: 1, borderColor: 'rgba(255,152,0,0.3)' }}>
                                               <BadgeWarningIcon size={16} color="#FF9800" />
-                                              <Text style={[{ fontSize: 11, color: '#FF9800' }, bodyFontStyle]}>RAG index was not ready — no chunks retrieved</Text>
+                                              <Text style={[{ fontSize: scaleFontSize(11), color: '#FF9800' }, bodyFontStyle]}>RAG index was not ready — no chunks retrieved</Text>
                                             </View>
                                           )}
                                           {[
@@ -2385,10 +2386,10 @@ export default function MoreScreen({
                                             style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10, marginBottom: 4 }}
                                             activeOpacity={0.7}
                                           >
-                                            <Text style={[{ fontSize: 11, color: '#999', flex: 1 }, bodyFontStyle]}>
+                                            <Text style={[{ fontSize: scaleFontSize(11), color: '#999', flex: 1 }, bodyFontStyle]}>
                                               All chunks scored ({entry.allScoredChunks?.length ?? 0})
                                             </Text>
-                                            <Text style={{ fontSize: 10, color: '#999' }}>{ragScoredChunksExpanded[entry.id] ? '▼' : '▶'}</Text>
+                                            <Text style={{ fontSize: scaleFontSize(10), color: '#999' }}>{ragScoredChunksExpanded[entry.id] ? '▼' : '▶'}</Text>
                                           </TouchableOpacity>
                                           {ragScoredChunksExpanded[entry.id] && entry.allScoredChunks?.map((c, i) => (
                                             <View key={i} style={[styles.debugMetaRow, {
@@ -2400,11 +2401,11 @@ export default function MoreScreen({
                                             }]}>
                                               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                                                 {c.selected && <BadgeSuccessIcon size={12} color="#4CAF50" />}
-                                                <Text style={[{ fontSize: 11, color: c.selected ? '#4CAF50' : '#CCC', fontWeight: c.selected ? '700' : '400', flex: 1 }, bodyFontStyle]} numberOfLines={1}>
+                                                <Text style={[{ fontSize: scaleFontSize(11), color: c.selected ? '#4CAF50' : '#CCC', fontWeight: c.selected ? '700' : '400', flex: 1 }, bodyFontStyle]} numberOfLines={1}>
                                                   {i + 1}. {c.heading}
                                                 </Text>
                                               </View>
-                                              <Text style={[{ fontSize: 10, color: c.score > 0 ? '#AAA' : '#666' }, bodyFontStyle]}>
+                                              <Text style={[{ fontSize: scaleFontSize(10), color: c.score > 0 ? '#AAA' : '#666' }, bodyFontStyle]}>
                                                 Score: {c.score.toFixed(4)} · {c.source} · {c.charCount} chars · {c.wordCount} words
                                               </Text>
                                             </View>
@@ -2413,7 +2414,7 @@ export default function MoreScreen({
                                           {/* Selected chunks with full text */}
                                           {entry.selectedChunks?.length > 0 && (
                                             <>
-                                              <Text style={[{ fontSize: 11, color: '#999', marginTop: 10, marginBottom: 4 }, bodyFontStyle]}>
+                                              <Text style={[{ fontSize: scaleFontSize(11), color: '#999', marginTop: 10, marginBottom: 4 }, bodyFontStyle]}>
                                                 Selected chunks sent to LLM ({entry.selectedChunks.length}):
                                               </Text>
                                               {entry.selectedChunks.map((c, i) => {
@@ -2431,13 +2432,13 @@ export default function MoreScreen({
                                                     }}
                                                   >
                                                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                                      <Text style={[{ fontSize: 11, color: '#26C6DA', fontWeight: '700', flex: 1 }, bodyFontStyle]}>
+                                                      <Text style={[{ fontSize: scaleFontSize(11), color: '#26C6DA', fontWeight: '700', flex: 1 }, bodyFontStyle]}>
                                                         {c.heading} (score {c.score.toFixed(4)}, {c.source})
                                                       </Text>
-                                                      <Text style={{ fontSize: 10, color: '#26C6DA', marginLeft: 6 }}>{isChunkOpen ? '▼' : '▶'}</Text>
+                                                      <Text style={{ fontSize: scaleFontSize(10), color: '#26C6DA', marginLeft: 6 }}>{isChunkOpen ? '▼' : '▶'}</Text>
                                                     </View>
                                                     {isChunkOpen && (
-                                                      <Text style={[{ fontSize: 10, color: '#BBB', fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace', marginTop: 4 }]} selectable>
+                                                      <Text style={[{ fontSize: scaleFontSize(10), color: '#BBB', fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace', marginTop: 4 }]} selectable>
                                                         {c.content}
                                                       </Text>
                                                     )}
@@ -2450,30 +2451,30 @@ export default function MoreScreen({
                                           {/* Post-Processing */}
                                           {entry.postProcessing && (
                                             <View style={{ marginTop: 10 }}>
-                                              <Text style={[{ fontSize: 11, color: '#CE93D8', fontWeight: '700', marginBottom: 4 }, bodyFontStyle]}>
+                                              <Text style={[{ fontSize: scaleFontSize(11), color: '#CE93D8', fontWeight: '700', marginBottom: 4 }, bodyFontStyle]}>
                                                 Post-Processing
                                               </Text>
                                               {entry.postProcessing.filtered?.length > 0 ? (
                                                 <View style={{ marginBottom: 6, padding: 6, borderRadius: 4, backgroundColor: 'rgba(255,152,0,0.06)', borderWidth: 1, borderColor: 'rgba(255,152,0,0.2)' }}>
-                                                  <Text style={[{ fontSize: 10, color: '#FFB74D', fontWeight: '600', marginBottom: 2 }, bodyFontStyle]}>
+                                                  <Text style={[{ fontSize: scaleFontSize(10), color: '#FFB74D', fontWeight: '600', marginBottom: 2 }, bodyFontStyle]}>
                                                     Filtered out ({entry.postProcessing.filtered.length}):
                                                   </Text>
                                                   {entry.postProcessing.filtered.map((f, fi) => (
-                                                    <Text key={fi} style={[{ fontSize: 10, color: '#FFCC80' }, bodyFontStyle]}>
+                                                    <Text key={fi} style={[{ fontSize: scaleFontSize(10), color: '#FFCC80' }, bodyFontStyle]}>
                                                       • {f.heading} — score {f.score.toFixed(4)} — {f.reason}
                                                     </Text>
                                                   ))}
                                                 </View>
                                               ) : (
-                                                <Text style={[{ fontSize: 10, color: '#777', marginBottom: 4 }, bodyFontStyle]}>No chunks filtered out</Text>
+                                                <Text style={[{ fontSize: scaleFontSize(10), color: '#777', marginBottom: 4 }, bodyFontStyle]}>No chunks filtered out</Text>
                                               )}
                                               {entry.postProcessing.crossRefMerges?.length > 0 && (
                                                 <View style={{ marginBottom: 6, padding: 6, borderRadius: 4, backgroundColor: 'rgba(206,147,216,0.06)', borderWidth: 1, borderColor: 'rgba(206,147,216,0.2)' }}>
-                                                  <Text style={[{ fontSize: 10, color: '#CE93D8', fontWeight: '600', marginBottom: 2 }, bodyFontStyle]}>
+                                                  <Text style={[{ fontSize: scaleFontSize(10), color: '#CE93D8', fontWeight: '600', marginBottom: 2 }, bodyFontStyle]}>
                                                     Cross-ref merges ({entry.postProcessing.crossRefMerges.length}):
                                                   </Text>
                                                   {entry.postProcessing.crossRefMerges.map((m, mi) => (
-                                                    <Text key={mi} style={[{ fontSize: 10, color: '#E1BEE7' }, bodyFontStyle]}>
+                                                    <Text key={mi} style={[{ fontSize: scaleFontSize(10), color: '#E1BEE7' }, bodyFontStyle]}>
                                                       • {m.from.join(' + ')} — {m.reason}
                                                     </Text>
                                                   ))}
@@ -2481,17 +2482,17 @@ export default function MoreScreen({
                                               )}
                                               {entry.postProcessing.parentMerges?.length > 0 && (
                                                 <View style={{ marginBottom: 6, padding: 6, borderRadius: 4, backgroundColor: 'rgba(129,212,250,0.06)', borderWidth: 1, borderColor: 'rgba(129,212,250,0.2)' }}>
-                                                  <Text style={[{ fontSize: 10, color: '#81D4FA', fontWeight: '600', marginBottom: 2 }, bodyFontStyle]}>
+                                                  <Text style={[{ fontSize: scaleFontSize(10), color: '#81D4FA', fontWeight: '600', marginBottom: 2 }, bodyFontStyle]}>
                                                     Same-parent merges ({entry.postProcessing.parentMerges.length}):
                                                   </Text>
                                                   {entry.postProcessing.parentMerges.map((m, mi) => (
-                                                    <Text key={mi} style={[{ fontSize: 10, color: '#B3E5FC' }, bodyFontStyle]}>
+                                                    <Text key={mi} style={[{ fontSize: scaleFontSize(10), color: '#B3E5FC' }, bodyFontStyle]}>
                                                       • [{m.parent}] {m.merged.join(' + ')}
                                                     </Text>
                                                   ))}
                                                 </View>
                                               )}
-                                              <Text style={[{ fontSize: 10, color: '#CE93D8', fontWeight: '600' }, bodyFontStyle]}>
+                                              <Text style={[{ fontSize: scaleFontSize(10), color: '#CE93D8', fontWeight: '600' }, bodyFontStyle]}>
                                                 Final chunks → LLM: {entry.postProcessing.finalCount}
                                               </Text>
                                             </View>
@@ -2505,21 +2506,21 @@ export default function MoreScreen({
                                                 style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10, marginBottom: 4 }}
                                                 activeOpacity={0.7}
                                               >
-                                                <Text style={[{ fontSize: 11, color: '#999', flex: 1 }, bodyFontStyle]}>
+                                                <Text style={[{ fontSize: scaleFontSize(11), color: '#999', flex: 1 }, bodyFontStyle]}>
                                                   Sentence Extraction ({entry.sentenceExtraction.length} chunks)
                                                 </Text>
-                                                <Text style={{ fontSize: 10, color: '#999' }}>{entrySentenceExpanded[entry.id] ? '▼' : '▶'}</Text>
+                                                <Text style={{ fontSize: scaleFontSize(10), color: '#999' }}>{entrySentenceExpanded[entry.id] ? '▼' : '▶'}</Text>
                                               </TouchableOpacity>
                                               {entrySentenceExpanded[entry.id] && entry.sentenceExtraction.map((se, i) => (
                                                 <View key={i} style={{ marginBottom: 6, padding: 6, borderRadius: 4, backgroundColor: 'rgba(129,212,250,0.06)', borderWidth: 1, borderColor: 'rgba(129,212,250,0.2)' }}>
-                                                  <Text style={[{ fontSize: 11, color: '#81D4FA', fontWeight: '600', marginBottom: 2 }, bodyFontStyle]}>
+                                                  <Text style={[{ fontSize: scaleFontSize(11), color: '#81D4FA', fontWeight: '600', marginBottom: 2 }, bodyFontStyle]}>
                                                     Chunk {i + 1}: "{se.heading}" ({se.originalChars} → {se.extractedChars} chars)
                                                   </Text>
                                                   {se.sentences?.map((s, si) => {
                                                     const tag = s.score === '∞' ? 'H' : (s.kept ? '✓' : '✗');
                                                     const tagColor = s.score === '∞' ? '#81D4FA' : (s.kept ? '#4CAF50' : '#666');
                                                     return (
-                                                      <Text key={si} style={[{ fontSize: 10, color: tagColor }, bodyFontStyle]}>
+                                                      <Text key={si} style={[{ fontSize: scaleFontSize(10), color: tagColor }, bodyFontStyle]}>
                                                         [{tag}] "{s.text.substring(0, 80)}{s.text.length > 80 ? '…' : ''}" (score: {s.score})
                                                       </Text>
                                                     );
@@ -2537,18 +2538,18 @@ export default function MoreScreen({
                                                 style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10, marginBottom: 4 }}
                                                 activeOpacity={0.7}
                                               >
-                                                <Text style={[{ fontSize: 11, color: '#999', flex: 1 }, bodyFontStyle]}>
+                                                <Text style={[{ fontSize: scaleFontSize(11), color: '#999', flex: 1 }, bodyFontStyle]}>
                                                   Final extracted chunks ({entry.sentenceExtraction.length})
                                                 </Text>
-                                                <Text style={{ fontSize: 10, color: '#999' }}>{entryFinalChunksExpanded[entry.id] ? '▼' : '▶'}</Text>
+                                                <Text style={{ fontSize: scaleFontSize(10), color: '#999' }}>{entryFinalChunksExpanded[entry.id] ? '▼' : '▶'}</Text>
                                               </TouchableOpacity>
                                               {entryFinalChunksExpanded[entry.id] && entry.sentenceExtraction.map((se, i) => (
                                                 <View key={i} style={{ marginBottom: 6, padding: 8, borderRadius: 6, backgroundColor: 'rgba(38,198,218,0.06)', borderWidth: 1, borderColor: 'rgba(38,198,218,0.2)' }}>
-                                                  <Text style={[{ fontSize: 11, color: '#26C6DA', fontWeight: '700' }, bodyFontStyle]}>
+                                                  <Text style={[{ fontSize: scaleFontSize(11), color: '#26C6DA', fontWeight: '700' }, bodyFontStyle]}>
                                                     {se.heading} ({se.extractedChars} chars)
                                                   </Text>
                                                   {se.extractedContent && (
-                                                    <Text style={[{ fontSize: 10, color: '#BBB', fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace', marginTop: 4 }]} selectable>
+                                                    <Text style={[{ fontSize: scaleFontSize(10), color: '#BBB', fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace', marginTop: 4 }]} selectable>
                                                       {se.extractedContent}
                                                     </Text>
                                                   )}
@@ -2569,13 +2570,13 @@ export default function MoreScreen({
                                     activeOpacity={0.7}
                                     style={{ flexDirection: 'row', alignItems: 'center', padding: 8, backgroundColor: 'rgba(79,195,247,0.06)' }}
                                   >
-                                    <Text style={[{ fontSize: 12, color: '#4FC3F7', fontWeight: '700', flex: 1 }, bodyFontStyle]}>Cloud LLM</Text>
+                                    <Text style={[{ fontSize: scaleFontSize(12), color: '#4FC3F7', fontWeight: '700', flex: 1 }, bodyFontStyle]}>Cloud LLM</Text>
                                     {usedCloud && (
                                       <View style={{ paddingHorizontal: 5, paddingVertical: 1, borderRadius: 3, backgroundColor: 'rgba(76,175,80,0.15)', marginRight: 6 }}>
-                                        <Text style={[{ fontSize: 8, color: '#4CAF50', fontWeight: '700' }, bodyFontStyle]}>USED</Text>
+                                        <Text style={[{ fontSize: scaleFontSize(8), color: '#4CAF50', fontWeight: '700' }, bodyFontStyle]}>USED</Text>
                                       </View>
                                     )}
-                                    <Text style={{ fontSize: 10, color: '#4FC3F7' }}>{isCloudOpen ? '▼' : '▶'}</Text>
+                                    <Text style={{ fontSize: scaleFontSize(10), color: '#4FC3F7' }}>{isCloudOpen ? '▼' : '▶'}</Text>
                                   </TouchableOpacity>
                                   {isCloudOpen && (
                                     <View style={{ padding: 8 }}>
@@ -2627,17 +2628,17 @@ export default function MoreScreen({
                                       activeOpacity={0.7}
                                       style={{ flexDirection: 'row', alignItems: 'center', padding: 8, backgroundColor: 'rgba(76,175,80,0.06)' }}
                                     >
-                                      <Text style={[{ fontSize: 12, color: '#66BB6A', fontWeight: '700', flex: 1 }, bodyFontStyle]}>AI Response</Text>
+                                      <Text style={[{ fontSize: scaleFontSize(12), color: '#66BB6A', fontWeight: '700', flex: 1 }, bodyFontStyle]}>AI Response</Text>
                                       {entry.responseSource && (
-                                        <Text style={[{ fontSize: 10, color: '#888', marginRight: 6 }, bodyFontStyle]}>
+                                        <Text style={[{ fontSize: scaleFontSize(10), color: '#888', marginRight: 6 }, bodyFontStyle]}>
                                           {entry.responseSource}{entry.modelName ? ` (${entry.modelName})` : ''}
                                         </Text>
                                       )}
-                                      <Text style={{ fontSize: 10, color: '#66BB6A' }}>{isResponseOpen ? '▼' : '▶'}</Text>
+                                      <Text style={{ fontSize: scaleFontSize(10), color: '#66BB6A' }}>{isResponseOpen ? '▼' : '▶'}</Text>
                                     </TouchableOpacity>
                                     {isResponseOpen && (
                                       <View style={{ padding: 8 }}>
-                                        <Text style={[{ fontSize: 11, color: '#C8E6C9', fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace' }]} selectable>
+                                        <Text style={[{ fontSize: scaleFontSize(11), color: '#C8E6C9', fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace' }]} selectable>
                                           {entry.aiResponse}
                                         </Text>
                                       </View>

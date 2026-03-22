@@ -4,6 +4,7 @@
 import React, { useRef, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Animated } from 'react-native';
 import { decodeHtmlEntities, normalizeSearchQuery } from '../utils/searchUtils';
+import { scaleFontSize } from '../utils/scaleFontSize';
 import HighlightedMarkdown from './HighlightedMarkdown';
 import { useTheme } from '../context/ThemeContext';
 
@@ -55,7 +56,7 @@ export default function TitleSection({ title, content, searchQuery, onNavigate, 
   };
 
   const titleStyle = {
-    fontSize: 48,
+    fontSize: scaleFontSize(48),
     textAlign: 'center',
     marginBottom: 24,
     color: accent,
@@ -79,7 +80,7 @@ export default function TitleSection({ title, content, searchQuery, onNavigate, 
                       part.toLowerCase() === trimmedSearchQuery.toLowerCase() ? (
                         <Text
                           key={i}
-                          style={[{ fontSize: 48, fontWeight: 'bold', color: accent, textShadowColor: accentGlow, textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 20 }, titleFontStyle, styles.highlightedText]}
+                          style={[{ fontSize: scaleFontSize(48), fontWeight: 'bold', color: accent, textShadowColor: accentGlow, textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 20 }, titleFontStyle, styles.highlightedText]}
                         >
                           {part}
                         </Text>
@@ -100,7 +101,7 @@ export default function TitleSection({ title, content, searchQuery, onNavigate, 
               searchQuery={searchQuery}
               style={{
                 ...markdownStyles,
-                body: { ...markdownStyles.body, fontSize: 20, textAlign: 'center', color: 'rgba(225, 225, 225, 0.9)', lineHeight: 32, paddingHorizontal: 32, letterSpacing: 0.5, ...bodyFontStyle },
+                body: { ...markdownStyles.body, fontSize: scaleFontSize(20), textAlign: 'center', color: 'rgba(225, 225, 225, 0.9)', lineHeight: 32, paddingHorizontal: 32, letterSpacing: 0.5, ...bodyFontStyle },
                 paragraph: { marginBottom: 20, color: '#E1E1E1', textAlign: 'center', ...bodyFontStyle },
               }}
             />
@@ -113,7 +114,7 @@ export default function TitleSection({ title, content, searchQuery, onNavigate, 
               searchQuery={searchQuery}
               style={{
                 ...markdownStyles,
-                body: { ...markdownStyles.body, fontSize: 16, color: '#E1E1E1', lineHeight: 24, ...bodyFontStyle },
+                body: { ...markdownStyles.body, fontSize: scaleFontSize(16), color: '#E1E1E1', lineHeight: 24, ...bodyFontStyle },
                 listItem: { ...markdownStyles.listItem, marginBottom: 12, marginTop: 12, ...bodyFontStyle },
                 bullet_list: { ...markdownStyles.bullet_list, marginTop: 16 },
                 link: { ...markdownStyles.link, textDecorationLine: 'none', ...bodyFontStyle },
