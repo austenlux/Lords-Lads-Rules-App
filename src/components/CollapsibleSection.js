@@ -5,7 +5,7 @@
  */
 import React, { useRef, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Animated } from 'react-native';
-import { scaleFontSize } from '../utils/scaleFontSize';
+import { scaleFontSize, scaleSize } from '../utils/scaleFontSize';
 import { useTheme } from '../context/ThemeContext';
 
 /** Default expanded state for a section; false = collapsed, matching Rules/Expansions. */
@@ -45,10 +45,10 @@ export default function CollapsibleSection({
   return (
     <View ref={sectionRef} style={[style, { marginLeft }]}>
       <TouchableOpacity onPress={onToggle} style={styles.sectionHeader}>
-        <Animated.View style={{ transform: [{ rotate }], marginRight: 8, width: 20 }}>
+        <Animated.View style={{ transform: [{ rotate }], marginRight: scaleSize(8), width: 20 }}>
           <Text style={styles.chevron}>▶</Text>
         </Animated.View>
-        {icon != null ? <View style={{ marginRight: 8 }}>{icon}</View> : null}
+        {icon != null ? <View style={{ marginRight: scaleSize(8) }}>{React.cloneElement(icon, { width: scaleSize(24), height: scaleSize(24) })}</View> : null}
         {titleNode != null ? (
           titleNode
         ) : (

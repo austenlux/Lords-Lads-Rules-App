@@ -2,7 +2,7 @@
  * App layout and component styles (tab bar, headers, sections, more, etc.).
  */
 import { StyleSheet, StatusBar, Platform } from 'react-native';
-import { scaleFontSize } from '../utils/scaleFontSize';
+import { scaleFontSize, scaleSize } from '../utils/scaleFontSize';
 
 const STATUS_BAR_HEIGHT = StatusBar.currentHeight ?? 0;
 const HEADER_HEIGHT = STATUS_BAR_HEIGHT + 74;
@@ -75,7 +75,7 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 12,
-    paddingRight: 16,
+    paddingRight: scaleSize(16),
   },
   sectionTitle: {
     fontWeight: 'bold',

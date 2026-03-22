@@ -8,7 +8,7 @@ import { HEADER_HEIGHT } from '../styles';
 import { scaleFontSize } from '../utils/scaleFontSize';
 import { useTheme } from '../context/ThemeContext';
 import CollapsibleSection, { DEFAULT_SECTION_EXPANDED } from '../components/CollapsibleSection';
-import CrownIcon from '../../assets/icons/crown.svg';
+import CalculatorIcon from '../../assets/icons/calculator.svg';
 import PlayersIcon from '../../assets/icons/players.svg';
 import NailsIcon from '../../assets/icons/about.svg';
 import UprisingIcon from '../../assets/icons/uprising.svg';
@@ -330,7 +330,7 @@ export default function ToolsScreen({ styles, contentHeight, contentPaddingTop }
 
           <CollapsibleSection
             title="Nail Calculator"
-            icon={<CrownIcon width={24} height={24} fill={INFO_BLUE} />}
+            icon={<CalculatorIcon width={24} height={24} fill={INFO_BLUE} />}
             isExpanded={sectionsExpanded[SECTION_KEYS.NAIL_CALC]}
             onToggle={() => toggleSection(SECTION_KEYS.NAIL_CALC)}
             styles={styles}

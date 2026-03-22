@@ -1710,7 +1710,8 @@ export default function MoreScreen({
                             { label: 'Brand',  value: (Platform.constants?.Brand ?? 'unknown').replace(/\b\w/g, c => c.toUpperCase()) },
                             { label: 'Android', value: `${Platform.constants?.Release ?? '?'} (API ${Platform.Version})` },
                           ]),
-                      { label: 'Screen',       value: (() => { const { width, height } = Dimensions.get('window'); return `w${Math.round(width)} × h${Math.round(height)}`; })() },
+                      { label: 'Screen',       value: (() => { const { width, height } = Dimensions.get('window'); return `${Math.round(width)}w × ${Math.round(height)}h`; })() },
+                      { label: 'Font Scale',  value: (() => { const { width } = Dimensions.get('window'); return Math.round(Math.min(1, width / 443) * 100) + '%'; })() },
                     ].map(({ label, value }, idx, arr) => {
                       const isLast = idx === arr.length - 1;
                       const isMsg = label === 'Message';
