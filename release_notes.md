@@ -1,5 +1,13 @@
 # Lords & Lads Changelog
 
+## v2.0.0 (2026-03-22)
+
+### What's New
+* Introducing Clinks — Your personal rules assistant. Ask anything, hands-free.
+* Personalize the app — Custom colors, fonts, Clinks appearance, and Tip Jar themes.
+* Golden Nails — Track per-player nail counts during your game.
+* Smoother Android launch — Improved startup experience and navigation bar.
+
 ## v1.6.0 (2026-02-22)
 
 ### What's New
