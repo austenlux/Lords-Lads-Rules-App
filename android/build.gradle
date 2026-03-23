@@ -12,16 +12,15 @@ buildscript {
     repositories {
         google()
         mavenCentral()
-        flatDir { dirs "${rootDir.parent}/node_modules/@react-native/gradle-plugin/react-native-gradle-plugin/build/libs" }
     }
     dependencies {
-        classpath("com.android.tools.build:gradle:" + reactAndroidLibs.versions.agp.get())
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:" + reactAndroidLibs.versions.kotlin.get())
-        classpath(name: "react-native-gradle-plugin", ext: "jar")
+        classpath("com.android.tools.build:gradle")
+        classpath("com.facebook.react:react-native-gradle-plugin")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")
     }
 }
 
-// apply plugin: "com.facebook.react.rootproject" — not resolvable from includeBuild; optional ordering only
+apply plugin: "com.facebook.react.rootproject"
 
 allprojects {
     repositories {
@@ -29,11 +28,6 @@ allprojects {
             // All of React Native (JS, Obj-C sources, Android binaries) is installed from npm
             url(new File(['node', '--print', "require.resolve('react-native/package.json')"].execute(null, rootDir).text.trim(), '../android'))
         }
-        maven {
-            // Android JSC is installed from npm
-            url(new File(['node', '--print', "require.resolve('jsc-android/package.json', { paths: [require.resolve('react-native/package.json')] })"].execute(null, rootDir).text.trim(), '../dist'))
-        }
-
         google()
         mavenCentral()
         maven { url 'https://www.jitpack.io' }

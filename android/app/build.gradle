@@ -21,8 +21,6 @@ react {
     autolinkLibrariesWithApp()
 }
 
-def jscFlavor = 'org.webkit:android-jsc:+'
-
 // Sync thinking sound MP3s from the shared project assets folder into the
 // Android assets folder so they are accessible via AssetManager in Kotlin.
 // This runs automatically before every build, so adding/removing files in
@@ -103,12 +101,7 @@ android {
 
 dependencies {
     implementation("com.facebook.react:react-android")
-
-    if (hermesEnabled.toBoolean()) {
-        implementation("com.facebook.react:hermes-android")
-    } else {
-        implementation jscFlavor
-    }
+    implementation("com.facebook.react:hermes-android")
 
     // Gemini Nano on-device inference via Android AICore (ML Kit GenAI Prompt API)
     implementation("com.google.mlkit:genai-prompt:1.0.0-beta1")

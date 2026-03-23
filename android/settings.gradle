@@ -1,26 +1,17 @@
 pluginManagement {
   includeBuild("../node_modules/@react-native/gradle-plugin")
-  repositories {
-    gradlePluginPortal()
-    google()
-    mavenCentral()
-  }
 }
 
 plugins {
   id("com.facebook.react.settings")
 }
 
-rootProject.name = 'mobile-app'
-
-dependencyResolutionManagement {
-  versionCatalogs {
-    reactAndroidLibs {
-      from(files(new File(["node", "--print", "require.resolve('react-native/package.json')"].execute(null, rootDir).text.trim(), "../gradle/libs.versions.toml")))
-    }
-  }
+extensions.configure(com.facebook.react.ReactSettingsExtension) { ex ->
+  ex.autolinkLibrariesFromCommand()
 }
 
-extensions.getByType(com.facebook.react.ReactSettingsExtension).autolinkLibrariesFromCommand()
+rootProject.name = 'mobile-app'
 
 include ':app'
+
+includeBuild('../node_modules/@react-native/gradle-plugin')
