@@ -573,12 +573,14 @@ const createStyles = (ACCENT_COLOR, ACCENT_GLOW) => StyleSheet.create({
     flexDirection: 'column',
     alignItems: 'center',
     marginBottom: 6,
+    height: 58,
+    justifyContent: 'flex-end',
   },
   toolLabelIcon: {
     marginBottom: 4,
   },
   toolInputLabel: {
-    fontSize: scaleFontSize(14),
+    fontSize: scaleFontSize(13),
     fontWeight: 'bold',
     color: '#E1E1E1',
   },
