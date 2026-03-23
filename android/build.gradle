@@ -6,8 +6,8 @@ buildscript {
         minSdkVersion = 26  // ML Kit genai-prompt requires API 26; also aligns with AudioFocusRequest (API 26)
         compileSdkVersion = 35
         targetSdkVersion = 35
-        ndkVersion = "26.1.10909125"
-        kotlinVersion = "1.9.22"
+        ndkVersion = "27.2.12479018"
+        kotlinVersion = "2.0.21"
     }
     repositories {
         google()
