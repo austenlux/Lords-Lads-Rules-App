@@ -102,11 +102,11 @@ android {
 
 // ─── 16 KB page-size alignment (required by Google Play for Android 15+) ─────
 // React Native's prebuilt .so files ship with p_align = 0x1000 (4 KB).
-// patchelf patches each ELF LOAD segment to p_align = 0x4000 (16 KB) so that
-// Google Play's static analysis passes. Runs after native libs are merged,
-// before they are packaged into the APK/AAB.
+// patch_elf_alignment.py directly patches each ELF LOAD segment p_align field
+// to 0x4000 (16 KB) so that Google Play's static analysis passes.
+// Runs after native libs are merged, before they are packaged into the APK/AAB.
 afterEvaluate {
-    def patchelf = ['/opt/homebrew/bin/patchelf', 'patchelf'].find { new File(it).exists() } ?: 'patchelf'
+    def patchScript = file("${rootProject.projectDir}/scripts/patch_elf_alignment.py").absolutePath
 
     def patch16k = tasks.register('patch16kPageAlignment') {
         def libDir = file("${buildDir}/intermediates/merged_native_libs/release/mergeReleaseNativeLibs/out/lib")
@@ -114,12 +114,8 @@ afterEvaluate {
         outputs.upToDateWhen { false }
         doLast {
             if (!libDir.exists()) return
-            int count = 0
-            fileTree(libDir).matching { include '**/*.so' }.each { soFile ->
-                exec { commandLine patchelf, '--page-size', '16384', soFile.absolutePath }
-                count++
-            }
-            logger.lifecycle("patch16kPageAlignment: patched ${count} .so files to 16 KB alignment")
+            def soFiles = fileTree(libDir).matching { include '**/*.so' }.files*.absolutePath
+            exec { commandLine(['python3', patchScript] + soFiles) }
         }
     }
 
