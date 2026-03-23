@@ -184,7 +184,7 @@ index 0000000..cb37c64
 +  return nil;
 +}
 diff --git a/node_modules/react-native/ReactAndroid/cmake-utils/ReactNative-application.cmake b/node_modules/react-native/ReactAndroid/cmake-utils/ReactNative-application.cmake
-index 05cb5a9..031dd74 100644
+index c29cfe3..10cc2aa 100644
 --- a/node_modules/react-native/ReactAndroid/cmake-utils/ReactNative-application.cmake
 +++ b/node_modules/react-native/ReactAndroid/cmake-utils/ReactNative-application.cmake
 @@ -100,7 +100,7 @@ if(EXISTS ${PROJECT_BUILD_DIR}/generated/autolinking/src/main/jni/Android-autoli
@@ -197,7 +197,7 @@ index 05cb5a9..031dd74 100644
  endif()
  
 diff --git a/node_modules/react-native/scripts/react-native-xcode.sh b/node_modules/react-native/scripts/react-native-xcode.sh
-index 001b6cb..02ea23e 100755
+index d59caa1..dc86939 100755
 --- a/node_modules/react-native/scripts/react-native-xcode.sh
 +++ b/node_modules/react-native/scripts/react-native-xcode.sh
 @@ -46,6 +46,9 @@ case "$CONFIGURATION" in
