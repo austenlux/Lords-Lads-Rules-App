@@ -20,7 +20,6 @@ const mockNativeModule = {
   onSpeechPartialResults: jest.fn(() => ({ remove: jest.fn() })),
   onSpeechFinalResults: jest.fn(() => ({ remove: jest.fn() })),
   onAIChunkReceived: jest.fn(() => ({ remove: jest.fn() })),
-  onDownloadProgress: jest.fn(() => ({ remove: jest.fn() })),
   onTTSFinished: jest.fn(() => ({ remove: jest.fn() })),
 };
 
@@ -33,10 +32,37 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
 
 jest.mock('../src/constants', () => ({
   buildGameAssistantPrompt: jest.fn(() => 'mock_prompt'),
+  buildGeminiFullContextPrompt: jest.fn(() => 'mock_gemini_prompt'),
 }));
 
 jest.mock('../src/utils/sanitizeTextForSpeech', () => ({
   sanitizeTextForSpeech: jest.fn((t) => t),
+}));
+
+jest.mock('../src/services/ragService', () => ({
+  retrieveRelevantChunks: jest.fn(() => []),
+  filterAndMerge: jest.fn(() => ({ chunks: [], log: {} })),
+  extractRelevantSentences: jest.fn(() => ({ chunks: [], log: {} })),
+}));
+
+jest.mock('../src/services/geminiService', () => ({
+  askGemini: jest.fn(() => Promise.resolve('mock gemini response')),
+  isGeminiConfigured: jest.fn(() => false),
+  GEMINI_MODEL: 'mock-model',
+  getGeminiUsageStats: jest.fn(() => ({})),
+}));
+
+jest.mock('../src/services/errorLogger', () => ({
+  logError: jest.fn(),
+  logEvent: jest.fn(),
+}));
+
+jest.mock('../src/services/ragLogger', () => ({
+  logRetrieval: jest.fn(),
+  updateLatestRetrieval: jest.fn(),
+  logPostProcessing: jest.fn(),
+  logFinalChunks: jest.fn(),
+  logSentenceExtraction: jest.fn(),
 }));
 
 const { useGameAssistant } = require('../src/hooks/useGameAssistant');
@@ -159,7 +185,6 @@ describe('useGameAssistant', () => {
     expect(mockNativeModule.onSpeechFinalResults).toHaveBeenCalled();
     expect(mockNativeModule.onAIChunkReceived).toHaveBeenCalled();
     expect(mockNativeModule.onTTSFinished).toHaveBeenCalled();
-    expect(mockNativeModule.onDownloadProgress).toHaveBeenCalled();
   });
 
   it('stopAssistant calls native stopAssistant and resets state', async () => {

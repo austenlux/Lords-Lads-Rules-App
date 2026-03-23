@@ -1,7 +1,9 @@
 /**
  * Minimal tests for app layout styles used by Tools/More screens and background logo.
  */
-import styles, { HEADER_HEIGHT } from '../src/styles/appStyles';
+import createStyles, { HEADER_HEIGHT } from '../src/styles/appStyles';
+
+const styles = createStyles('#7B8C9E', 'rgba(123, 140, 158, 0.3)');
 
 describe('appStyles', () => {
   it('exports HEADER_HEIGHT as a number', () => {

@@ -2,9 +2,12 @@ import { buildGameAssistantPrompt, GAME_ASSISTANT_SYSTEM_PROMPT } from '../src/c
 
 describe('buildGameAssistantPrompt', () => {
   it('fills all placeholders with provided content', () => {
+    const chunks = [
+      { content: '# Rules\nSome rules here.', source: 'rules' },
+      { content: '# Expansions\nSome expansions.', source: 'expansions' },
+    ];
     const result = buildGameAssistantPrompt(
-      '# Rules\nSome rules here.',
-      '# Expansions\nSome expansions.',
+      chunks,
       [{ role: 'user', text: 'What is the game?' }],
       'How do I win?',
     );
@@ -15,8 +18,8 @@ describe('buildGameAssistantPrompt', () => {
     expect(result).toContain('How do I win?');
   });
 
-  it('handles empty rules and expansions gracefully', () => {
-    const result = buildGameAssistantPrompt('', '', [], 'Test question');
+  it('handles empty chunks and history gracefully', () => {
+    const result = buildGameAssistantPrompt([], [], 'Test question');
 
     expect(result).toContain('Not available.');
     expect(result).toContain('No previous conversation.');
@@ -29,7 +32,8 @@ describe('buildGameAssistantPrompt', () => {
       text: `Message ${i}`,
     }));
 
-    const result = buildGameAssistantPrompt('rules', 'exp', history, 'question');
+    const chunks = [{ content: 'rules', source: 'rules' }];
+    const result = buildGameAssistantPrompt(chunks, history, 'question');
 
     expect(result).toContain('Message 4');
     expect(result).toContain('Message 9');
@@ -39,8 +43,7 @@ describe('buildGameAssistantPrompt', () => {
 
   it('strips < and > from user input to prevent prompt injection', () => {
     const result = buildGameAssistantPrompt(
-      'rules',
-      'expansions',
+      [{ content: 'rules', source: 'rules' }],
       [],
       '<script>alert("xss")</script>',
     );
@@ -58,7 +61,8 @@ describe('buildGameAssistantPrompt', () => {
 ## Actual Rules
 Do things.`;
 
-    const result = buildGameAssistantPrompt(rulesWithToc, '', [], 'test');
+    const chunks = [{ content: rulesWithToc, source: 'rules' }];
+    const result = buildGameAssistantPrompt(chunks, [], 'test');
     expect(result).not.toContain('Table of Contents');
     expect(result).toContain('Actual Rules');
     expect(result).toContain('Do things.');
