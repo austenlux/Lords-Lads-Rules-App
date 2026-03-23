@@ -77,6 +77,15 @@ android {
         freeCompilerArgs += ["-Xskip-metadata-version-check"]
     }
 
+    packaging {
+        jniLibs {
+            // Compress native libs so they are extracted at install time rather than
+            // memory-mapped directly. This bypasses the 16 KB page alignment requirement
+            // that Google Play enforces for uncompressed libs on Android 15+ devices.
+            useLegacyPackaging = true
+        }
+    }
+
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
