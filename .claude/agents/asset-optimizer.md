@@ -48,9 +48,9 @@ Example: A 88dp Android image → 88 × 4 = 352px max → resize target = 352 ×
 For each image file:
 
 ### Step 1: Find all usages
-Search across the entire codebase:
+Search across the entire codebase — including root-level JS files like App.js, index.js:
 ```
-grep -rn "<basename>" src/ android/app/src/main/ ios/ --include="*.js" --include="*.kt" --include="*.java" --include="*.swift" --include="*.xml" --include="*.plist"
+grep -rn "<basename>" . --include="*.js" --include="*.ts" --include="*.tsx" --include="*.kt" --include="*.java" --include="*.swift" --include="*.xml" --include="*.plist" --exclude-dir=node_modules --exclude-dir=build --exclude-dir=.git
 ```
 If zero results: flag as potentially unused. Do not delete — report to user.
 
