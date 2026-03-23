@@ -16,7 +16,6 @@
 		56830EFF74FE42598710CFD3 /* RobotoMono.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 986BF7A3E1C149588B5B323B /* RobotoMono.ttf */; };
 		5BD25B3766C044EFAEEC5192 /* PirataOne.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8E54FA6BBE604DDCA3561E02 /* PirataOne.ttf */; };
 		60B01846C865465D9F29A21B /* WorkSans.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E39E3753CEAF465F99AE720D /* WorkSans.ttf */; };
-		648A2FA60B37423BAF59B63F /* UnifrakturMaguntia.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 864D75A40639406388E862E6 /* UnifrakturMaguntia.ttf */; };
 		69FA703DAAC8461AA044E627 /* Lato.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 35ED11AD0C0D4009ACF9ED82 /* Lato.ttf */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		79B41BDD7224481DAF68E2DA /* Arvo.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 73B6926AF9B540C6855CFF36 /* Arvo.ttf */; };
@@ -31,7 +30,6 @@
 		D71748A78CEA4C8FB0C8EC25 /* Montserrat.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AD990132037E4832B490719E /* Montserrat.ttf */; };
 		E197666215654CA39FA8A8A2 /* MedievalSharp.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C31540640CF1439AB61A8897 /* MedievalSharp.ttf */; };
 		E611671EF4FD42C9A4658A63 /* Lora.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 92FC20EBE7CC44C1BB15188A /* Lora.ttf */; };
-		F45399323B334F06B4AC8122 /* Bangers.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C6A786074AF049F1826C03B8 /* Bangers.ttf */; };
 		FM00010000000000FM000001 /* FoundationModels.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FM00020000000000FM000002 /* FoundationModels.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		SP00010000000000SP000001 /* NativeSplashScreen.m in Sources */ = {isa = PBXBuildFile; fileRef = SP00020000000000SP000002 /* NativeSplashScreen.m */; };
 		VA00080000000000VA000008 /* VoiceAssistantSwift.swift in Sources */ = {isa = PBXBuildFile; fileRef = VA00020000000000VA000002 /* VoiceAssistantSwift.swift */; };
@@ -56,7 +54,6 @@
 		73B6926AF9B540C6855CFF36 /* Arvo.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Arvo.ttf; path = ../assets/fonts/Arvo.ttf; sourceTree = "<group>"; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = LordsandLadsRules/AppDelegate.swift; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = LordsandLadsRules/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		864D75A40639406388E862E6 /* UnifrakturMaguntia.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = UnifrakturMaguntia.ttf; path = ../assets/fonts/UnifrakturMaguntia.ttf; sourceTree = "<group>"; };
 		8E54FA6BBE604DDCA3561E02 /* PirataOne.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = PirataOne.ttf; path = ../assets/fonts/PirataOne.ttf; sourceTree = "<group>"; };
 		92FC20EBE7CC44C1BB15188A /* Lora.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Lora.ttf; path = ../assets/fonts/Lora.ttf; sourceTree = "<group>"; };
 		986BF7A3E1C149588B5B323B /* RobotoMono.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = RobotoMono.ttf; path = ../assets/fonts/RobotoMono.ttf; sourceTree = "<group>"; };
@@ -67,7 +64,6 @@
 		BD00020000000000BD000002 /* RCTBridgeDelegateWithTurboModules.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCTBridgeDelegateWithTurboModules.h; sourceTree = "<group>"; };
 		BD00030000000000BD000003 /* RCTBridgeDelegateWithTurboModules.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = RCTBridgeDelegateWithTurboModules.mm; sourceTree = "<group>"; };
 		C31540640CF1439AB61A8897 /* MedievalSharp.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = MedievalSharp.ttf; path = ../assets/fonts/MedievalSharp.ttf; sourceTree = "<group>"; };
-		C6A786074AF049F1826C03B8 /* Bangers.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Bangers.ttf; path = ../assets/fonts/Bangers.ttf; sourceTree = "<group>"; };
 		D9A92B040A0E410D8E812415 /* Eczar.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Eczar.ttf; path = ../assets/fonts/Eczar.ttf; sourceTree = "<group>"; };
 		DA4B5B55EA084C37BB34481C /* GermaniaOne.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = GermaniaOne.ttf; path = ../assets/fonts/GermaniaOne.ttf; sourceTree = "<group>"; };
 		E39E3753CEAF465F99AE720D /* WorkSans.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = WorkSans.ttf; path = ../assets/fonts/WorkSans.ttf; sourceTree = "<group>"; };
@@ -130,8 +126,7 @@
 				986BF7A3E1C149588B5B323B /* RobotoMono.ttf */,
 				C31540640CF1439AB61A8897 /* MedievalSharp.ttf */,
 				73B6926AF9B540C6855CFF36 /* Arvo.ttf */,
-				C6A786074AF049F1826C03B8 /* Bangers.ttf */,
-				9DFE79A48512402EAEEEF273 /* Rubik-Black.ttf */,
+					9DFE79A48512402EAEEEF273 /* Rubik-Black.ttf */,
 				92FC20EBE7CC44C1BB15188A /* Lora.ttf */,
 				D9A92B040A0E410D8E812415 /* Eczar.ttf */,
 				B92192ADEC0440438CE215BD /* AlfaSlabOne.ttf */,
@@ -141,8 +136,7 @@
 				52A21B13BF5D4DB592DE7C54 /* OpenSans.ttf */,
 				DA4B5B55EA084C37BB34481C /* GermaniaOne.ttf */,
 				35ED11AD0C0D4009ACF9ED82 /* Lato.ttf */,
-				864D75A40639406388E862E6 /* UnifrakturMaguntia.ttf */,
-				8E54FA6BBE604DDCA3561E02 /* PirataOne.ttf */,
+					8E54FA6BBE604DDCA3561E02 /* PirataOne.ttf */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -279,8 +273,7 @@
 				56830EFF74FE42598710CFD3 /* RobotoMono.ttf in Resources */,
 				E197666215654CA39FA8A8A2 /* MedievalSharp.ttf in Resources */,
 				79B41BDD7224481DAF68E2DA /* Arvo.ttf in Resources */,
-				F45399323B334F06B4AC8122 /* Bangers.ttf in Resources */,
-				944F4BAEF17B4C3688FDBB51 /* Rubik-Black.ttf in Resources */,
+					944F4BAEF17B4C3688FDBB51 /* Rubik-Black.ttf in Resources */,
 				E611671EF4FD42C9A4658A63 /* Lora.ttf in Resources */,
 				1D8907F82FD844D29266F843 /* Eczar.ttf in Resources */,
 				32B9C78A85D0466A9A1EDEA3 /* AlfaSlabOne.ttf in Resources */,
@@ -290,8 +283,7 @@
 				35EAC1658DDD4082B54CBD90 /* OpenSans.ttf in Resources */,
 				981F81AAF0EA40C2B9CCA2CB /* GermaniaOne.ttf in Resources */,
 				69FA703DAAC8461AA044E627 /* Lato.ttf in Resources */,
-				648A2FA60B37423BAF59B63F /* UnifrakturMaguntia.ttf in Resources */,
-				5BD25B3766C044EFAEEC5192 /* PirataOne.ttf in Resources */,
+					5BD25B3766C044EFAEEC5192 /* PirataOne.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
