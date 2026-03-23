@@ -116,7 +116,7 @@ afterEvaluate {
             if (!libDir.exists()) return
             int count = 0
             fileTree(libDir).matching { include '**/*.so' }.each { soFile ->
-                exec { commandLine patchelf, '--set-page-size', '16384', soFile.absolutePath }
+                exec { commandLine patchelf, '--page-size', '16384', soFile.absolutePath }
                 count++
             }
             logger.lifecycle("patch16kPageAlignment: patched ${count} .so files to 16 KB alignment")
