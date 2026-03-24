@@ -63,6 +63,8 @@ Claude Code acts as the orchestrator — use the Agent tool to invoke the right 
 | **engineer** | Task requires writing or modifying production code |
 | **tester** | Task requires validating implemented features, writing E2E tests, or investigating bugs |
 | **security** | Any architectural decision, code change, or feature needs security review — runs in parallel with architect on structure, and in parallel with tester after engineer ships |
+| **asset-optimizer** | Task involves auditing or optimizing static assets — images, fonts, audio, or any bundled file (unused detection, duplicate detection, resize calculations) |
+| **performance** | Task involves profiling or optimizing runtime performance — bundle size, render performance, startup time, memory usage, database queries, or network efficiency |
 
 ### When NOT to use agents
 
