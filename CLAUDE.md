@@ -46,6 +46,7 @@ When the user says "run it", "deploy it", "install it", or similar — or **any 
 
 - All project-specific build commands, targets, output paths, and deployment procedures are in `docs/project-context.md` — that is the source of truth. Do not guess or assume commands.
 - **Never ask the user to run commands themselves.** Execute everything autonomously.
+- **Never use a simulator or emulator if a physical device is connected.** Always check for connected devices first (`adb devices` for Android, `xcrun xctrace list devices` or equivalent for iOS) and prefer physical devices unconditionally.
 
 ---
 
