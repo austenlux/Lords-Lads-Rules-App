@@ -1920,9 +1920,14 @@ export default function MoreScreen({
                     {(() => {
                       const cloudKeyOk = !!cloudLlmStatus.keyConfigured;
                       const usage = typeof geminiUsageStats === 'function' ? geminiUsageStats() : {};
-                      const cloudOverallIcon = cloudKeyOk
+                      const cloudReachable = cloudLlmStatus.reachable;
+                      const cloudAllGood = cloudKeyOk && cloudReachable === true;
+                      const cloudAnyFailed = !cloudKeyOk || cloudReachable === false;
+                      const cloudOverallIcon = cloudAllGood
                         ? <BadgeSuccessIcon size={22} color="#4CAF50" />
-                        : <BadgeErrorIcon size={22} color="#CF6679" />;
+                        : cloudAnyFailed
+                        ? <BadgeErrorIcon size={22} color="#CF6679" />
+                        : <BadgeWarningIcon size={22} color="#FFC107" />;
                       return (
                         <>
                           <View style={{ marginTop: 12, marginBottom: 4 }}>
