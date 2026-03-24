@@ -28,40 +28,24 @@ When agents are operating autonomously in a workflow, they resolve decisions wit
 
 ---
 
-## Build and Install
+## Build and Run
 
-When the user says "install it", asks to install after changes, or **any code change** is made that the user will need to test — run the full sequence below automatically. Do not wait to be asked.
+When the user says "run it", "deploy it", "install it", or similar — or **any code change** is made that the user will need to test — run the full build and run sequence automatically. Do not wait to be asked.
 
 ### Required order — NEVER deviate
 
-1. **Commit first** — the code change commit (per the rule above) **must already exist** before any build command runs. The build script (`sync:build-info`) captures `git rev-parse --short HEAD` at build time — this is what appears in the app's debug menu. Building before committing embeds the wrong hash, making it impossible to know which code is running.
+1. **Commit first** — the code change commit must already exist before any build or run command runs.
 
-2. **Build, install, and launch each platform before starting the next.** Do NOT build both platforms first and then install — the user needs to start testing the first platform while the second builds:
-   - **Android first:** Build → Install → Launch, then move to iOS.
-     - Build: `npm run build:android:debug`
-     - Install: `adb install -r android/app/build/outputs/apk/debug/lords-and-lads-rules-debug.apk`
-     - Launch: `adb shell am start -n com.lux.lnlrules/.MainActivity`
-   - **iOS second:** Build → Install → Launch.
-     - Stamp build info: `npm run sync:build-info:debug`
-     - Build: `xcodebuild -workspace ios/LordsandLadsRules.xcworkspace -scheme LordsandLadsRules -configuration Debug -destination 'generic/platform=iOS' -derivedDataPath ios/build/debug FORCE_DEV_FALSE=1 -allowProvisioningUpdates`
-     - Install + Launch: `ios-deploy --bundle ios/build/debug/Build/Products/Debug-iphoneos/LordsandLadsRules.app --justlaunch`
-   - If a device is **not connected**, skip that install and inform the user the build is ready.
+2. **Build and run.** All build, run, deploy, and launch commands for this project are documented in `docs/project-context.md`. Read that file to get the exact commands. Execute them in the order specified there.
 
-3. **Report the commit hash** — After installing, always tell the user the short commit hash (`git rev-parse --short HEAD`) so they can verify the correct build in the app's debug menu.
+3. **Report the commit hash** — After building/deploying, always tell the user the short commit hash (`git rev-parse --short HEAD`).
 
 4. **Push** — `git push`
 
-### Release builds
-
-Use release builds only when explicitly preparing a store submission. Commands:
-- **Android release:** `npm run build:android` → `adb install -r android/app/build/outputs/apk/release/lords-and-lads-rules-*.apk`
-- **iOS release:** `xcodebuild -workspace ios/LordsandLadsRules.xcworkspace -scheme LordsandLadsRules -configuration Release -destination 'generic/platform=iOS' -derivedDataPath ios/build archive -archivePath ios/build/LordsandLadsRules.xcarchive -allowProvisioningUpdates` → `ios-deploy --bundle ios/build/LordsandLadsRules.xcarchive/Products/Applications/LordsandLadsRules.app --justlaunch`
-
 ### Other rules
 
-- **Do not** run `npm install` as the default response to "install it." The user means **install the app**. Run `npm install` only when `package.json` or `package-lock.json` actually change.
-- Android debug builds are standalone (bundle embedded, --dev false). iOS debug device builds pass FORCE_DEV_FALSE=1 to xcodebuild which overrides DEV=true in react-native-xcode.sh (via patch-package patch), producing a proper Debug IPA with no Metro dependency. Both platforms stamp BUILD_TYPE=debug via sync:build-info:debug so the in-app debug menu appears regardless of __DEV__.
-- **Always build and install on BOTH platforms.** Never skip one unless the user explicitly says to.
+- All project-specific build commands, targets, output paths, and deployment procedures are in `docs/project-context.md` — that is the source of truth. Do not guess or assume commands.
+- **Never ask the user to run commands themselves.** Execute everything autonomously.
 
 ---
 
