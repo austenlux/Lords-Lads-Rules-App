@@ -142,7 +142,8 @@ For exact versions, always read `package.json` (JS deps) and `android/app/build.
 - **IMPORTANT:** Always commit before building — the build stamps the current HEAD commit hash. Building before committing embeds the wrong (previous) hash.
 - **Android build:** `npm run build:android` → signed release APK
 - **Android install:** `npm run install:android:release` → builds + installs via USB
-- **iOS simulator:** `npm run install:ios:release` → release build on iPhone 16 Pro simulator
+- **iOS physical device:** `npx react-native run-ios --mode Release --udid <device-udid> --no-packager` → release build on connected physical device. Always prefer a physical device over the simulator. Use `xcrun xctrace list devices` to find the UDID.
+- **iOS simulator (fallback):** `npm run install:ios:release` → release build on iPhone 16 Pro simulator (only use if no physical device is connected)
 - **APK naming:** `lords-and-lads-rules-<versionName>.apk`
 - **Signing:** Release signing via `android/keystore.properties` (gitignored)
 - **Patches:** `postinstall` runs `patch-package` to apply patches in `patches/`
