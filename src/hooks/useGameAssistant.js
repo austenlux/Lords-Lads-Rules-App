@@ -216,21 +216,19 @@ export function useGameAssistant() {
   useEffect(() => {
     if (!isGeminiConfigured()) return;
     let cancelled = false;
-    const timer = setTimeout(() => {
-      (async () => {
-        try {
-          await askGemini('test');
-          if (!cancelled) {
-            setCloudLlmStatus(prev => ({ ...prev, reachable: true }));
-          }
-        } catch {
-          if (!cancelled) {
-            setCloudLlmStatus(prev => ({ ...prev, reachable: false }));
-          }
+    (async () => {
+      try {
+        await askGemini('test');
+        if (!cancelled) {
+          setCloudLlmStatus(prev => ({ ...prev, reachable: true }));
         }
-      })();
-    }, 30000);
-    return () => { cancelled = true; clearTimeout(timer); };
+      } catch {
+        if (!cancelled) {
+          setCloudLlmStatus(prev => ({ ...prev, reachable: false }));
+        }
+      }
+    })();
+    return () => { cancelled = true; };
   }, []);
 
   const requestMicPermission = useCallback(async () => {
