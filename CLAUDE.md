@@ -82,6 +82,30 @@ Only when the user asks a question that requires no code change — answer direc
 - **Asset audit/optimization:** asset-optimizer → (if changes needed) engineer → tester
 - **Performance investigation:** performance → (if changes needed) engineer → tester + security (parallel)
 
+---
+
+## Living Documentation
+
+These documents must stay accurate as the project evolves. **Before pushing after any completed task**, check whether the work triggers any of the updates below. If it does, update the relevant document, commit it, then push — never push stale docs alongside fresh code.
+
+| If this changed... | Update this |
+|---|---|
+| New dependency added or removed | `docs/project-context.md` → Dependencies |
+| New significant file or directory | `docs/project-context.md` → Project Structure |
+| Build or deploy command changed | `docs/project-context.md` → Build & Deploy |
+| Architecture decision made | `docs/project-context.md` → Architecture Notes |
+| Tech stack changed (framework, language, tooling) | `docs/project-context.md` → Tech Stack |
+| New tech debt introduced or resolved | `docs/project-context.md` → Known Gaps |
+| UI regression item identified or resolved | `docs/project-context.md` → UI Regression Checklist |
+| App version, name, or identity changed | `docs/project-context.md` → App Identity |
+| New agent added or agent behavior changed | `CLAUDE.md` → agent table + workflows, and `.claude/agents/*.md` |
+
+**When docs are updated, always tell the user** — briefly, at the end of the task summary. Example: *"Also updated `docs/project-context.md` → Dependencies and Project Structure to reflect the new auth service."* Never update docs silently.
+
+Agents (especially engineer and architect) will flag when their work affects documented content — the orchestrator is responsible for making the actual update.
+
+---
+
 ### Orchestration rules
 
 - Run agents sequentially when each depends on the previous agent's output

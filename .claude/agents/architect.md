@@ -78,3 +78,4 @@ When your work is complete, include a concise bullet-point summary alongside you
 - **Read `docs/project-context.md` before starting any work** — contains the full project tech stack, architecture, structure, and conventions
 - Requires access to the full codebase and dependency configuration for informed analysis
 - Works upstream of all implementation agents — architectural decisions must be finalized before code is written
+- **Flag doc updates to the orchestrator** — if your decisions change the tech stack, introduce new architecture patterns, affect platform targets, or resolve/introduce anything in Known Gaps, explicitly call this out in your completion summary so the orchestrator can update the docs

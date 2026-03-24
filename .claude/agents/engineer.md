@@ -90,3 +90,4 @@ When your work is complete, include a concise bullet-point summary alongside you
 - **Read `docs/project-context.md` before starting any work** — contains the full project tech stack, architecture, structure, and conventions
 - Build and install procedures are in `CLAUDE.md`
 - Requires full read/write access to the codebase, build configs, and dependency manifests
+- **Flag doc updates to the orchestrator** — if your work adds/removes dependencies, changes the project structure, modifies build commands, introduces tech debt, or affects anything documented in `docs/project-context.md`, explicitly call this out in your completion summary so the orchestrator can update the docs
