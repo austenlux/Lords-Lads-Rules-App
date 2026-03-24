@@ -79,6 +79,8 @@ Only when the user asks a question that requires no code change — answer direc
 - **Architecture question:** architect + security (parallel)
 - **Code-only change:** product → engineer → tester + security (parallel)
 - **Security audit:** security only
+- **Asset audit/optimization:** asset-optimizer → (if changes needed) engineer → tester
+- **Performance investigation:** performance → (if changes needed) engineer → tester + security (parallel)
 
 ### Orchestration rules
 
