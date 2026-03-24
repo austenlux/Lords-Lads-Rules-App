@@ -437,7 +437,7 @@ function AppContent() {
         {mainContent}
       </View>
 
-      {(aiSupported || cloudLlmStatus.keyConfigured) && ragIndexReady && (
+      {((aiSupported && ragIndexReady) || cloudLlmStatus.reachable === true) && (
         <View
           pointerEvents="box-none"
           style={{ position: 'absolute', left: 0, right: 0, bottom: 0, top: 0, zIndex: 10 }}

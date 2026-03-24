@@ -70,6 +70,7 @@ export function useGameAssistant() {
   useEffect(() => { messagesRef.current = messages; }, [messages]);
   const [cloudLlmStatus, setCloudLlmStatus] = useState({
     keyConfigured: isGeminiConfigured(),
+    reachable: null,
     lastCloudResponse: null,
     fallbackCount: 0,
   });
@@ -210,6 +211,25 @@ export function useGameAssistant() {
     });
     return () => sub.remove();
   }, [refreshPermissions]);
+
+  // ── Gemini preflight probe (runs once on mount) ────────────────────────
+  useEffect(() => {
+    if (!isGeminiConfigured()) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        await askGemini('test');
+        if (!cancelled) {
+          setCloudLlmStatus(prev => ({ ...prev, reachable: true }));
+        }
+      } catch {
+        if (!cancelled) {
+          setCloudLlmStatus(prev => ({ ...prev, reachable: false }));
+        }
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   const requestMicPermission = useCallback(async () => {
     if (isIOS) {

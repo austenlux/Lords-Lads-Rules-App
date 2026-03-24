@@ -238,6 +238,52 @@ describe('useGameAssistant', () => {
     expect(result.current.modelDebugInfo).toBeNull();
   });
 
+  it('cloudLlmStatus.reachable starts null and becomes true when probe succeeds', async () => {
+    const { isGeminiConfigured, askGemini } = require('../src/services/geminiService');
+    isGeminiConfigured.mockReturnValue(true);
+    askGemini.mockResolvedValue('ok');
+
+    const { result } = renderHook(() => useGameAssistant());
+
+    expect(result.current.cloudLlmStatus.reachable).toBeNull();
+
+    await act(async () => {
+      await flushTimersAndMicrotasks();
+    });
+
+    expect(result.current.cloudLlmStatus.reachable).toBe(true);
+    expect(askGemini).toHaveBeenCalledWith('test');
+  });
+
+  it('cloudLlmStatus.reachable becomes false when probe fails', async () => {
+    const { isGeminiConfigured, askGemini } = require('../src/services/geminiService');
+    isGeminiConfigured.mockReturnValue(true);
+    askGemini.mockRejectedValue(new Error('network error'));
+
+    const { result } = renderHook(() => useGameAssistant());
+
+    await act(async () => {
+      await flushTimersAndMicrotasks();
+    });
+
+    expect(result.current.cloudLlmStatus.reachable).toBe(false);
+  });
+
+  it('skips probe when Gemini is not configured', async () => {
+    const { isGeminiConfigured, askGemini } = require('../src/services/geminiService');
+    isGeminiConfigured.mockReturnValue(false);
+    askGemini.mockClear();
+
+    const { result } = renderHook(() => useGameAssistant());
+
+    await act(async () => {
+      await flushTimersAndMicrotasks();
+    });
+
+    expect(askGemini).not.toHaveBeenCalled();
+    expect(result.current.cloudLlmStatus.reachable).toBeNull();
+  });
+
   it('retryModelSetup re-checks model status', async () => {
     mockNativeModule.checkModelStatus.mockResolvedValue('unavailable');
 

@@ -1942,6 +1942,23 @@ export default function MoreScreen({
                             </View>
                           </View>
                           <View style={styles.debugMetaRow}>
+                            <Text style={[styles.debugMetaLabel, bodyFontStyle]}>Cloud Reachable</Text>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1 }}>
+                              {cloudLlmStatus.reachable === null
+                                ? <BadgeWarningIcon size={16} color="#FFC107" />
+                                : cloudLlmStatus.reachable
+                                  ? <BadgeSuccessIcon size={16} color="#4CAF50" />
+                                  : <BadgeErrorIcon size={16} color="#CF6679" />}
+                              <Text style={[styles.debugMetaValue, {
+                                color: cloudLlmStatus.reachable === null ? '#FFC107'
+                                  : cloudLlmStatus.reachable ? '#4CAF50' : '#CF6679',
+                              }]}>
+                                {cloudLlmStatus.reachable === null ? 'Checking\u2026'
+                                  : cloudLlmStatus.reachable ? 'Reachable' : 'Unreachable'}
+                              </Text>
+                            </View>
+                          </View>
+                          <View style={styles.debugMetaRow}>
                             <Text style={[styles.debugMetaLabel, bodyFontStyle]}>Calls (session)</Text>
                             <Text style={[styles.debugMetaValue, { color: '#CCC' }]}>
                               {usage.callsThisSession ?? 0}
