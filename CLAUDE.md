@@ -1,4 +1,4 @@
-# Claude Code — Lords and Lads Rules App
+# Claude Code
 
 ## Project Context
 
