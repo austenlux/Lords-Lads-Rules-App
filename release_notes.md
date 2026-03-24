@@ -1,5 +1,10 @@
 # Lords & Lads Changelog
 
+## v2.0.1 (2026-03-24)
+
+### Bug Fixes
+* Fixed Clinks not showing up in some configurations.
+
 ## v2.0.0 (2026-03-22)
 
 ### What's New
