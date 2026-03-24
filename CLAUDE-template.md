@@ -28,39 +28,24 @@ When agents are operating autonomously in a workflow, they resolve decisions wit
 
 ---
 
-## Build and Install
+## Build and Run
 
-When the user says "install it", asks to install after changes, or **any code change** is made that the user will need to test — run the full sequence below automatically. Do not wait to be asked.
+When the user says "run it", "deploy it", "install it", or similar — or **any code change** is made that the user will need to test — run the full build and run sequence automatically. Do not wait to be asked.
 
 ### Required order — NEVER deviate
 
-1. **Commit first** — the code change commit (per the rule above) **must already exist** before any build command runs.
+1. **Commit first** — the code change commit must already exist before any build or deploy command runs.
 
-2. **Build, install, and launch each platform before starting the next.** Do NOT build both platforms first and then install — the user needs to start testing the first platform while the second builds:
-   - **Android first:** Build → Install → Launch, then move to iOS.
-     - Build: `[REPLACE: Android debug build command]`
-     - Install: `[REPLACE: adb install command with correct APK output path and filename]`
-     - Launch: `[REPLACE: adb shell am start -n <package>/<activity>]`
-   - **iOS second:** Build → Install → Launch.
-     - Build: `[REPLACE: xcodebuild command with correct workspace name, scheme, and derived data path]`
-     - Install + Launch: `[REPLACE: ios-deploy command with correct .app path]`
-   - If a device is **not connected**, skip that install and inform the user the build is ready.
+2. **Build and run.** All build, run, deploy, and launch commands for this project are documented in `docs/project-context.md`. Read that file to get the exact commands. Execute them in the order specified there.
 
-3. **Report the commit hash** — After installing, always tell the user the short commit hash (`git rev-parse --short HEAD`).
+3. **Report the commit hash** — After deploying/running, always tell the user the short commit hash (`git rev-parse --short HEAD`).
 
 4. **Push** — `git push`
 
-### Release builds
-
-Use release builds only when explicitly preparing a store submission. Commands:
-- **Android release:** `[REPLACE: Android release build command]` → `[REPLACE: adb install command with correct release APK path]`
-- **iOS release:** `[REPLACE: xcodebuild archive command with correct workspace, scheme, and archive path]` → `[REPLACE: ios-deploy command with correct .app path from archive]`
-
 ### Other rules
 
-- **Do not** run `npm install` as the default response to "install it." The user means **install the app**. Run `npm install` only when `package.json` or `package-lock.json` actually change.
-- **Always build and install on BOTH platforms.** Never skip one unless the user explicitly says to.
-- `[REPLACE: Add any project-specific notes about how debug/release builds work, standalone bundle configuration, pre-build scripts, etc.]`
+- All project-specific build commands, environment targets, output paths, and deployment procedures are in `docs/project-context.md` — that is the source of truth. Do not guess or assume commands.
+- **Never ask the user to run commands themselves.** Execute everything autonomously.
 
 ---
 
