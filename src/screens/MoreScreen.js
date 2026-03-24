@@ -27,6 +27,7 @@ import BenderIcon from '../../assets/icons/bender.svg';
 import CopyIcon from '../../assets/icons/copy.svg';
 import ExportIcon from '../../assets/icons/export.svg';
 import RefreshIcon from '../../assets/icons/refresh.svg';
+import WarningIcon from '../../assets/icons/warning.svg';
 import { getRagLog, clearRagLog, onRagLogChange, formatRagLogAsText } from '../services/ragLogger';
 import { setForceContentFetchFailure as updateForceContentFetchFailureCache } from '../services/contentService';
 import { HEADER_HEIGHT } from '../styles';
@@ -1945,7 +1946,7 @@ export default function MoreScreen({
                             <Text style={[styles.debugMetaLabel, bodyFontStyle]}>Cloud Reachable</Text>
                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1 }}>
                               {cloudLlmStatus.reachable === null
-                                ? <BadgeWarningIcon size={16} color="#FFC107" />
+                                ? <WarningIcon width={16} height={16} fill="#FFC107" />
                                 : cloudLlmStatus.reachable
                                   ? <BadgeSuccessIcon size={16} color="#4CAF50" />
                                   : <BadgeErrorIcon size={16} color="#CF6679" />}
