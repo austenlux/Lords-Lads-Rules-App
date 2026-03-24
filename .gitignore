@@ -79,9 +79,10 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
-# Generated files
-# Note: *.apk and *.aab are excluded globally but releases/ is tracked intentionally
-# (release artifacts are committed to releases/ and attached to GitHub Releases)
+# Build artifacts — release binaries live as GitHub Release assets, not in git
+releases/
+*.apk
+*.aab
 *.ipa
 *.dSYM.zip
 *.dSYM
