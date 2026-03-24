@@ -81,7 +81,7 @@ Fonts can exist in up to 4 locations. Check all of them:
 
 1. `assets/fonts/` — shared source
 2. `android/app/src/main/assets/fonts/` — Android copy (may differ from shared)
-3. `ios/LordsandLadsRules/Info.plist` — UIAppFonts array
+3. The iOS `Info.plist` — UIAppFonts array. Locate it by finding all `Info.plist` files under `ios/` (exclude `Pods/` and `build/`): `find ios -name Info.plist -not -path "*/Pods/*" -not -path "*/build/*"`
 4. `react-native.config.js` — RN font linking config
 
 For each font file found:
