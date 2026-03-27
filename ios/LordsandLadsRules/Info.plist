@@ -59,6 +59,8 @@
 	<true/>
 	<key>LSSupportsOpeningDocumentsInPlace</key>
 	<true/>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Lords and Lads Rules may need access to your photo library to save or share game-related content.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>The Voice Assistant uses speech recognition to understand your questions about the game rules.</string>
 	<key>NSMicrophoneUsageDescription</key>
