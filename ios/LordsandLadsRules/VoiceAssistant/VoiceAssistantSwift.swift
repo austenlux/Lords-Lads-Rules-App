@@ -666,13 +666,8 @@ private extension VoiceAssistantSwift {
     }
 
     func buildRawDisplayName(for voice: AVSpeechSynthesisVoice) -> String {
-        let gender = detectGender(for: voice)
         let quality = qualityLabel(for: voice.quality)
-        switch gender {
-        case "female": return "Female · \(quality)"
-        case "male":   return "Male · \(quality)"
-        default:       return quality
-        }
+        return "\(voice.name) · \(quality)"
     }
 
     func localeDisplay(for languageTag: String) -> String {

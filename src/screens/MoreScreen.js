@@ -1269,7 +1269,7 @@ export default function MoreScreen({
                             </TouchableOpacity>
                           ) : (
                             <Text style={[bodyFontStyle, { fontSize: 12, color: '#999', marginTop: 10, marginHorizontal: 12 }]}>
-                              To download more voices, go to Settings → Accessibility → Spoken Content → Voices
+                              To download more voices, go to Settings → Accessibility → Read & Speak → Voices → English
                             </Text>
                           )}
                         </View>
