@@ -1260,7 +1260,7 @@ export default function MoreScreen({
                             onPress={() => {
                               Platform.OS === 'android'
                                 ? Linking.sendIntent('com.android.settings.TTS_SETTINGS').catch(() => Linking.openSettings())
-                                : Linking.openURL('App-Prefs:root=Accessibility').catch(() => Linking.openSettings());
+                                : Linking.openURL('App-Prefs:root=ACCESSIBILITY').catch(() => Linking.openSettings());
                             }}
                           >
                             <SettingsIcon width={14} height={14} fill={accent} />
