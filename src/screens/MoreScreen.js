@@ -1102,7 +1102,7 @@ export default function MoreScreen({
             <View style={styles.versionContainer}>
               <CardIconTitle icon={<RedditIcon width={24} height={24} fill="#FF4500" />} title="Community" styles={styles} />
               <Text style={[styles.moreTimestamp, { marginTop: 4, marginBottom: 12 }, bodyFontStyle]}>
-                Join the Lords & Lads community on Reddit
+                Join the Stump community on Reddit
               </Text>
               <Pressable onPress={() => Linking.openURL(REDDIT_URL)}>
                 <Text style={[styles.infoLink, bodyFontStyle]}>r/stump</Text>
