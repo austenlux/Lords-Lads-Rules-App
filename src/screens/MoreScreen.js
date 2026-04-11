@@ -1261,7 +1261,7 @@ export default function MoreScreen({
                               if (Platform.OS === 'android') {
                                 Linking.sendIntent('com.android.settings.TTS_SETTINGS').catch(() => Linking.openSettings());
                               } else {
-                                Linking.openURL('App-Prefs:ACCESSIBILITY').catch(() => Linking.openSettings());
+                                Linking.openURL('App-Prefs:root=ACCESSIBILITY&path=SPEECH').catch(() => Linking.openSettings());
                               }
                             }}
                           >
