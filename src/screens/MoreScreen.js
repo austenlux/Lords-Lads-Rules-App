@@ -1255,6 +1255,21 @@ export default function MoreScreen({
                               </TouchableOpacity>
                             );
                           })}
+                          <TouchableOpacity
+                            style={[vaReadinessStyles.actionButton, { backgroundColor: `${accent}26`, borderColor: `${accent}66`, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 10, marginHorizontal: 10 }]}
+                            onPress={() => {
+                              if (Platform.OS === 'android') {
+                                Linking.sendIntent('com.android.settings.TTS_SETTINGS').catch(() => Linking.openSettings());
+                              } else {
+                                Linking.openURL('App-Prefs:ACCESSIBILITY').catch(() => Linking.openSettings());
+                              }
+                            }}
+                          >
+                            <SettingsIcon width={14} height={14} fill={accent} />
+                            <Text style={[vaReadinessStyles.actionButtonText, { color: accent }, bodyFontStyle]}>
+                              {Platform.OS === 'android' ? 'Download More Voices in TTS Settings' : 'Download More Voices in Settings'}
+                            </Text>
+                          </TouchableOpacity>
                         </View>
                       )}
                     </TouchableOpacity>
