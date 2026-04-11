@@ -1256,7 +1256,7 @@ export default function MoreScreen({
                             );
                           })}
                           <TouchableOpacity
-                            style={[vaReadinessStyles.actionButton, { backgroundColor: `${accent}26`, borderColor: `${accent}66`, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 10, marginHorizontal: 10 }]}
+                            style={[vaReadinessStyles.actionButton, { backgroundColor: `${accent}26`, borderColor: `${accent}66`, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 10, marginHorizontal: 10, paddingVertical: 12, paddingHorizontal: 20 }]}
                             onPress={() => {
                               if (Platform.OS === 'android') {
                                 Linking.sendIntent('com.android.settings.TTS_SETTINGS').catch(() => Linking.openSettings());
@@ -1267,7 +1267,7 @@ export default function MoreScreen({
                           >
                             <SettingsIcon width={14} height={14} fill={accent} />
                             <Text style={[vaReadinessStyles.actionButtonText, { color: accent }, bodyFontStyle]}>
-                              {Platform.OS === 'android' ? 'Download More Voices in TTS Settings' : 'Download More Voices in Settings'}
+                              Download More Voices
                             </Text>
                           </TouchableOpacity>
                         </View>
