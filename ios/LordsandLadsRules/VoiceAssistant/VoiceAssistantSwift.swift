@@ -421,16 +421,15 @@ class VoiceAssistantSwift: NSObject {
             let urlString = "App-Prefs:root=ACCESSIBILITY"
             if let url = URL(string: urlString) {
                 let canOpen = UIApplication.shared.canOpenURL(url)
-                NSLog("[VoiceAssistant] canOpenURL(\(urlString)) = \(canOpen)")
                 UIApplication.shared.open(url, options: [:]) { success in
-                    NSLog("[VoiceAssistant] open(\(urlString)) success = \(success)")
-                    if !success {
-                        // Fallback: try just App-Prefs: with no path
-                        if let fallback = URL(string: "App-Prefs:") {
-                            UIApplication.shared.open(fallback, options: [:]) { success2 in
-                                NSLog("[VoiceAssistant] open(App-Prefs:) success = \(success2)")
-                            }
-                        }
+                    DispatchQueue.main.async {
+                        let msg = "canOpenURL: \(canOpen)\nopen success: \(success)\nURL: \(urlString)"
+                        let alert = UIAlertController(title: "Debug: Settings Link", message: msg, preferredStyle: .alert)
+                        alert.addAction(UIAlertAction(title: "OK", style: .default))
+                        UIApplication.shared.connectedScenes
+                            .compactMap { $0 as? UIWindowScene }
+                            .first?.windows.first?.rootViewController?
+                            .present(alert, animated: true)
                     }
                 }
             }
