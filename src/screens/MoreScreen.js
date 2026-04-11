@@ -1255,20 +1255,19 @@ export default function MoreScreen({
                               </TouchableOpacity>
                             );
                           })}
-                          <TouchableOpacity
-                            style={[vaReadinessStyles.actionButton, { backgroundColor: `${accent}26`, borderColor: `${accent}66`, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 10, marginHorizontal: 10, paddingVertical: 12, paddingHorizontal: 20 }]}
-                            onPress={() => {
-                              Platform.OS === 'android'
-                                ? Linking.sendIntent('com.android.settings.TTS_SETTINGS').catch(() => Linking.openSettings())
-                                : NativeVoiceAssistantOptional?.openAccessibilitySettings();
-                            }}
-                          >
-                            <SettingsIcon width={14} height={14} fill={accent} />
-                            <Text style={[vaReadinessStyles.actionButtonText, { color: accent }, bodyFontStyle]}>
-                              Download More Voices
-                            </Text>
-                          </TouchableOpacity>
-                          {Platform.OS === 'ios' && (
+                          {Platform.OS === 'android' ? (
+                            <TouchableOpacity
+                              style={[vaReadinessStyles.actionButton, { backgroundColor: `${accent}26`, borderColor: `${accent}66`, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 10, marginHorizontal: 10, paddingVertical: 12, paddingHorizontal: 20 }]}
+                              onPress={() => {
+                                Linking.sendIntent('com.android.settings.TTS_SETTINGS').catch(() => Linking.openSettings());
+                              }}
+                            >
+                              <SettingsIcon width={14} height={14} fill={accent} />
+                              <Text style={[vaReadinessStyles.actionButtonText, { color: accent }, bodyFontStyle]}>
+                                Download More Voices
+                              </Text>
+                            </TouchableOpacity>
+                          ) : (
                             <Text style={[bodyFontStyle, { fontSize: 12, color: '#999', marginTop: 10, marginHorizontal: 12 }]}>
                               To download more voices, go to Settings → Accessibility → Spoken Content → Voices
                             </Text>

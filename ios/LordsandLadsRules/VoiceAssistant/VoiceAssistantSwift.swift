@@ -417,23 +417,8 @@ class VoiceAssistantSwift: NSObject {
     }
 
     func openAccessibilitySettings() {
-        DispatchQueue.main.async {
-            let urlString = "App-Prefs:root=ACCESSIBILITY"
-            if let url = URL(string: urlString) {
-                let canOpen = UIApplication.shared.canOpenURL(url)
-                UIApplication.shared.open(url, options: [:]) { success in
-                    DispatchQueue.main.async {
-                        let msg = "canOpenURL: \(canOpen)\nopen success: \(success)\nURL: \(urlString)"
-                        let alert = UIAlertController(title: "Debug: Settings Link", message: msg, preferredStyle: .alert)
-                        alert.addAction(UIAlertAction(title: "OK", style: .default))
-                        UIApplication.shared.connectedScenes
-                            .compactMap { $0 as? UIWindowScene }
-                            .first?.windows.first?.rootViewController?
-                            .present(alert, animated: true)
-                    }
-                }
-            }
-        }
+        // No-op: iOS 26 broke App-Prefs deep links, button removed on iOS.
+        // Kept for TurboModule spec compatibility.
     }
 
     func invalidate() {
