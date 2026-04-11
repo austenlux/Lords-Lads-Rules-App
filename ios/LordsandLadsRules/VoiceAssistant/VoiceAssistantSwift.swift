@@ -418,8 +418,21 @@ class VoiceAssistantSwift: NSObject {
 
     func openAccessibilitySettings() {
         DispatchQueue.main.async {
-            if let url = URL(string: "App-Prefs:root=ACCESSIBILITY") {
-                UIApplication.shared.open(url, options: [:], completionHandler: nil)
+            let urlString = "App-Prefs:root=ACCESSIBILITY"
+            if let url = URL(string: urlString) {
+                let canOpen = UIApplication.shared.canOpenURL(url)
+                NSLog("[VoiceAssistant] canOpenURL(\(urlString)) = \(canOpen)")
+                UIApplication.shared.open(url, options: [:]) { success in
+                    NSLog("[VoiceAssistant] open(\(urlString)) success = \(success)")
+                    if !success {
+                        // Fallback: try just App-Prefs: with no path
+                        if let fallback = URL(string: "App-Prefs:") {
+                            UIApplication.shared.open(fallback, options: [:]) { success2 in
+                                NSLog("[VoiceAssistant] open(App-Prefs:) success = \(success2)")
+                            }
+                        }
+                    }
+                }
             }
         }
     }
