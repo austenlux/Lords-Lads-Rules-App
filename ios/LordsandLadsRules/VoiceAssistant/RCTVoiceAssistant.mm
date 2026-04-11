@@ -135,6 +135,10 @@ RCT_EXPORT_MODULE(VoiceAssistant)
   [_swiftModule markSpeechQueueComplete];
 }
 
+- (void)openAccessibilitySettings {
+  [_swiftModule openAccessibilitySettings];
+}
+
 - (void)invalidate {
   [_swiftModule invalidate];
 }

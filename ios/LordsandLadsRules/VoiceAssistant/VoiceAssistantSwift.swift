@@ -1,5 +1,6 @@
 import AVFoundation
 import Speech
+import UIKit
 import os.log
 
 #if canImport(FoundationModels)
@@ -412,6 +413,14 @@ class VoiceAssistantSwift: NSObject {
 
         if shouldFire {
             scheduleTTSFinished()
+        }
+    }
+
+    func openAccessibilitySettings() {
+        DispatchQueue.main.async {
+            if let url = URL(string: "App-Prefs:root=ACCESSIBILITY") {
+                UIApplication.shared.open(url, options: [:], completionHandler: nil)
+            }
         }
     }
 

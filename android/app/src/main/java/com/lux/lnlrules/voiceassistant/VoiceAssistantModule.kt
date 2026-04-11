@@ -462,6 +462,9 @@ class VoiceAssistantModule(reactContext: ReactApplicationContext) :
         thinkingSound.stop()
     }
 
+    /** No-op on Android — iOS-only deep link to Accessibility settings. */
+    override fun openAccessibilitySettings() = Unit
+
     /**
      * Called by JS after it has queued the final speak() for a turn.
      * Sets generationComplete and fires onTTSFinished immediately if the

@@ -143,6 +143,12 @@ export interface Spec extends TurboModule {
    */
   markSpeechQueueComplete(): void;
 
+  /**
+   * Opens the iOS Accessibility settings page directly via UIApplication.shared.open.
+   * No-op on Android.
+   */
+  openAccessibilitySettings(): void;
+
   // ── Events ───────────────────────────────────────────────────────────────
 
   /** Fired repeatedly with interim STT results while the user is still speaking. */
