@@ -67,6 +67,7 @@ import MicIcon from '../../assets/icons/mic.svg';
 import DeviceIcon from '../../assets/icons/device.svg';
 import FlagIcon from '../../assets/icons/flag.svg';
 import GithubIcon from '../../assets/icons/github.svg';
+import RedditIcon from '../../assets/icons/reddit.svg';
 import ShipIcon from '../../assets/icons/ship.svg';
 import CalendarIcon from '../../assets/icons/calendar.svg';
 import ExpandIcon from '../../assets/icons/expand.svg';
@@ -215,6 +216,7 @@ const vaReadinessStyles = RNStyleSheet.create({
 
 const RULEBOOK_REPO_URL = 'https://github.com/seanKenkeremath/lords-and-lads';
 const APP_REPO_URL = 'https://github.com/austenlux/Lords-Lads-Rules-App';
+const REDDIT_URL = 'https://www.reddit.com/r/stump';
 
 const TIP_JAR_OPTIONS = [
   { amount: 1,   label: '$1'   },
@@ -1093,6 +1095,17 @@ export default function MoreScreen({
               <CardIconTitle icon={<GithubIcon fill="#E1E1E1" />} title="App Repository" styles={styles} />
               <Pressable onPress={() => Linking.openURL(APP_REPO_URL)} style={{ marginTop: 6 }}>
                 <Text style={[styles.infoLink, bodyFontStyle]}>{APP_REPO_URL}</Text>
+              </Pressable>
+            </View>
+
+            {/* ── Reddit Community card ── */}
+            <View style={styles.versionContainer}>
+              <CardIconTitle icon={<RedditIcon width={24} height={24} fill="#FF4500" />} title="Community" styles={styles} />
+              <Text style={[styles.moreTimestamp, { marginTop: 4, marginBottom: 12 }, bodyFontStyle]}>
+                Join the Lords & Lads community on Reddit
+              </Text>
+              <Pressable onPress={() => Linking.openURL(REDDIT_URL)}>
+                <Text style={[styles.infoLink, bodyFontStyle]}>r/stump</Text>
               </Pressable>
             </View>
           </CollapsibleSection>
