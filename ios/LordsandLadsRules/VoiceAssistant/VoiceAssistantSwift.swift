@@ -343,6 +343,7 @@ class VoiceAssistantSwift: NSObject {
             .filter { $0.language.hasPrefix("en") }
             .sorted { v1, v2 in
                 if v1.language != v2.language { return v1.language < v2.language }
+                if v1.name != v2.name { return v1.name.localizedCaseInsensitiveCompare(v2.name) == .orderedAscending }
                 return v1.quality.rawValue > v2.quality.rawValue
             }
 
