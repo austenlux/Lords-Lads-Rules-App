@@ -1,5 +1,12 @@
 # Lords & Lads Changelog
 
+## v2.0.2 (2026-04-12)
+
+### What's New
+* Voice selector now shows real voice names
+* Added voice download guidance
+* Added Reddit community link to More tab
+
 ## v2.0.1 (2026-03-24)
 
 ### Bug Fixes
