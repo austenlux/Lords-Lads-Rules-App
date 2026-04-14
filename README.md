@@ -6,8 +6,6 @@
 
 The official mobile app for [**Lords & Lads**](https://github.com/seanKenkeremath/lords-and-lads)
 
-## Install
-
 <p align="center">
   <img src="assets/images/lnl_rules_app_store_qr_code.png" alt="App Store QR Code" width="160" hspace="40"/>
   <img src="assets/images/lnl_rules_play_store_qr_code.png" alt="Play Store QR Code" width="160" hspace="40"/>
